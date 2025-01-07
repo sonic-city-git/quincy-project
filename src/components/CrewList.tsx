@@ -13,7 +13,7 @@ export interface CrewMember {
   role: string;
   email: string;
   phone: string;
-  status: string;
+  folder: string;
 }
 
 const MOCK_CREW = [
@@ -23,7 +23,7 @@ const MOCK_CREW = [
     role: "Sound Engineer",
     email: "john@soniccity.no",
     phone: "+47 123 45 678",
-    status: "Available",
+    folder: "Sonic City",
   },
   {
     id: "2",
@@ -31,7 +31,7 @@ const MOCK_CREW = [
     role: "Lighting Technician",
     email: "jane@soniccity.no",
     phone: "+47 234 56 789",
-    status: "On Project",
+    folder: "Freelance",
   },
   {
     id: "3",
@@ -39,7 +39,7 @@ const MOCK_CREW = [
     role: "Stage Manager",
     email: "mike@soniccity.no",
     phone: "+47 345 67 890",
-    status: "Available",
+    folder: "Sonic City",
   },
 ];
 
@@ -72,7 +72,7 @@ export function CrewList() {
       role: newMember.tags.join(", "),
       email: newMember.email,
       phone: newMember.phone,
-      status: "Available",
+      folder: newMember.folder,
     };
 
     setCrewMembers((prev) => [...prev, crewMember]);
@@ -115,7 +115,7 @@ export function CrewList() {
               <TableHead className="whitespace-nowrap">Role</TableHead>
               <TableHead className="whitespace-nowrap">Email</TableHead>
               <TableHead className="whitespace-nowrap">Phone</TableHead>
-              <TableHead className="whitespace-nowrap">Status</TableHead>
+              <TableHead className="whitespace-nowrap">Folder</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -131,13 +131,7 @@ export function CrewList() {
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{crew.role}</TableCell>
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{crew.email}</TableCell>
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{crew.phone}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 rounded text-sm ${
-                    crew.status === "Available" ? "bg-green-500/20 text-green-500" : "bg-amber-500/20 text-amber-500"
-                  }`}>
-                    {crew.status}
-                  </span>
-                </TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{crew.folder}</TableCell>
               </TableRow>
             ))}
           </TableBody>
