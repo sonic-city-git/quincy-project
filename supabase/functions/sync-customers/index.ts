@@ -47,6 +47,7 @@ serve(async (req) => {
       headers: {
         'Authorization': `Basic ${sessionToken}`,
         'Content-Type': 'application/json',
+        'apikey': consumerToken, // Add the apikey header
       },
     })
 
