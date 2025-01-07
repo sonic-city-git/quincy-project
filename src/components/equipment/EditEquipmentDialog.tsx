@@ -81,11 +81,6 @@ export function EditEquipmentDialog({ equipment, onEditEquipment, onDeleteEquipm
           <DialogTitle>Edit Equipment</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <FolderSelect
-            selectedFolder={selectedFolder}
-            onFolderSelect={setSelectedFolder}
-            showAllFolders={false}
-          />
           <div className="grid gap-2">
             <Label htmlFor="code">Code</Label>
             <Input
@@ -197,10 +192,19 @@ export function EditEquipmentDialog({ equipment, onEditEquipment, onDeleteEquipm
                 type="number"
                 placeholder="5"
                 defaultValue={equipment.stock}
-                required={!hasSerialNumbers}
+                required
               />
             </div>
           )}
+          <div className="grid gap-2">
+            <Label>Folder</Label>
+            <FolderSelect
+              selectedFolder={selectedFolder}
+              onFolderSelect={setSelectedFolder}
+              required
+              showAllFolders={false}
+            />
+          </div>
           <div className="flex justify-between items-center">
             <Button type="submit">Save changes</Button>
             <Button type="button" variant="destructive" onClick={onDeleteEquipment}>

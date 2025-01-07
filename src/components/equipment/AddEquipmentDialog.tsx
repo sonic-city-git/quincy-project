@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Equipment } from "@/types/equipment";
@@ -80,12 +80,6 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
           <DialogTitle>Add Equipment</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <FolderSelect
-            selectedFolder={selectedFolder}
-            onFolderSelect={setSelectedFolder}
-            required
-            showAllFolders={false}
-          />
           <div className="grid gap-2">
             <Label htmlFor="code">Code</Label>
             <Input
@@ -165,7 +159,7 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
                       size="icon"
                       onClick={() => removeSerialNumber(index)}
                     >
-                      ✕
+                      <X className="h-4 w-4" />
                     </Button>
                   )}
                 </div>
@@ -191,10 +185,19 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
                 name="stock"
                 type="number"
                 placeholder="5"
-                required={!hasSerialNumbers}
+                required
               />
             </div>
           )}
+          <div className="grid gap-2">
+            <Label>Folder</Label>
+            <FolderSelect
+              selectedFolder={selectedFolder}
+              onFolderSelect={setSelectedFolder}
+              required
+              showAllFolders={false}
+            />
+          </div>
           <Button type="submit" className="mt-4">Add equipment</Button>
         </form>
       </DialogContent>
