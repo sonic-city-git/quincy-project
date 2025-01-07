@@ -43,7 +43,7 @@ serve(async (req) => {
     const sessionToken = btoa(`${consumerToken}:${employeeToken}`)
     
     // Fetch customers from Tripletex
-    const tripletexResponse = await fetch('https://tripletex.no/v2/customer', {
+    const tripletexResponse = await fetch('https://api.tripletex.io/v2/customer', {
       headers: {
         'Authorization': `Basic ${sessionToken}`,
         'Content-Type': 'application/json',
