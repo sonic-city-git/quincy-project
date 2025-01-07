@@ -21,6 +21,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting customer sync process...')
+    
     // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -35,6 +37,8 @@ serve(async (req) => {
       throw new Error('Missing Tripletex API credentials')
     }
 
+    console.log('Fetching customers from Tripletex...')
+    
     // Fetch customers from Tripletex
     const tripletexResponse = await fetch('https://tripletex.no/v2/customer', {
       headers: {
