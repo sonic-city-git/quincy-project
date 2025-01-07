@@ -41,17 +41,25 @@ const ProjectDetails = () => {
     );
   }
 
+  const projectData = {
+    ...project,
+    owner: {
+      id: project.owner_id,
+      name: project.crew_members?.name || 'Unknown'
+    }
+  };
+
   return (
     <div className="min-h-screen">
       <ProjectHeader 
-        name={project.name}
-        lastInvoiced={project.last_invoiced}
-        color={project.color}
+        name={projectData.name}
+        lastInvoiced={projectData.last_invoiced}
+        color={projectData.color}
       />
       <div className="max-w-7xl mx-auto px-6">
         <ProjectTabs 
           projectId={id || ""}
-          project={project}
+          project={projectData}
         />
       </div>
     </div>
