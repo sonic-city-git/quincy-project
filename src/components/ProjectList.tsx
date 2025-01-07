@@ -70,19 +70,17 @@ export function ProjectList() {
                 onClick={() => navigate(`/projects/${project.id}`)}
               >
                 <TableCell className="w-8">
-                  <div className="w-4 h-4 rounded border border-zinc-700"></div>
+                  <div 
+                    className="w-4 h-4 rounded"
+                    {...getColorStyle(project.color, index)}
+                    style={{
+                      ...(getColorStyle(project.color, index).style || {}),
+                      border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}
+                  />
                 </TableCell>
                 <TableCell className="pl-0">
-                  <span 
-                    {...getColorStyle(project.color, index)}
-                    className={`inline-block px-3 py-1 rounded font-medium text-white ${
-                      project.color?.startsWith('bg-') ? project.color : ''
-                    }`}
-                    style={{ 
-                      minWidth: '120px',
-                      ...(getColorStyle(project.color, index).style || {})
-                    }}
-                  >
+                  <span className="text-white">
                     {project.name}
                   </span>
                 </TableCell>
