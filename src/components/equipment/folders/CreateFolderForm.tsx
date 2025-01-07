@@ -1,14 +1,10 @@
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Folder } from "@/types/folders";
 
 interface CreateFolderFormProps {
-  folders: Folder[];
   newFolderName: string;
-  selectedParentId: string | null;
   onNameChange: (name: string) => void;
-  onParentChange: (parentId: string | null) => void;
   onSubmit: () => void;
 }
 

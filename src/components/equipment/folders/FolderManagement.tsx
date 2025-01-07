@@ -16,9 +16,7 @@ interface FolderItemState {
 }
 
 export function FolderManagement({ folders, onClose }: FolderManagementProps) {
-  const [editingId, setEditingId] = useState<string | null>(null);
   const [newFolderName, setNewFolderName] = useState("");
-  const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<FolderItemState>({});
   const { toast } = useToast();
 
@@ -30,7 +28,6 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
         .from('folders')
         .insert([{ 
           name: newFolderName,
-          parent_id: selectedParentId 
         }])
         .select()
         .single();
@@ -43,7 +40,6 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
       });
 
       setNewFolderName("");
-      setSelectedParentId(null);
     } catch (error) {
       console.error('Error adding folder:', error);
       toast({
@@ -65,7 +61,6 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
 
       if (error) throw error;
 
-      setEditingId(null);
       toast({
         title: "Success",
         description: "Folder has been updated successfully",
@@ -82,6 +77,15 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
 
   const handleDeleteFolder = async (id: string) => {
     try {
+      // First, delete all subfolders
+      const { error: subfoldersError } = await supabase
+        .from('folders')
+        .delete()
+        .eq('parent_id', id);
+
+      if (subfoldersError) throw subfoldersError;
+
+      // Then delete the folder itself
       const { error } = await supabase
         .from('folders')
         .delete()
@@ -91,13 +95,44 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
 
       toast({
         title: "Success",
-        description: "Folder has been deleted successfully",
+        description: "Folder and its subfolders have been deleted successfully",
       });
     } catch (error) {
       console.error('Error deleting folder:', error);
       toast({
         title: "Error",
         description: "Failed to delete folder",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddSubfolder = async (parentId: string) => {
+    if (!newFolderName.trim()) return;
+
+    try {
+      const { data, error } = await supabase
+        .from('folders')
+        .insert([{ 
+          name: newFolderName,
+          parent_id: parentId 
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Subfolder has been created successfully",
+      });
+
+      setNewFolderName("");
+    } catch (error) {
+      console.error('Error adding subfolder:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create subfolder",
         variant: "destructive",
       });
     }
@@ -110,13 +145,7 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
     }));
   };
 
-  const handleAddSubfolder = (parentId: string) => {
-    setSelectedParentId(parentId);
-    setNewFolderName("");
-  };
-
   const renderFolderItem = (folder: Folder, level: number = 0) => {
-    // Only show "Add Subfolder" button for top-level folders (level 0)
     const children = folders.filter(f => f.parent_id === folder.id);
     
     return (
@@ -129,7 +158,7 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
         onUpdate={handleUpdateFolder}
         onDelete={handleDeleteFolder}
         onAddSubfolder={handleAddSubfolder}
-        showAddSubfolder={level === 0} // Only show add subfolder button for top-level folders
+        showAddSubfolder={level === 0}
       >
         {children.length > 0 && children.map(child => renderFolderItem(child, level + 1))}
       </FolderItem>
@@ -139,18 +168,11 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
   // Get only root folders (no parent)
   const rootFolders = folders.filter(f => !f.parent_id);
 
-  // Filter out folders that would be available as parents
-  // Only root folders can be parents
-  const availableParentFolders = folders.filter(f => !f.parent_id);
-
   return (
     <div className="space-y-4">
       <CreateFolderForm
-        folders={availableParentFolders} // Only pass root folders as available parents
         newFolderName={newFolderName}
-        selectedParentId={selectedParentId}
         onNameChange={setNewFolderName}
-        onParentChange={setSelectedParentId}
         onSubmit={handleAddFolder}
       />
       <ScrollArea className="h-[400px]">
