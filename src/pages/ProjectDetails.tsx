@@ -7,8 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MOCK_CREW } from "@/data/mockCrew";
 import { useState } from "react";
-import { Calendar } from "@/components/ui/calendar";
-import { AddEventDialog } from "@/components/events/AddEventDialog";
+import { ProjectCalendar } from "@/components/events/ProjectCalendar";
 
 const MOCK_PROJECTS = {
   "sondre-justad": {
@@ -43,25 +42,9 @@ const MOCK_PROJECTS = {
 const ProjectDetails = () => {
   const { projectId } = useParams();
   const project = projectId ? MOCK_PROJECTS[projectId as keyof typeof MOCK_PROJECTS] : null;
-  
   const sonicCityCrewMembers = MOCK_CREW.filter(crew => crew.folder === "Sonic City");
-  
   const [selectedOwner, setSelectedOwner] = useState(project?.owner || "");
   const [selectedCustomer, setSelectedCustomer] = useState(project?.customer || "");
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-
-  const handleDateSelect = (selectedDate: Date | undefined) => {
-    if (selectedDate) {
-      setDate(selectedDate);
-      setIsDialogOpen(true);
-    }
-  };
-
-  const handleEventSubmit = (eventName: string, eventType: string) => {
-    console.log("New event:", { date, eventName, eventType });
-    setIsDialogOpen(false);
-  };
 
   if (!project) {
     return (
@@ -111,12 +94,7 @@ const ProjectDetails = () => {
               <div className="lg:col-span-1">
                 <Card>
                   <CardContent className="p-4">
-                    <Calendar
-                      mode="single"
-                      selected={date}
-                      onSelect={handleDateSelect}
-                      className="rounded-md border"
-                    />
+                    <ProjectCalendar className="rounded-md border" />
                   </CardContent>
                 </Card>
               </div>
@@ -196,13 +174,6 @@ const ProjectDetails = () => {
           </TabsContent>
         </Tabs>
       </div>
-
-      <AddEventDialog
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onSubmit={handleEventSubmit}
-        date={date}
-      />
     </div>
   );
 };
