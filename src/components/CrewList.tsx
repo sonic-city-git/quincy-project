@@ -93,7 +93,10 @@ export function CrewList() {
         <CrewHeader selectedCount={selectedItems.length} onAddCrewMember={handleAddCrewMember} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
+            <Button 
+              variant={selectedRoles.length > 0 ? "default" : "outline"} 
+              size="icon"
+            >
               <Filter className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
