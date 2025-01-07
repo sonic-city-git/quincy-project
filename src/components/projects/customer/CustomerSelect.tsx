@@ -15,7 +15,7 @@ interface Customer {
 }
 
 async function fetchCustomers() {
-  console.log('Fetching customers...');
+  console.log('Starting to fetch customers...');
   const { data, error } = await supabase
     .from('customers')
     .select('id, name')
@@ -26,13 +26,8 @@ async function fetchCustomers() {
     throw error;
   }
   
-  if (!data) {
-    console.log('No customers found');
-    return [];
-  }
-  
-  console.log('Fetched customers:', data);
-  return data;
+  console.log('Fetched customers data:', data);
+  return data || [];
 }
 
 export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectProps) {
@@ -42,6 +37,8 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
   const { data: customers = [], isLoading, error } = useQuery({
     queryKey: ['customers'],
     queryFn: fetchCustomers,
+    retry: 2,
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
   });
 
   useEffect(() => {
@@ -50,17 +47,23 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
 
   const handleCustomerChange = async (customerId: string) => {
     try {
+      console.log('Handling customer change:', customerId);
       const selectedCustomerData = customers.find(c => c.id === customerId);
+      
       if (!selectedCustomerData) {
         throw new Error('Selected customer not found');
       }
 
+      console.log('Updating project with customer:', selectedCustomerData.name);
       const { error: updateError } = await supabase
         .from('projects')
         .update({ customer: selectedCustomerData.name })
         .eq('id', projectId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating project:', updateError);
+        throw updateError;
+      }
 
       setSelectedCustomer(selectedCustomerData.name);
       
@@ -79,7 +82,7 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
   };
 
   if (error) {
-    console.error('Error fetching customers:', error);
+    console.error('Error in CustomerSelect:', error);
     return (
       <div className="text-sm text-destructive">
         Error loading customers. Please try again later.
