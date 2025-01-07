@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, Package, Users, AlertTriangle, Mic } from "lucide-react";
+import { LayoutDashboard, Package, Users, AlertTriangle, Mic, User } from "lucide-react";
 
 export function Sidebar() {
   const links = [
@@ -7,6 +7,7 @@ export function Sidebar() {
     { name: "Projects", icon: Package, path: "/projects" },
     { name: "Equipment", icon: Mic, path: "/equipment" },
     { name: "Crew", icon: Users, path: "/crew" },
+    { name: "Customers", icon: User, path: "/customers" },
     { name: "Shortages", icon: AlertTriangle, path: "/shortages" },
   ];
 

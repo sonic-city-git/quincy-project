@@ -1,27 +1,35 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Routes, Route } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 import { Sidebar } from "@/components/Sidebar";
-import Equipment from "@/pages/Equipment";
-import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
-import Crew from "@/pages/Crew";
+import ProjectList from "@/pages/ProjectList";
 import ProjectDetails from "@/pages/ProjectDetails";
+import Equipment from "@/pages/Equipment";
+import Crew from "@/pages/Crew";
+import Customers from "@/pages/Customers";
+
+const queryClient = new QueryClient();
 
 function App() {
   return (
-    <Router>
-      <div className="flex min-h-screen">
+    <QueryClientProvider client={queryClient}>
+      <div className="flex">
         <Sidebar />
-        <main className="flex-1">
+        <div className="flex-1">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/projects" element={<Index />} />
-            <Route path="/projects/:projectId" element={<ProjectDetails />} />
+            <Route path="/projects" element={<ProjectList />} />
+            <Route path="/projects/:id" element={<ProjectDetails />} />
             <Route path="/equipment" element={<Equipment />} />
             <Route path="/crew" element={<Crew />} />
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/shortages" element={<div>Shortages</div>} />
           </Routes>
-        </main>
+        </div>
       </div>
-    </Router>
+      <Toaster />
+    </QueryClientProvider>
   );
 }
 
