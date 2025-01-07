@@ -64,7 +64,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
             const customClassName = getDateClassNames(dayDate);
             return (
               <button
-                {...props}
+                {...(props as any)}
                 className={`${props.className || ''} ${customClassName || ''}`}
               />
             );
