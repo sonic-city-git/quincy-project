@@ -52,17 +52,17 @@ export function ProjectActions({ selectedItems = [] }: ProjectActionsProps) {
     color: string;
   }) => {
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('projects')
-        .insert([projectData]);
+        .insert([projectData])
+        .select();
 
       if (error) throw error;
+
+      return data;
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to create the project",
-        variant: "destructive",
-      });
+      console.error('Error creating project:', error);
+      throw error;
     }
   };
 

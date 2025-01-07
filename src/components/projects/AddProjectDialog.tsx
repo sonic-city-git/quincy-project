@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { OwnerSelect } from "./owner/OwnerSelect";
 import { CustomerSelect } from "./customer/CustomerSelect";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AddProjectDialogProps {
   onAddProject: (project: {
@@ -28,8 +29,9 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
   const [selectedOwner, setSelectedOwner] = useState<string>("");
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!selectedOwner) {
@@ -60,12 +62,23 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
       color: '#' + Math.floor(Math.random()*16777215).toString(16), // Random color
     };
 
-    onAddProject(newProject);
-    setOpen(false);
-    toast({
-      title: "Project created",
-      description: "New project has been created successfully",
-    });
+    try {
+      await onAddProject(newProject);
+      // Invalidate and refetch projects query
+      await queryClient.invalidateQueries({ queryKey: ['projects'] });
+      setOpen(false);
+      toast({
+        title: "Success",
+        description: "Project created successfully",
+      });
+    } catch (error) {
+      console.error('Error creating project:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create project",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
