@@ -39,6 +39,10 @@ export function CrewTimeline({
     end: addDays(startDate, daysToShow - 1)
   });
 
+  const endDate = addDays(startDate, daysToShow - 1);
+  const startWeek = getWeek(startDate);
+  const endWeek = getWeek(endDate);
+
   const isDateInRange = (date: Date, startDateStr: string, endDateStr: string) => {
     const start = new Date(startDateStr);
     const end = new Date(endDateStr);
@@ -63,7 +67,7 @@ export function CrewTimeline({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <span className="text-sm">
-            {format(startDate, 'dd MMM yyyy')} - {format(addDays(startDate, daysToShow - 1), 'dd MMM yyyy')}
+            {format(startDate, 'dd MMM yyyy')} - {format(endDate, 'dd MMM yyyy')}
           </span>
           <Button variant="ghost" size="sm" onClick={onNextPeriod}>
             <ChevronRight className="h-4 w-4" />
@@ -73,7 +77,7 @@ export function CrewTimeline({
           </Button>
         </div>
         <div className="text-sm text-zinc-400">
-          Week {getWeek(startDate)}
+          Week {startWeek}{startWeek !== endWeek ? ` - ${endWeek}` : ''}
         </div>
       </div>
 
