@@ -71,11 +71,13 @@ export function CrewList() {
           <div className={`h-full flex items-center justify-between px-2 transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             <div className="flex items-center gap-2">
               <span className="text-sm text-zinc-400">{selectedItems.length} items selected</span>
-              <EditCrewMemberDialog 
-                selectedCrew={selectedCrew}
-                onEditCrewMember={handleEditCrewMember}
-                onDeleteCrewMember={handleDeleteCrewMembers}
-              />
+              {selectedItems.length === 1 && (
+                <EditCrewMemberDialog 
+                  selectedCrew={selectedCrew}
+                  onEditCrewMember={handleEditCrewMember}
+                  onDeleteCrewMember={handleDeleteCrewMembers}
+                />
+              )}
             </div>
           </div>
         </div>
