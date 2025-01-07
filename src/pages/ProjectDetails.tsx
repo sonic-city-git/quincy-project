@@ -2,6 +2,8 @@ import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { differenceInDays, parse } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Send } from "lucide-react";
 
 const MOCK_PROJECTS = {
   "sondre-justad": {
@@ -64,7 +66,7 @@ const ProjectDetails = () => {
               <h1 className="text-3xl font-bold text-white">{project.name}</h1>
             </div>
             <div className="flex-1" />
-            <div className="flex gap-8">
+            <div className="flex items-center gap-8">
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Last Invoiced</p>
                 <p className="font-medium">{project.lastInvoiced}</p>
@@ -73,6 +75,9 @@ const ProjectDetails = () => {
                 <p className="text-sm text-muted-foreground">Accumulated Cost</p>
                 <p className="font-medium">{calculateAccumulatedCost()}</p>
               </div>
+              <Button>
+                <Send className="mr-2 h-4 w-4" /> Invoice
+              </Button>
             </div>
           </div>
         </div>
