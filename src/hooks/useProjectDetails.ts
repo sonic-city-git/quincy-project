@@ -15,6 +15,8 @@ export function useProjectDetails(projectId: string | undefined) {
 
         // Replace hyphens with spaces for the database query
         const formattedProjectId = projectId.replace(/-/g, ' ');
+        
+        console.log('Fetching project with ID:', formattedProjectId);
 
         const { data: projectData, error: projectError } = await supabase
           .from('projects')
@@ -27,9 +29,15 @@ export function useProjectDetails(projectId: string | undefined) {
           .eq('id', formattedProjectId)
           .maybeSingle();
 
-        if (projectError) throw projectError;
+        console.log('Query response:', { projectData, projectError });
+
+        if (projectError) {
+          console.error('Supabase error:', projectError);
+          throw projectError;
+        }
 
         if (projectData) {
+          console.log('Found project:', projectData);
           setProject({
             name: projectData.name,
             last_invoiced: projectData.last_invoiced || '',
@@ -40,10 +48,10 @@ export function useProjectDetails(projectId: string | undefined) {
             yearly_revenue: projectData.yearly_revenue
           });
         } else {
-          // Handle case when no project is found
+          console.log('No project found with ID:', formattedProjectId);
           toast({
             title: "Project not found",
-            description: "The requested project could not be found.",
+            description: `No project found with ID: ${formattedProjectId}`,
             variant: "destructive",
           });
         }
