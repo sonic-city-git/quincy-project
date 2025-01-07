@@ -6,7 +6,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Package } from "lucide-react";
+import { Wrench } from "lucide-react";
 import { useState } from "react";
 import { CrewMember } from "@/types/crew";
 import { useToast } from "@/hooks/use-toast";
@@ -60,7 +60,7 @@ export function EditCrewMemberDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-2">
-          <Package className="h-4 w-4" />
+          <Wrench className="h-4 w-4" />
           EDIT
         </Button>
       </DialogTrigger>
