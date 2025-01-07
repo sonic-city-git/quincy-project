@@ -1,7 +1,10 @@
 export interface ProjectData {
   name: string;
   last_invoiced: string;
-  owner: string;
+  owner: {
+    id: string;
+    name: string;
+  };
   customer: string | null;
   color: string;
   gig_price: string | null;

@@ -24,6 +24,7 @@ export function useProjectDetails(projectId: string | undefined) {
           .select(`
             *,
             crew_members (
+              id,
               name
             )
           `)
@@ -42,7 +43,10 @@ export function useProjectDetails(projectId: string | undefined) {
           setProject({
             name: projectData.name,
             last_invoiced: projectData.last_invoiced || '',
-            owner: projectData.crew_members?.name || '',
+            owner: {
+              id: projectData.owner_id,
+              name: projectData.crew_members?.name || ''
+            },
             customer: projectData.customer,
             color: projectData.color,
             gig_price: projectData.gig_price,
