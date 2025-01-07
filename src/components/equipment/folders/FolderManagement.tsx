@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, ChevronRight, ChevronDown } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Folder } from "@/types/folders";
+import { FolderItem } from "./FolderItem";
+import { CreateFolderForm } from "./CreateFolderForm";
 
 interface FolderManagementProps {
   folders: Folder[];
@@ -19,6 +18,7 @@ interface FolderItemState {
 export function FolderManagement({ folders, onClose }: FolderManagementProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newFolderName, setNewFolderName] = useState("");
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<FolderItemState>({});
   const { toast } = useToast();
 
@@ -28,7 +28,10 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
     try {
       const { data, error } = await supabase
         .from('folders')
-        .insert([{ name: newFolderName }])
+        .insert([{ 
+          name: newFolderName,
+          parent_id: selectedParentId 
+        }])
         .select()
         .single();
 
@@ -40,6 +43,7 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
       });
 
       setNewFolderName("");
+      setSelectedParentId(null);
     } catch (error) {
       console.error('Error adding folder:', error);
       toast({
@@ -106,64 +110,27 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
     }));
   };
 
-  const renderFolderItem = (folder: Folder, level: number = 0) => {
-    const isEditing = editingId === folder.id;
-    const children = folders.filter(f => f.parent_id === folder.id);
-    const hasChildren = children.length > 0;
-    const isExpanded = expandedFolders[folder.id];
+  const handleAddSubfolder = (parentId: string) => {
+    setSelectedParentId(parentId);
+    setNewFolderName("");
+  };
 
+  const renderFolderItem = (folder: Folder, level: number = 0) => {
+    const children = folders.filter(f => f.parent_id === folder.id);
+    
     return (
-      <div key={folder.id} className="space-y-2">
-        <div className="flex items-center gap-2" style={{ marginLeft: `${level * 20}px` }}>
-          {hasChildren && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-0 h-4 w-4 hover:bg-transparent"
-              onClick={() => toggleFolder(folder.id)}
-            >
-              {isExpanded ? (
-                <ChevronDown className="h-4 w-4" />
-              ) : (
-                <ChevronRight className="h-4 w-4" />
-              )}
-            </Button>
-          )}
-          {!hasChildren && <div className="w-4" />}
-          {isEditing ? (
-            <Input
-              value={folder.name}
-              onChange={(e) => handleUpdateFolder(folder.id, e.target.value)}
-              onBlur={() => setEditingId(null)}
-              autoFocus
-              className="h-8"
-            />
-          ) : (
-            <>
-              <span className="flex-1">{folder.name}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setEditingId(folder.id)}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleDeleteFolder(folder.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </>
-          )}
-        </div>
-        {hasChildren && isExpanded && (
-          <div className="ml-4">
-            {children.map(child => renderFolderItem(child, level + 1))}
-          </div>
-        )}
-      </div>
+      <FolderItem
+        key={folder.id}
+        folder={folder}
+        level={level}
+        isExpanded={expandedFolders[folder.id]}
+        onToggle={toggleFolder}
+        onUpdate={handleUpdateFolder}
+        onDelete={handleDeleteFolder}
+        onAddSubfolder={handleAddSubfolder}
+      >
+        {children.length > 0 && children.map(child => renderFolderItem(child, level + 1))}
+      </FolderItem>
     );
   };
 
@@ -171,27 +138,14 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Input
-          placeholder="New folder name"
-          value={newFolderName}
-          onChange={(e) => setNewFolderName(e.target.value)}
-          className="h-8"
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleAddFolder();
-            }
-          }}
-        />
-        <Button 
-          size="sm" 
-          onClick={handleAddFolder} 
-          disabled={!newFolderName.trim()}
-        >
-          <Plus className="h-4 w-4 mr-2" />
-          Add
-        </Button>
-      </div>
+      <CreateFolderForm
+        folders={folders}
+        newFolderName={newFolderName}
+        selectedParentId={selectedParentId}
+        onNameChange={setNewFolderName}
+        onParentChange={setSelectedParentId}
+        onSubmit={handleAddFolder}
+      />
       <ScrollArea className="h-[400px]">
         <div className="space-y-2">
           {rootFolders.map(folder => renderFolderItem(folder))}
