@@ -1,6 +1,6 @@
 import { format, eachDayOfInterval, addDays, getWeek, isWeekend, startOfWeek } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Edit2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const EQUIPMENT_ASSIGNMENTS = {
   "904": [ // Equipment ID
@@ -100,13 +100,9 @@ export function EquipmentTimeline({
         
         {selectedEquipment.length > 0 ? (
           selectedEquipment.map((equipment) => (
-            <div key={equipment.id} className="mb-2 group">
+            <div key={equipment.id} className="mb-2">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm font-medium truncate">{equipment.name}</span>
-                <Button variant="ghost" size="sm" className="gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Edit2 className="h-4 w-4" />
-                  EDIT
-                </Button>
               </div>
               <div className="grid grid-cols-14 gap-1">
                 {days.map((day) => {
