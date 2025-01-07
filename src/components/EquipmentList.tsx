@@ -143,9 +143,9 @@ export function EquipmentList() {
 
   const renderFolderStructure = (folders: typeof EQUIPMENT_FOLDERS, level = 0) => {
     return folders.map(folder => (
-      <div key={folder.id} style={{ marginLeft: `${level * 16}px` }}>
+      <div key={folder.id}>
         <DropdownMenuItem
-          className="cursor-pointer"
+          className={`cursor-pointer ${level > 0 ? 'italic' : ''}`}
           onSelect={() => handleFolderSelect(folder.id)}
         >
           {folder.name}
@@ -167,13 +167,15 @@ export function EquipmentList() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
-              <DropdownMenuItem
-                className="cursor-pointer"
-                onSelect={() => handleFolderSelect(null)}
-              >
-                All folders
-              </DropdownMenuItem>
-              {renderFolderStructure(EQUIPMENT_FOLDERS)}
+              <ScrollArea className="h-[400px]" type="hover">
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onSelect={() => handleFolderSelect(null)}
+                >
+                  All folders
+                </DropdownMenuItem>
+                {renderFolderStructure(EQUIPMENT_FOLDERS)}
+              </ScrollArea>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
