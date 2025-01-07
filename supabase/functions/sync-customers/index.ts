@@ -37,9 +37,9 @@ serve(async (req) => {
 
     console.log('Preparing to fetch customers from Tripletex...')
     
-    // Create session token by combining employee token and consumer token
-    const sessionToken = `${employeeToken}:${consumerToken}`;
-    const base64Auth = base64Encode(new TextEncoder().encode(sessionToken));
+    // Create base64 encoded auth string
+    const authString = new TextEncoder().encode(employeeToken + ':' + consumerToken);
+    const base64Auth = base64Encode(authString);
     
     const headers = {
       'Authorization': `Basic ${base64Auth}`,
