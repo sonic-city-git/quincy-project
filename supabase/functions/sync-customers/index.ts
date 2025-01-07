@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,21 +27,8 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    const employeeToken = Deno.env.get('TRIPLETEX_EMPLOYEE_TOKEN')
-    const consumerToken = Deno.env.get('TRIPLETEX_CONSUMER_TOKEN')
-    
-    if (!employeeToken || !consumerToken) {
-      throw new Error('Tripletex tokens not found in environment variables')
-    }
-
-    console.log('Preparing to fetch customers from Tripletex...')
-    
-    // Create base64 encoded auth string
-    const authString = new TextEncoder().encode(employeeToken + ':' + consumerToken);
-    const base64Auth = base64Encode(authString);
-    
     const headers = {
-      'Authorization': `Basic ${base64Auth}`,
+      'Authorization': 'Basic ' + '0:eyJ0b2tlbklkIjo1NzU3NzQ0OTIsInRva2VuIjoiMTI3MWVhNWItNmRjZC00MjU0LWE5OGEtOTdmZmRkYzc4ZGZjIn0',
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     }
@@ -50,7 +36,7 @@ serve(async (req) => {
     console.log('Making request to Tripletex API...')
     
     const tripletexResponse = await fetch(
-      'https://api.tripletex.io/v2/customer?fields=id,name,email,phoneNumber,customerNumber', 
+      'https://tripletex.no/v2/customer?fields=id,name,email,phoneNumber,customerNumber', 
       {
         method: 'GET',
         headers: headers
