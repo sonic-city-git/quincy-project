@@ -35,14 +35,13 @@ export function CreateFolderForm({
         }}
       />
       <Select
-        value={selectedParentId || "none"}
-        onValueChange={(value) => onParentChange(value === "none" ? null : value)}
+        value={selectedParentId || folders[0]?.id || ""}
+        onValueChange={(value) => onParentChange(value)}
       >
         <SelectTrigger className="w-[180px] h-8">
           <SelectValue placeholder="Parent folder" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="none">No parent</SelectItem>
           {folders.map((folder) => (
             <SelectItem key={folder.id} value={folder.id}>
               {folder.name}
