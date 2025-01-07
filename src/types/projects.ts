@@ -1,5 +1,5 @@
 export interface Project {
-  id: string;
+  id: string; // UUID string
   name: string;
   lastInvoiced: string;
   owner: string;

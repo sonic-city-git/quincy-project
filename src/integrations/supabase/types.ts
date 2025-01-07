@@ -92,7 +92,7 @@ export type Database = {
           created_at?: string
           customer?: string | null
           gig_price?: string | null
-          id: string
+          id?: string
           last_invoiced?: string | null
           name: string
           owner_id: string

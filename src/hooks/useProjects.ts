@@ -19,7 +19,7 @@ export function useProjects() {
               name
             )
           `)
-          .order('name');  // Add this line to sort by name
+          .order('name');
 
         if (error) throw error;
 

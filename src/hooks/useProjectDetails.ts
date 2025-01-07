@@ -12,11 +12,8 @@ export function useProjectDetails(projectId: string | undefined) {
     const fetchProjectData = async () => {
       try {
         if (!projectId) return;
-
-        // Replace hyphens with spaces for the database query
-        const formattedProjectId = projectId.replace(/-/g, ' ');
         
-        console.log('Fetching project with ID:', formattedProjectId);
+        console.log('Fetching project with UUID:', projectId);
 
         const { data: projectData, error: projectError } = await supabase
           .from('projects')
@@ -26,7 +23,7 @@ export function useProjectDetails(projectId: string | undefined) {
               name
             )
           `)
-          .eq('id', formattedProjectId)
+          .eq('id', projectId)
           .maybeSingle();
 
         console.log('Query response:', { projectData, projectError });
@@ -48,10 +45,10 @@ export function useProjectDetails(projectId: string | undefined) {
             yearly_revenue: projectData.yearly_revenue
           });
         } else {
-          console.log('No project found with ID:', formattedProjectId);
+          console.log('No project found with UUID:', projectId);
           toast({
             title: "Project not found",
-            description: `No project found with ID: ${formattedProjectId}`,
+            description: `No project found with ID: ${projectId}`,
             variant: "destructive",
           });
         }
