@@ -41,7 +41,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
         mode="single"
         selected={date}
         onSelect={handleDateSelect}
-        className={`w-full ${className}`}
+        className={`w-full rounded-md border ${className}`}
         modifiers={{ today: undefined }}
         modifiersClassNames={{
           selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
@@ -61,8 +61,10 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
             return (
               <div 
                 {...props}
-                className={`relative h-9 w-9 p-0 font-normal flex items-center justify-center ${props.className || ''} ${event ? EVENT_COLORS[event.type] : ''}`}
-              />
+                className={`relative h-9 w-9 p-0 font-normal flex items-center justify-center text-sm ${props.className || ''} ${event ? EVENT_COLORS[event.type] : ''}`}
+              >
+                {dayDate.getDate()}
+              </div>
             );
           },
         }}
