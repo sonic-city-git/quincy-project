@@ -3,6 +3,7 @@ import { Sidebar } from "@/components/Sidebar";
 import Equipment from "@/pages/Equipment";
 import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
+import Crew from "@/pages/Crew";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
             <Route path="/" element={<Dashboard />} />
             <Route path="/projects" element={<Index />} />
             <Route path="/equipment" element={<Equipment />} />
+            <Route path="/crew" element={<Crew />} />
           </Routes>
         </main>
       </div>
