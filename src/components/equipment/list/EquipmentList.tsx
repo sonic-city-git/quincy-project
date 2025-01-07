@@ -3,8 +3,7 @@ import { EquipmentHeader } from "../EquipmentHeader";
 import { EquipmentSelectionHeader } from "../EquipmentSelectionHeader";
 import { EquipmentTable } from "../EquipmentTable";
 import { EquipmentTimeline } from "../EquipmentTimeline";
-import { useCallback, useRef, useState } from "react";
-import { addDays, subDays } from "date-fns";
+import { useRef } from "react";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
 
 interface EquipmentListProps {
@@ -13,6 +12,7 @@ interface EquipmentListProps {
   selectedItems: string[];
   selectedFolder: string | null;
   searchTerm: string;
+  startDate: Date;
   onSearchChange: (value: string) => void;
   onFolderSelect: (folderId: string | null) => void;
   onAddEquipment: (equipment: Equipment) => void;
@@ -20,6 +20,8 @@ interface EquipmentListProps {
   onDeleteEquipment: () => void;
   onItemSelect: (id: string) => void;
   onSelectAll: () => void;
+  onPreviousPeriod: () => void;
+  onNextPeriod: () => void;
 }
 
 export function EquipmentList({
@@ -28,6 +30,7 @@ export function EquipmentList({
   selectedItems,
   selectedFolder,
   searchTerm,
+  startDate,
   onSearchChange,
   onFolderSelect,
   onAddEquipment,
@@ -35,24 +38,15 @@ export function EquipmentList({
   onDeleteEquipment,
   onItemSelect,
   onSelectAll,
+  onPreviousPeriod,
+  onNextPeriod,
 }: EquipmentListProps) {
-  const [startDate, setStartDate] = useState(new Date());
   const containerRef = useRef<HTMLDivElement>(null);
   const daysToShow = 14;
 
-  const handleResize = useCallback(() => {
+  const { observe, unobserve } = useDebounceResize(() => {
     // This empty callback is enough to trigger the debounced resize handling
-  }, []);
-
-  const { observe, unobserve } = useDebounceResize(handleResize);
-
-  const handlePreviousPeriod = () => {
-    setStartDate(prev => subDays(prev, daysToShow));
-  };
-
-  const handleNextPeriod = () => {
-    setStartDate(prev => addDays(prev, daysToShow));
-  };
+  });
 
   return (
     <div className="space-y-4" ref={containerRef}>
@@ -70,6 +64,7 @@ export function EquipmentList({
           onSearchChange={onSearchChange}
           onEditEquipment={onEditEquipment}
           onDeleteEquipment={onDeleteEquipment}
+          onAddEquipment={onAddEquipment}
         />
 
         <EquipmentTable
@@ -83,8 +78,8 @@ export function EquipmentList({
           startDate={startDate}
           daysToShow={daysToShow}
           selectedEquipment={selectedEquipment}
-          onPreviousPeriod={handlePreviousPeriod}
-          onNextPeriod={handleNextPeriod}
+          onPreviousPeriod={onPreviousPeriod}
+          onNextPeriod={onNextPeriod}
           onMount={observe}
           onUnmount={unobserve}
         />

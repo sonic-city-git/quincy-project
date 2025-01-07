@@ -2,6 +2,7 @@ import { EquipmentList } from "./EquipmentList";
 import { useEquipmentData } from "@/hooks/useEquipmentData";
 import { useEquipmentFilter } from "@/hooks/useEquipmentFilter";
 import { useEquipmentSelection } from "@/hooks/useEquipmentSelection";
+import { useEquipmentTimeline } from "@/hooks/useEquipmentTimeline";
 
 export function EquipmentListContainer() {
   const { 
@@ -26,6 +27,12 @@ export function EquipmentListContainer() {
     handleSelectAll,
     clearSelection,
   } = useEquipmentSelection();
+
+  const {
+    startDate,
+    handlePreviousPeriod,
+    handleNextPeriod,
+  } = useEquipmentTimeline();
 
   const handleFolderSelect = (folderId: string | null) => {
     setSelectedFolder(folderId);
@@ -52,6 +59,7 @@ export function EquipmentListContainer() {
       selectedItems={selectedItems}
       selectedFolder={selectedFolder}
       searchTerm={searchTerm}
+      startDate={startDate}
       onSearchChange={setSearchTerm}
       onFolderSelect={handleFolderSelect}
       onAddEquipment={handleAddEquipment}
@@ -62,6 +70,8 @@ export function EquipmentListContainer() {
       }}
       onItemSelect={handleItemSelect}
       onSelectAll={() => handleSelectAll(filteredEquipment)}
+      onPreviousPeriod={handlePreviousPeriod}
+      onNextPeriod={handleNextPeriod}
     />
   );
 }
