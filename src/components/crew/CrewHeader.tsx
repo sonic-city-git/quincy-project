@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { UserPlus } from "lucide-react";
+import { AddCrewMemberDialog } from "./AddCrewMemberDialog";
 
 interface CrewHeaderProps {
   selectedCount: number;
@@ -16,10 +16,7 @@ export function CrewHeader({ selectedCount }: CrewHeaderProps) {
           All
         </Button>
       </div>
-      <Button size="sm" className="gap-2">
-        <UserPlus className="h-4 w-4" />
-        Add crew member
-      </Button>
+      <AddCrewMemberDialog />
     </div>
   );
 }
