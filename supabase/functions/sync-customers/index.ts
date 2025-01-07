@@ -16,7 +16,6 @@ interface TripletexCustomer {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -24,24 +23,22 @@ serve(async (req) => {
   try {
     console.log('Starting customer sync process...')
     
-    // Initialize Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get the Tripletex tokens from Supabase secrets
-    const sessionToken = "MDpleUowYjJ0bGJrbGtJam8xTnpVM056UTBPVElzSW5SdmEyVnVJam9pTVRJM01XVmhOV0l0Tm1SalpDMDBNalUwTFdFNU9HRXRPVGRtWm1Sa1l6YzRaR1pqSW4w"
+    const employeeToken = Deno.env.get('TRIPLETEX_EMPLOYEE_TOKEN')
     const consumerToken = Deno.env.get('TRIPLETEX_CONSUMER_TOKEN')
     
-    if (!sessionToken || !consumerToken) {
+    if (!employeeToken || !consumerToken) {
       throw new Error('Tripletex tokens not found in environment variables')
     }
 
-    console.log('Fetching customers from Tripletex...')
+    console.log('Preparing to fetch customers from Tripletex...')
     
     // Create base64 encoded auth string
-    const authString = new TextEncoder().encode('0:' + sessionToken);
+    const authString = new TextEncoder().encode('0:' + employeeToken);
     const base64Auth = base64Encode(authString);
     
     const headers = {
@@ -51,16 +48,15 @@ serve(async (req) => {
       'Accept': 'application/json'
     }
     
-    console.log('Making request to Tripletex API with headers:', JSON.stringify({
-      ...headers,
-      'Authorization': 'Basic [REDACTED]' // Don't log the full auth token
-    }, null, 2))
+    console.log('Making request to Tripletex API...')
     
-    // Fetch customers from Tripletex
-    const tripletexResponse = await fetch('https://api.tripletex.io/v2/customer?fields=id,name,email,phoneNumber,customerNumber', {
-      method: 'GET',
-      headers: headers
-    })
+    const tripletexResponse = await fetch(
+      'https://api.tripletex.io/v2/customer?fields=id,name,email,phoneNumber,customerNumber', 
+      {
+        method: 'GET',
+        headers: headers
+      }
+    )
 
     if (!tripletexResponse.ok) {
       const errorText = await tripletexResponse.text()
@@ -69,13 +65,11 @@ serve(async (req) => {
     }
 
     const tripletexData = await tripletexResponse.json()
-    console.log('Tripletex API response:', JSON.stringify(tripletexData, null, 2))
-    
     const customers: TripletexCustomer[] = tripletexData.values || []
 
     console.log(`Fetched ${customers.length} customers from Tripletex`)
 
-    // Upsert customers to our database
+    // Upsert customers to Supabase
     for (const customer of customers) {
       const { error } = await supabaseClient
         .from('customers')
