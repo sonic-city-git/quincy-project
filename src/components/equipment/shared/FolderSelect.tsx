@@ -7,18 +7,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { Folder } from "@/types/folders";
-import { FolderManagement } from "../folders/FolderManagement";
 
 interface FolderSelectProps {
   selectedFolder: string | null;
@@ -34,7 +24,6 @@ export function FolderSelect({
   showAllFolders = true,
 }: FolderSelectProps) {
   const [folders, setFolders] = useState<Folder[]>([]);
-  const [isManaging, setIsManaging] = useState(false);
 
   useEffect(() => {
     fetchFolders();
@@ -104,41 +93,22 @@ export function FolderSelect({
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <Select
-        value={selectedFolder || undefined}
-        onValueChange={(value) => onFolderSelect(value)}
-        required={required}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select folder">
-            {getFolderPath(selectedFolder)}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent>
-          <ScrollArea className="h-[400px]">
-            {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
-            {renderFolderOptions()}
-          </ScrollArea>
-        </SelectContent>
-      </Select>
-
-      <Dialog open={isManaging} onOpenChange={setIsManaging}>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="icon">
-            <Settings className="h-4 w-4" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Manage Folders</DialogTitle>
-          </DialogHeader>
-          <FolderManagement
-            folders={folders}
-            onClose={() => setIsManaging(false)}
-          />
-        </DialogContent>
-      </Dialog>
-    </div>
+    <Select
+      value={selectedFolder || undefined}
+      onValueChange={(value) => onFolderSelect(value)}
+      required={required}
+    >
+      <SelectTrigger className="w-full">
+        <SelectValue placeholder="Select folder">
+          {getFolderPath(selectedFolder)}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <ScrollArea className="h-[400px]">
+          {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
+          {renderFolderOptions()}
+        </ScrollArea>
+      </SelectContent>
+    </Select>
   );
 }
