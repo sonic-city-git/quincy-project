@@ -18,9 +18,6 @@ export function CrewHeader({ selectedCount, onAddCrewMember }: CrewHeaderProps) 
   return (
     <div className="flex justify-between items-center">
       <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm">
-          All departments
-        </Button>
       </div>
       <AddCrewMemberDialog onAddCrewMember={onAddCrewMember} />
     </div>
