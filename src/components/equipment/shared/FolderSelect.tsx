@@ -1,4 +1,4 @@
-import React from "react";
+import * as React from "react";
 import {
   Select,
   SelectContent,
@@ -6,52 +6,46 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { EQUIPMENT_FOLDERS } from "@/data/equipmentFolders";
 import { getFolderPath } from "@/utils/folderUtils";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface FolderSelectProps {
-  selectedFolder: string;
-  onFolderChange: (value: string) => void;
-  required?: boolean;
+  selectedFolder: string | null;
+  onFolderSelect: (folderId: string | null) => void;
 }
 
-export function FolderSelect({ selectedFolder, onFolderChange, required = false }: FolderSelectProps) {
+export function FolderSelect({ selectedFolder, onFolderSelect }: FolderSelectProps) {
+  const renderFolderOptions = (folders: typeof EQUIPMENT_FOLDERS, level = 0) => {
+    return folders.map((folder) => (
+      <React.Fragment key={folder.id}>
+        <SelectItem
+          value={folder.id}
+          className={`pl-[${level * 16}px]`}
+        >
+          {folder.name}
+        </SelectItem>
+        {folder.subfolders && renderFolderOptions(folder.subfolders, level + 1)}
+      </React.Fragment>
+    ));
+  };
+
   return (
-    <div className="grid gap-2">
-      <Label htmlFor="folder">Folder</Label>
-      <Select
-        value={selectedFolder}
-        onValueChange={onFolderChange}
-        required={required}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Select a folder">
-            {getFolderPath(selectedFolder, EQUIPMENT_FOLDERS)}
-          </SelectValue>
-        </SelectTrigger>
-        <SelectContent className="max-h-[200px] overflow-y-auto touch-none select-none hover:overflow-y-scroll">
-          {EQUIPMENT_FOLDERS.map((folder) => (
-            <React.Fragment key={folder.id}>
-              <SelectItem 
-                value={folder.id}
-                className="font-bold pl-2"
-              >
-                {folder.name}
-              </SelectItem>
-              {folder.subfolders?.map((subfolder) => (
-                <SelectItem 
-                  key={subfolder.id} 
-                  value={subfolder.id}
-                  className="pl-8 italic font-normal"
-                >
-                  {subfolder.name}
-                </SelectItem>
-              ))}
-            </React.Fragment>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <Select
+      value={selectedFolder || "all"}
+      onValueChange={(value) => onFolderSelect(value === "all" ? null : value)}
+    >
+      <SelectTrigger className="w-[200px]">
+        <SelectValue>
+          {getFolderPath(selectedFolder, EQUIPMENT_FOLDERS)}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        <ScrollArea className="h-[200px] w-full rounded-md">
+          <SelectItem value="all">All folders</SelectItem>
+          {renderFolderOptions(EQUIPMENT_FOLDERS)}
+        </ScrollArea>
+      </SelectContent>
+    </Select>
   );
 }
