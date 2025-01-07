@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { AddEventDialog } from "./AddEventDialog";
+import { EditEventDialog } from "./EditEventDialog";
 import { CalendarEvent, EventType } from "@/types/events";
 import { DayProps } from "react-day-picker";
 
@@ -18,20 +19,31 @@ interface ProjectCalendarProps {
 
 export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent>();
 
   const handleSelect = (date: Date | undefined) => {
     if (date) {
-      setSelectedDate(date);
-      setIsDialogOpen(true);
+      const event = events.find(
+        (e) => e.date.toDateString() === date.toDateString()
+      );
+      
+      if (event) {
+        setSelectedEvent(event);
+        setIsEditDialogOpen(true);
+      } else {
+        setSelectedDate(date);
+        setIsAddDialogOpen(true);
+      }
     }
   };
 
   const handleEventSubmit = (eventName: string, eventType: EventType) => {
     if (selectedDate) {
       setEvents([...events, { date: selectedDate, name: eventName, type: eventType }]);
-      setIsDialogOpen(false);
+      setIsAddDialogOpen(false);
     }
   };
 
@@ -71,10 +83,15 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
         }}
       />
       <AddEventDialog
-        isOpen={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
+        isOpen={isAddDialogOpen}
+        onOpenChange={setIsAddDialogOpen}
         onSubmit={handleEventSubmit}
         date={selectedDate}
+      />
+      <EditEventDialog
+        isOpen={isEditDialogOpen}
+        onOpenChange={setIsEditDialogOpen}
+        event={selectedEvent}
       />
     </>
   );
