@@ -38,20 +38,23 @@ serve(async (req) => {
     console.log('Fetching customers from Tripletex...')
     
     // Fetch customers from Tripletex using the token from secrets
-    // Note: Adding API version and using proper endpoint structure
-    const tripletexResponse = await fetch('https://api.tripletex.io/v2/customer', {
+    const tripletexResponse = await fetch('https://api.tripletex.io/v2/customer?fields=id,name,email,phoneNumber,customerNumber', {
       headers: {
         'Authorization': `Bearer ${tripletexToken}`,
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
     })
 
     if (!tripletexResponse.ok) {
-      console.error('Tripletex API error:', await tripletexResponse.text())
-      throw new Error(`Failed to fetch customers from Tripletex: ${tripletexResponse.status}`)
+      const errorText = await tripletexResponse.text()
+      console.error('Tripletex API error:', errorText)
+      throw new Error(`Failed to fetch customers from Tripletex (${tripletexResponse.status}): ${errorText}`)
     }
 
     const tripletexData = await tripletexResponse.json()
+    console.log('Tripletex API response:', JSON.stringify(tripletexData, null, 2))
+    
     const customers: TripletexCustomer[] = tripletexData.values || []
 
     console.log(`Fetched ${customers.length} customers from Tripletex`)
