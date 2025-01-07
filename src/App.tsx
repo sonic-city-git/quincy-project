@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import Equipment from "@/pages/Equipment";
+import Index from "@/pages/Index";
 
 function App() {
   return (
@@ -9,6 +10,7 @@ function App() {
         <Sidebar />
         <main className="flex-1">
           <Routes>
+            <Route path="/" element={<Index />} />
             <Route path="/equipment" element={<Equipment />} />
           </Routes>
         </main>
