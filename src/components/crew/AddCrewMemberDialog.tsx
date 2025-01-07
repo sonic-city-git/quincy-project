@@ -125,7 +125,7 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
             </Select>
           </div>
           <div className="grid gap-2">
-            <Label>Tags</Label>
+            <Label>Role</Label>
             <div className="flex flex-wrap gap-4">
               {TAGS.map((tag) => (
                 <div key={tag.id} className="flex items-center space-x-2">
