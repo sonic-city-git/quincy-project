@@ -29,16 +29,21 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Get the Tripletex token from Supabase secrets
-    const tripletexToken = Deno.env.get('TRIPLETEX_CONSUMER_TOKEN')
-    if (!tripletexToken) {
-      throw new Error('Tripletex token not found in environment variables')
+    // Get the Tripletex tokens from Supabase secrets
+    const employeeToken = Deno.env.get('TRIPLETEX_EMPLOYEE_TOKEN')
+    const consumerToken = Deno.env.get('TRIPLETEX_CONSUMER_TOKEN')
+    
+    if (!employeeToken || !consumerToken) {
+      throw new Error('Tripletex tokens not found in environment variables')
     }
 
     console.log('Fetching customers from Tripletex...')
     
-    // Create session token for Tripletex API
-    const sessionToken = btoa(`0:${tripletexToken}:api.tripletex.io`)
+    // Create session token for Tripletex API using the correct format
+    const authString = `${consumerToken}:${employeeToken}`
+    const sessionToken = btoa(authString)
+    
+    console.log('Making request to Tripletex API...')
     
     // Fetch customers from Tripletex using the properly formatted token
     const tripletexResponse = await fetch('https://api.tripletex.io/v2/customer?fields=id,name,email,phoneNumber,customerNumber', {
