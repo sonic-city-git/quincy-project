@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -39,14 +40,21 @@ serve(async (req) => {
 
     console.log('Fetching customers from Tripletex...')
     
+    // Create base64 encoded auth string
+    const authString = new TextEncoder().encode('0:' + sessionToken);
+    const base64Auth = base64Encode(authString);
+    
     const headers = {
-      'Authorization': `Basic ${btoa('0:' + sessionToken)}`,
+      'Authorization': `Basic ${base64Auth}`,
       'consumerToken': consumerToken,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     }
     
-    console.log('Making request to Tripletex API with headers:', JSON.stringify(headers, null, 2))
+    console.log('Making request to Tripletex API with headers:', JSON.stringify({
+      ...headers,
+      'Authorization': 'Basic [REDACTED]' // Don't log the full auth token
+    }, null, 2))
     
     // Fetch customers from Tripletex
     const tripletexResponse = await fetch('https://api.tripletex.io/v2/customer?fields=id,name,email,phoneNumber,customerNumber', {
