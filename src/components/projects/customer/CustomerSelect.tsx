@@ -1,9 +1,8 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { EntitySelect } from "@/components/shared/EntitySelect";
 
 interface CustomerSelectProps {
   projectId: string;
@@ -101,32 +100,17 @@ export function CustomerSelect({ projectId, initialCustomer, onCustomerSelect }:
   }
 
   const currentCustomerId = customers.find(c => c.name === selectedCustomer)?.id;
-  console.log('Current customer ID:', currentCustomerId, 'Selected customer:', selectedCustomer);
 
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">Customer</p>
-      <Select 
-        value={currentCustomerId}
+      <EntitySelect
+        entities={customers}
+        value={currentCustomerId || ''}
         onValueChange={handleCustomerChange}
-        disabled={isLoading}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
-        </SelectTrigger>
-        <SelectContent>
-          <ScrollArea className="h-[200px]">
-            {customers.map((customer) => (
-              <SelectItem 
-                key={customer.id} 
-                value={customer.id}
-              >
-                {customer.name}
-              </SelectItem>
-            ))}
-          </ScrollArea>
-        </SelectContent>
-      </Select>
+        placeholder="customer"
+        isLoading={isLoading}
+      />
     </div>
   );
 }

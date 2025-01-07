@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { EntitySelect } from "@/components/shared/EntitySelect";
 
 interface OwnerSelectProps {
   projectId: string;
@@ -74,20 +73,12 @@ export function OwnerSelect({ projectId, initialOwner, onOwnerSelect }: OwnerSel
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">Owner</p>
-      <Select value={selectedOwner} onValueChange={handleOwnerChange}>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select owner" />
-        </SelectTrigger>
-        <SelectContent>
-          <ScrollArea className="h-[200px]">
-            {sonicCityCrewMembers.map((crew) => (
-              <SelectItem key={crew.id} value={crew.id}>
-                {crew.name}
-              </SelectItem>
-            ))}
-          </ScrollArea>
-        </SelectContent>
-      </Select>
+      <EntitySelect
+        entities={sonicCityCrewMembers}
+        value={selectedOwner}
+        onValueChange={handleOwnerChange}
+        placeholder="owner"
+      />
     </div>
   );
 }
