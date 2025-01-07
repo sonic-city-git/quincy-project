@@ -1,7 +1,7 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useState } from "react";
+import { useState, useCallback, useRef } from "react";
 import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
 import { addDays, subDays } from "date-fns";
 import { AddEquipmentDialog } from "./equipment/AddEquipmentDialog";
@@ -9,6 +9,7 @@ import { EditEquipmentDialog } from "./equipment/EditEquipmentDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Equipment } from "@/types/equipment";
 import { EQUIPMENT_FOLDERS } from "@/data/equipmentFolders";
+import { useDebounceResize } from "@/hooks/useDebounceResize";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,6 +57,13 @@ export function EquipmentList() {
   const [startDate, setStartDate] = useState(new Date());
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const { toast } = useToast();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleResize = useCallback(() => {
+    // This empty callback is enough to trigger the debounced resize handling
+  }, []);
+
+  const { observe, unobserve } = useDebounceResize(handleResize);
 
   const handleAddEquipment = (newEquipment: Equipment) => {
     setEquipment(prev => [...prev, newEquipment]);
@@ -145,7 +153,7 @@ export function EquipmentList() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" ref={containerRef}>
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
           <DropdownMenu>
@@ -237,6 +245,8 @@ export function EquipmentList() {
           selectedEquipment={selectedEquipment}
           onPreviousPeriod={handlePreviousPeriod}
           onNextPeriod={handleNextPeriod}
+          onMount={observe}
+          onUnmount={unobserve}
         />
       </div>
     </div>

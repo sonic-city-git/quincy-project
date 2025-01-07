@@ -1,6 +1,7 @@
 import { format, eachDayOfInterval, addDays, getWeek, isWeekend, startOfWeek } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 const EQUIPMENT_ASSIGNMENTS = {
   "904": [ // Equipment ID
@@ -24,6 +25,8 @@ interface EquipmentTimelineProps {
   }>;
   onPreviousPeriod: () => void;
   onNextPeriod: () => void;
+  onMount?: (element: Element | null) => void;
+  onUnmount?: (element: Element | null) => void;
 }
 
 export function EquipmentTimeline({ 
@@ -31,8 +34,21 @@ export function EquipmentTimeline({
   daysToShow, 
   selectedEquipment,
   onPreviousPeriod,
-  onNextPeriod
+  onNextPeriod,
+  onMount,
+  onUnmount
 }: EquipmentTimelineProps) {
+  const timelineRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const element = timelineRef.current;
+    onMount?.(element);
+    
+    return () => {
+      onUnmount?.(element);
+    };
+  }, [onMount, onUnmount]);
+
   const startDate = startOfWeek(providedStartDate, { weekStartsOn: 1 });
   
   const days = eachDayOfInterval({
@@ -58,7 +74,7 @@ export function EquipmentTimeline({
   };
 
   return (
-    <div className="border-t border-zinc-800/50">
+    <div className="border-t border-zinc-800/50" ref={timelineRef}>
       <div className="p-4 flex flex-col items-center gap-2">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={onPreviousPeriod}>
