@@ -12,6 +12,7 @@ interface CalendarDayProps extends Omit<DayProps, 'date'> {
   event?: CalendarEvent;
   eventColors: Record<EventType, string>;
   onSelect: (date: Date) => void;
+  className?: string;
 }
 
 export const CalendarDay = ({ 
