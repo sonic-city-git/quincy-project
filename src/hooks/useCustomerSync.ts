@@ -9,11 +9,18 @@ export const useCustomerSync = () => {
   const syncCustomers = async () => {
     try {
       setIsSyncing(true);
+      console.log('Starting customer sync...');
+      
       const { data, error } = await supabase.functions.invoke('sync-customers', {
         method: 'POST',
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error syncing customers:', error);
+        throw error;
+      }
+
+      console.log('Sync completed:', data);
 
       toast({
         title: "Success",
