@@ -24,3 +24,21 @@ export const isItemInFolder = (itemFolderId: string | undefined, selectedFolderI
 
   return findParentFolder(EQUIPMENT_FOLDERS, itemFolderId);
 };
+
+export const getFolderPath = (folderId: string | null, folders: EquipmentFolder[]): string => {
+  if (!folderId) return 'All folders';
+
+  for (const folder of folders) {
+    if (folder.id === folderId) {
+      return folder.name;
+    }
+    if (folder.subfolders) {
+      for (const subfolder of folder.subfolders) {
+        if (subfolder.id === folderId) {
+          return `${folder.name} → ${subfolder.name}`;
+        }
+      }
+    }
+  }
+  return 'All folders';
+};

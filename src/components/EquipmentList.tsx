@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
 import { isItemInFolder } from "@/utils/folderUtils";
+import { getFolderPath } from "@/utils/folderUtils";
 
 const MOCK_EQUIPMENT: Equipment[] = [
   {
@@ -160,9 +161,7 @@ export function EquipmentList() {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
-                {selectedFolder 
-                  ? EQUIPMENT_FOLDERS.find(f => f.id === selectedFolder)?.name || 'All folders'
-                  : 'All folders'}
+                {getFolderPath(selectedFolder, EQUIPMENT_FOLDERS)}
                 <ChevronDown className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
