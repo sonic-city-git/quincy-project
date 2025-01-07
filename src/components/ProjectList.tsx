@@ -61,8 +61,7 @@ export function ProjectList() {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent whitespace-nowrap">
-              <TableHead className="w-8"></TableHead>
-              <TableHead className="pl-0">Project</TableHead>
+              <TableHead className="pl-4">Project</TableHead>
               <TableHead>Owner</TableHead>
               <TableHead>Last Invoiced</TableHead>
               <TableHead>Gig Price</TableHead>
@@ -76,16 +75,15 @@ export function ProjectList() {
                 className="hover:bg-zinc-800/50 whitespace-nowrap cursor-pointer"
                 onClick={() => navigate(`/projects/${project.id}`)}
               >
-                <TableCell className="w-8">
+                <TableCell className="pl-4">
                   <div 
-                    className="w-3 h-3 rounded-full"
+                    className="inline-block px-3 py-1 rounded"
                     {...getColorStyle(project.color, index)}
-                  />
-                </TableCell>
-                <TableCell className="pl-0">
-                  <span className="text-white">
-                    {project.name}
-                  </span>
+                  >
+                    <span className="text-white font-medium">
+                      {project.name}
+                    </span>
+                  </div>
                 </TableCell>
                 <TableCell className="text-zinc-300">
                   {project.owner}
