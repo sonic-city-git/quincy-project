@@ -41,36 +41,38 @@ export function ProjectList() {
         </Button>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="w-12"></TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Last Invoiced</TableHead>
-            <TableHead>Owner</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {MOCK_PROJECTS.map((project) => (
-            <TableRow key={project.name} className="hover:bg-zinc-800/50">
-              <TableCell className="w-12">
-                <div className="w-4 h-4 rounded border border-zinc-700"></div>
-              </TableCell>
-              <TableCell>
-                <div className={`${project.color} text-white px-4 py-2 rounded`}>
-                  {project.name}
-                </div>
-              </TableCell>
-              <TableCell className="text-zinc-300">{project.lastInvoiced}</TableCell>
-              <TableCell>
-                <div className={`${project.color} text-white px-4 py-2 rounded`}>
-                  {project.owner}
-                </div>
-              </TableCell>
+      <div className="bg-zinc-900 rounded-md">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="w-12"></TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Last Invoiced</TableHead>
+              <TableHead>Owner</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {MOCK_PROJECTS.map((project) => (
+              <TableRow key={project.name} className="hover:bg-zinc-800/50">
+                <TableCell className="w-12">
+                  <div className="w-4 h-4 rounded border border-zinc-700"></div>
+                </TableCell>
+                <TableCell>
+                  <div className={`${project.color} text-white px-4 py-2 rounded`}>
+                    {project.name}
+                  </div>
+                </TableCell>
+                <TableCell className="text-zinc-300">{project.lastInvoiced}</TableCell>
+                <TableCell>
+                  <div className={`${project.color} text-white px-4 py-2 rounded`}>
+                    {project.owner}
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }
