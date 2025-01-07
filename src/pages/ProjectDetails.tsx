@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { differenceInDays, parse } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -89,8 +89,7 @@ const ProjectDetails = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card>
-            <CardHeader />
-            <CardContent className="p-4 pt-0 space-y-2">
+            <CardContent className="p-4 space-y-2">
               <div>
                 <p className="text-sm text-muted-foreground">Owner</p>
                 <p className="text-base">{project.owner}</p>
@@ -102,8 +101,7 @@ const ProjectDetails = () => {
           </Card>
 
           <Card>
-            <CardHeader />
-            <CardContent className="p-4 pt-0 space-y-2">
+            <CardContent className="p-4 space-y-2">
               <div>
                 <p className="text-sm text-muted-foreground">Gig Price</p>
                 <p className="text-base">{project.gigPrice}</p>
