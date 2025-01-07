@@ -72,9 +72,6 @@ export function CrewList() {
                 EDIT
               </Button>
             </div>
-            <Button variant="ghost" size="sm">
-              Adjust view
-            </Button>
           </div>
         </div>
 
