@@ -1,26 +1,15 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useState, useCallback, useRef } from "react";
-import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
 import { addDays, subDays } from "date-fns";
-import { AddEquipmentDialog } from "./equipment/AddEquipmentDialog";
-import { EditEquipmentDialog } from "./equipment/EditEquipmentDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Equipment } from "@/types/equipment";
 import { EQUIPMENT_FOLDERS } from "@/data/equipmentFolders";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { EquipmentSearch } from "./equipment/EquipmentSearch";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
 import { isItemInFolder } from "@/utils/folderUtils";
-import { getFolderPath } from "@/utils/folderUtils";
+import { AddEquipmentDialog } from "./equipment/AddEquipmentDialog";
+import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
+import { EquipmentFolderSelect } from "./equipment/EquipmentFolderSelect";
+import { EquipmentTable } from "./equipment/EquipmentTable";
+import { EquipmentSelectionHeader } from "./equipment/EquipmentSelectionHeader";
 
 const MOCK_EQUIPMENT: Equipment[] = [
   {
@@ -147,111 +136,34 @@ export function EquipmentList() {
       name: item.name
     }));
 
-  const renderFolderStructure = (folders: typeof EQUIPMENT_FOLDERS, level = 0) => {
-    return folders.map(folder => (
-      <div key={folder.id}>
-        <DropdownMenuItem
-          className={`cursor-pointer ${level > 0 ? 'italic pl-4' : 'font-bold'}`}
-          onSelect={() => handleFolderSelect(folder.id)}
-        >
-          {folder.name}
-        </DropdownMenuItem>
-        {folder.subfolders && renderFolderStructure(folder.subfolders, level + 1)}
-      </div>
-    ));
-  };
-
   return (
     <div className="space-y-6" ref={containerRef}>
       <div className="flex justify-between items-center gap-4">
         <div className="flex items-center gap-4 flex-1">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="gap-2">
-                {getFolderPath(selectedFolder, EQUIPMENT_FOLDERS)}
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <ScrollArea className="h-[400px]" type="hover">
-                <DropdownMenuItem
-                  className="cursor-pointer"
-                  onSelect={() => handleFolderSelect(null)}
-                >
-                  All folders
-                </DropdownMenuItem>
-                {renderFolderStructure(EQUIPMENT_FOLDERS)}
-              </ScrollArea>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <EquipmentFolderSelect
+            selectedFolder={selectedFolder}
+            onFolderSelect={handleFolderSelect}
+          />
         </div>
         <AddEquipmentDialog onAddEquipment={handleAddEquipment} />
       </div>
 
       <div className="bg-zinc-900 rounded-md">
-        <div className="h-[48px] border-b border-zinc-800/50">
-          <div className="h-full flex items-center justify-between px-2">
-            <div className="flex items-center gap-2">
-              <span className={`text-sm text-zinc-400 transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0' : 'opacity-100'}`}>
-                {selectedItems.length} items selected
-              </span>
-              {selectedItems.length === 1 && (
-                <EditEquipmentDialog 
-                  equipment={equipment.find(item => item.id === selectedItems[0])!}
-                  onEditEquipment={handleEditEquipment}
-                  onDeleteEquipment={handleDeleteEquipment}
-                />
-              )}
-            </div>
-            <div className="w-64">
-              <EquipmentSearch 
-                searchTerm={searchTerm}
-                onSearchChange={setSearchTerm}
-              />
-            </div>
-          </div>
-        </div>
+        <EquipmentSelectionHeader
+          selectedItems={selectedItems}
+          equipment={equipment}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          onEditEquipment={handleEditEquipment}
+          onDeleteEquipment={handleDeleteEquipment}
+        />
 
-        <ScrollArea className="h-[400px] w-full">
-          <Table>
-            <TableHeader>
-              <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
-                <TableHead className="w-12">
-                  <Checkbox 
-                    checked={selectedItems.length === filteredEquipment.length && filteredEquipment.length > 0}
-                    onCheckedChange={handleSelectAll}
-                  />
-                </TableHead>
-                <TableHead>Code</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Stock</TableHead>
-                <TableHead>Price</TableHead>
-                <TableHead>Weight (kg)</TableHead>
-                <TableHead>Book value</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredEquipment.map((item) => (
-                <TableRow key={item.id} className="hover:bg-zinc-800/50 border-b border-zinc-800/50">
-                  <TableCell className="w-12">
-                    <Checkbox 
-                      checked={selectedItems.includes(item.id)}
-                      onCheckedChange={() => handleItemSelect(item.id)}
-                    />
-                  </TableCell>
-                  <TableCell className="font-mono whitespace-nowrap overflow-hidden text-ellipsis">{item.code}</TableCell>
-                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.name}</TableCell>
-                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.stock}</TableCell>
-                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.price}</TableCell>
-                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.weight} kg</TableCell>
-                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">
-                    {(parseFloat(item.value.replace(',', '')) * item.stock).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </ScrollArea>
+        <EquipmentTable
+          equipment={filteredEquipment}
+          selectedItems={selectedItems}
+          onSelectAll={handleSelectAll}
+          onItemSelect={handleItemSelect}
+        />
 
         <EquipmentTimeline
           startDate={startDate}
