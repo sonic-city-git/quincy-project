@@ -1,4 +1,4 @@
-import { format, eachDayOfInterval, addDays, getWeek, isWeekend } from "date-fns";
+import { format, eachDayOfInterval, addDays, getWeek, isWeekend, startOfWeek } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -27,12 +27,15 @@ interface CrewTimelineProps {
 }
 
 export function CrewTimeline({ 
-  startDate, 
+  startDate: providedStartDate, 
   daysToShow, 
   selectedCrew,
   onPreviousPeriod,
   onNextPeriod
 }: CrewTimelineProps) {
+  // Ensure the start date is always a Monday
+  const startDate = startOfWeek(providedStartDate, { weekStartsOn: 1 });
+  
   const days = eachDayOfInterval({
     start: startDate,
     end: addDays(startDate, daysToShow - 1)
