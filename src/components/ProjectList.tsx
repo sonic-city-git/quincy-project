@@ -4,6 +4,14 @@ import { Copy, Plus, Trash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useProjects } from "@/hooks/useProjects";
 
+const DEFAULT_COLORS = [
+  '#9b87f5', // Primary Purple
+  '#D946EF', // Magenta Pink
+  '#F97316', // Bright Orange
+  '#0EA5E9', // Ocean Blue
+  '#8B5CF6', // Vivid Purple
+];
+
 export function ProjectList() {
   const navigate = useNavigate();
   const { projects, loading } = useProjects();
@@ -42,7 +50,7 @@ export function ProjectList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {projects.map((project) => (
+            {projects.map((project, index) => (
               <TableRow 
                 key={project.id} 
                 className="hover:bg-zinc-800/50 whitespace-nowrap cursor-pointer"
@@ -53,9 +61,9 @@ export function ProjectList() {
                 </TableCell>
                 <TableCell className="pl-0">
                   <span 
-                    className="inline-block px-3 py-1 rounded"
+                    className="inline-block px-3 py-1 rounded font-medium"
                     style={{ 
-                      backgroundColor: project.color,
+                      backgroundColor: project.color || DEFAULT_COLORS[index % DEFAULT_COLORS.length],
                       color: '#fff',
                       minWidth: '120px'
                     }}
