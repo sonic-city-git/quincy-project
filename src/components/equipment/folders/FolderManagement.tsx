@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,22 +15,58 @@ interface FolderItemState {
   [key: string]: boolean;
 }
 
-export function FolderManagement({ folders, onClose }: FolderManagementProps) {
+export function FolderManagement({ folders: initialFolders, onClose }: FolderManagementProps) {
   const [newFolderName, setNewFolderName] = useState("");
   const [expandedFolders, setExpandedFolders] = useState<FolderItemState>({});
+  const [folders, setFolders] = useState<Folder[]>(initialFolders);
   const { toast } = useToast();
+
+  useEffect(() => {
+    fetchFolders();
+
+    const channel = supabase
+      .channel('folders_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'folders'
+        },
+        () => {
+          fetchFolders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchFolders = async () => {
+    const { data, error } = await supabase
+      .from('folders')
+      .select('*')
+      .order('created_at');
+
+    if (error) {
+      console.error('Error fetching folders:', error);
+      return;
+    }
+
+    setFolders(data);
+  };
 
   const handleAddFolder = async () => {
     if (!newFolderName.trim()) return;
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('folders')
         .insert([{ 
           name: newFolderName,
-        }])
-        .select()
-        .single();
+        }]);
 
       if (error) throw error;
 
@@ -111,14 +147,12 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
     if (!newFolderName.trim()) return;
 
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('folders')
         .insert([{ 
           name: newFolderName,
           parent_id: parentId 
-        }])
-        .select()
-        .single();
+        }]);
 
       if (error) throw error;
 
