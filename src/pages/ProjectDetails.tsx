@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MOCK_CREW } from "@/data/mockCrew";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ProjectCalendar } from "@/components/events/ProjectCalendar";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const MOCK_PROJECTS = {
   "sondre-justad": {
@@ -42,9 +43,34 @@ const MOCK_PROJECTS = {
 const ProjectDetails = () => {
   const { projectId } = useParams();
   const project = projectId ? MOCK_PROJECTS[projectId as keyof typeof MOCK_PROJECTS] : null;
-  const sonicCityCrewMembers = MOCK_CREW.filter(crew => crew.folder === "Sonic City");
+  const [sonicCityCrewMembers, setSonicCityCrewMembers] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedOwner, setSelectedOwner] = useState(project?.owner || "");
   const [selectedCustomer, setSelectedCustomer] = useState(project?.customer || "");
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchSonicCityCrewMembers = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('crew_members')
+          .select('id, name')
+          .eq('folder', 'Sonic City');
+
+        if (error) throw error;
+
+        setSonicCityCrewMembers(data || []);
+      } catch (error) {
+        console.error('Error fetching Sonic City crew members:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch crew members",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchSonicCityCrewMembers();
+  }, [toast]);
 
   if (!project) {
     return (
