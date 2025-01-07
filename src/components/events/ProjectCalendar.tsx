@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { AddEventDialog } from "./AddEventDialog";
 import { CalendarEvent, EventType } from "@/types/events";
+import { DayProps } from "react-day-picker";
 
 const EVENT_COLORS: Record<EventType, string> = {
   "Show": "bg-green-500",
@@ -52,7 +53,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
           }
         }}
         components={{
-          Day: ({ date: dayDate, ...props }) => {
+          Day: ({ date: dayDate, ...props }: DayProps) => {
             const event = events.find(
               (e) => e.date.toDateString() === dayDate.toDateString()
             );
@@ -60,7 +61,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
             return (
               <div 
                 {...props}
-                className={`${props.className} ${event ? EVENT_COLORS[event.type] : ''}`}
+                className={`${props.className || ''} ${event ? EVENT_COLORS[event.type] : ''}`}
               />
             );
           },
