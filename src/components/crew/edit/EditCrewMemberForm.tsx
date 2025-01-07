@@ -11,6 +11,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { CrewMember } from "@/types/crew";
 import { RoleSelector } from "./RoleSelector";
+import { DeleteCrewMemberButton } from "./DeleteCrewMemberButton";
 
 interface EditCrewMemberFormProps {
   crewMember: CrewMember;
