@@ -65,7 +65,7 @@ export function EquipmentList() {
 
       <div className="bg-zinc-900 rounded-md">
         {selectedItems.length > 0 && (
-          <div className="p-2 border-b border-zinc-800 flex items-center justify-between">
+          <div className="p-2 border-b border-zinc-800/50 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm text-zinc-400">{selectedItems.length} items selected</span>
               <Button variant="ghost" size="sm" className="gap-2">
@@ -81,7 +81,7 @@ export function EquipmentList() {
 
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent">
+            <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
               <TableHead className="w-12">
                 <Checkbox />
               </TableHead>
@@ -96,20 +96,20 @@ export function EquipmentList() {
           </TableHeader>
           <TableBody>
             {MOCK_EQUIPMENT.map((equipment) => (
-              <TableRow key={equipment.id} className="hover:bg-zinc-800/50">
-                <TableCell>
+              <TableRow key={equipment.id} className="hover:bg-zinc-800/50 border-b border-zinc-800/50">
+                <TableCell className="w-12">
                   <Checkbox 
                     checked={selectedItems.includes(equipment.id)}
                     onCheckedChange={() => handleItemSelect(equipment.id)}
                   />
                 </TableCell>
-                <TableCell className="font-mono">{equipment.code}</TableCell>
-                <TableCell>{equipment.name}</TableCell>
-                <TableCell>kr {equipment.rentalPrice}</TableCell>
-                <TableCell>kr {equipment.bookValue}</TableCell>
-                <TableCell>{equipment.id}</TableCell>
-                <TableCell>{equipment.type}</TableCell>
-                <TableCell>{equipment.weight} kg</TableCell>
+                <TableCell className="font-mono whitespace-nowrap overflow-hidden text-ellipsis">{equipment.code}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.name}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">kr {equipment.rentalPrice}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">kr {equipment.bookValue}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.id}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.type}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.weight} kg</TableCell>
               </TableRow>
             ))}
           </TableBody>
