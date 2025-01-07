@@ -63,8 +63,8 @@ export function CrewList() {
       <CrewHeader selectedCount={selectedItems.length} />
 
       <div className="bg-zinc-900 rounded-md">
-        <div className="h-[48px]">
-          <div className={`p-2 border-b border-zinc-800/50 flex items-center justify-between ${selectedItems.length === 0 ? 'invisible' : 'visible'}`}>
+        <div className="h-[48px] border-b border-zinc-800/50">
+          <div className={`h-full flex items-center justify-between px-2 transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             <div className="flex items-center gap-2">
               <span className="text-sm text-zinc-400">{selectedItems.length} items selected</span>
               <Button variant="ghost" size="sm" className="gap-2">
