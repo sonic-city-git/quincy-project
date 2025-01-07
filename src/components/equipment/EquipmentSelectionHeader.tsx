@@ -20,7 +20,7 @@ export function EquipmentSelectionHeader({
   onDeleteEquipment
 }: EquipmentSelectionHeaderProps) {
   return (
-    <div className="h-[48px] border-b border-zinc-800/50">
+    <div className="h-[40px] border-b border-zinc-800/50">
       <div className="h-full flex items-center justify-between px-2">
         <div className="flex items-center gap-2">
           <span className={`text-sm text-zinc-400 transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0' : 'opacity-100'}`}>

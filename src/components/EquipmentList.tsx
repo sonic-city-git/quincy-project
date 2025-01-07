@@ -155,9 +155,9 @@ export function EquipmentList() {
   }
 
   return (
-    <div className="space-y-6" ref={containerRef}>
-      <div className="flex justify-between items-center gap-4">
-        <div className="flex items-center gap-4 flex-1">
+    <div className="space-y-4" ref={containerRef}>
+      <div className="flex justify-between items-center gap-2">
+        <div className="flex items-center gap-2 flex-1">
           <EquipmentFolderSelect
             selectedFolder={selectedFolder}
             onFolderSelect={handleFolderSelect}
