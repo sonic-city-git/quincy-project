@@ -6,14 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-interface TripletexCustomer {
-  id: number;
-  name: string;
-  email?: string;
-  phoneNumber?: string;
-  customerNumber?: string;
-}
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -29,25 +21,13 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Tripletex API credentials
-    const consumerToken = Deno.env.get('TRIPLETEX_CONSUMER_TOKEN')
-    const employeeToken = Deno.env.get('TRIPLETEX_EMPLOYEE_TOKEN')
-
-    if (!consumerToken || !employeeToken) {
-      throw new Error('Missing Tripletex API credentials')
-    }
-
     console.log('Fetching customers from Tripletex...')
     
-    // Create session token by combining consumer and employee tokens
-    const sessionToken = btoa(`${consumerToken}:${employeeToken}`)
-    
-    // Fetch customers from Tripletex with apikey both as URL parameter and header
-    const tripletexResponse = await fetch(`https://api.tripletex.io/v2/customer?apikey=${consumerToken}`, {
+    // Fetch customers from Tripletex with the correct endpoint
+    const tripletexResponse = await fetch('https://tripletex.no/v2/customer', {
       headers: {
-        'Authorization': `Basic ${sessionToken}`,
+        'Authorization': `Basic MDpleUowYjJ0bGJrbGtJam8xTnpVM056UTBPVElzSW5SdmEyVnVJam9pTVRJM01XVmhOV0l0Tm1SalpDMDBNalUwTFdFNU9HRXRPVGRtWm1Sa1l6YzRaR1pqSW4w`,
         'Content-Type': 'application/json',
-        'apikey': consumerToken
       },
     })
 
@@ -57,7 +37,7 @@ serve(async (req) => {
     }
 
     const tripletexData = await tripletexResponse.json()
-    const customers: TripletexCustomer[] = tripletexData.values || []
+    const customers = tripletexData.values || []
 
     console.log(`Fetched ${customers.length} customers from Tripletex`)
 
