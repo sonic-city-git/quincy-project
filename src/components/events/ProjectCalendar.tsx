@@ -50,18 +50,15 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
         className={className}
         modifiersClassNames={{
           selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        }}
-        modifierStyles={{}}
-        styles={{
-          day_today: { fontWeight: 'bold' }
+          today: "font-bold"
         }}
         components={{
-          Day: ({ date: dayDate, ...props }) => {
-            const customClassName = getDateClassNames(dayDate);
+          Day: ({ day, ...props }) => {
+            const customClassName = getDateClassNames(day);
             return (
               <button
                 {...props}
-                className={`${props.className} ${customClassName || ''}`}
+                className={`${props.className || ''} ${customClassName || ''}`}
               />
             );
           },
