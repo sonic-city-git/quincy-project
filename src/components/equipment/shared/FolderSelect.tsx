@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -6,8 +7,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { EQUIPMENT_FOLDERS } from "@/data/equipmentFolders";
-import { getFolderPath } from "@/utils/folderUtils";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import { Folder } from "@/types/folders";
+import { FolderManagement } from "../folders/FolderManagement";
 
 interface FolderSelectProps {
   selectedFolder: string | null;
@@ -22,37 +33,112 @@ export function FolderSelect({
   required = false,
   showAllFolders = true,
 }: FolderSelectProps) {
-  const renderFolderOptions = (folders: typeof EQUIPMENT_FOLDERS, level = 0) => {
-    return folders.map((folder) => (
-      <div key={folder.id}>
-        <SelectItem
-          value={folder.id}
-          className={`${level > 0 ? "ml-4 italic" : "font-bold"}`}
-        >
-          {folder.name}
-        </SelectItem>
-        {folder.subfolders && renderFolderOptions(folder.subfolders, level + 1)}
-      </div>
-    ));
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [isManaging, setIsManaging] = useState(false);
+
+  useEffect(() => {
+    fetchFolders();
+
+    const channel = supabase
+      .channel('folders_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'folders'
+        },
+        () => {
+          fetchFolders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchFolders = async () => {
+    const { data, error } = await supabase
+      .from('folders')
+      .select('*')
+      .order('created_at');
+
+    if (error) {
+      console.error('Error fetching folders:', error);
+      return;
+    }
+
+    setFolders(data);
+  };
+
+  const getFolderPath = (folderId: string | null): string => {
+    if (!folderId) return 'All folders';
+
+    const folder = folders.find(f => f.id === folderId);
+    if (!folder) return 'All folders';
+
+    if (folder.parent_id) {
+      const parent = folders.find(f => f.id === folder.parent_id);
+      return parent ? `${parent.name} -> ${folder.name}` : folder.name;
+    }
+
+    return folder.name;
+  };
+
+  const renderFolderOptions = (parentId: string | null = null, level = 0) => {
+    return folders
+      .filter(folder => folder.parent_id === parentId)
+      .map(folder => (
+        <div key={folder.id}>
+          <SelectItem
+            value={folder.id}
+            className={`${level > 0 ? "ml-4 italic" : "font-bold"}`}
+          >
+            {folder.name}
+          </SelectItem>
+          {renderFolderOptions(folder.id, level + 1)}
+        </div>
+      ));
   };
 
   return (
-    <Select
-      value={selectedFolder || undefined}
-      onValueChange={(value) => onFolderSelect(value)}
-      required={required}
-    >
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder="Select folder">
-          {getFolderPath(selectedFolder, EQUIPMENT_FOLDERS)}
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent className="h-[400px]">
-        <ScrollArea className="h-full w-full rounded-md" type="hover">
-          {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
-          {renderFolderOptions(EQUIPMENT_FOLDERS)}
-        </ScrollArea>
-      </SelectContent>
-    </Select>
+    <div className="flex items-center gap-2">
+      <Select
+        value={selectedFolder || undefined}
+        onValueChange={(value) => onFolderSelect(value)}
+        required={required}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select folder">
+            {getFolderPath(selectedFolder)}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <ScrollArea className="h-[400px]">
+            {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
+            {renderFolderOptions()}
+          </ScrollArea>
+        </SelectContent>
+      </Select>
+
+      <Dialog open={isManaging} onOpenChange={setIsManaging}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="icon">
+            <Settings className="h-4 w-4" />
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Manage Folders</DialogTitle>
+          </DialogHeader>
+          <FolderManagement
+            folders={folders}
+            onClose={() => setIsManaging(false)}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
