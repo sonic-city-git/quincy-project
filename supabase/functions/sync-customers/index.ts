@@ -30,7 +30,7 @@ serve(async (req) => {
     )
 
     // Get the Tripletex tokens from Supabase secrets
-    const sessionToken = "0:127ea5b-6dcd-4254-a98a-97ffddc78dfc"
+    const sessionToken = "MDpleUowYjJ0bGJrbGtJam8xTnpVM056UTBPVElzSW5SdmEyVnVJam9pTVRJM01XVmhOV0l0Tm1SalpDMDBNalUwTFdFNU9HRXRPVGRtWm1Sa1l6YzRaR1pqSW4w"
     const consumerToken = Deno.env.get('TRIPLETEX_CONSUMER_TOKEN')
     
     if (!sessionToken || !consumerToken) {
@@ -40,7 +40,7 @@ serve(async (req) => {
     console.log('Fetching customers from Tripletex...')
     
     const headers = {
-      'Authorization': `Basic ${btoa(`0:${sessionToken}`)}`,
+      'Authorization': `0:${sessionToken}`,
       'consumerToken': consumerToken,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
