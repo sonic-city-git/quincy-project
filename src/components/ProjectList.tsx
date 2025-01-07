@@ -41,7 +41,7 @@ export function ProjectList() {
           selectedOwner={selectedOwner}
           onOwnerSelect={setSelectedOwner}
         />
-        <ProjectActions />
+        <ProjectActions selectedItems={selectedItems} />
       </div>
       <ProjectTable 
         projects={filteredProjects} 
