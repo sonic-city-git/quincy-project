@@ -43,19 +43,22 @@ export function OwnerSelect({ projectId, initialOwner }: OwnerSelectProps) {
         throw new Error('Selected crew member not found');
       }
 
-      const { error } = await supabase
-        .from('projects')
-        .update({ owner_id: crewMember.id })
-        .eq('id', projectId);
+      // Only update in Supabase if we have a valid projectId
+      if (projectId && projectId.length > 0) {
+        const { error } = await supabase
+          .from('projects')
+          .update({ owner_id: crewMember.id })
+          .eq('id', projectId);
 
-      if (error) throw error;
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Project owner updated successfully",
+        });
+      }
 
       setSelectedOwner(newOwnerName);
-      
-      toast({
-        title: "Success",
-        description: "Project owner updated successfully",
-      });
     } catch (error) {
       console.error('Error updating project owner:', error);
       toast({
