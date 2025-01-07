@@ -79,7 +79,7 @@ export function CrewTimeline({
           {days.map((day) => (
             <div 
               key={`date-${day.toISOString()}`} 
-              className="text-xs text-zinc-400"
+              className="text-xs text-zinc-400 text-center"
             >
               {format(day, 'dd')}
             </div>
@@ -89,7 +89,7 @@ export function CrewTimeline({
           {days.map((day) => (
             <div 
               key={`weekday-${day.toISOString()}`} 
-              className={`text-xs ${isWeekend(day) ? 'text-red-400/70' : 'text-zinc-400'}`}
+              className={`text-xs ${isWeekend(day) ? 'text-red-400/70' : 'text-zinc-400'} text-center`}
             >
               {format(day, 'EEEEE')}
             </div>
