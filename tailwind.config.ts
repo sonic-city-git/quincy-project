@@ -18,6 +18,9 @@ export default {
       }
     },
     extend: {
+      width: {
+        'sidebar': '16rem', // Add fixed sidebar width
+      },
       gridTemplateColumns: {
         '14': 'repeat(14, minmax(0, 1fr))',
       },

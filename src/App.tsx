@@ -10,7 +10,7 @@ function App() {
     <Router>
       <div className="flex min-h-screen">
         <Sidebar />
-        <main className="flex-1">
+        <main className="flex-1 ml-sidebar">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/projects" element={<Index />} />
