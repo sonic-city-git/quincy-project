@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Textarea } from "@/components/ui/textarea";
 
 interface AddEquipmentDialogProps {
   onAddEquipment: (newEquipment: any) => void;
@@ -20,14 +19,14 @@ interface AddEquipmentDialogProps {
 export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) {
   const [open, setOpen] = useState(false);
   const [hasSerialNumbers, setHasSerialNumbers] = useState(false);
-  const [serialNumbers, setSerialNumbers] = useState<string[]>([]);
+  const [serialNumbers, setSerialNumbers] = useState<string[]>(['']);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
     const serialNumbersList = hasSerialNumbers 
-      ? serialNumbers
+      ? serialNumbers.filter(sn => sn.trim() !== '')
       : [];
 
     const newEquipment = {
@@ -43,13 +42,24 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
 
     onAddEquipment(newEquipment);
     setOpen(false);
-    setSerialNumbers([]);
+    setSerialNumbers(['']);
     setHasSerialNumbers(false);
   };
 
-  const handleSerialNumbersChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const numbers = e.target.value.split('\n').filter(n => n.trim() !== '');
-    setSerialNumbers(numbers);
+  const addSerialNumberField = () => {
+    setSerialNumbers(prev => [...prev, '']);
+  };
+
+  const updateSerialNumber = (index: number, value: string) => {
+    setSerialNumbers(prev => {
+      const updated = [...prev];
+      updated[index] = value;
+      return updated;
+    });
+  };
+
+  const removeSerialNumber = (index: number) => {
+    setSerialNumbers(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -128,17 +138,38 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
           </div>
           {hasSerialNumbers ? (
             <div className="grid gap-2">
-              <Label htmlFor="serialNumbers">Serial Numbers (one per line)</Label>
-              <Textarea
-                id="serialNumbers"
-                placeholder="Enter serial numbers..."
-                className="h-[100px]"
-                value={serialNumbers.join('\n')}
-                onChange={handleSerialNumbersChange}
-                required={hasSerialNumbers}
-              />
+              <Label>Serial Numbers</Label>
+              {serialNumbers.map((serialNumber, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    placeholder={`Serial number ${index + 1}`}
+                    value={serialNumber}
+                    onChange={(e) => updateSerialNumber(index, e.target.value)}
+                    required
+                  />
+                  {serialNumbers.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => removeSerialNumber(index)}
+                    >
+                      ✕
+                    </Button>
+                  )}
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addSerialNumberField}
+                className="mt-2"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Serial Number
+              </Button>
               <p className="text-sm text-muted-foreground">
-                Stock: {serialNumbers.length} items
+                Stock: {serialNumbers.filter(sn => sn.trim() !== '').length} items
               </p>
             </div>
           ) : (
