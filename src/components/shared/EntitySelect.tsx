@@ -26,8 +26,8 @@ export function EntitySelect({
       <SelectTrigger className="w-full">
         <SelectValue placeholder={isLoading ? `Loading ${placeholder}...` : `Select ${placeholder}`} />
       </SelectTrigger>
-      <SelectContent>
-        <ScrollArea className="h-[200px] w-full overflow-y-auto" type="hover">
+      <SelectContent className="overflow-y-auto">
+        <ScrollArea className="h-[200px] w-full" type="hover">
           <div className="p-1">
             {entities.map((entity) => (
               <SelectItem 
