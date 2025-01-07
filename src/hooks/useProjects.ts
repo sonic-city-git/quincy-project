@@ -18,7 +18,8 @@ export function useProjects() {
             crew_members (
               name
             )
-          `);
+          `)
+          .order('name');  // Add this line to sort by name
 
         if (error) throw error;
 
