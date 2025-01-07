@@ -10,29 +10,23 @@ const MOCK_EQUIPMENT = [
   {
     code: "4U-AIR",
     name: "Peli Air with 4U",
-    rentalPrice: "60.80",
-    bookValue: "0.00",
+    price: "60.80",
+    value: "1,500.00",
     id: "904",
-    type: "Rental",
-    weight: "10.50",
   },
   {
     code: "1xCAT6/230-10M",
     name: "XXX 1xCat6 + 230V 10m",
-    rentalPrice: "0.00",
-    bookValue: "0.00",
+    price: "45.00",
+    value: "800.00",
     id: "2404",
-    type: "Rental",
-    weight: "0.00",
   },
   {
     code: "SCHUKO-3M",
     name: "Schuko 1-3m",
-    rentalPrice: "14.77",
-    bookValue: "1,200.00",
+    price: "14.77",
+    value: "1,200.00",
     id: "1024",
-    type: "Rental",
-    weight: "0.50",
   },
 ];
 
@@ -118,12 +112,9 @@ export function EquipmentList() {
                 />
               </TableHead>
               <TableHead>Code</TableHead>
-              <TableHead>Name (in database)</TableHead>
-              <TableHead>Rental-/Sales price</TableHead>
-              <TableHead>Book value</TableHead>
-              <TableHead>ID</TableHead>
-              <TableHead>Rental/sales</TableHead>
-              <TableHead>Weight</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Price (kr)</TableHead>
+              <TableHead>Value (kr)</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -137,11 +128,8 @@ export function EquipmentList() {
                 </TableCell>
                 <TableCell className="font-mono whitespace-nowrap overflow-hidden text-ellipsis">{equipment.code}</TableCell>
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.name}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">kr {equipment.rentalPrice}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">kr {equipment.bookValue}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.id}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.type}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.weight} kg</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.price}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.value}</TableCell>
               </TableRow>
             ))}
           </TableBody>
