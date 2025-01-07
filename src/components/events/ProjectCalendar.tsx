@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { AddEventDialog } from "./AddEventDialog";
 import { CalendarEvent, EventType } from "@/types/events";
+import { DayProps } from "react-day-picker";
 
 const EVENT_COLORS: Record<EventType, string> = {
   "Show": "bg-green-100 hover:bg-green-200",
@@ -59,7 +60,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
           }
         }}
         components={{
-          Day: ({ date: dayDate, ...props }) => {
+          Day: ({ date: dayDate, ...props }: DayProps) => {
             const customClassName = getDateClassNames(dayDate);
             return (
               <button
