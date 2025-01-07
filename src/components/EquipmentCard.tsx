@@ -25,7 +25,7 @@ export function EquipmentCard({ name, category, status, nextBooking, serialNumbe
   };
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-200">
+    <Card className="hover:shadow-lg transition-shadow duration-200 font-inter">
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
           <span className="text-lg font-semibold">{name}</span>
