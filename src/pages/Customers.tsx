@@ -49,6 +49,7 @@ export function Customers() {
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
               <TableHead>Customer Number</TableHead>
+              <TableHead>Organization Number</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -58,6 +59,7 @@ export function Customers() {
                 <TableCell>{customer.email || "-"}</TableCell>
                 <TableCell>{customer.phone_number || "-"}</TableCell>
                 <TableCell>{customer.customer_number || "-"}</TableCell>
+                <TableCell>{customer.organization_number || "-"}</TableCell>
               </TableRow>
             ))}
           </TableBody>

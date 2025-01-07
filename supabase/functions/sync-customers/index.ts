@@ -12,6 +12,7 @@ interface TripletexCustomer {
   email?: string;
   phoneNumber?: string;
   customerNumber?: string;
+  organizationNumber?: string;
 }
 
 serve(async (req) => {
@@ -46,7 +47,7 @@ serve(async (req) => {
     console.log('Making request to Tripletex API with auth:', base64Auth)
     
     const tripletexResponse = await fetch(
-      'https://tripletex.no/v2/customer?fields=id,name,email,phoneNumber,customerNumber', 
+      'https://tripletex.no/v2/customer?fields=id,name,email,phoneNumber,customerNumber,organizationNumber', 
       {
         method: 'GET',
         headers: headers
@@ -74,6 +75,7 @@ serve(async (req) => {
           email: customer.email,
           phone_number: customer.phoneNumber,
           customer_number: customer.customerNumber,
+          organization_number: customer.organizationNumber,
         }, {
           onConflict: 'tripletex_id'
         })

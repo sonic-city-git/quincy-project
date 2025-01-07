@@ -46,6 +46,7 @@ export type Database = {
           email: string | null
           id: string
           name: string
+          organization_number: string | null
           phone_number: string | null
           tripletex_id: number
           updated_at: string
@@ -56,6 +57,7 @@ export type Database = {
           email?: string | null
           id?: string
           name: string
+          organization_number?: string | null
           phone_number?: string | null
           tripletex_id: number
           updated_at?: string
@@ -66,6 +68,7 @@ export type Database = {
           email?: string | null
           id?: string
           name?: string
+          organization_number?: string | null
           phone_number?: string | null
           tripletex_id?: number
           updated_at?: string
