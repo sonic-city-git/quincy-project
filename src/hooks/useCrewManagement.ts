@@ -42,7 +42,7 @@ export function useCrewManagement() {
 
   const handleAddCrewMember = async (newMember: NewCrewMember) => {
     try {
-      const crewMember: Omit<CrewMember, 'id'> = {
+      const crewMember = {
         name: `${newMember.firstName} ${newMember.lastName}`,
         role: newMember.tags.map(tag => tag.toUpperCase()).join(", "),
         email: newMember.email,
