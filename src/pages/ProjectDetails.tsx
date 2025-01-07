@@ -89,12 +89,12 @@ const ProjectDetails = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card>
-            <CardHeader />
-            <CardContent className="space-y-4">
+            <CardHeader className="p-4" />
+            <CardContent className="p-4 pt-0 space-y-2">
               <div>
                 <p className="text-sm text-muted-foreground">Owner</p>
                 <p className="text-base">{project.owner}</p>
-                <Separator className="my-4" />
+                <Separator className="my-2" />
                 <p className="text-sm text-muted-foreground">Customer</p>
                 <p className="text-base">{project.customer}</p>
               </div>
@@ -102,12 +102,12 @@ const ProjectDetails = () => {
           </Card>
 
           <Card>
-            <CardHeader />
-            <CardContent className="space-y-4">
+            <CardHeader className="p-4" />
+            <CardContent className="p-4 pt-0 space-y-2">
               <div>
                 <p className="text-sm text-muted-foreground">Gig Price</p>
                 <p className="text-base">{project.gigPrice}</p>
-                <Separator className="my-4" />
+                <Separator className="my-2" />
                 <p className="text-sm text-muted-foreground">Yearly Revenue</p>
                 <p className="text-base">{project.yearlyRevenue}</p>
               </div>
