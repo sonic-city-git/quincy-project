@@ -10,6 +10,7 @@ const MOCK_PROJECTS = {
     name: "Sondre Justad",
     lastInvoiced: "28.06.24",
     owner: "Sondre Sandhaug",
+    customer: "Universal Music",
     color: "bg-amber-700",
     gigPrice: "15 000 000kr",
     yearlyRevenue: "180 000 000kr"
@@ -18,6 +19,7 @@ const MOCK_PROJECTS = {
     name: "Briskeby",
     lastInvoiced: "29.09.24",
     owner: "Stian Sagholen",
+    customer: "Sony Music",
     color: "bg-rose-800",
     gigPrice: "12 000 000kr",
     yearlyRevenue: "144 000 000kr"
@@ -26,6 +28,7 @@ const MOCK_PROJECTS = {
     name: "Highasakite",
     lastInvoiced: "28.06.24",
     owner: "Raymond Hellem",
+    customer: "Warner Music",
     color: "bg-blue-700",
     gigPrice: "18 000 000kr",
     yearlyRevenue: "216 000 000kr"
@@ -87,9 +90,14 @@ const ProjectDetails = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card>
             <CardHeader />
-            <CardContent>
-              <p className="text-sm text-muted-foreground">Owner</p>
-              <p className="text-base">{project.owner}</p>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm text-muted-foreground">Owner</p>
+                <p className="text-base">{project.owner}</p>
+                <Separator className="my-4" />
+                <p className="text-sm text-muted-foreground">Customer</p>
+                <p className="text-base">{project.customer}</p>
+              </div>
             </CardContent>
           </Card>
 
