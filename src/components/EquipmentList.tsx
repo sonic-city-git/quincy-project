@@ -89,20 +89,24 @@ export function EquipmentList() {
       </div>
 
       <div className="bg-zinc-900 rounded-md">
-        {selectedItems.length > 0 && (
-          <div className="p-2 border-b border-zinc-800/50 flex items-center justify-between">
+        <div className="h-[48px] border-b border-zinc-800/50">
+          <div className="h-full flex items-center justify-between px-2">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-zinc-400">{selectedItems.length} items selected</span>
-              <Button variant="ghost" size="sm" className="gap-2">
-                <Wrench className="h-4 w-4" />
-                EDIT
-              </Button>
+              <span className={`text-sm text-zinc-400 transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0' : 'opacity-100'}`}>
+                {selectedItems.length} items selected
+              </span>
+              {selectedItems.length === 1 && (
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Wrench className="h-4 w-4" />
+                  EDIT
+                </Button>
+              )}
             </div>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className={`transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0' : 'opacity-100'}`}>
               Adjust view
             </Button>
           </div>
-        )}
+        </div>
 
         <Table>
           <TableHeader>
