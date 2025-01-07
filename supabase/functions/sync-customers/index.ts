@@ -27,13 +27,23 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    // Construct the authorization string
+    const companyId = '0'
+    const sessionToken = 'eyJ0b2tlbklkIjo1NzU3NzQ0OTIsInRva2VuIjoiMTI3MWVhNWItNmRjZC00MjU0LWE5OGEtOTdmZmRkYzc4ZGZjIn0'
+    const authString = `${companyId}:${sessionToken}`
+    
+    // Encode to base64
+    const encoder = new TextEncoder()
+    const data = encoder.encode(authString)
+    const base64Auth = btoa(String.fromCharCode(...new Uint8Array(data)))
+    
     const headers = {
-      'Authorization': 'Basic ' + '0:eyJ0b2tlbklkIjo1NzU3NzQ0OTIsInRva2VuIjoiMTI3MWVhNWItNmRjZC00MjU0LWE5OGEtOTdmZmRkYzc4ZGZjIn0',
+      'Authorization': `Basic ${base64Auth}`,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     }
     
-    console.log('Making request to Tripletex API...')
+    console.log('Making request to Tripletex API with auth:', base64Auth)
     
     const tripletexResponse = await fetch(
       'https://tripletex.no/v2/customer?fields=id,name,email,phoneNumber,customerNumber', 
