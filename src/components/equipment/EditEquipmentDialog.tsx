@@ -11,15 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Wrench, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { EQUIPMENT_FOLDERS, flattenFolders } from "@/data/equipmentFolders";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Equipment } from "@/types/equipment";
+import { FolderSelect } from "./shared/FolderSelect";
 
 interface EditEquipmentDialogProps {
   equipment: Equipment;
@@ -75,8 +68,6 @@ export function EditEquipmentDialog({ equipment, onEditEquipment, onDeleteEquipm
     setSerialNumbers(prev => prev.filter((_, i) => i !== index));
   };
 
-  const allFolders = flattenFolders(EQUIPMENT_FOLDERS);
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -90,25 +81,11 @@ export function EditEquipmentDialog({ equipment, onEditEquipment, onDeleteEquipm
           <DialogTitle>Edit Equipment</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="folder">Folder</Label>
-            <Select
-              value={selectedFolder}
-              onValueChange={setSelectedFolder}
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a folder" />
-              </SelectTrigger>
-              <SelectContent>
-                {allFolders.map((folder) => (
-                  <SelectItem key={folder.id} value={folder.id}>
-                    {folder.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          <FolderSelect
+            selectedFolder={selectedFolder}
+            onFolderChange={setSelectedFolder}
+            required
+          />
           <div className="grid gap-2">
             <Label htmlFor="code">Code</Label>
             <Input
