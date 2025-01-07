@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface OwnerSelectProps {
   projectId: string;
@@ -78,12 +79,14 @@ export function OwnerSelect({ projectId, initialOwner, onOwnerSelect }: OwnerSel
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Select owner" />
         </SelectTrigger>
-        <SelectContent>
-          {sonicCityCrewMembers.map((crew) => (
-            <SelectItem key={crew.id} value={crew.id}>
-              {crew.name}
-            </SelectItem>
-          ))}
+        <SelectContent className="max-h-[200px]">
+          <ScrollArea className="h-[200px]">
+            {sonicCityCrewMembers.map((crew) => (
+              <SelectItem key={crew.id} value={crew.id}>
+                {crew.name}
+              </SelectItem>
+            ))}
+          </ScrollArea>
         </SelectContent>
       </Select>
     </div>

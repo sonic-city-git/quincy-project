@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CustomerSelectProps {
   projectId: string;
@@ -114,15 +115,17 @@ export function CustomerSelect({ projectId, initialCustomer, onCustomerSelect }:
         <SelectTrigger className="w-full">
           <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
         </SelectTrigger>
-        <SelectContent>
-          {customers.map((customer) => (
-            <SelectItem 
-              key={customer.id} 
-              value={customer.id}
-            >
-              {customer.name}
-            </SelectItem>
-          ))}
+        <SelectContent className="max-h-[200px]">
+          <ScrollArea className="h-[200px]">
+            {customers.map((customer) => (
+              <SelectItem 
+                key={customer.id} 
+                value={customer.id}
+              >
+                {customer.name}
+              </SelectItem>
+            ))}
+          </ScrollArea>
         </SelectContent>
       </Select>
     </div>

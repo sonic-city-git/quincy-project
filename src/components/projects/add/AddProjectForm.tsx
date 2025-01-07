@@ -5,6 +5,7 @@ import { OwnerSelect } from "../owner/OwnerSelect";
 import { CustomerSelect } from "../customer/CustomerSelect";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface AddProjectFormProps {
   onSubmit: (project: {
@@ -66,17 +67,21 @@ export function AddProjectForm({ onSubmit }: AddProjectFormProps) {
         />
       </div>
       
-      <OwnerSelect
-        projectId=""
-        initialOwner={selectedOwner}
-        onOwnerSelect={(ownerId) => setSelectedOwner(ownerId)}
-      />
+      <div className="max-h-[300px] overflow-hidden">
+        <OwnerSelect
+          projectId=""
+          initialOwner={selectedOwner}
+          onOwnerSelect={(ownerId) => setSelectedOwner(ownerId)}
+        />
+      </div>
 
-      <CustomerSelect
-        projectId=""
-        initialCustomer={selectedCustomer || ""}
-        onCustomerSelect={(customer) => setSelectedCustomer(customer)}
-      />
+      <div className="max-h-[300px] overflow-hidden">
+        <CustomerSelect
+          projectId=""
+          initialCustomer={selectedCustomer || ""}
+          onCustomerSelect={(customer) => setSelectedCustomer(customer)}
+        />
+      </div>
 
       <Button type="submit" className="mt-4">Create project</Button>
     </form>
