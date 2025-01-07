@@ -1,8 +1,7 @@
 import { format, eachDayOfInterval, addDays, getWeek } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-// Mock project assignments - in a real app, this would come from your backend
 const PROJECT_ASSIGNMENTS = {
   "1": [ // Crew member ID
     { startDate: "2024-03-20", endDate: "2024-03-25", projectName: "Project A" },
@@ -60,13 +59,6 @@ export function CrewTimeline({
     <div className="border-t border-zinc-800/50">
       <div className="p-4 flex flex-col items-center gap-2">
         <div className="flex items-center gap-2">
-</lov-replace>
-<lov-search>
-          <Button variant="ghost" size="sm" onClick={onNextPeriod}>
-            <ChevronsRight className="h-4 w-4" />
-          </Button>
-</lov-search>
-<lov-replace>
           <Button variant="ghost" size="sm" onClick={onPreviousPeriod}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -75,9 +67,6 @@ export function CrewTimeline({
           </span>
           <Button variant="ghost" size="sm" onClick={onNextPeriod}>
             <ChevronRight className="h-4 w-4" />
-          </Button>
-          <Button variant="ghost" size="sm" onClick={onNextPeriod}>
-            <ChevronsRight className="h-4 w-4" />
           </Button>
         </div>
         <div className="text-sm text-zinc-400">
