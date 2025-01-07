@@ -11,7 +11,11 @@ export function useProjectDetails(projectId: string | undefined) {
   useEffect(() => {
     const fetchProjectData = async () => {
       try {
-        if (!projectId) return;
+        if (!projectId) {
+          console.log('No project ID provided');
+          setProject(null);
+          return;
+        }
         
         console.log('Fetching project with UUID:', projectId);
 
@@ -46,11 +50,7 @@ export function useProjectDetails(projectId: string | undefined) {
           });
         } else {
           console.log('No project found with UUID:', projectId);
-          toast({
-            title: "Project not found",
-            description: `No project found with ID: ${projectId}`,
-            variant: "destructive",
-          });
+          setProject(null);
         }
       } catch (error) {
         console.error('Error fetching project:', error);
@@ -59,11 +59,13 @@ export function useProjectDetails(projectId: string | undefined) {
           description: "Failed to fetch project details",
           variant: "destructive",
         });
+        setProject(null);
       } finally {
         setLoading(false);
       }
     };
 
+    setLoading(true);
     fetchProjectData();
   }, [projectId, toast]);
 
