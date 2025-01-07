@@ -100,14 +100,15 @@ export function EquipmentTimeline({
         
         {selectedEquipment.length > 0 ? (
           selectedEquipment.map((equipment) => (
-            <div key={equipment.id} className="mb-2">
+            <div key={equipment.id} className="mb-2 group">
               <div className="flex items-center justify-between mb-1">
                 <span className="text-sm font-medium truncate">{equipment.name}</span>
-                <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="sm" className="gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <Edit2 className="h-4 w-4" />
+                  EDIT
                 </Button>
               </div>
-              <div className="grid grid-cols-14 gap-1 group">
+              <div className="grid grid-cols-14 gap-1">
                 {days.map((day) => {
                   const assignments = getAssignmentsForDay(equipment.id, day);
                   const isAssigned = assignments.length > 0;
@@ -115,7 +116,7 @@ export function EquipmentTimeline({
                   return (
                     <div 
                       key={day.toISOString()} 
-                      className="h-3 bg-zinc-800/50 rounded-sm relative group"
+                      className="h-3 bg-zinc-800/50 rounded-sm relative"
                     >
                       {isAssigned && (
                         <div 
