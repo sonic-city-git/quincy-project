@@ -26,7 +26,18 @@ const TAGS = [
   { id: "backline", label: "Backline" },
 ] as const;
 
-export function AddCrewMemberDialog() {
+interface AddCrewMemberDialogProps {
+  onAddCrewMember: (newMember: {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string;
+    folder: string;
+    tags: string[];
+  }) => void;
+}
+
+export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProps) {
   const [open, setOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
 
@@ -35,16 +46,17 @@ export function AddCrewMemberDialog() {
     const formData = new FormData(e.currentTarget);
     
     const newCrewMember = {
-      firstName: formData.get("firstName"),
-      lastName: formData.get("lastName"),
-      phone: formData.get("phone"),
-      email: formData.get("email"),
-      folder: formData.get("folder"),
+      firstName: formData.get("firstName") as string,
+      lastName: formData.get("lastName") as string,
+      phone: formData.get("phone") as string,
+      email: formData.get("email") as string,
+      folder: formData.get("folder") as string,
       tags: selectedTags,
     };
 
-    console.log("New crew member:", newCrewMember);
+    onAddCrewMember(newCrewMember);
     setOpen(false);
+    setSelectedTags([]);
   };
 
   return (

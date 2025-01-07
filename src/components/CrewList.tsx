@@ -7,6 +7,15 @@ import { CrewHeader } from "./crew/CrewHeader";
 import { CrewTimeline } from "./crew/CrewTimeline";
 import { addDays, subDays } from "date-fns";
 
+export interface CrewMember {
+  id: string;
+  name: string;
+  role: string;
+  email: string;
+  phone: string;
+  status: string;
+}
+
 const MOCK_CREW = [
   {
     id: "1",
@@ -37,6 +46,7 @@ const MOCK_CREW = [
 export function CrewList() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(new Date());
+  const [crewMembers, setCrewMembers] = useState<CrewMember[]>(MOCK_CREW);
   const daysToShow = 14;
 
   const handleItemSelect = (id: string) => {
@@ -48,6 +58,26 @@ export function CrewList() {
     });
   };
 
+  const handleAddCrewMember = (newMember: {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string;
+    folder: string;
+    tags: string[];
+  }) => {
+    const crewMember: CrewMember = {
+      id: (crewMembers.length + 1).toString(),
+      name: `${newMember.firstName} ${newMember.lastName}`,
+      role: newMember.tags.join(", "),
+      email: newMember.email,
+      phone: newMember.phone,
+      status: "Available",
+    };
+
+    setCrewMembers((prev) => [...prev, crewMember]);
+  };
+
   const handlePreviousPeriod = () => {
     setStartDate(prev => subDays(prev, daysToShow));
   };
@@ -56,11 +86,11 @@ export function CrewList() {
     setStartDate(prev => addDays(prev, daysToShow));
   };
 
-  const selectedCrew = MOCK_CREW.filter(crew => selectedItems.includes(crew.id));
+  const selectedCrew = crewMembers.filter(crew => selectedItems.includes(crew.id));
 
   return (
     <div className="space-y-6">
-      <CrewHeader selectedCount={selectedItems.length} />
+      <CrewHeader selectedCount={selectedItems.length} onAddCrewMember={handleAddCrewMember} />
 
       <div className="bg-zinc-900 rounded-md">
         <div className="h-[48px] border-b border-zinc-800/50">
@@ -89,7 +119,7 @@ export function CrewList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {MOCK_CREW.map((crew) => (
+            {crewMembers.map((crew) => (
               <TableRow key={crew.id} className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
                 <TableCell className="w-12">
                   <Checkbox 
