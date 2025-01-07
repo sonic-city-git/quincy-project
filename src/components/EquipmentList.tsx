@@ -7,8 +7,17 @@ import { addDays, subDays } from "date-fns";
 import { AddEquipmentDialog } from "./equipment/AddEquipmentDialog";
 import { EditEquipmentDialog } from "./equipment/EditEquipmentDialog";
 import { useToast } from "@/hooks/use-toast";
+import { Equipment } from "@/types/equipment";
+import { EQUIPMENT_FOLDERS } from "@/data/equipmentFolders";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ChevronDown } from "lucide-react";
 
-const MOCK_EQUIPMENT = [
+const MOCK_EQUIPMENT: Equipment[] = [
   {
     code: "4U-AIR",
     name: "Peli Air with 4U",
@@ -17,6 +26,7 @@ const MOCK_EQUIPMENT = [
     weight: "10.50",
     stock: 5,
     id: "904",
+    folderId: "flightcases",
   },
   {
     code: "1xCAT6/230-10M",
@@ -26,6 +36,7 @@ const MOCK_EQUIPMENT = [
     weight: "2.30",
     stock: 12,
     id: "2404",
+    folderId: "cat",
   },
   {
     code: "SCHUKO-3M",
@@ -35,16 +46,18 @@ const MOCK_EQUIPMENT = [
     weight: "0.50",
     stock: 8,
     id: "1024",
+    folderId: "schuko",
   },
 ];
 
 export function EquipmentList() {
-  const [equipment, setEquipment] = useState(MOCK_EQUIPMENT);
+  const [equipment, setEquipment] = useState<Equipment[]>(MOCK_EQUIPMENT);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(new Date());
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleAddEquipment = (newEquipment: any) => {
+  const handleAddEquipment = (newEquipment: Equipment) => {
     setEquipment(prev => [...prev, newEquipment]);
     toast({
       title: "Equipment added",
@@ -52,7 +65,7 @@ export function EquipmentList() {
     });
   };
 
-  const handleEditEquipment = (editedEquipment: any) => {
+  const handleEditEquipment = (editedEquipment: Equipment) => {
     setEquipment(prev => 
       prev.map(item => 
         item.id === editedEquipment.id ? editedEquipment : item
@@ -84,11 +97,16 @@ export function EquipmentList() {
   };
 
   const handleSelectAll = () => {
-    if (selectedItems.length === equipment.length) {
+    if (selectedItems.length === filteredEquipment.length) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(equipment.map(item => item.id));
+      setSelectedItems(filteredEquipment.map(item => item.id));
     }
+  };
+
+  const handleFolderSelect = (folderId: string | null) => {
+    setSelectedFolder(folderId);
+    setSelectedItems([]);
   };
 
   const daysToShow = 14;
@@ -101,6 +119,10 @@ export function EquipmentList() {
     setStartDate(prev => addDays(prev, daysToShow));
   };
 
+  const filteredEquipment = equipment.filter(item => 
+    !selectedFolder || item.folderId === selectedFolder
+  );
+
   const selectedEquipment = equipment
     .filter(item => selectedItems.includes(item.id))
     .map(item => ({
@@ -108,13 +130,43 @@ export function EquipmentList() {
       name: item.name
     }));
 
+  const renderFolderStructure = (folders: typeof EQUIPMENT_FOLDERS, level = 0) => {
+    return folders.map(folder => (
+      <div key={folder.id} style={{ marginLeft: `${level * 16}px` }}>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          onSelect={() => handleFolderSelect(folder.id)}
+        >
+          {folder.name}
+        </DropdownMenuItem>
+        {folder.subfolders && renderFolderStructure(folder.subfolders, level + 1)}
+      </div>
+    ));
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm">
-            All folders
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="gap-2">
+                {selectedFolder 
+                  ? EQUIPMENT_FOLDERS.find(f => f.id === selectedFolder)?.name || 'All folders'
+                  : 'All folders'}
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuItem
+                className="cursor-pointer"
+                onSelect={() => handleFolderSelect(null)}
+              >
+                All folders
+              </DropdownMenuItem>
+              {renderFolderStructure(EQUIPMENT_FOLDERS)}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
         <AddEquipmentDialog onAddEquipment={handleAddEquipment} />
       </div>
@@ -145,7 +197,7 @@ export function EquipmentList() {
             <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
               <TableHead className="w-12">
                 <Checkbox 
-                  checked={selectedItems.length === equipment.length && equipment.length > 0}
+                  checked={selectedItems.length === filteredEquipment.length && filteredEquipment.length > 0}
                   onCheckedChange={handleSelectAll}
                 />
               </TableHead>
@@ -158,7 +210,7 @@ export function EquipmentList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {equipment.map((item) => (
+            {filteredEquipment.map((item) => (
               <TableRow key={item.id} className="hover:bg-zinc-800/50 border-b border-zinc-800/50">
                 <TableCell className="w-12">
                   <Checkbox 

@@ -11,15 +11,25 @@ import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { EQUIPMENT_FOLDERS, flattenFolders } from "@/data/equipmentFolders";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Equipment } from "@/types/equipment";
 
 interface AddEquipmentDialogProps {
-  onAddEquipment: (newEquipment: any) => void;
+  onAddEquipment: (newEquipment: Equipment) => void;
 }
 
 export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) {
   const [open, setOpen] = useState(false);
   const [hasSerialNumbers, setHasSerialNumbers] = useState(false);
   const [serialNumbers, setSerialNumbers] = useState<string[]>(['']);
+  const [selectedFolder, setSelectedFolder] = useState<string>("");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,21 +39,23 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
       ? serialNumbers.filter(sn => sn.trim() !== '')
       : [];
 
-    const newEquipment = {
-      code: formData.get("code"),
-      name: formData.get("name"),
-      price: formData.get("price"),
-      value: formData.get("value"),
-      weight: formData.get("weight"),
+    const newEquipment: Equipment = {
+      code: formData.get("code") as string,
+      name: formData.get("name") as string,
+      price: formData.get("price") as string,
+      value: formData.get("value") as string,
+      weight: formData.get("weight") as string,
       stock: hasSerialNumbers ? serialNumbersList.length : Number(formData.get("stock")),
       serialNumbers: serialNumbersList,
       id: Math.random().toString(36).substr(2, 9),
+      folderId: selectedFolder,
     };
 
     onAddEquipment(newEquipment);
     setOpen(false);
     setSerialNumbers(['']);
     setHasSerialNumbers(false);
+    setSelectedFolder("");
   };
 
   const addSerialNumberField = () => {
@@ -62,6 +74,8 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
     setSerialNumbers(prev => prev.filter((_, i) => i !== index));
   };
 
+  const allFolders = flattenFolders(EQUIPMENT_FOLDERS);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -75,6 +89,25 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
           <DialogTitle>Add Equipment</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="folder">Folder</Label>
+            <Select
+              value={selectedFolder}
+              onValueChange={setSelectedFolder}
+              required
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select a folder" />
+              </SelectTrigger>
+              <SelectContent>
+                {allFolders.map((folder) => (
+                  <SelectItem key={folder.id} value={folder.id}>
+                    {folder.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div className="grid gap-2">
             <Label htmlFor="code">Code</Label>
             <Input
