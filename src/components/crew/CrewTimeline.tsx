@@ -1,4 +1,4 @@
-import { format, eachDayOfInterval, addDays } from "date-fns";
+import { format, eachDayOfInterval, addDays, getWeek } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
@@ -54,7 +54,7 @@ export function CrewTimeline({
 
   return (
     <div className="border-t border-zinc-800/50">
-      <div className="p-4 flex items-center justify-between">
+      <div className="p-4 flex flex-col items-center gap-2">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={onPreviousPeriod}>
             <ChevronsLeft className="h-4 w-4" />
@@ -71,6 +71,9 @@ export function CrewTimeline({
           <Button variant="ghost" size="sm" onClick={onNextPeriod}>
             <ChevronsRight className="h-4 w-4" />
           </Button>
+        </div>
+        <div className="text-sm text-zinc-400">
+          Week {getWeek(startDate)}
         </div>
       </div>
 
