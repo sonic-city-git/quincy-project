@@ -33,14 +33,17 @@ export function FolderSelect({ selectedFolder, onFolderChange, required = false 
         <SelectContent>
           {EQUIPMENT_FOLDERS.map((folder) => (
             <React.Fragment key={folder.id}>
-              <SelectItem value={folder.id}>
+              <SelectItem 
+                value={folder.id}
+                className="font-bold"
+              >
                 {folder.name}
               </SelectItem>
               {folder.subfolders?.map((subfolder) => (
                 <SelectItem 
                   key={subfolder.id} 
                   value={subfolder.id}
-                  className="pl-6"
+                  className="pl-6 italic font-normal"
                 >
                   {subfolder.name}
                 </SelectItem>
