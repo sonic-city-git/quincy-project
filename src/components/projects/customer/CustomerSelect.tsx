@@ -57,7 +57,8 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
       }
 
       console.log('Updating project with customer:', selectedCustomerData.name);
-      if (projectId) {
+      // Only attempt to update if we have a valid projectId
+      if (projectId && projectId.length > 0) {
         const { error: updateError } = await supabase
           .from('projects')
           .update({ customer: selectedCustomerData.name })
@@ -72,7 +73,7 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
       setSelectedCustomer(selectedCustomerData.name);
       console.log('Successfully updated customer to:', selectedCustomerData.name);
       
-      if (projectId) {
+      if (projectId && projectId.length > 0) {
         toast({
           title: "Success",
           description: "Customer updated successfully",
@@ -101,24 +102,27 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
   console.log('Current customer ID:', currentCustomerId, 'Selected customer:', selectedCustomer);
 
   return (
-    <Select 
-      value={currentCustomerId}
-      onValueChange={handleCustomerChange}
-      disabled={isLoading}
-    >
-      <SelectTrigger className="w-full h-10">
-        <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
-      </SelectTrigger>
-      <SelectContent>
-        {customers.map((customer) => (
-          <SelectItem 
-            key={customer.id} 
-            value={customer.id}
-          >
-            {customer.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">Customer</p>
+      <Select 
+        value={currentCustomerId}
+        onValueChange={handleCustomerChange}
+        disabled={isLoading}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
+        </SelectTrigger>
+        <SelectContent>
+          {customers.map((customer) => (
+            <SelectItem 
+              key={customer.id} 
+              value={customer.id}
+            >
+              {customer.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
