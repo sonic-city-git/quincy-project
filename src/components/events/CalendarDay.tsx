@@ -7,7 +7,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-interface CalendarDayProps extends DayProps {
+interface CalendarDayProps extends Omit<DayProps, 'date'> {
+  date: Date;
   event?: CalendarEvent;
   eventColors: Record<EventType, string>;
   onSelect: (date: Date) => void;
@@ -18,6 +19,7 @@ export const CalendarDay = ({
   event,
   eventColors,
   onSelect,
+  className,
   ...props 
 }: CalendarDayProps) => {
   return (
@@ -32,7 +34,7 @@ export const CalendarDay = ({
               cursor-pointer hover:bg-accent 
               transition-colors duration-200
               rounded-md shadow-sm
-              ${props.className || ''} 
+              ${className || ''} 
               ${event ? `${eventColors[event.type]} text-white font-medium` : ''}
             `}
             onClick={() => onSelect(dayDate)}
