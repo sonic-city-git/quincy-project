@@ -12,7 +12,13 @@ export const ProjectHeader = ({ name, lastInvoiced, color }: ProjectHeaderProps)
     <div className="w-full bg-secondary/20 px-6 py-6 mb-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center space-x-4">
-          <div className={`${color} p-4 rounded-lg`}>
+          <div 
+            className="p-4 rounded-lg" 
+            style={{ 
+              background: color,
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
+            }}
+          >
             <h1 className="text-3xl font-bold text-white">{name}</h1>
           </div>
           <div className="flex-1" />
