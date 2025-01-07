@@ -11,6 +11,7 @@ import { Equipment } from "@/types/equipment";
 import { EQUIPMENT_FOLDERS } from "@/data/equipmentFolders";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { EquipmentSearch } from "./equipment/EquipmentSearch";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,6 +60,7 @@ export function EquipmentList() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(new Date());
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -130,9 +132,13 @@ export function EquipmentList() {
     setStartDate(prev => addDays(prev, daysToShow));
   };
 
-  const filteredEquipment = equipment.filter(item => 
-    !selectedFolder || isItemInFolder(item.folderId, selectedFolder)
-  );
+  const filteredEquipment = equipment.filter(item => {
+    const matchesSearch = searchTerm === "" || 
+      item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.code.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesFolder = !selectedFolder || isItemInFolder(item.folderId, selectedFolder);
+    return matchesSearch && matchesFolder;
+  });
 
   const selectedEquipment = equipment
     .filter(item => selectedItems.includes(item.id))
@@ -157,8 +163,8 @@ export function EquipmentList() {
 
   return (
     <div className="space-y-6" ref={containerRef}>
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-4">
+      <div className="flex justify-between items-center gap-4">
+        <div className="flex items-center gap-4 flex-1">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm" className="gap-2">
@@ -178,6 +184,12 @@ export function EquipmentList() {
               </ScrollArea>
             </DropdownMenuContent>
           </DropdownMenu>
+          <div className="flex-1 max-w-md">
+            <EquipmentSearch 
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+            />
+          </div>
         </div>
         <AddEquipmentDialog onAddEquipment={handleAddEquipment} />
       </div>
