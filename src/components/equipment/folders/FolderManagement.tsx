@@ -116,6 +116,7 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
   };
 
   const renderFolderItem = (folder: Folder, level: number = 0) => {
+    // Only show "Add Subfolder" button for top-level folders (level 0)
     const children = folders.filter(f => f.parent_id === folder.id);
     
     return (
@@ -128,18 +129,24 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
         onUpdate={handleUpdateFolder}
         onDelete={handleDeleteFolder}
         onAddSubfolder={handleAddSubfolder}
+        showAddSubfolder={level === 0} // Only show add subfolder button for top-level folders
       >
         {children.length > 0 && children.map(child => renderFolderItem(child, level + 1))}
       </FolderItem>
     );
   };
 
+  // Get only root folders (no parent)
   const rootFolders = folders.filter(f => !f.parent_id);
+
+  // Filter out folders that would be available as parents
+  // Only root folders can be parents
+  const availableParentFolders = folders.filter(f => !f.parent_id);
 
   return (
     <div className="space-y-4">
       <CreateFolderForm
-        folders={folders}
+        folders={availableParentFolders} // Only pass root folders as available parents
         newFolderName={newFolderName}
         selectedParentId={selectedParentId}
         onNameChange={setNewFolderName}

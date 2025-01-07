@@ -12,6 +12,7 @@ interface FolderItemProps {
   onUpdate: (id: string, name: string) => void;
   onDelete: (id: string) => void;
   onAddSubfolder: (parentId: string) => void;
+  showAddSubfolder: boolean;
   children?: React.ReactNode;
 }
 
@@ -23,6 +24,7 @@ export function FolderItem({
   onUpdate,
   onDelete,
   onAddSubfolder,
+  showAddSubfolder,
   children
 }: FolderItemProps) {
   const [isEditing, setIsEditing] = useState(false);
@@ -70,13 +72,15 @@ export function FolderItem({
         ) : (
           <>
             <span className="flex-1">{folder.name}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onAddSubfolder(folder.id)}
-            >
-              Add Subfolder
-            </Button>
+            {showAddSubfolder && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => onAddSubfolder(folder.id)}
+              >
+                Add Subfolder
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="sm"
