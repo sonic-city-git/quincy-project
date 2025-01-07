@@ -39,7 +39,7 @@ export const EditEventDialog = ({
   const handleSave = () => {
     onSave({
       ...event,
-      name,
+      name: name.trim() || type,
       type,
     });
   };
@@ -56,7 +56,7 @@ export const EditEventDialog = ({
             <Input 
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Event name"
+              placeholder="Event name (optional)"
             />
           </div>
           <div className="space-y-2">

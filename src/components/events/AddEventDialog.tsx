@@ -42,7 +42,6 @@ export const AddEventDialog = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // If no event name is provided, use the event type as the name
     const finalEventName = eventName.trim() || eventType;
     onSubmit(finalEventName, eventType);
     setEventName("");
