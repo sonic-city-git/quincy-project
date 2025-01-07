@@ -31,7 +31,7 @@ serve(async (req) => {
 
     console.log('Fetching customers from Tripletex...')
     
-    // Fetch customers from Tripletex with the correct endpoint and auth
+    // Fetch customers from Tripletex
     const tripletexResponse = await fetch('https://tripletex.no/v2/customer', {
       headers: {
         'Authorization': 'Basic MDpleUowYjJ0bGJrbGtJam8xTnpVM056UTBPVElzSW5SdmEyVnVJam9pTVRJM01XVmhOV0l0Tm1SalpDMDBNalUwTFdFNU9HRXRPVGRtWm1Sa1l6YzRaR1pqSW4w',
