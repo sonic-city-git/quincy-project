@@ -15,12 +15,17 @@ interface Customer {
 }
 
 async function fetchCustomers() {
+  console.log('Fetching customers...');
   const { data, error } = await supabase
     .from('customers')
     .select('id, name')
     .order('name');
     
-  if (error) throw error;
+  if (error) {
+    console.error('Error fetching customers:', error);
+    throw error;
+  }
+  console.log('Fetched customers:', data);
   return data;
 }
 
@@ -82,16 +87,20 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">Customer</p>
       <Select 
-        defaultValue={currentCustomerId}
+        value={currentCustomerId}
         onValueChange={handleCustomerChange}
         disabled={isLoading}
       >
-        <SelectTrigger className="w-full bg-background">
+        <SelectTrigger className="w-full bg-zinc-900">
           <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
         </SelectTrigger>
-        <SelectContent className="bg-background">
+        <SelectContent className="bg-zinc-900">
           {customers.map((customer) => (
-            <SelectItem key={customer.id} value={customer.id}>
+            <SelectItem 
+              key={customer.id} 
+              value={customer.id}
+              className="text-white hover:bg-zinc-800"
+            >
               {customer.name}
             </SelectItem>
           ))}
