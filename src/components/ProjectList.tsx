@@ -70,10 +70,8 @@ export function ProjectList() {
                     {project.name}
                   </div>
                 </TableCell>
-                <TableCell>
-                  <div className={`${project.color} text-white px-4 py-2 rounded truncate`}>
-                    {project.owner}
-                  </div>
+                <TableCell className="text-zinc-300">
+                  {project.owner}
                 </TableCell>
                 <TableCell className="text-zinc-300">{project.lastInvoiced}</TableCell>
                 <TableCell className="text-zinc-300">{project.gigPrice}</TableCell>
