@@ -5,6 +5,7 @@ import { differenceInDays, parse } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MOCK_CREW } from "@/data/mockCrew";
 import { useState } from "react";
 
@@ -42,7 +43,6 @@ const ProjectDetails = () => {
   const { projectId } = useParams();
   const project = projectId ? MOCK_PROJECTS[projectId as keyof typeof MOCK_PROJECTS] : null;
   
-  // Get crew members from Sonic City folder
   const sonicCityCrewMembers = MOCK_CREW.filter(crew => crew.folder === "Sonic City");
   
   const [selectedOwner, setSelectedOwner] = useState(project?.owner || "");
@@ -55,19 +55,6 @@ const ProjectDetails = () => {
       </div>
     );
   }
-
-  // Calculate accumulated cost since last invoice
-  const calculateAccumulatedCost = () => {
-    const lastInvoiceDate = parse(project.lastInvoiced, "dd.MM.yy", new Date());
-    const today = new Date();
-    const daysSinceInvoice = differenceInDays(today, lastInvoiceDate);
-    
-    // Extract numeric value from gigPrice (removing "kr" and spaces)
-    const gigPriceValue = parseInt(project.gigPrice.replace(/[^0-9]/g, ''));
-    const dailyRevenue = gigPriceValue / 30; // Assuming monthly revenue
-    
-    return `${Math.round(dailyRevenue * daysSinceInvoice).toLocaleString()} kr`;
-  };
 
   return (
     <div className="min-h-screen">
@@ -85,7 +72,7 @@ const ProjectDetails = () => {
               </div>
               <div className="text-right">
                 <p className="text-sm text-muted-foreground">Accumulated Cost</p>
-                <p className="font-medium">{calculateAccumulatedCost()}</p>
+                <p className="font-medium">{"0 kr"}</p>
               </div>
               <Button>
                 <Send className="mr-2 h-4 w-4" /> Invoice
@@ -96,55 +83,84 @@ const ProjectDetails = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="p-6 space-y-6">
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Owner</p>
-                  <Select value={selectedOwner} onValueChange={setSelectedOwner}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select owner" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {sonicCityCrewMembers.map((crew) => (
-                        <SelectItem key={crew.id} value={crew.name}>
-                          {crew.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Separator className="my-4" />
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Customer</p>
-                  <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select customer" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Universal Music">Universal Music</SelectItem>
-                      <SelectItem value="Sony Music">Sony Music</SelectItem>
-                      <SelectItem value="Warner Music">Warner Music</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="general" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="equipment">Equipment</TabsTrigger>
+            <TabsTrigger value="crew">Crew</TabsTrigger>
+            <TabsTrigger value="financial">Financial</TabsTrigger>
+          </TabsList>
 
-          <Card>
-            <CardContent className="p-4 space-y-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Gig Price</p>
-                <p className="text-base">{project.gigPrice}</p>
-                <Separator className="my-2" />
-                <p className="text-sm text-muted-foreground">Yearly Revenue</p>
-                <p className="text-base">{project.yearlyRevenue}</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          <TabsContent value="general">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Card>
+                <CardContent className="p-6 space-y-6">
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Owner</p>
+                      <Select value={selectedOwner} onValueChange={setSelectedOwner}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select owner" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {sonicCityCrewMembers.map((crew) => (
+                            <SelectItem key={crew.id} value={crew.name}>
+                              {crew.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Separator className="my-4" />
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Customer</p>
+                      <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select customer" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Universal Music">Universal Music</SelectItem>
+                          <SelectItem value="Sony Music">Sony Music</SelectItem>
+                          <SelectItem value="Warner Music">Warner Music</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4 space-y-2">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Gig Price</p>
+                    <p className="text-base">{project.gigPrice}</p>
+                    <Separator className="my-2" />
+                    <p className="text-sm text-muted-foreground">Yearly Revenue</p>
+                    <p className="text-base">{project.yearlyRevenue}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="equipment">
+            <div className="text-sm text-muted-foreground">
+              Equipment content coming soon...
+            </div>
+          </TabsContent>
+
+          <TabsContent value="crew">
+            <div className="text-sm text-muted-foreground">
+              Crew content coming soon...
+            </div>
+          </TabsContent>
+
+          <TabsContent value="financial">
+            <div className="text-sm text-muted-foreground">
+              Financial content coming soon...
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
