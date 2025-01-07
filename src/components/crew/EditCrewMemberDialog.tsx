@@ -15,10 +15,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Package } from "lucide-react";
+import { Package, Trash2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CrewMember } from "@/types/crew";
+import { useToast } from "@/hooks/use-toast";
 
 const TAGS = [
   { id: "foh", label: "FOH" },
@@ -30,11 +31,13 @@ const TAGS = [
 interface EditCrewMemberDialogProps {
   selectedCrew: CrewMember[];
   onEditCrewMember: (editedMember: CrewMember) => void;
+  onDeleteCrewMember: () => void;
 }
 
-export function EditCrewMemberDialog({ selectedCrew, onEditCrewMember }: EditCrewMemberDialogProps) {
+export function EditCrewMemberDialog({ selectedCrew, onEditCrewMember, onDeleteCrewMember }: EditCrewMemberDialogProps) {
   const [open, setOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const { toast } = useToast();
   
   // We only edit one crew member at a time, even if multiple are selected
   const crewMember = selectedCrew[0];
@@ -63,6 +66,15 @@ export function EditCrewMemberDialog({ selectedCrew, onEditCrewMember }: EditCre
 
     onEditCrewMember(editedMember);
     setOpen(false);
+  };
+
+  const handleDelete = () => {
+    onDeleteCrewMember();
+    setOpen(false);
+    toast({
+      title: "Crew members deleted",
+      description: `${selectedCrew.length} crew member(s) have been removed`,
+    });
   };
 
   if (!crewMember) return null;
@@ -157,7 +169,17 @@ export function EditCrewMemberDialog({ selectedCrew, onEditCrewMember }: EditCre
               ))}
             </div>
           </div>
-          <Button type="submit" className="mt-4">Save changes</Button>
+          <div className="flex justify-between gap-2 mt-4">
+            <Button type="submit">Save changes</Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleDelete}
+            >
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </Button>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
