@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus, Package } from "lucide-react";
+import { Plus, Wrench } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
@@ -86,7 +86,7 @@ export function EquipmentList() {
             <div className="flex items-center gap-2">
               <span className="text-sm text-zinc-400">{selectedItems.length} items selected</span>
               <Button variant="ghost" size="sm" className="gap-2">
-                <Package className="h-4 w-4" />
+                <Wrench className="h-4 w-4" />
                 EDIT
               </Button>
             </div>
