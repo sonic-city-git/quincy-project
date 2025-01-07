@@ -17,9 +17,16 @@ export function ProjectList() {
   const { projects, loading } = useProjects();
 
   const getColorStyle = (color: string, index: number) => {
-    // If color starts with 'bg-', it's a Tailwind class
+    // If color starts with 'bg-', extract the actual color value
     if (color?.startsWith('bg-')) {
-      return { className: color };
+      const colorMap: { [key: string]: string } = {
+        'bg-amber-700': '#B45309',
+        'bg-rose-800': '#9F1239',
+        'bg-blue-700': '#1D4ED8',
+        'bg-green-700': '#15803D',
+        'bg-purple-700': '#7E22CE',
+      };
+      return { style: { backgroundColor: colorMap[color] || DEFAULT_COLORS[index % DEFAULT_COLORS.length] } };
     }
     // Otherwise use it as a direct color value, or fall back to default colors
     return { 
@@ -71,12 +78,8 @@ export function ProjectList() {
               >
                 <TableCell className="w-8">
                   <div 
-                    className="w-4 h-4 rounded"
+                    className="w-3 h-3 rounded-full"
                     {...getColorStyle(project.color, index)}
-                    style={{
-                      ...(getColorStyle(project.color, index).style || {}),
-                      border: '1px solid rgba(255, 255, 255, 0.1)'
-                    }}
                   />
                 </TableCell>
                 <TableCell className="pl-0">
