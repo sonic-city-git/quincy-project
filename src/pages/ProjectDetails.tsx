@@ -4,6 +4,9 @@ import { Separator } from "@/components/ui/separator";
 import { differenceInDays, parse } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MOCK_CREW } from "@/data/mockCrew";
+import { useState } from "react";
 
 const MOCK_PROJECTS = {
   "sondre-justad": {
@@ -38,6 +41,12 @@ const MOCK_PROJECTS = {
 const ProjectDetails = () => {
   const { projectId } = useParams();
   const project = projectId ? MOCK_PROJECTS[projectId as keyof typeof MOCK_PROJECTS] : null;
+  
+  // Get crew members from Sonic City folder
+  const sonicCityCrewMembers = MOCK_CREW.filter(crew => crew.folder === "Sonic City");
+  
+  const [selectedOwner, setSelectedOwner] = useState(project?.owner || "");
+  const [selectedCustomer, setSelectedCustomer] = useState(project?.customer || "");
 
   if (!project) {
     return (
@@ -92,10 +101,30 @@ const ProjectDetails = () => {
             <CardContent className="p-4 space-y-2">
               <div>
                 <p className="text-sm text-muted-foreground">Owner</p>
-                <p className="text-base">{project.owner}</p>
+                <Select value={selectedOwner} onValueChange={setSelectedOwner}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select owner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sonicCityCrewMembers.map((crew) => (
+                      <SelectItem key={crew.id} value={crew.name}>
+                        {crew.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <Separator className="my-2" />
                 <p className="text-sm text-muted-foreground">Customer</p>
-                <p className="text-base">{project.customer}</p>
+                <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select customer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Universal Music">Universal Music</SelectItem>
+                    <SelectItem value="Sony Music">Sony Music</SelectItem>
+                    <SelectItem value="Warner Music">Warner Music</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </CardContent>
           </Card>
