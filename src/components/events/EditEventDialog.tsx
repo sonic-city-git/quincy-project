@@ -5,7 +5,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { CalendarEvent } from "@/types/events"
+import { CalendarEvent, EventType } from "@/types/events"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState } from "react"
 
 interface EditEventDialogProps {
   isOpen: boolean;
@@ -20,6 +23,14 @@ export const EditEventDialog = ({
 }: EditEventDialogProps) => {
   if (!event) return null;
 
+  const [name, setName] = useState(event.name);
+  const [type, setType] = useState<EventType>(event.type);
+
+  const handleSave = () => {
+    // TODO: Add save functionality when requested
+    onOpenChange(false);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -27,17 +38,35 @@ export const EditEventDialog = ({
           <DialogTitle>Edit Event</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <div>
-            <span className="font-semibold">Event Name:</span> {event.name}
+          <div className="space-y-2">
+            <span className="font-semibold">Event Name:</span>
+            <Input 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Event name"
+            />
           </div>
-          <div>
-            <span className="font-semibold">Event Type:</span> {event.type}
+          <div className="space-y-2">
+            <span className="font-semibold">Event Type:</span>
+            <Select value={type} onValueChange={(value) => setType(value as EventType)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select event type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Show">Show</SelectItem>
+                <SelectItem value="Preprod">Preprod</SelectItem>
+                <SelectItem value="Travel">Travel</SelectItem>
+                <SelectItem value="INT Storage">INT Storage</SelectItem>
+                <SelectItem value="EXT Storage">EXT Storage</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <span className="font-semibold">Date:</span> {event.date.toLocaleDateString()}
           </div>
-          <div className="flex justify-end">
-            <Button onClick={() => onOpenChange(false)}>Close</Button>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button onClick={handleSave}>Save Changes</Button>
           </div>
         </div>
       </DialogContent>
