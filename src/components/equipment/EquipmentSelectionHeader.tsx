@@ -20,9 +20,9 @@ export function EquipmentSelectionHeader({
   onDeleteEquipment
 }: EquipmentSelectionHeaderProps) {
   return (
-    <div className="h-[48px] border-b border-zinc-800/50">
-      <div className="h-full flex items-center justify-between px-2">
-        <div className="flex items-center gap-2">
+    <div className="h-14 border-b border-zinc-800/50">
+      <div className="h-full flex items-center justify-between px-4">
+        <div className="flex items-center gap-4">
           <span className={`text-sm text-zinc-400 transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0' : 'opacity-100'}`}>
             {selectedItems.length} items selected
           </span>
@@ -34,7 +34,7 @@ export function EquipmentSelectionHeader({
             />
           )}
         </div>
-        <div className="w-64">
+        <div className="w-72">
           <EquipmentSearch 
             searchTerm={searchTerm}
             onSearchChange={onSearchChange}
