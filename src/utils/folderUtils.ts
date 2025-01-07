@@ -35,7 +35,7 @@ export const getFolderPath = (folderId: string | null, folders: EquipmentFolder[
     if (folder.subfolders) {
       for (const subfolder of folder.subfolders) {
         if (subfolder.id === folderId) {
-          return `${folder.name} → ${subfolder.name}`;
+          return `${folder.name} -> ${subfolder.name}`;
         }
       }
     }

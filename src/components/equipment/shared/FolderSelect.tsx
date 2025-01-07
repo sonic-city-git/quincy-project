@@ -16,14 +16,6 @@ interface FolderSelectProps {
 }
 
 export function FolderSelect({ selectedFolder, onFolderChange, required = false }: FolderSelectProps) {
-  const allFolders = EQUIPMENT_FOLDERS.flatMap(folder => [
-    folder,
-    ...(folder.subfolders || []).map(sub => ({
-      ...sub,
-      parentName: folder.name
-    }))
-  ]);
-
   return (
     <div className="grid gap-2">
       <Label htmlFor="folder">Folder</Label>
@@ -38,13 +30,21 @@ export function FolderSelect({ selectedFolder, onFolderChange, required = false 
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          {allFolders.map((folder) => (
-            <SelectItem 
-              key={folder.id} 
-              value={folder.id}
-            >
-              {'parentName' in folder ? `${folder.parentName} → ${folder.name}` : folder.name}
-            </SelectItem>
+          {EQUIPMENT_FOLDERS.map((folder) => (
+            <React.Fragment key={folder.id}>
+              <SelectItem value={folder.id}>
+                {folder.name}
+              </SelectItem>
+              {folder.subfolders?.map((subfolder) => (
+                <SelectItem 
+                  key={subfolder.id} 
+                  value={subfolder.id}
+                  className="pl-6"
+                >
+                  {subfolder.name}
+                </SelectItem>
+              ))}
+            </React.Fragment>
           ))}
         </SelectContent>
       </Select>
