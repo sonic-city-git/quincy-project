@@ -8,24 +8,24 @@ const MOCK_PROJECTS = [
     lastInvoiced: "28.06.24",
     owner: "Sondre Sandhaug",
     color: "bg-amber-700",
-    gigPrice: "15000 NOK",
-    yearlyRevenue: "180000 NOK"
+    gigPrice: "15 000 000kr",
+    yearlyRevenue: "180 000 000kr"
   },
   {
     name: "Briskeby",
     lastInvoiced: "29.09.24",
     owner: "Stian Sagholen",
     color: "bg-rose-800",
-    gigPrice: "12000 NOK",
-    yearlyRevenue: "144000 NOK"
+    gigPrice: "12 000 000kr",
+    yearlyRevenue: "144 000 000kr"
   },
   {
     name: "Highasakite",
     lastInvoiced: "28.06.24",
     owner: "Raymond Hellem",
     color: "bg-blue-700",
-    gigPrice: "18000 NOK",
-    yearlyRevenue: "216000 NOK"
+    gigPrice: "18 000 000kr",
+    yearlyRevenue: "216 000 000kr"
   },
 ];
 
