@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus, UserPlus, Trash, Users } from "lucide-react";
+import { Plus, UserPlus, Trash, Users, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 
@@ -12,6 +12,7 @@ const MOCK_CREW = [
     email: "john@soniccity.no",
     phone: "+47 123 45 678",
     status: "Available",
+    hours: "54:00",
   },
   {
     id: "2",
@@ -20,6 +21,7 @@ const MOCK_CREW = [
     email: "jane@soniccity.no",
     phone: "+47 234 56 789",
     status: "On Project",
+    hours: "32:00",
   },
   {
     id: "3",
@@ -28,11 +30,15 @@ const MOCK_CREW = [
     email: "mike@soniccity.no",
     phone: "+47 345 67 890",
     status: "Available",
+    hours: "48:00",
   },
 ];
 
+const MONTHS = ["Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept"];
+
 export function CrewList() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [showTimeline, setShowTimeline] = useState(false);
 
   const handleItemSelect = (id: string) => {
     setSelectedItems((prev) => {
@@ -70,8 +76,12 @@ export function CrewList() {
                 EDIT
               </Button>
             </div>
-            <Button variant="ghost" size="sm">
-              Adjust view
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setShowTimeline(!showTimeline)}
+            >
+              {showTimeline ? "Hide timeline" : "Show timeline"}
             </Button>
           </div>
         )}
@@ -113,6 +123,71 @@ export function CrewList() {
             ))}
           </TableBody>
         </Table>
+
+        {showTimeline && selectedItems.length > 0 && (
+          <div className="border-t border-zinc-800/50">
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm">
+                  <ChevronsLeft className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="text-sm">31 Dec 2024 - 20 Jan</span>
+                <Button variant="ghost" size="sm">
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="sm">
+                  <ChevronsRight className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  -
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  +
+                </Button>
+              </div>
+            </div>
+
+            <div className="p-4">
+              <div className="grid grid-cols-11 gap-4 mb-4">
+                {MONTHS.map((month) => (
+                  <div key={month} className="text-xs text-zinc-400">
+                    {month}
+                  </div>
+                ))}
+              </div>
+              
+              {MOCK_CREW.filter(crew => selectedItems.includes(crew.id)).map((crew) => (
+                <div key={crew.id} className="mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-medium">{crew.name}</span>
+                    <span className="text-xs text-zinc-400">{crew.hours} hours</span>
+                  </div>
+                  <div className="grid grid-cols-11 gap-4">
+                    {MONTHS.map((month) => (
+                      <div 
+                        key={month} 
+                        className="h-4 bg-zinc-800/50 rounded-sm relative"
+                      >
+                        {/* This would be replaced with actual availability data */}
+                        {Math.random() > 0.5 && (
+                          <div 
+                            className="absolute top-0 left-0 h-full bg-blue-500/50 rounded-sm"
+                            style={{ width: `${Math.random() * 100}%` }}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
