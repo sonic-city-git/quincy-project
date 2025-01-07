@@ -75,6 +75,72 @@ export type Database = {
         }
         Relationships: []
       }
+      equipment: {
+        Row: {
+          "Book value": string | null
+          Code: string | null
+          "Created on": string | null
+          "External remark": string | null
+          "Folder (Folder)": string | null
+          id: string
+          "Internal reference (Serial number)": string | null
+          "Internal remark": string | null
+          "List price": string | null
+          Name: string | null
+          "Price incl. VAT": string | null
+          "Purchase price (Serial number)": string | null
+          "Remark (Serial number)": string | null
+          "Rental-/Sales price": string | null
+          "Rental/sales": string | null
+          "Serial number (Serial number)": string | null
+          Stock: number | null
+          "Stock calculation method": string | null
+          Weight: number | null
+        }
+        Insert: {
+          "Book value"?: string | null
+          Code?: string | null
+          "Created on"?: string | null
+          "External remark"?: string | null
+          "Folder (Folder)"?: string | null
+          id?: string
+          "Internal reference (Serial number)"?: string | null
+          "Internal remark"?: string | null
+          "List price"?: string | null
+          Name?: string | null
+          "Price incl. VAT"?: string | null
+          "Purchase price (Serial number)"?: string | null
+          "Remark (Serial number)"?: string | null
+          "Rental-/Sales price"?: string | null
+          "Rental/sales"?: string | null
+          "Serial number (Serial number)"?: string | null
+          Stock?: number | null
+          "Stock calculation method"?: string | null
+          Weight?: number | null
+        }
+        Update: {
+          "Book value"?: string | null
+          Code?: string | null
+          "Created on"?: string | null
+          "External remark"?: string | null
+          "Folder (Folder)"?: string | null
+          id?: string
+          "Internal reference (Serial number)"?: string | null
+          "Internal remark"?: string | null
+          "List price"?: string | null
+          Name?: string | null
+          "Price incl. VAT"?: string | null
+          "Purchase price (Serial number)"?: string | null
+          "Remark (Serial number)"?: string | null
+          "Rental-/Sales price"?: string | null
+          "Rental/sales"?: string | null
+          "Serial number (Serial number)"?: string | null
+          Stock?: number | null
+          "Stock calculation method"?: string | null
+          Weight?: number | null
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           color: string
