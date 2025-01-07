@@ -25,6 +25,12 @@ async function fetchCustomers() {
     console.error('Error fetching customers:', error);
     throw error;
   }
+  
+  if (!data) {
+    console.log('No customers found');
+    return [];
+  }
+  
   console.log('Fetched customers:', data);
   return data;
 }
@@ -91,18 +97,19 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
         onValueChange={handleCustomerChange}
         disabled={isLoading}
       >
-        <SelectTrigger className="w-full bg-zinc-900 text-white border-zinc-700">
+        <SelectTrigger className="w-[240px] h-12 bg-zinc-900 text-white border-zinc-700">
           <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
         </SelectTrigger>
         <SelectContent 
-          className="bg-zinc-900 border border-zinc-700"
+          className="bg-zinc-900 border border-zinc-700 min-w-[240px]"
           position="popper"
+          align="start"
         >
           {customers.map((customer) => (
             <SelectItem 
               key={customer.id} 
               value={customer.id}
-              className="text-white hover:bg-zinc-800 cursor-pointer"
+              className="text-white hover:bg-zinc-800 cursor-pointer py-3 px-4"
             >
               {customer.name}
             </SelectItem>
