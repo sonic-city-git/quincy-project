@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { AddEventDialog } from "./AddEventDialog";
 import { CalendarEvent, EventType } from "@/types/events";
-import { DayProps } from "react-day-picker";
 
 const EVENT_COLORS: Record<EventType, string> = {
   "Show": "bg-green-100 hover:bg-green-200",
@@ -49,11 +48,18 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
         selected={date}
         onSelect={handleDateSelect}
         className={className}
+        modifiers={{ today: undefined }}
         modifiersClassNames={{
           selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
         }}
+        modifiersStyles={{
+          today: {
+            fontWeight: 'normal',
+            border: 'none'
+          }
+        }}
         components={{
-          Day: ({ date: dayDate, ...props }: DayProps) => {
+          Day: ({ date: dayDate, ...props }) => {
             const customClassName = getDateClassNames(dayDate);
             return (
               <button
