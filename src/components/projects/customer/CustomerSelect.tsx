@@ -76,7 +76,6 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
     );
   }
 
-  // Find the ID of the currently selected customer
   const currentCustomerId = customers.find(c => c.name === selectedCustomer)?.id;
 
   return (
@@ -87,10 +86,10 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
         onValueChange={handleCustomerChange}
         disabled={isLoading}
       >
-        <SelectTrigger className="w-full">
+        <SelectTrigger className="w-full bg-background">
           <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-background">
           {customers.map((customer) => (
             <SelectItem key={customer.id} value={customer.id}>
               {customer.name}
