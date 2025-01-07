@@ -8,16 +8,16 @@ import Crew from "@/pages/Crew";
 function App() {
   return (
     <Router>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen bg-zinc-900">
         <Sidebar />
-        <main className="flex-1 ml-sidebar">
+        <div className="flex-1 pl-sidebar">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/projects" element={<Index />} />
             <Route path="/equipment" element={<Equipment />} />
             <Route path="/crew" element={<Crew />} />
           </Routes>
-        </main>
+        </div>
       </div>
     </Router>
   );

@@ -11,7 +11,7 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="w-sidebar min-h-screen bg-zinc-900 p-4 flex flex-col fixed">
+    <aside className="fixed top-0 left-0 w-sidebar h-screen bg-zinc-900 p-4 flex flex-col border-r border-zinc-800">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-amber-600">QUINCY</h1>
       </div>
@@ -36,6 +36,6 @@ export function Sidebar() {
       <div className="mt-auto text-zinc-500 text-sm">
         SONIC CITY - 2024
       </div>
-    </div>
+    </aside>
   );
 }
