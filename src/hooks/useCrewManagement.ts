@@ -14,15 +14,15 @@ export function useCrewManagement() {
 
   const handleAddCrewMember = (newMember: NewCrewMember) => {
     const crewMember: CrewMember = {
-      id: (crewMembers.length + 1).toString(),
+      id: (Math.random() * 10000).toFixed(0), // Generate a random ID for now
       name: `${newMember.firstName} ${newMember.lastName}`,
-      role: newMember.tags.join(", "),
+      role: newMember.tags.map(tag => tag.toUpperCase()).join(", "), // Format tags as uppercase, comma-separated
       email: newMember.email,
       phone: newMember.phone,
       folder: newMember.folder,
     };
 
-    setCrewMembers((prev) => [...prev, crewMember]);
+    setCrewMembers(prev => [...prev, crewMember]);
   };
 
   const handleEditCrewMember = (editedMember: CrewMember) => {
