@@ -19,7 +19,7 @@ export default {
     },
     extend: {
       width: {
-        'sidebar': '16rem', // Add fixed sidebar width
+        'sidebar': '14rem', // Reduced from 16rem to 14rem
       },
       gridTemplateColumns: {
         '14': 'repeat(14, minmax(0, 1fr))',
