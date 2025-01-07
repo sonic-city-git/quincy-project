@@ -47,10 +47,10 @@ export function ProjectList() {
         </Button>
       </div>
 
-      <div className="bg-zinc-900 rounded-md">
+      <div className="bg-zinc-900 rounded-md overflow-x-auto">
         <Table>
           <TableHeader>
-            <TableRow className="hover:bg-transparent">
+            <TableRow className="hover:bg-transparent whitespace-nowrap">
               <TableHead className="w-8"></TableHead>
               <TableHead className="pl-0">Project</TableHead>
               <TableHead>Owner</TableHead>
@@ -61,17 +61,17 @@ export function ProjectList() {
           </TableHeader>
           <TableBody>
             {MOCK_PROJECTS.map((project) => (
-              <TableRow key={project.name} className="hover:bg-zinc-800/50">
+              <TableRow key={project.name} className="hover:bg-zinc-800/50 whitespace-nowrap">
                 <TableCell className="w-8">
                   <div className="w-4 h-4 rounded border border-zinc-700"></div>
                 </TableCell>
                 <TableCell className="pl-0">
-                  <div className={`${project.color} text-white px-4 py-2 rounded`}>
+                  <div className={`${project.color} text-white px-4 py-2 rounded truncate`}>
                     {project.name}
                   </div>
                 </TableCell>
                 <TableCell>
-                  <div className={`${project.color} text-white px-4 py-2 rounded`}>
+                  <div className={`${project.color} text-white px-4 py-2 rounded truncate`}>
                     {project.owner}
                   </div>
                 </TableCell>
