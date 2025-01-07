@@ -26,12 +26,13 @@ export function EntitySelect({
       <SelectTrigger className="w-full">
         <SelectValue placeholder={isLoading ? `Loading ${placeholder}...` : `Select ${placeholder}`} />
       </SelectTrigger>
-      <SelectContent>
-        <ScrollArea className="h-[200px]">
+      <SelectContent className="max-h-[200px] overflow-hidden">
+        <ScrollArea>
           {entities.map((entity) => (
             <SelectItem 
               key={entity.id} 
               value={entity.id}
+              className="cursor-pointer"
             >
               {entity.name}
             </SelectItem>
