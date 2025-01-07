@@ -1,8 +1,9 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus, UserPlus, Trash, Users, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { UserPlus, Users, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
+import { format, eachDayOfInterval, addDays, subDays } from "date-fns";
 
 const MOCK_CREW = [
   {
@@ -34,11 +35,15 @@ const MOCK_CREW = [
   },
 ];
 
-const MONTHS = ["Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept"];
-
 export function CrewList() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const [showTimeline, setShowTimeline] = useState(false);
+  const [startDate, setStartDate] = useState(new Date());
+  const daysToShow = 14; // Show two weeks at a time
+
+  const days = eachDayOfInterval({
+    start: startDate,
+    end: addDays(startDate, daysToShow - 1)
+  });
 
   const handleItemSelect = (id: string) => {
     setSelectedItems((prev) => {
@@ -47,6 +52,14 @@ export function CrewList() {
       }
       return [...prev, id];
     });
+  };
+
+  const handlePreviousPeriod = () => {
+    setStartDate(prev => subDays(prev, daysToShow));
+  };
+
+  const handleNextPeriod = () => {
+    setStartDate(prev => addDays(prev, daysToShow));
   };
 
   return (
@@ -68,7 +81,7 @@ export function CrewList() {
 
       <div className="bg-zinc-900 rounded-md">
         {selectedItems.length > 0 && (
-          <div className="p-2 border-b border-zinc-800/50 flex items-center justify-between">
+          <div className="p-2 border-b border-zinc-800/50 flex items-center">
             <div className="flex items-center gap-2">
               <span className="text-sm text-zinc-400">{selectedItems.length} members selected</span>
               <Button variant="ghost" size="sm" className="gap-2">
@@ -76,13 +89,6 @@ export function CrewList() {
                 EDIT
               </Button>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => setShowTimeline(!showTimeline)}
-            >
-              {showTimeline ? "Hide timeline" : "Show timeline"}
-            </Button>
           </div>
         )}
 
@@ -124,70 +130,69 @@ export function CrewList() {
           </TableBody>
         </Table>
 
-        {showTimeline && selectedItems.length > 0 && (
-          <div className="border-t border-zinc-800/50">
-            <div className="p-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm">
-                  <ChevronsLeft className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <span className="text-sm">31 Dec 2024 - 20 Jan</span>
-                <Button variant="ghost" size="sm">
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <ChevronsRight className="h-4 w-4" />
-                </Button>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  -
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  +
-                </Button>
-              </div>
+        <div className="border-t border-zinc-800/50">
+          <div className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="sm" onClick={handlePreviousPeriod}>
+                <ChevronsLeft className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handlePreviousPeriod}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-sm">
+                {format(startDate, 'dd MMM yyyy')} - {format(addDays(startDate, daysToShow - 1), 'dd MMM yyyy')}
+              </span>
+              <Button variant="ghost" size="sm" onClick={handleNextPeriod}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={handleNextPeriod}>
+                <ChevronsRight className="h-4 w-4" />
+              </Button>
             </div>
+            <div className="flex items-center gap-2">
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                -
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                +
+              </Button>
+            </div>
+          </div>
 
-            <div className="p-4">
-              <div className="grid grid-cols-11 gap-4 mb-4">
-                {MONTHS.map((month) => (
-                  <div key={month} className="text-xs text-zinc-400">
-                    {month}
-                  </div>
-                ))}
-              </div>
-              
-              {MOCK_CREW.filter(crew => selectedItems.includes(crew.id)).map((crew) => (
-                <div key={crew.id} className="mb-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm font-medium">{crew.name}</span>
-                    <span className="text-xs text-zinc-400">{crew.hours} hours</span>
-                  </div>
-                  <div className="grid grid-cols-11 gap-4">
-                    {MONTHS.map((month) => (
-                      <div 
-                        key={month} 
-                        className="h-4 bg-zinc-800/50 rounded-sm relative"
-                      >
-                        {/* This would be replaced with actual availability data */}
-                        {Math.random() > 0.5 && (
-                          <div 
-                            className="absolute top-0 left-0 h-full bg-blue-500/50 rounded-sm"
-                            style={{ width: `${Math.random() * 100}%` }}
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </div>
+          <div className="p-4">
+            <div className="grid grid-cols-14 gap-1 mb-4">
+              {days.map((day) => (
+                <div key={day.toISOString()} className="text-xs text-zinc-400">
+                  {format(day, 'dd')}
                 </div>
               ))}
             </div>
+            
+            {MOCK_CREW.map((crew) => (
+              <div key={crew.id} className="mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium">{crew.name}</span>
+                  <span className="text-xs text-zinc-400">{crew.hours} hours</span>
+                </div>
+                <div className="grid grid-cols-14 gap-1">
+                  {days.map((day) => (
+                    <div 
+                      key={day.toISOString()} 
+                      className="h-4 bg-zinc-800/50 rounded-sm relative"
+                    >
+                      {Math.random() > 0.5 && (
+                        <div 
+                          className="absolute top-0 left-0 h-full bg-blue-500/50 rounded-sm"
+                          style={{ width: '100%' }}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
