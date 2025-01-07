@@ -1,7 +1,8 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus, Package, Trash } from "lucide-react";
+import { Plus, Package } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
 
 const MOCK_EQUIPMENT = [
   {
@@ -34,6 +35,17 @@ const MOCK_EQUIPMENT = [
 ];
 
 export function EquipmentList() {
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+
+  const handleItemSelect = (id: string) => {
+    setSelectedItems((prev) => {
+      if (prev.includes(id)) {
+        return prev.filter((item) => item !== id);
+      }
+      return [...prev, id];
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -45,30 +57,27 @@ export function EquipmentList() {
             All
           </Button>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm">
-            Import
-          </Button>
-          <Button size="sm" className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add equipment
-          </Button>
-        </div>
+        <Button size="sm" className="gap-2">
+          <Plus className="h-4 w-4" />
+          Add equipment
+        </Button>
       </div>
 
       <div className="bg-zinc-900 rounded-md">
-        <div className="p-2 border-b border-zinc-800 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-zinc-400">1 items selected</span>
-            <Button variant="ghost" size="sm" className="gap-2">
-              <Package className="h-4 w-4" />
-              EDIT
+        {selectedItems.length > 0 && (
+          <div className="p-2 border-b border-zinc-800 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-zinc-400">{selectedItems.length} items selected</span>
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Package className="h-4 w-4" />
+                EDIT
+              </Button>
+            </div>
+            <Button variant="ghost" size="sm">
+              Adjust view
             </Button>
           </div>
-          <Button variant="ghost" size="sm">
-            Adjust view
-          </Button>
-        </div>
+        )}
 
         <Table>
           <TableHeader>
@@ -89,7 +98,10 @@ export function EquipmentList() {
             {MOCK_EQUIPMENT.map((equipment) => (
               <TableRow key={equipment.id} className="hover:bg-zinc-800/50">
                 <TableCell>
-                  <Checkbox />
+                  <Checkbox 
+                    checked={selectedItems.includes(equipment.id)}
+                    onCheckedChange={() => handleItemSelect(equipment.id)}
+                  />
                 </TableCell>
                 <TableCell className="font-mono">{equipment.code}</TableCell>
                 <TableCell>{equipment.name}</TableCell>
