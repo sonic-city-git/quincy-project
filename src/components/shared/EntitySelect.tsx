@@ -26,17 +26,19 @@ export function EntitySelect({
       <SelectTrigger className="w-full">
         <SelectValue placeholder={isLoading ? `Loading ${placeholder}...` : `Select ${placeholder}`} />
       </SelectTrigger>
-      <SelectContent className="max-h-[200px] overflow-hidden">
-        <ScrollArea>
-          {entities.map((entity) => (
-            <SelectItem 
-              key={entity.id} 
-              value={entity.id}
-              className="cursor-pointer"
-            >
-              {entity.name}
-            </SelectItem>
-          ))}
+      <SelectContent>
+        <ScrollArea className="h-[200px]">
+          <div className="p-1">
+            {entities.map((entity) => (
+              <SelectItem 
+                key={entity.id} 
+                value={entity.id}
+                className="cursor-pointer"
+              >
+                {entity.name}
+              </SelectItem>
+            ))}
+          </div>
         </ScrollArea>
       </SelectContent>
     </Select>
