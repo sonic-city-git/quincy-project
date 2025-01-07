@@ -69,6 +69,7 @@ const ProjectDetails = () => {
               <CardTitle className="text-lg">Owner</CardTitle>
             </CardHeader>
             <CardContent>
+              <p className="text-sm text-muted-foreground">Owner</p>
               <p className="text-base">{project.owner}</p>
             </CardContent>
           </Card>
@@ -80,6 +81,7 @@ const ProjectDetails = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
+                <p className="text-sm text-muted-foreground">Gig Price</p>
                 <p className="text-base">{project.gigPrice}</p>
                 <Separator className="my-4" />
                 <p className="text-sm text-muted-foreground">Yearly Revenue</p>
