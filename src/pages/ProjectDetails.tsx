@@ -5,8 +5,6 @@ import { ProjectGeneralTab } from "@/components/projects/ProjectGeneralTab";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { useCustomerSync } from "@/hooks/useCustomerSync";
 
 interface ProjectData {
   name: string;
@@ -23,7 +21,6 @@ const ProjectDetails = () => {
   const [project, setProject] = useState<ProjectData | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const { syncCustomers, isSyncing } = useCustomerSync();
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -94,16 +91,6 @@ const ProjectDetails = () => {
       />
 
       <div className="max-w-7xl mx-auto px-6">
-        <div className="mb-4">
-          <Button 
-            onClick={syncCustomers} 
-            disabled={isSyncing}
-            variant="outline"
-          >
-            {isSyncing ? 'Syncing...' : 'Sync Customers'}
-          </Button>
-        </div>
-
         <Tabs defaultValue="general" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="general">General</TabsTrigger>
