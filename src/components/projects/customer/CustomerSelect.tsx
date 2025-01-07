@@ -1,5 +1,5 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
@@ -28,24 +28,31 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
   const [selectedCustomer, setSelectedCustomer] = useState(initialCustomer);
   const { toast } = useToast();
 
-  const { data: customers, isLoading, error } = useQuery({
+  const { data: customers = [], isLoading, error } = useQuery({
     queryKey: ['customers'],
     queryFn: fetchCustomers,
   });
 
+  // Update selected customer when initialCustomer prop changes
+  useEffect(() => {
+    setSelectedCustomer(initialCustomer);
+  }, [initialCustomer]);
+
   const handleCustomerChange = async (customerId: string) => {
     try {
-      // Find the customer name from the selected ID
-      const selectedCustomerName = customers?.find(c => c.id === customerId)?.name || '';
-      
-      const { error } = await supabase
+      const selectedCustomerData = customers.find(c => c.id === customerId);
+      if (!selectedCustomerData) {
+        throw new Error('Selected customer not found');
+      }
+
+      const { error: updateError } = await supabase
         .from('projects')
-        .update({ customer: selectedCustomerName })
+        .update({ customer: selectedCustomerData.name })
         .eq('id', projectId);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      setSelectedCustomer(selectedCustomerName);
+      setSelectedCustomer(selectedCustomerData.name);
       
       toast({
         title: "Success",
@@ -70,14 +77,14 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
     );
   }
 
-  // Find the ID of the initially selected customer
-  const selectedCustomerId = customers?.find(c => c.name === selectedCustomer)?.id || '';
+  // Find the ID of the currently selected customer
+  const currentCustomerId = customers.find(c => c.name === selectedCustomer)?.id || '';
 
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">Customer</p>
       <Select 
-        value={selectedCustomerId} 
+        value={currentCustomerId}
         onValueChange={handleCustomerChange}
         disabled={isLoading}
       >
@@ -85,7 +92,7 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
           <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
         </SelectTrigger>
         <SelectContent>
-          {customers?.map((customer) => (
+          {customers.map((customer) => (
             <SelectItem key={customer.id} value={customer.id}>
               {customer.name}
             </SelectItem>
