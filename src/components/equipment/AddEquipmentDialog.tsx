@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Equipment } from "@/types/equipment";
@@ -22,7 +22,7 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
   const [open, setOpen] = useState(false);
   const [hasSerialNumbers, setHasSerialNumbers] = useState(false);
   const [serialNumbers, setSerialNumbers] = useState<string[]>(['']);
-  const [selectedFolder, setSelectedFolder] = useState<string>("");
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -48,7 +48,7 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
     setOpen(false);
     setSerialNumbers(['']);
     setHasSerialNumbers(false);
-    setSelectedFolder("");
+    setSelectedFolder(null);
   };
 
   const addSerialNumberField = () => {
@@ -82,7 +82,7 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           <FolderSelect
             selectedFolder={selectedFolder}
-            onFolderChange={setSelectedFolder}
+            onFolderSelect={setSelectedFolder}
             required
           />
           <div className="grid gap-2">

@@ -26,7 +26,7 @@ export function EditEquipmentDialog({ equipment, onEditEquipment, onDeleteEquipm
   const [serialNumbers, setSerialNumbers] = useState<string[]>(
     equipment.serialNumbers || ['']
   );
-  const [selectedFolder, setSelectedFolder] = useState<string>(equipment.folderId || "");
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(equipment.folderId || null);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -83,8 +83,7 @@ export function EditEquipmentDialog({ equipment, onEditEquipment, onDeleteEquipm
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           <FolderSelect
             selectedFolder={selectedFolder}
-            onFolderChange={setSelectedFolder}
-            required
+            onFolderSelect={setSelectedFolder}
           />
           <div className="grid gap-2">
             <Label htmlFor="code">Code</Label>
