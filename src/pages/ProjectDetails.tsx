@@ -66,24 +66,24 @@ const ProjectDetails = () => {
           {/* Owner Card */}
           <Card>
             <CardHeader>
-              <CardTitle>Owner</CardTitle>
+              <CardTitle className="text-lg">Owner</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-xl font-semibold">{project.owner}</p>
+              <p className="text-base">{project.owner}</p>
             </CardContent>
           </Card>
 
           {/* Financial Details Card */}
           <Card>
             <CardHeader>
-              <CardTitle>Gig Price</CardTitle>
+              <CardTitle className="text-lg">Gig Price</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <p className="text-xl font-semibold">{project.gigPrice}</p>
+                <p className="text-base">{project.gigPrice}</p>
                 <Separator className="my-4" />
                 <p className="text-sm text-muted-foreground">Yearly Revenue</p>
-                <p className="text-xl font-semibold">{project.yearlyRevenue}</p>
+                <p className="text-base">{project.yearlyRevenue}</p>
               </div>
             </CardContent>
           </Card>
