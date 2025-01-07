@@ -1,11 +1,12 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Wrench } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
 import { addDays, subDays } from "date-fns";
 import { AddEquipmentDialog } from "./equipment/AddEquipmentDialog";
+import { EditEquipmentDialog } from "./equipment/EditEquipmentDialog";
+import { useToast } from "@/hooks/use-toast";
 
 const MOCK_EQUIPMENT = [
   {
@@ -41,9 +42,36 @@ export function EquipmentList() {
   const [equipment, setEquipment] = useState(MOCK_EQUIPMENT);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(new Date());
+  const { toast } = useToast();
 
   const handleAddEquipment = (newEquipment: any) => {
     setEquipment(prev => [...prev, newEquipment]);
+    toast({
+      title: "Equipment added",
+      description: "New equipment has been added successfully",
+    });
+  };
+
+  const handleEditEquipment = (editedEquipment: any) => {
+    setEquipment(prev => 
+      prev.map(item => 
+        item.id === editedEquipment.id ? editedEquipment : item
+      )
+    );
+    setSelectedItems([]);
+    toast({
+      title: "Equipment updated",
+      description: "Equipment has been updated successfully",
+    });
+  };
+
+  const handleDeleteEquipment = () => {
+    setEquipment(prev => prev.filter(item => !selectedItems.includes(item.id)));
+    setSelectedItems([]);
+    toast({
+      title: "Equipment deleted",
+      description: `${selectedItems.length} equipment item(s) have been removed`,
+    });
   };
 
   const handleItemSelect = (id: string) => {
@@ -99,10 +127,11 @@ export function EquipmentList() {
                 {selectedItems.length} items selected
               </span>
               {selectedItems.length === 1 && (
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <Wrench className="h-4 w-4" />
-                  EDIT
-                </Button>
+                <EditEquipmentDialog 
+                  equipment={equipment.find(item => item.id === selectedItems[0])!}
+                  onEditEquipment={handleEditEquipment}
+                  onDeleteEquipment={handleDeleteEquipment}
+                />
               )}
             </div>
             <Button variant="ghost" size="sm" className={`transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0' : 'opacity-100'}`}>
