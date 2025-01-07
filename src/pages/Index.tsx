@@ -1,24 +1,16 @@
-import { Button } from "@/components/ui/button";
+import { Sidebar } from "@/components/Sidebar";
 import { ProjectList } from "@/components/ProjectList";
-import { Plus } from "lucide-react";
 
 const Index = () => {
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your ongoing rental projects
-          </p>
+    <div className="flex min-h-screen bg-zinc-900 text-white">
+      <Sidebar />
+      <main className="flex-1 p-8">
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-zinc-200">Projects</h1>
         </div>
-        <Button className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          New Project
-        </Button>
-      </div>
-      
-      <ProjectList />
+        <ProjectList />
+      </main>
     </div>
   );
 };
