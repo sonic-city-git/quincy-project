@@ -1,4 +1,4 @@
-import { format, eachDayOfInterval, addDays, getWeek } from "date-fns";
+import { format, eachDayOfInterval, addDays, getWeek, isWeekend } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -77,8 +77,11 @@ export function CrewTimeline({
       <div className="p-4">
         <div className="grid grid-cols-14 gap-1 mb-4">
           {days.map((day) => (
-            <div key={day.toISOString()} className="text-xs text-zinc-400">
-              {format(day, 'dd')}
+            <div 
+              key={day.toISOString()} 
+              className={`text-xs ${isWeekend(day) ? 'text-red-400/70' : 'text-zinc-400'}`}
+            >
+              {format(day, 'EEEEE')}
             </div>
           ))}
         </div>
