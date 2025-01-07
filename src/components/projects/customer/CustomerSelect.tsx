@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 interface CustomerSelectProps {
   projectId: string;
   initialCustomer: string;
+  onCustomerSelect?: (customer: string | null) => void;
 }
 
 interface Customer {
@@ -30,7 +31,7 @@ async function fetchCustomers() {
   return data || [];
 }
 
-export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectProps) {
+export function CustomerSelect({ projectId, initialCustomer, onCustomerSelect }: CustomerSelectProps) {
   const [selectedCustomer, setSelectedCustomer] = useState(initialCustomer);
   const { toast } = useToast();
 
@@ -71,6 +72,7 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
       }
 
       setSelectedCustomer(selectedCustomerData.name);
+      onCustomerSelect?.(selectedCustomerData.name);
       console.log('Successfully updated customer to:', selectedCustomerData.name);
       
       if (projectId && projectId.length > 0) {
