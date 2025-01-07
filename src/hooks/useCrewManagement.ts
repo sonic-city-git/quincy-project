@@ -3,7 +3,7 @@ import { CrewMember, NewCrewMember } from "@/types/crew";
 import { useCrewSelection } from "./useCrewSelection";
 import { useCrewRoles } from "./useCrewRoles";
 import { getAllUniqueRoles, filterCrewByRoles, sortCrewMembers } from "@/utils/crewUtils";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 
 export function useCrewManagement() {
