@@ -75,10 +75,20 @@ export function CrewTimeline({
       </div>
 
       <div className="p-4">
+        <div className="grid grid-cols-14 gap-1 mb-1">
+          {days.map((day) => (
+            <div 
+              key={`date-${day.toISOString()}`} 
+              className="text-xs text-zinc-400"
+            >
+              {format(day, 'dd')}
+            </div>
+          ))}
+        </div>
         <div className="grid grid-cols-14 gap-1 mb-4">
           {days.map((day) => (
             <div 
-              key={day.toISOString()} 
+              key={`weekday-${day.toISOString()}`} 
               className={`text-xs ${isWeekend(day) ? 'text-red-400/70' : 'text-zinc-400'}`}
             >
               {format(day, 'EEEEE')}
