@@ -3,6 +3,10 @@ import { Folder } from "@/types/folders";
 import { supabase } from "@/integrations/supabase/client";
 
 export function useFolderState(initialFolders: Folder[]) {
+  const sortFolders = (foldersToSort: Folder[]): Folder[] => {
+    return [...foldersToSort].sort((a, b) => a.name.localeCompare(b.name));
+  };
+
   const [folders, setFolders] = useState<Folder[]>(sortFolders(initialFolders));
   const [expandedFolders, setExpandedFolders] = useState<{ [key: string]: boolean }>({});
 
@@ -48,10 +52,6 @@ export function useFolderState(initialFolders: Folder[]) {
       ...prev,
       [folderId]: !prev[folderId]
     }));
-  };
-
-  const sortFolders = (foldersToSort: Folder[]): Folder[] => {
-    return [...foldersToSort].sort((a, b) => a.name.localeCompare(b.name));
   };
 
   return {
