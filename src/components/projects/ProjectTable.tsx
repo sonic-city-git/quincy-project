@@ -1,20 +1,24 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Project } from "@/types/projects";
 import { ProjectTableRow } from "./ProjectTableRow";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const DEFAULT_COLORS = [
-  '#9b87f5', // Primary Purple
-  '#D946EF', // Magenta Pink
-  '#F97316', // Bright Orange
-  '#0EA5E9', // Ocean Blue
-  '#8B5CF6', // Vivid Purple
+  '#9b87f5',
+  '#D946EF',
+  '#F97316',
+  '#0EA5E9',
+  '#8B5CF6',
 ];
 
 interface ProjectTableProps {
   projects: Project[];
+  selectedItems: string[];
+  onSelectAll: () => void;
+  onItemSelect: (id: string) => void;
 }
 
-export function ProjectTable({ projects }: ProjectTableProps) {
+export function ProjectTable({ projects, selectedItems, onSelectAll, onItemSelect }: ProjectTableProps) {
   const getColorStyle = (color: string, index: number) => {
     if (color?.startsWith('bg-')) {
       const colorMap: { [key: string]: string } = {
@@ -38,6 +42,12 @@ export function ProjectTable({ projects }: ProjectTableProps) {
       <Table>
         <TableHeader>
           <TableRow className="hover:bg-transparent whitespace-nowrap">
+            <TableHead className="w-12">
+              <Checkbox 
+                checked={selectedItems.length === projects.length && projects.length > 0}
+                onCheckedChange={onSelectAll}
+              />
+            </TableHead>
             <TableHead className="pl-4">Project</TableHead>
             <TableHead>Owner</TableHead>
             <TableHead>Last Invoiced</TableHead>
@@ -51,6 +61,8 @@ export function ProjectTable({ projects }: ProjectTableProps) {
               key={project.id}
               project={project}
               colorStyle={getColorStyle(project.color, index)}
+              isSelected={selectedItems.includes(project.id)}
+              onSelect={() => onItemSelect(project.id)}
             />
           ))}
         </TableBody>
