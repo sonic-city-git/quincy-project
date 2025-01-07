@@ -45,8 +45,8 @@ export function ProjectList() {
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="w-12"></TableHead>
-              <TableHead>Name</TableHead>
+              <TableHead className="w-8"></TableHead>
+              <TableHead className="pl-0">Name</TableHead>
               <TableHead>Last Invoiced</TableHead>
               <TableHead>Owner</TableHead>
             </TableRow>
@@ -54,10 +54,10 @@ export function ProjectList() {
           <TableBody>
             {MOCK_PROJECTS.map((project) => (
               <TableRow key={project.name} className="hover:bg-zinc-800/50">
-                <TableCell className="w-12">
+                <TableCell className="w-8">
                   <div className="w-4 h-4 rounded border border-zinc-700"></div>
                 </TableCell>
-                <TableCell>
+                <TableCell className="pl-0">
                   <div className={`${project.color} text-white px-4 py-2 rounded`}>
                     {project.name}
                   </div>
