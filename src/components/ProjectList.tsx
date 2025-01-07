@@ -8,18 +8,24 @@ const MOCK_PROJECTS = [
     lastInvoiced: "28.06.24",
     owner: "Sondre Sandhaug",
     color: "bg-amber-700",
+    gigPrice: "15000 NOK",
+    yearlyRevenue: "180000 NOK"
   },
   {
     name: "Briskeby",
     lastInvoiced: "28.06.24 - 29.09.24",
     owner: "Stian Sagholen",
     color: "bg-rose-800",
+    gigPrice: "12000 NOK",
+    yearlyRevenue: "144000 NOK"
   },
   {
     name: "Highasakite",
     lastInvoiced: "28.06.24 - 29.09.24",
     owner: "Raymond Hellem",
     color: "bg-blue-700",
+    gigPrice: "18000 NOK",
+    yearlyRevenue: "216000 NOK"
   },
 ];
 
@@ -46,9 +52,11 @@ export function ProjectList() {
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className="w-8"></TableHead>
-              <TableHead className="pl-0">Name</TableHead>
-              <TableHead>Last Invoiced</TableHead>
+              <TableHead className="pl-0">Project</TableHead>
               <TableHead>Owner</TableHead>
+              <TableHead>Last Invoiced</TableHead>
+              <TableHead>Gig Price</TableHead>
+              <TableHead>Yearly Revenue</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -62,12 +70,14 @@ export function ProjectList() {
                     {project.name}
                   </div>
                 </TableCell>
-                <TableCell className="text-zinc-300">{project.lastInvoiced}</TableCell>
                 <TableCell>
                   <div className={`${project.color} text-white px-4 py-2 rounded`}>
                     {project.owner}
                   </div>
                 </TableCell>
+                <TableCell className="text-zinc-300">{project.lastInvoiced}</TableCell>
+                <TableCell className="text-zinc-300">{project.gigPrice}</TableCell>
+                <TableCell className="text-zinc-300">{project.yearlyRevenue}</TableCell>
               </TableRow>
             ))}
           </TableBody>
