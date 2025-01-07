@@ -53,7 +53,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
           }
         }}
         components={{
-          Day: ({ date: dayDate, ...props }: DayProps) => {
+          Day: ({ date: dayDate, ...props }: DayProps & { className?: string }) => {
             const event = events.find(
               (e) => e.date.toDateString() === dayDate.toDateString()
             );
