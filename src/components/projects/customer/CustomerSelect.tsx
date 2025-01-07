@@ -2,15 +2,36 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 
 interface CustomerSelectProps {
   projectId: string;
   initialCustomer: string;
 }
 
+interface Customer {
+  id: string;
+  name: string;
+}
+
+async function fetchCustomers() {
+  const { data, error } = await supabase
+    .from('customers')
+    .select('id, name')
+    .order('name');
+    
+  if (error) throw error;
+  return data;
+}
+
 export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectProps) {
   const [selectedCustomer, setSelectedCustomer] = useState(initialCustomer);
   const { toast } = useToast();
+
+  const { data: customers, isLoading, error } = useQuery({
+    queryKey: ['customers'],
+    queryFn: fetchCustomers,
+  });
 
   const handleCustomerChange = async (newCustomer: string) => {
     try {
@@ -37,17 +58,28 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
     }
   };
 
+  if (error) {
+    console.error('Error fetching customers:', error);
+    return (
+      <div className="text-sm text-destructive">
+        Error loading customers. Please try again later.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">Customer</p>
       <Select value={selectedCustomer} onValueChange={handleCustomerChange}>
         <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select customer" />
+          <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="Universal Music">Universal Music</SelectItem>
-          <SelectItem value="Sony Music">Sony Music</SelectItem>
-          <SelectItem value="Warner Music">Warner Music</SelectItem>
+          {customers?.map((customer) => (
+            <SelectItem key={customer.id} value={customer.name}>
+              {customer.name}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     </div>
