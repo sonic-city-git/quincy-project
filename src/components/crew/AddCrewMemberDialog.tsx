@@ -119,8 +119,8 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
                 <SelectValue placeholder="Select folder" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="sonic-city">Sonic City</SelectItem>
-                <SelectItem value="freelance">Freelance</SelectItem>
+                <SelectItem value="Sonic City">Sonic City</SelectItem>
+                <SelectItem value="Freelance">Freelance</SelectItem>
               </SelectContent>
             </Select>
           </div>
