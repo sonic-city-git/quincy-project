@@ -17,6 +17,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown } from "lucide-react";
+import { isItemInFolder } from "@/utils/folderUtils";
 
 const MOCK_EQUIPMENT: Equipment[] = [
   {
@@ -128,7 +129,7 @@ export function EquipmentList() {
   };
 
   const filteredEquipment = equipment.filter(item => 
-    !selectedFolder || item.folderId === selectedFolder
+    !selectedFolder || isItemInFolder(item.folderId, selectedFolder)
   );
 
   const selectedEquipment = equipment
