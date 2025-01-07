@@ -146,13 +146,17 @@ const ProjectDetails = () => {
                 </Card>
 
                 <Card>
-                  <CardContent className="p-4 space-y-2">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Gig Price</p>
-                      <p className="text-base">{project.gigPrice}</p>
+                  <CardContent className="p-6 space-y-4">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">Gig Price</p>
+                        <p className="text-base font-medium">{project.gigPrice}</p>
+                      </div>
                       <Separator className="my-2" />
-                      <p className="text-sm text-muted-foreground">Yearly Revenue</p>
-                      <p className="text-base">{project.yearlyRevenue}</p>
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">Yearly Revenue</p>
+                        <p className="text-base font-medium">{project.yearlyRevenue}</p>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
