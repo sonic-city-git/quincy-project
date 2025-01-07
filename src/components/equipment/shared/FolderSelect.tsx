@@ -27,8 +27,7 @@ export function FolderSelect({
       <div key={folder.id}>
         <SelectItem
           value={folder.id}
-          className={level > 0 ? "italic" : ""}
-          style={{ paddingLeft: `${level * 16}px` }}
+          className={level > 0 ? "italic pl-4" : "font-bold"}
         >
           {folder.name}
         </SelectItem>
