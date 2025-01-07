@@ -13,7 +13,7 @@ const MOCK_PROJECTS = [
   },
   {
     name: "Briskeby",
-    lastInvoiced: "28.06.24 - 29.09.24",
+    lastInvoiced: "29.09.24",
     owner: "Stian Sagholen",
     color: "bg-rose-800",
     gigPrice: "12000 NOK",
@@ -21,7 +21,7 @@ const MOCK_PROJECTS = [
   },
   {
     name: "Highasakite",
-    lastInvoiced: "28.06.24 - 29.09.24",
+    lastInvoiced: "28.06.24",
     owner: "Raymond Hellem",
     color: "bg-blue-700",
     gigPrice: "18000 NOK",
