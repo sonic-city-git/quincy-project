@@ -8,9 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MOCK_CREW } from "@/data/mockCrew";
 import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { AddEventDialog } from "@/components/events/AddEventDialog";
 
 const MOCK_PROJECTS = {
   "sondre-justad": {
@@ -42,14 +40,6 @@ const MOCK_PROJECTS = {
   }
 };
 
-const EVENT_TYPES = [
-  "Show",
-  "Travel",
-  "Preprod",
-  "INT Storage",
-  "EXT Storage"
-] as const;
-
 const ProjectDetails = () => {
   const { projectId } = useParams();
   const project = projectId ? MOCK_PROJECTS[projectId as keyof typeof MOCK_PROJECTS] : null;
@@ -60,8 +50,6 @@ const ProjectDetails = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(project?.customer || "");
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [eventName, setEventName] = useState("");
-  const [eventType, setEventType] = useState<typeof EVENT_TYPES[number]>("Show");
 
   const handleDateSelect = (selectedDate: Date | undefined) => {
     if (selectedDate) {
@@ -70,13 +58,9 @@ const ProjectDetails = () => {
     }
   };
 
-  const handleSubmitEvent = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Here you would handle the event creation
+  const handleEventSubmit = (eventName: string, eventType: string) => {
     console.log("New event:", { date, eventName, eventType });
     setIsDialogOpen(false);
-    setEventName("");
-    setEventType("Show");
   };
 
   if (!project) {
@@ -213,42 +197,12 @@ const ProjectDetails = () => {
         </Tabs>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Add Event</DialogTitle>
-          </DialogHeader>
-          <form onSubmit={handleSubmitEvent} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="eventName">Event Name</Label>
-              <Input
-                id="eventName"
-                value={eventName}
-                onChange={(e) => setEventName(e.target.value)}
-                placeholder="Enter event name"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="eventType">Type</Label>
-              <Select value={eventType} onValueChange={(value) => setEventType(value as typeof EVENT_TYPES[number])}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select event type" />
-                </SelectTrigger>
-                <SelectContent>
-                  {EVENT_TYPES.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex justify-end">
-              <Button type="submit">Add Event</Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <AddEventDialog
+        isOpen={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        onSubmit={handleEventSubmit}
+        date={date}
+      />
     </div>
   );
 };
