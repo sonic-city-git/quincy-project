@@ -26,7 +26,7 @@ async function fetchCustomers() {
     throw error;
   }
   
-  console.log('Fetched customers:', data);
+  console.log(`Fetched ${data?.length || 0} customers:`, data);
   return data || [];
 }
 
@@ -42,15 +42,17 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
   });
 
   useEffect(() => {
+    console.log('Initial customer:', initialCustomer);
     setSelectedCustomer(initialCustomer);
   }, [initialCustomer]);
 
   const handleCustomerChange = async (customerId: string) => {
     try {
-      console.log('Handling customer change:', customerId);
+      console.log('Handling customer change. Selected ID:', customerId);
       const selectedCustomerData = customers.find(c => c.id === customerId);
       
       if (!selectedCustomerData) {
+        console.error('Selected customer not found in customers list');
         throw new Error('Selected customer not found');
       }
 
@@ -66,6 +68,7 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
       }
 
       setSelectedCustomer(selectedCustomerData.name);
+      console.log('Successfully updated customer to:', selectedCustomerData.name);
       
       toast({
         title: "Success",
@@ -91,6 +94,7 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
   }
 
   const currentCustomerId = customers.find(c => c.name === selectedCustomer)?.id;
+  console.log('Current customer ID:', currentCustomerId, 'Selected customer:', selectedCustomer);
 
   return (
     <div className="space-y-2">
