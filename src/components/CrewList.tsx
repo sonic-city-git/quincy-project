@@ -7,11 +7,19 @@ import { addDays, subDays } from "date-fns";
 import { MOCK_CREW } from "@/data/mockCrew";
 import { CrewMember, NewCrewMember } from "@/types/crew";
 import { EditCrewMemberDialog } from "./crew/EditCrewMemberDialog";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Filter } from "lucide-react";
 
 export function CrewList() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(new Date());
   const [crewMembers, setCrewMembers] = useState<CrewMember[]>(MOCK_CREW);
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const daysToShow = 14;
 
   const handleItemSelect = (id: string) => {
@@ -60,11 +68,54 @@ export function CrewList() {
     setStartDate(prev => addDays(prev, daysToShow));
   };
 
-  const selectedCrew = crewMembers.filter(crew => selectedItems.includes(crew.id));
+  // Get all unique roles from crew members
+  const allRoles = Array.from(
+    new Set(
+      crewMembers.flatMap((member) =>
+        member.role.split(", ").map((role) => role.toUpperCase())
+      )
+    )
+  ).sort();
+
+  // Filter crew members based on selected roles
+  const filteredCrewMembers = crewMembers.filter((member) => {
+    if (selectedRoles.length === 0) return true;
+    return member.role
+      .split(", ")
+      .some((role) => selectedRoles.includes(role.toUpperCase()));
+  });
+
+  const selectedCrew = filteredCrewMembers.filter(crew => selectedItems.includes(crew.id));
 
   return (
     <div className="space-y-6">
-      <CrewHeader selectedCount={selectedItems.length} onAddCrewMember={handleAddCrewMember} />
+      <div className="flex items-center justify-between">
+        <CrewHeader selectedCount={selectedItems.length} onAddCrewMember={handleAddCrewMember} />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Filter className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[200px]">
+            {allRoles.map((role) => (
+              <DropdownMenuCheckboxItem
+                key={role}
+                checked={selectedRoles.includes(role)}
+                onCheckedChange={(checked) => {
+                  setSelectedRoles((prev) =>
+                    checked
+                      ? [...prev, role]
+                      : prev.filter((r) => r !== role)
+                  );
+                }}
+              >
+                {role}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
 
       <div className="bg-zinc-900 rounded-md">
         <div className="h-[48px] border-b border-zinc-800/50">
@@ -83,7 +134,7 @@ export function CrewList() {
         </div>
 
         <CrewTable 
-          crewMembers={crewMembers}
+          crewMembers={filteredCrewMembers}
           selectedItems={selectedItems}
           onItemSelect={handleItemSelect}
         />
