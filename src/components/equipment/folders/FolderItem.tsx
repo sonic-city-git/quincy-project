@@ -39,7 +39,8 @@ export function FolderItem({
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2" style={{ marginLeft: `${level * 20}px` }}>
-        {hasChildren ? (
+        {/* Only show collapse arrows for parent folders (level 0) */}
+        {level === 0 && hasChildren ? (
           <Button
             variant="ghost"
             size="sm"
