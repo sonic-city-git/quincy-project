@@ -49,6 +49,14 @@ export function EquipmentList() {
     });
   };
 
+  const handleSelectAll = () => {
+    if (selectedItems.length === MOCK_EQUIPMENT.length) {
+      setSelectedItems([]);
+    } else {
+      setSelectedItems(MOCK_EQUIPMENT.map(item => item.id));
+    }
+  };
+
   const daysToShow = 14;
 
   const handlePreviousPeriod = () => {
@@ -100,7 +108,10 @@ export function EquipmentList() {
           <TableHeader>
             <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
               <TableHead className="w-12">
-                <Checkbox />
+                <Checkbox 
+                  checked={selectedItems.length === MOCK_EQUIPMENT.length && MOCK_EQUIPMENT.length > 0}
+                  onCheckedChange={handleSelectAll}
+                />
               </TableHead>
               <TableHead>Code</TableHead>
               <TableHead>Name (in database)</TableHead>
