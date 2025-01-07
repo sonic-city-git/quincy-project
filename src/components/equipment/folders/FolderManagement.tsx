@@ -19,34 +19,40 @@ interface FolderItemState {
 export function FolderManagement({ folders, onClose }: FolderManagementProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newFolderName, setNewFolderName] = useState("");
-  const [parentId, setParentId] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<FolderItemState>({});
   const { toast } = useToast();
 
   const handleAddFolder = async () => {
+    if (!newFolderName.trim()) return;
+
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('folders')
-        .insert([{ name: newFolderName, parent_id: parentId }]);
+        .insert([{ name: newFolderName }])
+        .select()
+        .single();
 
       if (error) throw error;
 
-      setNewFolderName("");
       toast({
-        title: "Folder added",
-        description: "New folder has been created successfully",
+        title: "Success",
+        description: "Folder has been created successfully",
       });
+
+      setNewFolderName("");
     } catch (error) {
       console.error('Error adding folder:', error);
       toast({
         title: "Error",
-        description: "Failed to add folder",
+        description: "Failed to create folder",
         variant: "destructive",
       });
     }
   };
 
   const handleUpdateFolder = async (id: string, name: string) => {
+    if (!name.trim()) return;
+
     try {
       const { error } = await supabase
         .from('folders')
@@ -57,7 +63,7 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
 
       setEditingId(null);
       toast({
-        title: "Folder updated",
+        title: "Success",
         description: "Folder has been updated successfully",
       });
     } catch (error) {
@@ -80,8 +86,8 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
       if (error) throw error;
 
       toast({
-        title: "Folder deleted",
-        description: "Folder has been removed successfully",
+        title: "Success",
+        description: "Folder has been deleted successfully",
       });
     } catch (error) {
       console.error('Error deleting folder:', error);
@@ -171,8 +177,17 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
           value={newFolderName}
           onChange={(e) => setNewFolderName(e.target.value)}
           className="h-8"
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              handleAddFolder();
+            }
+          }}
         />
-        <Button size="sm" onClick={handleAddFolder} disabled={!newFolderName}>
+        <Button 
+          size="sm" 
+          onClick={handleAddFolder} 
+          disabled={!newFolderName.trim()}
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add
         </Button>
