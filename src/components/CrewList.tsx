@@ -63,21 +63,19 @@ export function CrewList() {
       <CrewHeader selectedCount={selectedItems.length} />
 
       <div className="bg-zinc-900 rounded-md">
-        <div className="min-h-[48px]">
-          {selectedItems.length > 0 && (
-            <div className="p-2 border-b border-zinc-800/50 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-zinc-400">{selectedItems.length} items selected</span>
-                <Button variant="ghost" size="sm" className="gap-2">
-                  <Package className="h-4 w-4" />
-                  EDIT
-                </Button>
-              </div>
-              <Button variant="ghost" size="sm">
-                Adjust view
+        <div className="h-[48px]">
+          <div className={`p-2 border-b border-zinc-800/50 flex items-center justify-between ${selectedItems.length === 0 ? 'invisible' : 'visible'}`}>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-zinc-400">{selectedItems.length} items selected</span>
+              <Button variant="ghost" size="sm" className="gap-2">
+                <Package className="h-4 w-4" />
+                EDIT
               </Button>
             </div>
-          )}
+            <Button variant="ghost" size="sm">
+              Adjust view
+            </Button>
+          </div>
         </div>
 
         <Table>
