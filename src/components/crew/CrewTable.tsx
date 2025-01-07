@@ -33,13 +33,13 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect }: CrewTabl
                 onCheckedChange={() => onItemSelect(crew.id)}
               />
             </TableCell>
-            <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{crew.name}</TableCell>
-            <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">
+            <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">{crew.name}</TableCell>
+            <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">
               <RoleTags role={crew.role} />
             </TableCell>
-            <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{crew.email}</TableCell>
-            <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{crew.phone}</TableCell>
-            <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{crew.folder}</TableCell>
+            <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">{crew.email}</TableCell>
+            <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">{crew.phone}</TableCell>
+            <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">{crew.folder}</TableCell>
           </TableRow>
         ))}
       </TableBody>

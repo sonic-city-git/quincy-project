@@ -8,7 +8,7 @@ export function RoleTags({ role }: RoleTagsProps) {
   const tags = role.split(", ");
   
   return (
-    <div className="flex gap-1 flex-wrap">
+    <div className="flex gap-1 whitespace-nowrap overflow-hidden">
       {tags.map((tag, index) => {
         const upperTag = tag.toUpperCase();
         return (
