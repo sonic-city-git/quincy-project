@@ -52,12 +52,16 @@ export function ProjectList() {
                   <div className="w-4 h-4 rounded border border-zinc-700"></div>
                 </TableCell>
                 <TableCell className="pl-0">
-                  <div 
-                    className={`${project.color} text-white px-4 py-2 rounded-md max-w-[300px] truncate`}
-                    style={{ backgroundColor: project.color }}
+                  <span 
+                    className="inline-block px-3 py-1 rounded"
+                    style={{ 
+                      backgroundColor: project.color,
+                      color: '#fff',
+                      minWidth: '120px'
+                    }}
                   >
                     {project.name}
-                  </div>
+                  </span>
                 </TableCell>
                 <TableCell className="text-zinc-300">
                   {project.owner}
