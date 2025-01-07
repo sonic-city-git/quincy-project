@@ -20,7 +20,7 @@ export function ProjectTabs({ projectId, project }: ProjectTabsProps) {
       <TabsContent value="general">
         <ProjectGeneralTab 
           projectId={projectId}
-          initialOwner={project.owner.id}
+          initialOwner={project.owner_id}
           initialCustomer={project.customer || ""}
           gigPrice={project.gig_price || ""}
           yearlyRevenue={project.yearly_revenue || ""}
