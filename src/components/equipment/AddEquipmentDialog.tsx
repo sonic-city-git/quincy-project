@@ -8,11 +8,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Equipment } from "@/types/equipment";
 import { FolderSelect } from "./shared/FolderSelect";
+import { SerialNumbersSection } from "./add/SerialNumbersSection";
+import { BasicEquipmentFields } from "./add/BasicEquipmentFields";
 
 interface AddEquipmentDialogProps {
   onAddEquipment: (newEquipment: Equipment) => void;
@@ -51,11 +53,7 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
     setSelectedFolder(null);
   };
 
-  const addSerialNumberField = () => {
-    setSerialNumbers(prev => [...prev, '']);
-  };
-
-  const updateSerialNumber = (index: number, value: string) => {
+  const handleSerialNumberChange = (index: number, value: string) => {
     setSerialNumbers(prev => {
       const updated = [...prev];
       updated[index] = value;
@@ -63,7 +61,11 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
     });
   };
 
-  const removeSerialNumber = (index: number) => {
+  const handleAddSerialNumber = () => {
+    setSerialNumbers(prev => [...prev, '']);
+  };
+
+  const handleRemoveSerialNumber = (index: number) => {
     setSerialNumbers(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -80,57 +82,8 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
           <DialogTitle>Add Equipment</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="code">Code</Label>
-            <Input
-              id="code"
-              name="code"
-              placeholder="4U-AIR"
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              name="name"
-              placeholder="Peli Air with 4U"
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="price">Price</Label>
-            <Input
-              id="price"
-              name="price"
-              type="number"
-              step="0.01"
-              placeholder="60.80"
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="value">Book Value</Label>
-            <Input
-              id="value"
-              name="value"
-              type="number"
-              step="0.01"
-              placeholder="1500.00"
-              required
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="weight">Weight (kg)</Label>
-            <Input
-              id="weight"
-              name="weight"
-              type="number"
-              step="0.01"
-              placeholder="10.50"
-              required
-            />
-          </div>
+          <BasicEquipmentFields required />
+          
           <div className="flex items-center space-x-2">
             <Checkbox
               id="hasSerialNumbers"
@@ -141,42 +94,14 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
               This equipment requires serial numbers
             </Label>
           </div>
+
           {hasSerialNumbers ? (
-            <div className="grid gap-2">
-              <Label>Serial Numbers</Label>
-              {serialNumbers.map((serialNumber, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    placeholder={`Serial number ${index + 1}`}
-                    value={serialNumber}
-                    onChange={(e) => updateSerialNumber(index, e.target.value)}
-                    required
-                  />
-                  {serialNumbers.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => removeSerialNumber(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={addSerialNumberField}
-                className="mt-2"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Serial Number
-              </Button>
-              <p className="text-sm text-muted-foreground">
-                Stock: {serialNumbers.filter(sn => sn.trim() !== '').length} items
-              </p>
-            </div>
+            <SerialNumbersSection
+              serialNumbers={serialNumbers}
+              onSerialNumberChange={handleSerialNumberChange}
+              onAddSerialNumber={handleAddSerialNumber}
+              onRemoveSerialNumber={handleRemoveSerialNumber}
+            />
           ) : (
             <div className="grid gap-2">
               <Label htmlFor="stock">Stock</Label>
@@ -189,6 +114,7 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
               />
             </div>
           )}
+
           <div className="grid gap-2">
             <Label>Folder</Label>
             <FolderSelect
