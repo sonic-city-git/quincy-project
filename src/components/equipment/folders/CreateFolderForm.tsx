@@ -1,7 +1,6 @@
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Folder } from "@/types/folders";
 
 interface CreateFolderFormProps {
@@ -14,11 +13,8 @@ interface CreateFolderFormProps {
 }
 
 export function CreateFolderForm({
-  folders,
   newFolderName,
-  selectedParentId,
   onNameChange,
-  onParentChange,
   onSubmit
 }: CreateFolderFormProps) {
   return (
@@ -34,21 +30,6 @@ export function CreateFolderForm({
           }
         }}
       />
-      <Select
-        value={selectedParentId || folders[0]?.id || ""}
-        onValueChange={(value) => onParentChange(value)}
-      >
-        <SelectTrigger className="w-[180px] h-8">
-          <SelectValue placeholder="Parent folder" />
-        </SelectTrigger>
-        <SelectContent>
-          {folders.map((folder) => (
-            <SelectItem key={folder.id} value={folder.id}>
-              {folder.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
       <Button 
         size="sm" 
         onClick={onSubmit} 
