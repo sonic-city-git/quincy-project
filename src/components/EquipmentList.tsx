@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { addDays, subDays } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Equipment } from "@/types/equipment";
@@ -10,48 +10,62 @@ import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
 import { EquipmentFolderSelect } from "./equipment/EquipmentFolderSelect";
 import { EquipmentTable } from "./equipment/EquipmentTable";
 import { EquipmentSelectionHeader } from "./equipment/EquipmentSelectionHeader";
-
-const MOCK_EQUIPMENT: Equipment[] = [
-  {
-    code: "4U-AIR",
-    name: "Peli Air with 4U",
-    price: "60.80",
-    value: "1,500.00",
-    weight: "10.50",
-    stock: 5,
-    id: "904",
-    folderId: "flightcases",
-  },
-  {
-    code: "1xCAT6/230-10M",
-    name: "XXX 1xCat6 + 230V 10m",
-    price: "45.00",
-    value: "800.00",
-    weight: "2.30",
-    stock: 12,
-    id: "2404",
-    folderId: "cat",
-  },
-  {
-    code: "SCHUKO-3M",
-    name: "Schuko 1-3m",
-    price: "14.77",
-    value: "1,200.00",
-    weight: "0.50",
-    stock: 8,
-    id: "1024",
-    folderId: "schuko",
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
 
 export function EquipmentList() {
-  const [equipment, setEquipment] = useState<Equipment[]>(MOCK_EQUIPMENT);
+  const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(new Date());
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const fetchEquipment = async () => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('equipment')
+        .select('*');
+
+      if (error) {
+        console.error('Error fetching equipment:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load equipment data",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const formattedEquipment: Equipment[] = data.map(item => ({
+        id: item.id,
+        code: item.Code || '',
+        name: item.Name || '',
+        price: item.Price?.toString() || '0',
+        value: item["Book Value"]?.toString() || '0',
+        weight: item.Weight?.toString() || '0',
+        stock: item.Stock || 0,
+        folderId: item.Folder || undefined,
+      }));
+
+      setEquipment(formattedEquipment);
+    } catch (error) {
+      console.error('Error:', error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEquipment();
+  }, []);
 
   const handleResize = useCallback(() => {
     // This empty callback is enough to trigger the debounced resize handling
@@ -135,6 +149,10 @@ export function EquipmentList() {
       id: item.id,
       name: item.name
     }));
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-[400px]">Loading equipment...</div>;
+  }
 
   return (
     <div className="space-y-6" ref={containerRef}>
