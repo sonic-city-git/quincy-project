@@ -7,6 +7,11 @@ export const useCustomerSync = () => {
   const syncCustomers = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('sync-customers', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+          'apikey': process.env.SUPABASE_ANON_KEY,
+        },
         body: { action: 'sync' }
       });
 
