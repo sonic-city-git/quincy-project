@@ -13,6 +13,9 @@ export function useProjectDetails(projectId: string | undefined) {
       try {
         if (!projectId) return;
 
+        // Replace hyphens with spaces for the database query
+        const formattedProjectId = projectId.replace(/-/g, ' ');
+
         const { data: projectData, error: projectError } = await supabase
           .from('projects')
           .select(`
@@ -21,7 +24,7 @@ export function useProjectDetails(projectId: string | undefined) {
               name
             )
           `)
-          .eq('id', projectId)
+          .eq('id', formattedProjectId)
           .maybeSingle();
 
         if (projectError) throw projectError;
