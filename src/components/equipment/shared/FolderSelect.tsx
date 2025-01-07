@@ -27,7 +27,7 @@ export function FolderSelect({
       <div key={folder.id}>
         <SelectItem
           value={folder.id}
-          className={`${level > 0 ? "pl-6 italic" : ""}`}
+          className={level > 0 ? "pl-6 italic" : ""}
         >
           {folder.name}
         </SelectItem>
