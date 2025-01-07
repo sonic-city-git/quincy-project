@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import { Folder } from "@/types/folders";
 import { supabase } from "@/integrations/supabase/client";
+import { sortFoldersByName } from "@/utils/folderUtils";
 
 export function useFolderState(initialFolders: Folder[]) {
-  const sortFolders = (foldersToSort: Folder[]): Folder[] => {
-    return [...foldersToSort].sort((a, b) => a.name.localeCompare(b.name));
-  };
-
-  const [folders, setFolders] = useState<Folder[]>(sortFolders(initialFolders));
+  const [folders, setFolders] = useState<Folder[]>(sortFoldersByName(initialFolders));
   const [expandedFolders, setExpandedFolders] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
@@ -44,7 +41,7 @@ export function useFolderState(initialFolders: Folder[]) {
       return;
     }
 
-    setFolders(sortFolders(data));
+    setFolders(sortFoldersByName(data));
   };
 
   const toggleFolder = (folderId: string) => {

@@ -1,4 +1,5 @@
 import { EquipmentFolder } from "@/types/equipment";
+import { Folder } from "@/types/folders";
 import { EQUIPMENT_FOLDERS } from "@/data/equipmentFolders";
 
 export const isItemInFolder = (itemFolderId: string | undefined, selectedFolderId: string | null): boolean => {
@@ -41,4 +42,8 @@ export const getFolderPath = (folderId: string | null, folders: EquipmentFolder[
     }
   }
   return 'All folders';
+};
+
+export const sortFoldersByName = (folders: Folder[]): Folder[] => {
+  return [...folders].sort((a, b) => a.name.localeCompare(b.name));
 };
