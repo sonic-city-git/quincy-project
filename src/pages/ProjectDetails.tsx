@@ -95,64 +95,68 @@ const ProjectDetails = () => {
 
           <TabsContent value="general">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="p-6 space-y-6">
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Owner</p>
-                      <Select value={selectedOwner} onValueChange={setSelectedOwner}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select owner" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {sonicCityCrewMembers.map((crew) => (
-                            <SelectItem key={crew.id} value={crew.name}>
-                              {crew.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Separator className="my-4" />
-                    <div className="space-y-2">
-                      <p className="text-sm text-muted-foreground">Customer</p>
-                      <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select customer" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Universal Music">Universal Music</SelectItem>
-                          <SelectItem value="Sony Music">Sony Music</SelectItem>
-                          <SelectItem value="Warner Music">Warner Music</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="lg:col-span-1">
+                <Card>
+                  <CardContent className="p-4">
+                    <Calendar
+                      mode="single"
+                      selected={date}
+                      onSelect={setDate}
+                      className="rounded-md border"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
 
-              <Card>
-                <CardContent className="p-4 space-y-2">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Gig Price</p>
-                    <p className="text-base">{project.gigPrice}</p>
-                    <Separator className="my-2" />
-                    <p className="text-sm text-muted-foreground">Yearly Revenue</p>
-                    <p className="text-base">{project.yearlyRevenue}</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div className="lg:col-span-2 space-y-4">
+                <Card>
+                  <CardContent className="p-6 space-y-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">Owner</p>
+                        <Select value={selectedOwner} onValueChange={setSelectedOwner}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select owner" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {sonicCityCrewMembers.map((crew) => (
+                              <SelectItem key={crew.id} value={crew.name}>
+                                {crew.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Separator className="my-4" />
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground">Customer</p>
+                        <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select customer" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Universal Music">Universal Music</SelectItem>
+                            <SelectItem value="Sony Music">Sony Music</SelectItem>
+                            <SelectItem value="Warner Music">Warner Music</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardContent className="p-4">
-                  <Calendar
-                    mode="single"
-                    selected={date}
-                    onSelect={setDate}
-                    className="rounded-md border"
-                  />
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardContent className="p-4 space-y-2">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Gig Price</p>
+                      <p className="text-base">{project.gigPrice}</p>
+                      <Separator className="my-2" />
+                      <p className="text-sm text-muted-foreground">Yearly Revenue</p>
+                      <p className="text-base">{project.yearlyRevenue}</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </TabsContent>
 
