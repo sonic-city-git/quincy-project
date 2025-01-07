@@ -101,10 +101,11 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
           <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
         </SelectTrigger>
         <SelectContent 
-          className="bg-zinc-900 border border-zinc-700 min-w-[240px] z-50"
+          className="bg-zinc-900 border border-zinc-700 min-w-[240px] z-[100]"
           position="popper"
           align="start"
           sideOffset={5}
+          style={{ position: 'relative', zIndex: 100 }}
         >
           {customers.map((customer) => (
             <SelectItem 
