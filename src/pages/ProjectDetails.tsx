@@ -114,8 +114,6 @@ const ProjectDetails = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-sm text-muted-foreground mt-4">Gig Price</p>
-                  <p className="text-base">{project.gigPrice}</p>
                 </div>
                 <Separator className="my-4" />
                 <div className="space-y-2">
@@ -130,8 +128,6 @@ const ProjectDetails = () => {
                       <SelectItem value="Warner Music">Warner Music</SelectItem>
                     </SelectContent>
                   </Select>
-                  <p className="text-sm text-muted-foreground mt-4">Yearly Revenue</p>
-                  <p className="text-base">{project.yearlyRevenue}</p>
                 </div>
               </div>
             </CardContent>
