@@ -59,12 +59,13 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
             );
             
             return (
-              <div 
+              <button 
                 {...props}
-                className={`relative h-9 w-9 p-0 font-normal flex items-center justify-center text-sm ${props.className || ''} ${event ? EVENT_COLORS[event.type] : ''}`}
+                className={`relative h-9 w-9 p-0 font-normal flex items-center justify-center text-sm cursor-pointer hover:bg-accent ${props.className || ''} ${event ? EVENT_COLORS[event.type] : ''}`}
+                onClick={() => handleSelect(dayDate)}
               >
                 {dayDate.getDate()}
-              </div>
+              </button>
             );
           },
         }}
