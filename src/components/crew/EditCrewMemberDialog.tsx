@@ -24,11 +24,15 @@ export function EditCrewMemberDialog({
   onDeleteCrewMember,
 }: EditCrewMemberDialogProps) {
   const [open, setOpen] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const { toast } = useToast();
   const crewMember = selectedCrew[0];
 
   if (!crewMember) return null;
+
+  // Initialize selectedTags from the crew member's existing roles
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    crewMember.role.split(", ").map(role => role.toLowerCase())
+  );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,7 +41,7 @@ export function EditCrewMemberDialog({
     const editedMember: CrewMember = {
       id: crewMember.id,
       name: `${formData.get("firstName")} ${formData.get("lastName")}`,
-      role: selectedTags.join(", "),
+      role: selectedTags.map(tag => tag.toUpperCase()).join(", "),
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
       folder: formData.get("folder") as string,
