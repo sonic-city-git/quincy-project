@@ -45,7 +45,6 @@ export function OwnerSelect({ projectId, initialOwner, onOwnerSelect }: OwnerSel
         throw new Error('Selected crew member not found');
       }
 
-      // Only update in Supabase if we have a valid projectId
       if (projectId && projectId.length > 0) {
         const { error } = await supabase
           .from('projects')
@@ -79,8 +78,8 @@ export function OwnerSelect({ projectId, initialOwner, onOwnerSelect }: OwnerSel
         <SelectTrigger className="w-full">
           <SelectValue placeholder="Select owner" />
         </SelectTrigger>
-        <SelectContent className="max-h-[200px]">
-          <ScrollArea className="h-[200px]">
+        <SelectContent>
+          <ScrollArea className="h-[200px] overflow-y-auto">
             {sonicCityCrewMembers.map((crew) => (
               <SelectItem key={crew.id} value={crew.id}>
                 {crew.name}

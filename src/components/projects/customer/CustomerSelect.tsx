@@ -59,7 +59,6 @@ export function CustomerSelect({ projectId, initialCustomer, onCustomerSelect }:
       }
 
       console.log('Updating project with customer:', selectedCustomerData.name);
-      // Only attempt to update if we have a valid projectId
       if (projectId && projectId.length > 0) {
         const { error: updateError } = await supabase
           .from('projects')
@@ -115,8 +114,8 @@ export function CustomerSelect({ projectId, initialCustomer, onCustomerSelect }:
         <SelectTrigger className="w-full">
           <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
         </SelectTrigger>
-        <SelectContent className="max-h-[200px]">
-          <ScrollArea className="h-[200px]">
+        <SelectContent>
+          <ScrollArea className="h-[200px] overflow-y-auto">
             {customers.map((customer) => (
               <SelectItem 
                 key={customer.id} 
