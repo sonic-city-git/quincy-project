@@ -26,7 +26,7 @@ async function fetchCustomers() {
     throw error;
   }
   
-  console.log('Fetched customers data:', data);
+  console.log('Fetched customers:', data);
   return data || [];
 }
 
