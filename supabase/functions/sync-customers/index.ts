@@ -39,21 +39,23 @@ serve(async (req) => {
 
     console.log('Fetching customers from Tripletex...')
     
-    // Create session token for Tripletex API using the correct format with '0' as the company ID
-    const sessionToken = btoa(`0:${employeeToken}`)
+    // Base64 encode the authentication string in format "companyId:sessionToken"
+    const authString = btoa(`0:${employeeToken}`)
+    console.log('Auth string created:', authString)
     
-    console.log('Making request to Tripletex API with headers...')
-    console.log('Session token:', sessionToken)
+    const headers = {
+      'Authorization': `Basic ${authString}`,
+      'consumerToken': consumerToken,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }
+    
+    console.log('Making request to Tripletex API with headers:', JSON.stringify(headers, null, 2))
     
     // Fetch customers from Tripletex
     const tripletexResponse = await fetch('https://api.tripletex.io/v2/customer?fields=id,name,email,phoneNumber,customerNumber', {
       method: 'GET',
-      headers: {
-        'Authorization': `Basic ${sessionToken}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'consumerToken': consumerToken,
-      },
+      headers: headers
     })
 
     if (!tripletexResponse.ok) {
