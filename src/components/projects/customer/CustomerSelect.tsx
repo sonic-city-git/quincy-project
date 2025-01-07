@@ -91,15 +91,18 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
         onValueChange={handleCustomerChange}
         disabled={isLoading}
       >
-        <SelectTrigger className="w-full bg-zinc-900">
+        <SelectTrigger className="w-full bg-zinc-900 text-white border-zinc-700">
           <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
         </SelectTrigger>
-        <SelectContent className="bg-zinc-900">
+        <SelectContent 
+          className="bg-zinc-900 border border-zinc-700"
+          position="popper"
+        >
           {customers.map((customer) => (
             <SelectItem 
               key={customer.id} 
               value={customer.id}
-              className="text-white hover:bg-zinc-800"
+              className="text-white hover:bg-zinc-800 cursor-pointer"
             >
               {customer.name}
             </SelectItem>
