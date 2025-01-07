@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Plus, Copy, Trash } from "lucide-react";
+import { Copy, Trash } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,6 +11,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { AddProjectDialog } from "./AddProjectDialog";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProjectActionsProps {
   selectedItems?: string[];
@@ -18,10 +21,49 @@ interface ProjectActionsProps {
 
 export function ProjectActions({ selectedItems = [] }: ProjectActionsProps) {
   const hasSelection = selectedItems.length > 0;
+  const { toast } = useToast();
 
-  const handleDelete = () => {
-    // TODO: Implement delete functionality
-    console.log('Deleting projects:', selectedItems);
+  const handleDelete = async () => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', selectedItems[0]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Project deleted",
+        description: "The project has been deleted successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete the project",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddProject = async (projectData: {
+    name: string;
+    owner_id: string;
+    customer: string | null;
+    color: string;
+  }) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .insert([projectData]);
+
+      if (error) throw error;
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to create the project",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -43,7 +85,7 @@ export function ProjectActions({ selectedItems = [] }: ProjectActionsProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the selected project(s).
+                  This action cannot be undone. This will permanently delete the selected project.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -54,10 +96,9 @@ export function ProjectActions({ selectedItems = [] }: ProjectActionsProps) {
           </AlertDialog>
         </>
       )}
-      <Button variant="secondary" className="gap-2 ml-auto">
-        <Plus className="h-4 w-4" />
-        New Project
-      </Button>
+      <div className="ml-auto">
+        <AddProjectDialog onAddProject={handleAddProject} />
+      </div>
     </div>
   );
 }
