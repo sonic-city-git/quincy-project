@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { Package } from "lucide-react";
 import { useState } from "react";
 import { CrewHeader } from "./crew/CrewHeader";
 import { CrewTimeline } from "./crew/CrewTimeline";
@@ -7,6 +6,7 @@ import { CrewTable } from "./crew/CrewTable";
 import { addDays, subDays } from "date-fns";
 import { MOCK_CREW } from "@/data/mockCrew";
 import { CrewMember, NewCrewMember } from "@/types/crew";
+import { EditCrewMemberDialog } from "./crew/EditCrewMemberDialog";
 
 export function CrewList() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -36,6 +36,15 @@ export function CrewList() {
     setCrewMembers((prev) => [...prev, crewMember]);
   };
 
+  const handleEditCrewMember = (editedMember: CrewMember) => {
+    setCrewMembers((prev) =>
+      prev.map((member) =>
+        member.id === editedMember.id ? editedMember : member
+      )
+    );
+    setSelectedItems([]);
+  };
+
   const handlePreviousPeriod = () => {
     setStartDate(prev => subDays(prev, daysToShow));
   };
@@ -55,10 +64,10 @@ export function CrewList() {
           <div className={`h-full flex items-center justify-between px-2 transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             <div className="flex items-center gap-2">
               <span className="text-sm text-zinc-400">{selectedItems.length} items selected</span>
-              <Button variant="ghost" size="sm" className="gap-2">
-                <Package className="h-4 w-4" />
-                EDIT
-              </Button>
+              <EditCrewMemberDialog 
+                selectedCrew={selectedCrew}
+                onEditCrewMember={handleEditCrewMember}
+              />
             </div>
           </div>
         </div>
