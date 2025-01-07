@@ -86,8 +86,8 @@ export function EditCrewMemberForm({
       </div>
       <RoleSelector selectedTags={selectedTags} onTagsChange={onTagsChange} />
       <div className="flex justify-between items-center">
-        <DeleteCrewMemberButton onDelete={onDelete} />
         <Button type="submit">Save Changes</Button>
+        <DeleteCrewMemberButton onDelete={onDelete} />
       </div>
     </form>
   );
