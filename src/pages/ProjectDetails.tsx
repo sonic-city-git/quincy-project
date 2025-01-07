@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 const MOCK_PROJECTS = {
@@ -64,19 +64,16 @@ const ProjectDetails = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Owner Card */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Owner</CardTitle>
-            </CardHeader>
+            <CardHeader />
             <CardContent>
+              <p className="text-sm text-muted-foreground">Owner</p>
               <p className="text-base">{project.owner}</p>
             </CardContent>
           </Card>
 
           {/* Financial Details Card */}
           <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Gig Price</CardTitle>
-            </CardHeader>
+            <CardHeader />
             <CardContent className="space-y-4">
               <div>
                 <p className="text-sm text-muted-foreground">Gig Price</p>
