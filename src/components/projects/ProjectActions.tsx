@@ -39,16 +39,16 @@ export function ProjectActions({ selectedItems = [], onProjectDeleted }: Project
 
       if (error) throw error;
 
-      // Clear selection
-      onProjectDeleted?.();
+      // Invalidate the projects query first
+      await queryClient.invalidateQueries({ queryKey: ['projects'] });
 
+      // Clear selection and show success toast
+      onProjectDeleted?.();
+      
       toast({
         title: "Project deleted",
         description: "The project has been deleted successfully",
       });
-
-      // Invalidate the projects query to trigger a refresh
-      await queryClient.invalidateQueries({ queryKey: ['projects'] });
       
       // Navigate back to projects list after successful deletion
       navigate('/projects');
