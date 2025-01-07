@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Equipment } from "@/types/equipment";
 import { EQUIPMENT_FOLDERS } from "@/data/equipmentFolders";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -200,44 +201,46 @@ export function EquipmentList() {
           </div>
         </div>
 
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
-              <TableHead className="w-12">
-                <Checkbox 
-                  checked={selectedItems.length === filteredEquipment.length && filteredEquipment.length > 0}
-                  onCheckedChange={handleSelectAll}
-                />
-              </TableHead>
-              <TableHead>Code</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Weight (kg)</TableHead>
-              <TableHead>Book value</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredEquipment.map((item) => (
-              <TableRow key={item.id} className="hover:bg-zinc-800/50 border-b border-zinc-800/50">
-                <TableCell className="w-12">
+        <ScrollArea className="h-[400px] w-full">
+          <Table>
+            <TableHeader>
+              <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
+                <TableHead className="w-12">
                   <Checkbox 
-                    checked={selectedItems.includes(item.id)}
-                    onCheckedChange={() => handleItemSelect(item.id)}
+                    checked={selectedItems.length === filteredEquipment.length && filteredEquipment.length > 0}
+                    onCheckedChange={handleSelectAll}
                   />
-                </TableCell>
-                <TableCell className="font-mono whitespace-nowrap overflow-hidden text-ellipsis">{item.code}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.name}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.stock}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.price}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.weight} kg</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">
-                  {(parseFloat(item.value.replace(',', '')) * item.stock).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </TableCell>
+                </TableHead>
+                <TableHead>Code</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Stock</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Weight (kg)</TableHead>
+                <TableHead>Book value</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {filteredEquipment.map((item) => (
+                <TableRow key={item.id} className="hover:bg-zinc-800/50 border-b border-zinc-800/50">
+                  <TableCell className="w-12">
+                    <Checkbox 
+                      checked={selectedItems.includes(item.id)}
+                      onCheckedChange={() => handleItemSelect(item.id)}
+                    />
+                  </TableCell>
+                  <TableCell className="font-mono whitespace-nowrap overflow-hidden text-ellipsis">{item.code}</TableCell>
+                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.name}</TableCell>
+                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.stock}</TableCell>
+                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.price}</TableCell>
+                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.weight} kg</TableCell>
+                  <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">
+                    {(parseFloat(item.value.replace(',', '')) * item.stock).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollArea>
 
         <EquipmentTimeline
           startDate={startDate}
