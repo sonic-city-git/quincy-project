@@ -7,12 +7,15 @@ import { addDays, subDays } from "date-fns";
 import { MOCK_CREW } from "@/data/mockCrew";
 import { CrewMember, NewCrewMember } from "@/types/crew";
 import { EditCrewMemberDialog } from "./crew/EditCrewMemberDialog";
+import { Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export function CrewList() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(new Date());
   const [crewMembers, setCrewMembers] = useState<CrewMember[]>(MOCK_CREW);
   const daysToShow = 14;
+  const { toast } = useToast();
 
   const handleItemSelect = (id: string) => {
     setSelectedItems((prev) => {
@@ -45,6 +48,17 @@ export function CrewList() {
     setSelectedItems([]);
   };
 
+  const handleDeleteCrewMembers = () => {
+    setCrewMembers((prev) => 
+      prev.filter((member) => !selectedItems.includes(member.id))
+    );
+    toast({
+      title: "Crew members deleted",
+      description: `${selectedItems.length} crew member(s) have been removed`,
+    });
+    setSelectedItems([]);
+  };
+
   const handlePreviousPeriod = () => {
     setStartDate(prev => subDays(prev, daysToShow));
   };
@@ -68,6 +82,14 @@ export function CrewList() {
                 selectedCrew={selectedCrew}
                 onEditCrewMember={handleEditCrewMember}
               />
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteCrewMembers}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete
+              </Button>
             </div>
           </div>
         </div>
