@@ -39,6 +39,39 @@ export type Database = {
         }
         Relationships: []
       }
+      customers: {
+        Row: {
+          created_at: string
+          customer_number: string | null
+          email: string | null
+          id: string
+          name: string
+          phone_number: string | null
+          tripletex_id: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_number?: string | null
+          email?: string | null
+          id?: string
+          name: string
+          phone_number?: string | null
+          tripletex_id: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_number?: string | null
+          email?: string | null
+          id?: string
+          name?: string
+          phone_number?: string | null
+          tripletex_id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           color: string
