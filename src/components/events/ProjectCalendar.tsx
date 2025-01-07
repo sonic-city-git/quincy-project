@@ -7,11 +7,11 @@ import { DayProps } from "react-day-picker";
 import { useParams } from "react-router-dom";
 
 const EVENT_COLORS: Record<EventType, string> = {
-  "Show": "bg-green-500",
-  "Preprod": "bg-yellow-500",
-  "Travel": "bg-blue-500",
-  "INT Storage": "bg-pink-500",
-  "EXT Storage": "bg-red-500"
+  "Show": "bg-green-500/80 hover:bg-green-600/80",
+  "Preprod": "bg-amber-500/80 hover:bg-amber-600/80",
+  "Travel": "bg-blue-500/80 hover:bg-blue-600/80",
+  "INT Storage": "bg-purple-500/80 hover:bg-purple-600/80",
+  "EXT Storage": "bg-red-500/80 hover:bg-red-600/80"
 };
 
 interface ProjectCalendarProps {
@@ -26,7 +26,6 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent>();
 
-  // Load events from localStorage when component mounts
   useEffect(() => {
     const storedEvents = localStorage.getItem(`calendar-events-${projectId}`);
     if (storedEvents) {
@@ -38,7 +37,6 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
     }
   }, [projectId]);
 
-  // Save events to localStorage whenever they change
   useEffect(() => {
     if (projectId) {
       localStorage.setItem(`calendar-events-${projectId}`, JSON.stringify(events));
@@ -63,7 +61,11 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
 
   const handleEventSubmit = (eventName: string, eventType: EventType) => {
     if (selectedDate) {
-      setEvents([...events, { date: selectedDate, name: eventName, type: eventType }]);
+      setEvents([...events, { 
+        date: selectedDate, 
+        name: eventName.trim() || eventType, 
+        type: eventType 
+      }]);
       setIsAddDialogOpen(false);
     }
   };
@@ -71,7 +73,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   const handleEventUpdate = (updatedEvent: CalendarEvent) => {
     const updatedEvents = events.map(event => 
       event.date.toDateString() === updatedEvent.date.toDateString() 
-        ? updatedEvent 
+        ? { ...updatedEvent, name: updatedEvent.name.trim() || updatedEvent.type }
         : event
     );
     setEvents(updatedEvents);
@@ -104,8 +106,17 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
             return (
               <button 
                 {...props}
-                className={`relative h-9 w-9 p-0 font-normal flex items-center justify-center text-sm cursor-pointer hover:bg-accent ${props.className || ''} ${event ? EVENT_COLORS[event.type] : ''}`}
+                className={`
+                  relative h-9 w-9 p-0 font-normal 
+                  flex items-center justify-center text-sm 
+                  cursor-pointer hover:bg-accent 
+                  transition-colors duration-200
+                  rounded-md shadow-sm
+                  ${props.className || ''} 
+                  ${event ? `${EVENT_COLORS[event.type]} text-white font-medium` : ''}
+                `}
                 onClick={() => handleSelect(dayDate)}
+                title={event?.name}
               >
                 {dayDate.getDate()}
               </button>
