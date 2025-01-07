@@ -6,9 +6,10 @@ import { useToast } from "@/hooks/use-toast";
 interface OwnerSelectProps {
   projectId: string;
   initialOwner: string;
+  onOwnerSelect?: (ownerId: string) => void;
 }
 
-export function OwnerSelect({ projectId, initialOwner }: OwnerSelectProps) {
+export function OwnerSelect({ projectId, initialOwner, onOwnerSelect }: OwnerSelectProps) {
   const [sonicCityCrewMembers, setSonicCityCrewMembers] = useState<Array<{ id: string; name: string }>>([]);
   const [selectedOwner, setSelectedOwner] = useState(initialOwner);
   const { toast } = useToast();
@@ -36,9 +37,9 @@ export function OwnerSelect({ projectId, initialOwner }: OwnerSelectProps) {
     fetchSonicCityCrewMembers();
   }, [toast]);
 
-  const handleOwnerChange = async (newOwnerName: string) => {
+  const handleOwnerChange = async (newOwnerId: string) => {
     try {
-      const crewMember = sonicCityCrewMembers.find(crew => crew.name === newOwnerName);
+      const crewMember = sonicCityCrewMembers.find(crew => crew.id === newOwnerId);
       if (!crewMember) {
         throw new Error('Selected crew member not found');
       }
@@ -58,7 +59,8 @@ export function OwnerSelect({ projectId, initialOwner }: OwnerSelectProps) {
         });
       }
 
-      setSelectedOwner(newOwnerName);
+      setSelectedOwner(crewMember.id);
+      onOwnerSelect?.(crewMember.id);
     } catch (error) {
       console.error('Error updating project owner:', error);
       toast({
@@ -78,7 +80,7 @@ export function OwnerSelect({ projectId, initialOwner }: OwnerSelectProps) {
         </SelectTrigger>
         <SelectContent>
           {sonicCityCrewMembers.map((crew) => (
-            <SelectItem key={crew.id} value={crew.name}>
+            <SelectItem key={crew.id} value={crew.id}>
               {crew.name}
             </SelectItem>
           ))}

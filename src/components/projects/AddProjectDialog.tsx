@@ -31,10 +31,30 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (!selectedOwner) {
+      toast({
+        title: "Error",
+        description: "Please select a project owner",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const formData = new FormData(e.currentTarget);
+    const projectName = formData.get("name") as string;
+
+    if (!projectName.trim()) {
+      toast({
+        title: "Error",
+        description: "Project name is required",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const newProject = {
-      name: formData.get("name") as string,
+      name: projectName,
       owner_id: selectedOwner,
       customer: selectedCustomer,
       color: '#' + Math.floor(Math.random()*16777215).toString(16), // Random color
@@ -66,7 +86,7 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
             <Input
               id="name"
               name="name"
-              placeholder="Taylor Swift"
+              placeholder="Enter project name"
               required
             />
           </div>
@@ -74,11 +94,13 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
           <OwnerSelect
             projectId=""
             initialOwner={selectedOwner}
+            onOwnerSelect={(ownerId) => setSelectedOwner(ownerId)}
           />
 
           <CustomerSelect
             projectId=""
             initialCustomer={selectedCustomer || ""}
+            onCustomerSelect={(customer) => setSelectedCustomer(customer)}
           />
 
           <Button type="submit" className="mt-4">Create project</Button>
