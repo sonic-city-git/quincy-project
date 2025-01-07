@@ -33,16 +33,19 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
     queryFn: fetchCustomers,
   });
 
-  const handleCustomerChange = async (newCustomer: string) => {
+  const handleCustomerChange = async (customerId: string) => {
     try {
+      // Find the customer name from the selected ID
+      const selectedCustomerName = customers?.find(c => c.id === customerId)?.name || '';
+      
       const { error } = await supabase
         .from('projects')
-        .update({ customer: newCustomer })
+        .update({ customer: selectedCustomerName })
         .eq('id', projectId);
 
       if (error) throw error;
 
-      setSelectedCustomer(newCustomer);
+      setSelectedCustomer(selectedCustomerName);
       
       toast({
         title: "Success",
@@ -67,16 +70,23 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
     );
   }
 
+  // Find the ID of the initially selected customer
+  const selectedCustomerId = customers?.find(c => c.name === selectedCustomer)?.id || '';
+
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">Customer</p>
-      <Select value={selectedCustomer} onValueChange={handleCustomerChange}>
+      <Select 
+        value={selectedCustomerId} 
+        onValueChange={handleCustomerChange}
+        disabled={isLoading}
+      >
         <SelectTrigger className="w-full">
           <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
         </SelectTrigger>
         <SelectContent>
           {customers?.map((customer) => (
-            <SelectItem key={customer.id} value={customer.name}>
+            <SelectItem key={customer.id} value={customer.id}>
               {customer.name}
             </SelectItem>
           ))}
