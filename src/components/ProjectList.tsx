@@ -6,24 +6,11 @@ import { ProjectFilterButton } from "./projects/filter/ProjectFilterButton";
 
 export function ProjectList() {
   const { projects, loading } = useProjects();
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [selectedOwner, setSelectedOwner] = useState<string | null>(null);
 
   const handleItemSelect = (id: string) => {
-    setSelectedItems((prev) => {
-      if (prev.includes(id)) {
-        return prev.filter((item) => item !== id);
-      }
-      return [...prev, id];
-    });
-  };
-
-  const handleSelectAll = () => {
-    if (selectedItems.length === filteredProjects.length) {
-      setSelectedItems([]);
-    } else {
-      setSelectedItems(filteredProjects.map((project) => project.id));
-    }
+    setSelectedItem(prev => prev === id ? null : id);
   };
 
   const filteredProjects = selectedOwner
@@ -41,12 +28,11 @@ export function ProjectList() {
           selectedOwner={selectedOwner}
           onOwnerSelect={setSelectedOwner}
         />
-        <ProjectActions selectedItems={selectedItems} />
+        <ProjectActions selectedItems={selectedItem ? [selectedItem] : []} />
       </div>
       <ProjectTable 
         projects={filteredProjects} 
-        selectedItems={selectedItems}
-        onSelectAll={handleSelectAll}
+        selectedItem={selectedItem}
         onItemSelect={handleItemSelect}
       />
     </div>
