@@ -30,7 +30,7 @@ serve(async (req) => {
     )
 
     // Get the Tripletex tokens from Supabase secrets
-    const employeeToken = Deno.env.get('TRIPLETEX_EMPLOYEE_TOKEN')
+    const employeeToken = "MDpleUowYjJ0bGJrbGtJam8xTnpVM056UTBPVElzSW5SdmEyVnVJam9pTVRJM01XVmhOV0l0Tm1SalpDMDBNalUwTFdFNU9HRXRPVGRtWm1Sa1l6YzRaR1pqSW4w"
     const consumerToken = Deno.env.get('TRIPLETEX_CONSUMER_TOKEN')
     
     if (!employeeToken || !consumerToken) {
@@ -39,10 +39,11 @@ serve(async (req) => {
 
     console.log('Fetching customers from Tripletex...')
     
-    // Create session token for Tripletex API using the correct format
+    // Create session token for Tripletex API using the correct format with '0' as the company ID
     const sessionToken = btoa(`0:${employeeToken}`)
     
     console.log('Making request to Tripletex API with headers...')
+    console.log('Session token:', sessionToken)
     
     // Fetch customers from Tripletex
     const tripletexResponse = await fetch('https://api.tripletex.io/v2/customer?fields=id,name,email,phoneNumber,customerNumber', {
