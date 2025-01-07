@@ -14,6 +14,7 @@ export function CrewList() {
     allRoles,
     filteredCrewMembers,
     selectedCrew,
+    isLoading,
     handleItemSelect,
     handleAddCrewMember,
     handleEditCrewMember,
@@ -30,6 +31,14 @@ export function CrewList() {
   const handleNextPeriod = () => {
     setStartDate(prev => addDays(prev, daysToShow));
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-[400px]">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-300"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
