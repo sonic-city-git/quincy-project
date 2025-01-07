@@ -42,7 +42,6 @@ const ProjectDetails = () => {
   const { projectId } = useParams();
   const project = projectId ? MOCK_PROJECTS[projectId as keyof typeof MOCK_PROJECTS] : null;
   
-  // Get crew members from Sonic City folder
   const sonicCityCrewMembers = MOCK_CREW.filter(crew => crew.folder === "Sonic City");
   
   const [selectedOwner, setSelectedOwner] = useState(project?.owner || "");
@@ -56,15 +55,13 @@ const ProjectDetails = () => {
     );
   }
 
-  // Calculate accumulated cost since last invoice
   const calculateAccumulatedCost = () => {
     const lastInvoiceDate = parse(project.lastInvoiced, "dd.MM.yy", new Date());
     const today = new Date();
     const daysSinceInvoice = differenceInDays(today, lastInvoiceDate);
     
-    // Extract numeric value from gigPrice (removing "kr" and spaces)
     const gigPriceValue = parseInt(project.gigPrice.replace(/[^0-9]/g, ''));
-    const dailyRevenue = gigPriceValue / 30; // Assuming monthly revenue
+    const dailyRevenue = gigPriceValue / 30;
     
     return `${Math.round(dailyRevenue * daysSinceInvoice).toLocaleString()} kr`;
   };
@@ -115,6 +112,10 @@ const ProjectDetails = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Gig Price</p>
+                  <p className="text-base">{project.gigPrice}</p>
+                </div>
                 <Separator className="my-4" />
                 <div className="space-y-2">
                   <p className="text-sm text-muted-foreground">Customer</p>
@@ -129,18 +130,10 @@ const ProjectDetails = () => {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4 space-y-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Gig Price</p>
-                <p className="text-base">{project.gigPrice}</p>
-                <Separator className="my-2" />
-                <p className="text-sm text-muted-foreground">Yearly Revenue</p>
-                <p className="text-base">{project.yearlyRevenue}</p>
+                <div>
+                  <p className="text-sm text-muted-foreground">Yearly Revenue</p>
+                  <p className="text-base">{project.yearlyRevenue}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
