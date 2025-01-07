@@ -1,18 +1,45 @@
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-const ProjectDetails = () => {
-  const { projectId } = useParams();
-
-  // Mock data - in a real app, this would come from an API or database
-  const project = {
+// Mock data - in a real app, this would come from an API or database
+const MOCK_PROJECTS = {
+  "sondre-justad": {
     name: "Sondre Justad",
     lastInvoiced: "28.06.24",
     owner: "Sondre Sandhaug",
     color: "bg-amber-700",
     gigPrice: "15 000 000kr",
     yearlyRevenue: "180 000 000kr"
-  };
+  },
+  "briskeby": {
+    name: "Briskeby",
+    lastInvoiced: "29.09.24",
+    owner: "Stian Sagholen",
+    color: "bg-rose-800",
+    gigPrice: "12 000 000kr",
+    yearlyRevenue: "144 000 000kr"
+  },
+  "highasakite": {
+    name: "Highasakite",
+    lastInvoiced: "28.06.24",
+    owner: "Raymond Hellem",
+    color: "bg-blue-700",
+    gigPrice: "18 000 000kr",
+    yearlyRevenue: "216 000 000kr"
+  }
+};
+
+const ProjectDetails = () => {
+  const { projectId } = useParams();
+  const project = projectId ? MOCK_PROJECTS[projectId as keyof typeof MOCK_PROJECTS] : null;
+
+  if (!project) {
+    return (
+      <div className="p-6">
+        <h1 className="text-3xl font-bold">Project not found</h1>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6">
