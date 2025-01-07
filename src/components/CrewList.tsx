@@ -7,13 +7,6 @@ import { addDays, subDays } from "date-fns";
 import { MOCK_CREW } from "@/data/mockCrew";
 import { CrewMember, NewCrewMember } from "@/types/crew";
 import { EditCrewMemberDialog } from "./crew/EditCrewMemberDialog";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Filter } from "lucide-react";
 
 export function CrewList() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -77,6 +70,14 @@ export function CrewList() {
     )
   ).sort();
 
+  const handleRoleSelect = (role: string, checked: boolean) => {
+    setSelectedRoles((prev) =>
+      checked
+        ? [...prev, role]
+        : prev.filter((r) => r !== role)
+    );
+  };
+
   // Filter crew members based on selected roles
   const filteredCrewMembers = crewMembers.filter((member) => {
     if (selectedRoles.length === 0) return true;
@@ -90,34 +91,13 @@ export function CrewList() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <CrewHeader selectedCount={selectedItems.length} onAddCrewMember={handleAddCrewMember} />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant={selectedRoles.length > 0 ? "default" : "outline"} 
-              size="icon"
-            >
-              <Filter className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-[200px]">
-            {allRoles.map((role) => (
-              <DropdownMenuCheckboxItem
-                key={role}
-                checked={selectedRoles.includes(role)}
-                onCheckedChange={(checked) => {
-                  setSelectedRoles((prev) =>
-                    checked
-                      ? [...prev, role]
-                      : prev.filter((r) => r !== role)
-                  );
-                }}
-              >
-                {role}
-              </DropdownMenuCheckboxItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <CrewHeader 
+          selectedCount={selectedItems.length} 
+          onAddCrewMember={handleAddCrewMember}
+          selectedRoles={selectedRoles}
+          allRoles={allRoles}
+          onRoleSelect={handleRoleSelect}
+        />
       </div>
 
       <div className="bg-zinc-900 rounded-md">
