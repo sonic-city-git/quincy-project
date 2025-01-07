@@ -1,10 +1,11 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus, Wrench } from "lucide-react";
+import { Wrench } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
 import { addDays, subDays } from "date-fns";
+import { AddEquipmentDialog } from "./equipment/AddEquipmentDialog";
 
 const MOCK_EQUIPMENT = [
   {
@@ -37,8 +38,13 @@ const MOCK_EQUIPMENT = [
 ];
 
 export function EquipmentList() {
+  const [equipment, setEquipment] = useState(MOCK_EQUIPMENT);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(new Date());
+
+  const handleAddEquipment = (newEquipment: any) => {
+    setEquipment(prev => [...prev, newEquipment]);
+  };
 
   const handleItemSelect = (id: string) => {
     setSelectedItems((prev) => {
@@ -50,10 +56,10 @@ export function EquipmentList() {
   };
 
   const handleSelectAll = () => {
-    if (selectedItems.length === MOCK_EQUIPMENT.length) {
+    if (selectedItems.length === equipment.length) {
       setSelectedItems([]);
     } else {
-      setSelectedItems(MOCK_EQUIPMENT.map(item => item.id));
+      setSelectedItems(equipment.map(item => item.id));
     }
   };
 
@@ -67,11 +73,11 @@ export function EquipmentList() {
     setStartDate(prev => addDays(prev, daysToShow));
   };
 
-  const selectedEquipment = MOCK_EQUIPMENT
-    .filter(equipment => selectedItems.includes(equipment.id))
-    .map(equipment => ({
-      id: equipment.id,
-      name: equipment.name
+  const selectedEquipment = equipment
+    .filter(item => selectedItems.includes(item.id))
+    .map(item => ({
+      id: item.id,
+      name: item.name
     }));
 
   return (
@@ -82,10 +88,7 @@ export function EquipmentList() {
             All folders
           </Button>
         </div>
-        <Button size="sm" className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add equipment
-        </Button>
+        <AddEquipmentDialog onAddEquipment={handleAddEquipment} />
       </div>
 
       <div className="bg-zinc-900 rounded-md">
@@ -113,7 +116,7 @@ export function EquipmentList() {
             <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
               <TableHead className="w-12">
                 <Checkbox 
-                  checked={selectedItems.length === MOCK_EQUIPMENT.length && MOCK_EQUIPMENT.length > 0}
+                  checked={selectedItems.length === equipment.length && equipment.length > 0}
                   onCheckedChange={handleSelectAll}
                 />
               </TableHead>
@@ -126,20 +129,22 @@ export function EquipmentList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {MOCK_EQUIPMENT.map((equipment) => (
-              <TableRow key={equipment.id} className="hover:bg-zinc-800/50 border-b border-zinc-800/50">
+            {equipment.map((item) => (
+              <TableRow key={item.id} className="hover:bg-zinc-800/50 border-b border-zinc-800/50">
                 <TableCell className="w-12">
                   <Checkbox 
-                    checked={selectedItems.includes(equipment.id)}
-                    onCheckedChange={() => handleItemSelect(equipment.id)}
+                    checked={selectedItems.includes(item.id)}
+                    onCheckedChange={() => handleItemSelect(item.id)}
                   />
                 </TableCell>
-                <TableCell className="font-mono whitespace-nowrap overflow-hidden text-ellipsis">{equipment.code}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.name}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.stock}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.price}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.weight} kg</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{(parseFloat(equipment.value.replace(',', '')) * equipment.stock).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
+                <TableCell className="font-mono whitespace-nowrap overflow-hidden text-ellipsis">{item.code}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.name}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.stock}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.price}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.weight} kg</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">
+                  {(parseFloat(item.value.replace(',', '')) * item.stock).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
