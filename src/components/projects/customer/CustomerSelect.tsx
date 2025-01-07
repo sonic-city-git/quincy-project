@@ -33,7 +33,6 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
     queryFn: fetchCustomers,
   });
 
-  // Update selected customer when initialCustomer prop changes
   useEffect(() => {
     setSelectedCustomer(initialCustomer);
   }, [initialCustomer]);
@@ -78,13 +77,13 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
   }
 
   // Find the ID of the currently selected customer
-  const currentCustomerId = customers.find(c => c.name === selectedCustomer)?.id || '';
+  const currentCustomerId = customers.find(c => c.name === selectedCustomer)?.id;
 
   return (
     <div className="space-y-2">
       <p className="text-sm text-muted-foreground">Customer</p>
       <Select 
-        value={currentCustomerId}
+        defaultValue={currentCustomerId}
         onValueChange={handleCustomerChange}
         disabled={isLoading}
       >
