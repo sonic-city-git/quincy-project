@@ -39,12 +39,8 @@ serve(async (req) => {
 
     console.log('Fetching customers from Tripletex...')
     
-    // Base64 encode the authentication string in format "companyId:sessionToken"
-    const authString = btoa(`0:${employeeToken}`)
-    console.log('Auth string created:', authString)
-    
     const headers = {
-      'Authorization': `Basic ${authString}`,
+      'Authorization': employeeToken,
       'consumerToken': consumerToken,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
