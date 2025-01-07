@@ -2,39 +2,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Copy, Plus, Trash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-const MOCK_PROJECTS = [
-  {
-    id: "sondre-justad",
-    name: "Sondre Justad",
-    lastInvoiced: "28.06.24",
-    owner: "Sondre Sandhaug",
-    color: "bg-amber-700",
-    gigPrice: "15 000 000kr",
-    yearlyRevenue: "180 000 000kr"
-  },
-  {
-    id: "briskeby",
-    name: "Briskeby",
-    lastInvoiced: "29.09.24",
-    owner: "Stian Sagholen",
-    color: "bg-rose-800",
-    gigPrice: "12 000 000kr",
-    yearlyRevenue: "144 000 000kr"
-  },
-  {
-    id: "highasakite",
-    name: "Highasakite",
-    lastInvoiced: "28.06.24",
-    owner: "Raymond Hellem",
-    color: "bg-blue-700",
-    gigPrice: "18 000 000kr",
-    yearlyRevenue: "216 000 000kr"
-  },
-];
+import { useProjects } from "@/hooks/useProjects";
 
 export function ProjectList() {
   const navigate = useNavigate();
+  const { projects, loading } = useProjects();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -66,7 +42,7 @@ export function ProjectList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {MOCK_PROJECTS.map((project) => (
+            {projects.map((project) => (
               <TableRow 
                 key={project.id} 
                 className="hover:bg-zinc-800/50 whitespace-nowrap cursor-pointer"
