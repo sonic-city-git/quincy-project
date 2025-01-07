@@ -1,6 +1,7 @@
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { differenceInDays, parse } from "date-fns";
 
 const MOCK_PROJECTS = {
   "sondre-justad": {
@@ -41,9 +42,21 @@ const ProjectDetails = () => {
     );
   }
 
+  // Calculate accumulated cost since last invoice
+  const calculateAccumulatedCost = () => {
+    const lastInvoiceDate = parse(project.lastInvoiced, "dd.MM.yy", new Date());
+    const today = new Date();
+    const daysSinceInvoice = differenceInDays(today, lastInvoiceDate);
+    
+    // Extract numeric value from gigPrice (removing "kr" and spaces)
+    const gigPriceValue = parseInt(project.gigPrice.replace(/[^0-9]/g, ''));
+    const dailyRevenue = gigPriceValue / 30; // Assuming monthly revenue
+    
+    return `${Math.round(dailyRevenue * daysSinceInvoice).toLocaleString()} kr`;
+  };
+
   return (
     <div className="min-h-screen">
-      {/* Full-width grey header */}
       <div className="w-full bg-secondary/20 px-6 py-8 mb-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center space-x-4">
@@ -51,18 +64,22 @@ const ProjectDetails = () => {
               <h1 className="text-3xl font-bold text-white">{project.name}</h1>
             </div>
             <div className="flex-1" />
-            <div className="text-right">
-              <p className="text-sm text-muted-foreground">Last Invoiced</p>
-              <p className="font-medium">{project.lastInvoiced}</p>
+            <div className="flex gap-8">
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground">Last Invoiced</p>
+                <p className="font-medium">{project.lastInvoiced}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-muted-foreground">Accumulated Cost</p>
+                <p className="font-medium">{calculateAccumulatedCost()}</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Content area */}
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Owner Card */}
           <Card>
             <CardHeader />
             <CardContent>
@@ -71,7 +88,6 @@ const ProjectDetails = () => {
             </CardContent>
           </Card>
 
-          {/* Financial Details Card */}
           <Card>
             <CardHeader />
             <CardContent className="space-y-4">
