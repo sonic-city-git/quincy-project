@@ -11,7 +11,7 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="w-64 min-h-screen bg-zinc-900 p-4 flex flex-col border-r border-zinc-800">
+    <div className="w-56 min-h-screen bg-zinc-900 p-4 flex flex-col border-r border-zinc-800">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-amber-600">QUINCY</h1>
       </div>
