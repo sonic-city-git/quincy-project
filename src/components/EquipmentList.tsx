@@ -119,8 +119,8 @@ export function EquipmentList() {
               </TableHead>
               <TableHead>Code</TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Price (kr)</TableHead>
-              <TableHead>Value (kr)</TableHead>
+              <TableHead>Price</TableHead>
+              <TableHead>Value</TableHead>
               <TableHead>Weight (kg)</TableHead>
               <TableHead>Stock</TableHead>
             </TableRow>
