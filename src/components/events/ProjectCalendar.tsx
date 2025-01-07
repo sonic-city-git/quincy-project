@@ -2,14 +2,13 @@ import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { AddEventDialog } from "./AddEventDialog";
 import { CalendarEvent, EventType } from "@/types/events";
-import { DayProps } from "react-day-picker";
 
 const EVENT_COLORS: Record<EventType, string> = {
-  "Show": "bg-green-100 hover:bg-green-200",
-  "Preprod": "bg-yellow-100 hover:bg-yellow-200",
-  "Travel": "bg-blue-100 hover:bg-blue-200",
-  "INT Storage": "bg-pink-100 hover:bg-pink-200",
-  "EXT Storage": "bg-red-100 hover:bg-red-200"
+  "Show": "bg-green-500",
+  "Preprod": "bg-yellow-500",
+  "Travel": "bg-blue-500",
+  "INT Storage": "bg-pink-500",
+  "EXT Storage": "bg-red-500"
 };
 
 interface ProjectCalendarProps {
@@ -35,13 +34,6 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
     }
   };
 
-  const getDateClassNames = (date: Date) => {
-    const event = events.find(
-      (e) => e.date.toDateString() === date.toDateString()
-    );
-    return event ? EVENT_COLORS[event.type] : undefined;
-  };
-
   return (
     <>
       <Calendar
@@ -60,12 +52,15 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
           }
         }}
         components={{
-          Day: ({ date: dayDate, ...props }: DayProps) => {
-            const customClassName = getDateClassNames(dayDate);
+          Day: ({ date: dayDate, ...props }) => {
+            const event = events.find(
+              (e) => e.date.toDateString() === dayDate.toDateString()
+            );
+            
             return (
-              <button
-                {...(props as any)}
-                className={`${props.className || ''} ${customClassName || ''}`}
+              <div 
+                {...props}
+                className={`${props.className} ${event ? EVENT_COLORS[event.type] : ''}`}
               />
             );
           },
