@@ -51,8 +51,13 @@ export function ProjectList() {
                 <TableCell className="w-8">
                   <div className="w-4 h-4 rounded border border-zinc-700"></div>
                 </TableCell>
-                <TableCell className="pl-0 text-white">
-                  {project.name}
+                <TableCell className="pl-0">
+                  <div 
+                    className={`${project.color} text-white px-4 py-2 rounded-md max-w-[300px] truncate`}
+                    style={{ backgroundColor: project.color }}
+                  >
+                    {project.name}
+                  </div>
                 </TableCell>
                 <TableCell className="text-zinc-300">
                   {project.owner}
