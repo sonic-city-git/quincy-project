@@ -2,6 +2,20 @@ import { format, eachDayOfInterval, addDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
+// Mock project assignments - in a real app, this would come from your backend
+const PROJECT_ASSIGNMENTS = {
+  "1": [ // Crew member ID
+    { startDate: "2024-03-20", endDate: "2024-03-25", projectName: "Project A" },
+    { startDate: "2024-04-01", endDate: "2024-04-05", projectName: "Project B" }
+  ],
+  "2": [
+    { startDate: "2024-03-22", endDate: "2024-03-24", projectName: "Project C" }
+  ],
+  "3": [
+    { startDate: "2024-03-28", endDate: "2024-04-02", projectName: "Project D" }
+  ]
+};
+
 interface CrewTimelineProps {
   startDate: Date;
   daysToShow: number;
@@ -24,6 +38,19 @@ export function CrewTimeline({
     start: startDate,
     end: addDays(startDate, daysToShow - 1)
   });
+
+  const isDateInRange = (date: Date, startDateStr: string, endDateStr: string) => {
+    const start = new Date(startDateStr);
+    const end = new Date(endDateStr);
+    return date >= start && date <= end;
+  };
+
+  const getAssignmentsForDay = (crewId: string, date: Date) => {
+    const assignments = PROJECT_ASSIGNMENTS[crewId] || [];
+    return assignments.filter(assignment => 
+      isDateInRange(date, assignment.startDate, assignment.endDate)
+    );
+  };
 
   return (
     <div className="border-t border-zinc-800/50">
@@ -71,19 +98,24 @@ export function CrewTimeline({
                 <span className="text-sm font-medium truncate">{crew.name}</span>
               </div>
               <div className="grid grid-cols-14 gap-1">
-                {days.map((day) => (
-                  <div 
-                    key={day.toISOString()} 
-                    className="h-3 bg-zinc-800/50 rounded-sm relative"
-                  >
-                    {Math.random() > 0.5 && (
-                      <div 
-                        className="absolute top-0 left-0 h-full bg-blue-500/50 rounded-sm"
-                        style={{ width: '100%' }}
-                      />
-                    )}
-                  </div>
-                ))}
+                {days.map((day) => {
+                  const assignments = getAssignmentsForDay(crew.id, day);
+                  const isAssigned = assignments.length > 0;
+                  
+                  return (
+                    <div 
+                      key={day.toISOString()} 
+                      className="h-3 bg-zinc-800/50 rounded-sm relative group"
+                    >
+                      {isAssigned && (
+                        <div 
+                          className="absolute top-0 left-0 h-full bg-blue-500/50 rounded-sm w-full"
+                          title={assignments.map(a => a.projectName).join(', ')}
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))
