@@ -2,7 +2,6 @@ import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
-// Mock data - in a real app, this would come from an API or database
 const MOCK_PROJECTS = {
   "sondre-justad": {
     name: "Sondre Justad",
@@ -69,7 +68,6 @@ const ProjectDetails = () => {
               <CardTitle className="text-lg">Owner</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">Owner</p>
               <p className="text-base">{project.owner}</p>
             </CardContent>
           </Card>
