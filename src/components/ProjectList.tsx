@@ -1,9 +1,11 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Copy, Plus, Trash } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const MOCK_PROJECTS = [
   {
+    id: "sondre-justad",
     name: "Sondre Justad",
     lastInvoiced: "28.06.24",
     owner: "Sondre Sandhaug",
@@ -12,6 +14,7 @@ const MOCK_PROJECTS = [
     yearlyRevenue: "180 000 000kr"
   },
   {
+    id: "briskeby",
     name: "Briskeby",
     lastInvoiced: "29.09.24",
     owner: "Stian Sagholen",
@@ -20,6 +23,7 @@ const MOCK_PROJECTS = [
     yearlyRevenue: "144 000 000kr"
   },
   {
+    id: "highasakite",
     name: "Highasakite",
     lastInvoiced: "28.06.24",
     owner: "Raymond Hellem",
@@ -30,6 +34,8 @@ const MOCK_PROJECTS = [
 ];
 
 export function ProjectList() {
+  const navigate = useNavigate();
+
   return (
     <div className="space-y-6">
       <div className="flex gap-2">
@@ -61,7 +67,11 @@ export function ProjectList() {
           </TableHeader>
           <TableBody>
             {MOCK_PROJECTS.map((project) => (
-              <TableRow key={project.name} className="hover:bg-zinc-800/50 whitespace-nowrap">
+              <TableRow 
+                key={project.id} 
+                className="hover:bg-zinc-800/50 whitespace-nowrap cursor-pointer"
+                onClick={() => navigate(`/projects/${project.id}`)}
+              >
                 <TableCell className="w-8">
                   <div className="w-4 h-4 rounded border border-zinc-700"></div>
                 </TableCell>

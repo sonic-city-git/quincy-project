@@ -4,6 +4,7 @@ import Equipment from "@/pages/Equipment";
 import Index from "@/pages/Index";
 import Dashboard from "@/pages/Dashboard";
 import Crew from "@/pages/Crew";
+import ProjectDetails from "@/pages/ProjectDetails";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/projects" element={<Index />} />
+            <Route path="/projects/:projectId" element={<ProjectDetails />} />
             <Route path="/equipment" element={<Equipment />} />
             <Route path="/crew" element={<Crew />} />
           </Routes>
