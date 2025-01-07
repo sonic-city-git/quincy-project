@@ -12,6 +12,8 @@ const MOCK_EQUIPMENT = [
     name: "Peli Air with 4U",
     price: "60.80",
     value: "1,500.00",
+    weight: "10.50",
+    stock: 5,
     id: "904",
   },
   {
@@ -19,6 +21,8 @@ const MOCK_EQUIPMENT = [
     name: "XXX 1xCat6 + 230V 10m",
     price: "45.00",
     value: "800.00",
+    weight: "2.30",
+    stock: 12,
     id: "2404",
   },
   {
@@ -26,6 +30,8 @@ const MOCK_EQUIPMENT = [
     name: "Schuko 1-3m",
     price: "14.77",
     value: "1,200.00",
+    weight: "0.50",
+    stock: 8,
     id: "1024",
   },
 ];
@@ -115,6 +121,8 @@ export function EquipmentList() {
               <TableHead>Name</TableHead>
               <TableHead>Price (kr)</TableHead>
               <TableHead>Value (kr)</TableHead>
+              <TableHead>Weight (kg)</TableHead>
+              <TableHead>Stock</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -130,6 +138,8 @@ export function EquipmentList() {
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.name}</TableCell>
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.price}</TableCell>
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.value}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.weight} kg</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.stock}</TableCell>
               </TableRow>
             ))}
           </TableBody>
