@@ -21,9 +21,6 @@ export function CrewHeader({ selectedCount, onAddCrewMember }: CrewHeaderProps) 
         <Button variant="outline" size="sm">
           All departments
         </Button>
-        <Button variant="ghost" size="sm">
-          All
-        </Button>
       </div>
       <AddCrewMemberDialog onAddCrewMember={onAddCrewMember} />
     </div>
