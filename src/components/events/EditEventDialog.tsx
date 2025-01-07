@@ -9,6 +9,7 @@ import { CalendarEvent, EventType } from "@/types/events"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState, useEffect } from "react"
+import { format } from "date-fns"
 
 interface EditEventDialogProps {
   isOpen: boolean;
@@ -74,7 +75,7 @@ export const EditEventDialog = ({
             </Select>
           </div>
           <div>
-            <span className="font-semibold">Date:</span> {event.date.toLocaleDateString()}
+            <span className="font-semibold">Date:</span> {format(event.date, 'dd.MM.yy')}
           </div>
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
