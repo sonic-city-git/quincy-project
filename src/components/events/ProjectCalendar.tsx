@@ -53,12 +53,12 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
           selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
         }}
         components={{
-          Day: ({ date: dayDate, ...dayProps }: DayProps) => {
+          Day: ({ date: dayDate, ...props }: DayProps) => {
             const customClassName = getDateClassNames(dayDate);
             return (
               <button
-                {...dayProps}
-                className={`${dayProps.className || ''} ${customClassName || ''}`}
+                {...props}
+                className={`${props.className || ''} ${customClassName || ''}`}
               />
             );
           },
