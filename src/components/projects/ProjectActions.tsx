@@ -15,6 +15,7 @@ import { AddProjectDialog } from "./AddProjectDialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ProjectActionsProps {
   selectedItems?: string[];
@@ -24,6 +25,7 @@ export function ProjectActions({ selectedItems = [] }: ProjectActionsProps) {
   const hasSelection = selectedItems.length > 0;
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const handleDelete = async () => {
     try {
@@ -41,11 +43,11 @@ export function ProjectActions({ selectedItems = [] }: ProjectActionsProps) {
         description: "The project has been deleted successfully",
       });
 
+      // Invalidate the projects query to trigger a refresh
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      
       // Navigate back to projects list after successful deletion
       navigate('/projects');
-      
-      // Reload the page to refresh the projects list
-      window.location.reload();
     } catch (error) {
       console.error('Error deleting project:', error);
       toast({
