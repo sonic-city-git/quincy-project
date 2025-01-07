@@ -120,7 +120,7 @@ export function EquipmentList() {
               <TableHead>Code</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Price</TableHead>
-              <TableHead>Value</TableHead>
+              <TableHead>Book value</TableHead>
               <TableHead>Weight (kg)</TableHead>
               <TableHead>Stock</TableHead>
             </TableRow>
@@ -137,7 +137,7 @@ export function EquipmentList() {
                 <TableCell className="font-mono whitespace-nowrap overflow-hidden text-ellipsis">{equipment.code}</TableCell>
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.name}</TableCell>
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.price}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.value}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{(parseFloat(equipment.value.replace(',', '')) * equipment.stock).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</TableCell>
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.weight} kg</TableCell>
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{equipment.stock}</TableCell>
               </TableRow>
