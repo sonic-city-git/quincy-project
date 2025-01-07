@@ -145,7 +145,7 @@ export function EquipmentList() {
     return folders.map(folder => (
       <div key={folder.id}>
         <DropdownMenuItem
-          className={`cursor-pointer ${level > 0 ? 'italic' : ''}`}
+          className={`cursor-pointer ${level > 0 ? 'italic pl-4' : 'font-bold'}`}
           onSelect={() => handleFolderSelect(folder.id)}
         >
           {folder.name}
