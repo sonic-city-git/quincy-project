@@ -44,7 +44,7 @@ export function EquipmentTable({
                   onCheckedChange={() => onItemSelect(item.id)}
                 />
               </TableCell>
-              <TableCell className="font-mono whitespace-nowrap overflow-hidden text-ellipsis">{item.code}</TableCell>
+              <TableCell className="font-mono font-inter whitespace-nowrap overflow-hidden text-ellipsis">{item.code}</TableCell>
               <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.name}</TableCell>
               <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.stock}</TableCell>
               <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{item.price}</TableCell>
