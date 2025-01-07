@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 // Mock data - in a real app, this would come from an API or database
 const MOCK_PROJECTS = {
@@ -42,37 +43,51 @@ const ProjectDetails = () => {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className={`text-3xl font-bold inline-block px-6 py-3 rounded ${project.color} text-white`}>
-          {project.name}
-        </h1>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Project Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Owner</p>
-              <p className="font-medium">{project.owner}</p>
+    <div className="min-h-screen">
+      {/* Full-width grey header */}
+      <div className="w-full bg-secondary/20 px-6 py-8 mb-8">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center space-x-4">
+            <div className={`${project.color} p-4 rounded-lg`}>
+              <h1 className="text-3xl font-bold text-white">{project.name}</h1>
             </div>
-            <div>
+            <div className="flex-1" />
+            <div className="text-right">
               <p className="text-sm text-muted-foreground">Last Invoiced</p>
               <p className="font-medium">{project.lastInvoiced}</p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Gig Price</p>
-              <p className="font-medium">{project.gigPrice}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Yearly Revenue</p>
-              <p className="font-medium">{project.yearlyRevenue}</p>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Content area */}
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Owner Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Owner</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xl font-semibold">{project.owner}</p>
+            </CardContent>
+          </Card>
+
+          {/* Financial Details Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Gig Price</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-xl font-semibold">{project.gigPrice}</p>
+                <Separator className="my-4" />
+                <p className="text-sm text-muted-foreground">Yearly Revenue</p>
+                <p className="text-xl font-semibold">{project.yearlyRevenue}</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
