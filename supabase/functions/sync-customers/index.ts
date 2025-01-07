@@ -6,6 +6,14 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+interface TripletexCustomer {
+  id: number;
+  name: string;
+  email?: string;
+  phoneNumber?: string;
+  customerNumber?: string;
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -23,10 +31,10 @@ serve(async (req) => {
 
     console.log('Fetching customers from Tripletex...')
     
-    // Fetch customers from Tripletex with the correct endpoint
+    // Fetch customers from Tripletex with the correct endpoint and auth
     const tripletexResponse = await fetch('https://tripletex.no/v2/customer', {
       headers: {
-        'Authorization': `Basic MDpleUowYjJ0bGJrbGtJam8xTnpVM056UTBPVElzSW5SdmEyVnVJam9pTVRJM01XVmhOV0l0Tm1SalpDMDBNalUwTFdFNU9HRXRPVGRtWm1Sa1l6YzRaR1pqSW4w`,
+        'Authorization': 'Basic MDpleUowYjJ0bGJrbGtJam8xTnpVM056UTBPVElzSW5SdmEyVnVJam9pTVRJM01XVmhOV0l0Tm1SalpDMDBNalUwTFdFNU9HRXRPVGRtWm1Sa1l6YzRaR1pqSW4w',
         'Content-Type': 'application/json',
       },
     })
@@ -37,7 +45,7 @@ serve(async (req) => {
     }
 
     const tripletexData = await tripletexResponse.json()
-    const customers = tripletexData.values || []
+    const customers: TripletexCustomer[] = tripletexData.values || []
 
     console.log(`Fetched ${customers.length} customers from Tripletex`)
 
