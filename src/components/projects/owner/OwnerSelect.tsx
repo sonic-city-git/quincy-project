@@ -79,7 +79,7 @@ export function OwnerSelect({ projectId, initialOwner, onOwnerSelect }: OwnerSel
           <SelectValue placeholder="Select owner" />
         </SelectTrigger>
         <SelectContent>
-          <ScrollArea className="h-[200px] pr-4" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <ScrollArea className="h-[200px]">
             {sonicCityCrewMembers.map((crew) => (
               <SelectItem key={crew.id} value={crew.id}>
                 {crew.name}

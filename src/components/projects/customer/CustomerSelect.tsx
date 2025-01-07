@@ -115,7 +115,7 @@ export function CustomerSelect({ projectId, initialCustomer, onCustomerSelect }:
           <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
         </SelectTrigger>
         <SelectContent>
-          <ScrollArea className="h-[200px] pr-4" style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+          <ScrollArea className="h-[200px]">
             {customers.map((customer) => (
               <SelectItem 
                 key={customer.id} 
