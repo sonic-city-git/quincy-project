@@ -62,7 +62,7 @@ const ProjectDetails = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="w-full bg-secondary/20 px-6 py-8 mb-8">
+      <div className="w-full bg-secondary/20 px-6 py-6 mb-4">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center space-x-4">
             <div className={`${project.color} p-4 rounded-lg`}>
@@ -87,7 +87,7 @@ const ProjectDetails = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card>
             <CardHeader />
             <CardContent className="space-y-4">
