@@ -89,7 +89,7 @@ const ProjectDetails = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card>
-            <CardHeader className="p-4" />
+            <CardHeader />
             <CardContent className="p-4 pt-0 space-y-2">
               <div>
                 <p className="text-sm text-muted-foreground">Owner</p>
@@ -102,7 +102,7 @@ const ProjectDetails = () => {
           </Card>
 
           <Card>
-            <CardHeader className="p-4" />
+            <CardHeader />
             <CardContent className="p-4 pt-0 space-y-2">
               <div>
                 <p className="text-sm text-muted-foreground">Gig Price</p>
