@@ -35,7 +35,7 @@ export function FolderSelect({ selectedFolder, onFolderChange, required = false 
             <React.Fragment key={folder.id}>
               <SelectItem 
                 value={folder.id}
-                className="font-bold"
+                className="font-bold pl-2"
               >
                 {folder.name}
               </SelectItem>
@@ -43,7 +43,7 @@ export function FolderSelect({ selectedFolder, onFolderChange, required = false 
                 <SelectItem 
                   key={subfolder.id} 
                   value={subfolder.id}
-                  className="pl-6 italic font-normal"
+                  className="pl-8 italic font-normal"
                 >
                   {subfolder.name}
                 </SelectItem>
