@@ -14,6 +14,7 @@ import {
 import { AddProjectDialog } from "./AddProjectDialog";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface ProjectActionsProps {
   selectedItems?: string[];
@@ -22,9 +23,12 @@ interface ProjectActionsProps {
 export function ProjectActions({ selectedItems = [] }: ProjectActionsProps) {
   const hasSelection = selectedItems.length > 0;
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleDelete = async () => {
     try {
+      console.log('Deleting project with ID:', selectedItems[0]);
+      
       const { error } = await supabase
         .from('projects')
         .delete()
@@ -36,7 +40,14 @@ export function ProjectActions({ selectedItems = [] }: ProjectActionsProps) {
         title: "Project deleted",
         description: "The project has been deleted successfully",
       });
+
+      // Navigate back to projects list after successful deletion
+      navigate('/projects');
+      
+      // Reload the page to refresh the projects list
+      window.location.reload();
     } catch (error) {
+      console.error('Error deleting project:', error);
       toast({
         title: "Error",
         description: "Failed to delete the project",
