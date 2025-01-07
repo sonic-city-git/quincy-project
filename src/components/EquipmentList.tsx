@@ -184,12 +184,6 @@ export function EquipmentList() {
               </ScrollArea>
             </DropdownMenuContent>
           </DropdownMenu>
-          <div className="flex-1 max-w-md">
-            <EquipmentSearch 
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-            />
-          </div>
         </div>
         <AddEquipmentDialog onAddEquipment={handleAddEquipment} />
       </div>
@@ -209,9 +203,12 @@ export function EquipmentList() {
                 />
               )}
             </div>
-            <Button variant="ghost" size="sm" className={`transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0' : 'opacity-100'}`}>
-              Adjust view
-            </Button>
+            <div className="w-64">
+              <EquipmentSearch 
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+              />
+            </div>
           </div>
         </div>
 
