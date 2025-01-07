@@ -8,27 +8,40 @@ import {
 import { CalendarEvent, EventType } from "@/types/events"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface EditEventDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  event: CalendarEvent | undefined;
+  event?: CalendarEvent;
+  onSave: (event: CalendarEvent) => void;
 }
 
 export const EditEventDialog = ({
   isOpen,
   onOpenChange,
   event,
+  onSave,
 }: EditEventDialogProps) => {
   if (!event) return null;
 
   const [name, setName] = useState(event.name);
   const [type, setType] = useState<EventType>(event.type);
 
+  // Reset form when event changes
+  useEffect(() => {
+    if (event) {
+      setName(event.name);
+      setType(event.type);
+    }
+  }, [event]);
+
   const handleSave = () => {
-    // TODO: Add save functionality when requested
-    onOpenChange(false);
+    onSave({
+      ...event,
+      name,
+      type,
+    });
   };
 
   return (

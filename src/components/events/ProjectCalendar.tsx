@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { AddEventDialog } from "./AddEventDialog";
 import { EditEventDialog } from "./EditEventDialog";
 import { CalendarEvent, EventType } from "@/types/events";
 import { DayProps } from "react-day-picker";
+import { useParams } from "react-router-dom";
 
 const EVENT_COLORS: Record<EventType, string> = {
   "Show": "bg-green-500",
@@ -18,11 +19,31 @@ interface ProjectCalendarProps {
 }
 
 export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
+  const { projectId } = useParams();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent>();
+
+  // Load events from localStorage when component mounts
+  useEffect(() => {
+    const storedEvents = localStorage.getItem(`calendar-events-${projectId}`);
+    if (storedEvents) {
+      const parsedEvents = JSON.parse(storedEvents).map((event: any) => ({
+        ...event,
+        date: new Date(event.date)
+      }));
+      setEvents(parsedEvents);
+    }
+  }, [projectId]);
+
+  // Save events to localStorage whenever they change
+  useEffect(() => {
+    if (projectId) {
+      localStorage.setItem(`calendar-events-${projectId}`, JSON.stringify(events));
+    }
+  }, [events, projectId]);
 
   const handleSelect = (date: Date | undefined) => {
     if (date) {
@@ -45,6 +66,16 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
       setEvents([...events, { date: selectedDate, name: eventName, type: eventType }]);
       setIsAddDialogOpen(false);
     }
+  };
+
+  const handleEventUpdate = (updatedEvent: CalendarEvent) => {
+    const updatedEvents = events.map(event => 
+      event.date.toDateString() === updatedEvent.date.toDateString() 
+        ? updatedEvent 
+        : event
+    );
+    setEvents(updatedEvents);
+    setIsEditDialogOpen(false);
   };
 
   return (
@@ -92,6 +123,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
         isOpen={isEditDialogOpen}
         onOpenChange={setIsEditDialogOpen}
         event={selectedEvent}
+        onSave={handleEventUpdate}
       />
     </>
   );
