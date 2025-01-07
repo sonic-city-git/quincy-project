@@ -3,6 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { CrewHeader } from "./crew/CrewHeader";
 import { CrewTimeline } from "./crew/CrewTimeline";
+import { addDays, subDays } from "date-fns";
 
 const MOCK_CREW = [
   {
@@ -60,6 +61,23 @@ export function CrewList() {
       <CrewHeader selectedCount={selectedItems.length} />
 
       <div className="bg-zinc-900 rounded-md">
+        <div className="min-h-[48px]">
+          {selectedItems.length > 0 && (
+            <div className="p-2 border-b border-zinc-800/50 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-zinc-400">{selectedItems.length} items selected</span>
+                <Button variant="ghost" size="sm" className="gap-2">
+                  <Package className="h-4 w-4" />
+                  EDIT
+                </Button>
+              </div>
+              <Button variant="ghost" size="sm">
+                Adjust view
+              </Button>
+            </div>
+          )}
+        </div>
+
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
