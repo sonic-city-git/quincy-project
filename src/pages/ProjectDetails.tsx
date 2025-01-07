@@ -98,33 +98,37 @@ const ProjectDetails = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Card>
-            <CardContent className="p-4 space-y-2">
-              <div>
-                <p className="text-sm text-muted-foreground">Owner</p>
-                <Select value={selectedOwner} onValueChange={setSelectedOwner}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select owner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {sonicCityCrewMembers.map((crew) => (
-                      <SelectItem key={crew.id} value={crew.name}>
-                        {crew.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Separator className="my-2" />
-                <p className="text-sm text-muted-foreground">Customer</p>
-                <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select customer" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Universal Music">Universal Music</SelectItem>
-                    <SelectItem value="Sony Music">Sony Music</SelectItem>
-                    <SelectItem value="Warner Music">Warner Music</SelectItem>
-                  </SelectContent>
-                </Select>
+            <CardContent className="p-6 space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Owner</p>
+                  <Select value={selectedOwner} onValueChange={setSelectedOwner}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select owner" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {sonicCityCrewMembers.map((crew) => (
+                        <SelectItem key={crew.id} value={crew.name}>
+                          {crew.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Separator className="my-4" />
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Customer</p>
+                  <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select customer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Universal Music">Universal Music</SelectItem>
+                      <SelectItem value="Sony Music">Sony Music</SelectItem>
+                      <SelectItem value="Warner Music">Warner Music</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardContent>
           </Card>
