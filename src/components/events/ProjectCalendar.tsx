@@ -1,24 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { AddEventDialog } from "./AddEventDialog";
 import { EditEventDialog } from "./EditEventDialog";
 import { CalendarEvent, EventType } from "@/types/events";
 import { DayProps } from "react-day-picker";
 import { useParams } from "react-router-dom";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
-const EVENT_COLORS: Record<EventType, string> = {
-  "Show": "bg-green-500",
-  "Preprod": "bg-yellow-500",
-  "Travel": "bg-blue-500",
-  "INT Storage": "bg-pink-500",
-  "EXT Storage": "bg-red-500"
-};
+import { CalendarDay } from "./CalendarDay";
+import { EVENT_COLORS } from "@/constants/eventColors";
+import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 
 interface ProjectCalendarProps {
   className?: string;
@@ -29,31 +18,13 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent>();
-
-  useEffect(() => {
-    const storedEvents = localStorage.getItem(`calendar-events-${projectId}`);
-    if (storedEvents) {
-      const parsedEvents = JSON.parse(storedEvents).map((event: any) => ({
-        ...event,
-        date: new Date(event.date)
-      }));
-      setEvents(parsedEvents);
-    }
-  }, [projectId]);
-
-  useEffect(() => {
-    if (projectId) {
-      localStorage.setItem(`calendar-events-${projectId}`, JSON.stringify(events));
-    }
-  }, [events, projectId]);
+  
+  const { events, addEvent, updateEvent, findEvent } = useCalendarEvents(projectId);
 
   const handleSelect = (date: Date | undefined) => {
     if (date) {
-      const event = events.find(
-        (e) => e.date.toDateString() === date.toDateString()
-      );
+      const event = findEvent(date);
       
       if (event) {
         setSelectedEvent(event);
@@ -67,22 +38,13 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
 
   const handleEventSubmit = (eventName: string, eventType: EventType) => {
     if (selectedDate) {
-      setEvents([...events, { 
-        date: selectedDate, 
-        name: eventName.trim() || eventType, 
-        type: eventType 
-      }]);
+      addEvent(selectedDate, eventName, eventType);
       setIsAddDialogOpen(false);
     }
   };
 
   const handleEventUpdate = (updatedEvent: CalendarEvent) => {
-    const updatedEvents = events.map(event => 
-      event.date.toDateString() === updatedEvent.date.toDateString() 
-        ? { ...updatedEvent, name: updatedEvent.name.trim() || updatedEvent.type }
-        : event
-    );
-    setEvents(updatedEvents);
+    updateEvent(updatedEvent);
     setIsEditDialogOpen(false);
   };
 
@@ -104,40 +66,15 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
           }
         }}
         components={{
-          Day: ({ date: dayDate, ...props }: DayProps & { className?: string }) => {
-            const event = events.find(
-              (e) => e.date.toDateString() === dayDate.toDateString()
-            );
-            
-            return (
-              <TooltipProvider delayDuration={100}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button 
-                      {...props}
-                      className={`
-                        relative h-9 w-9 p-0 font-normal 
-                        flex items-center justify-center text-sm 
-                        cursor-pointer hover:bg-accent 
-                        transition-colors duration-200
-                        rounded-md shadow-sm
-                        ${props.className || ''} 
-                        ${event ? `${EVENT_COLORS[event.type]} text-white font-medium` : ''}
-                      `}
-                      onClick={() => handleSelect(dayDate)}
-                    >
-                      {dayDate.getDate()}
-                    </button>
-                  </TooltipTrigger>
-                  {event && (
-                    <TooltipContent className="text-base px-4 py-2">
-                      {event.name}
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              </TooltipProvider>
-            );
-          },
+          Day: ({ date, ...props }: DayProps) => (
+            <CalendarDay
+              date={date}
+              event={findEvent(date)}
+              eventColors={EVENT_COLORS}
+              onSelect={handleSelect}
+              {...props}
+            />
+          ),
         }}
       />
       <AddEventDialog
