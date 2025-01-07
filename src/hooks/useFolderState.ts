@@ -1,14 +1,10 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Folder } from "@/types/folders";
-
-interface FolderItemState {
-  [key: string]: boolean;
-}
+import { supabase } from "@/integrations/supabase/client";
 
 export function useFolderState(initialFolders: Folder[]) {
-  const [folders, setFolders] = useState<Folder[]>(initialFolders);
-  const [expandedFolders, setExpandedFolders] = useState<FolderItemState>({});
+  const [folders, setFolders] = useState<Folder[]>(sortFolders(initialFolders));
+  const [expandedFolders, setExpandedFolders] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     fetchFolders();
@@ -37,14 +33,14 @@ export function useFolderState(initialFolders: Folder[]) {
     const { data, error } = await supabase
       .from('folders')
       .select('*')
-      .order('created_at');
+      .order('name');
 
     if (error) {
       console.error('Error fetching folders:', error);
       return;
     }
 
-    setFolders(data);
+    setFolders(sortFolders(data));
   };
 
   const toggleFolder = (folderId: string) => {
@@ -52,6 +48,10 @@ export function useFolderState(initialFolders: Folder[]) {
       ...prev,
       [folderId]: !prev[folderId]
     }));
+  };
+
+  const sortFolders = (foldersToSort: Folder[]): Folder[] => {
+    return [...foldersToSort].sort((a, b) => a.name.localeCompare(b.name));
   };
 
   return {

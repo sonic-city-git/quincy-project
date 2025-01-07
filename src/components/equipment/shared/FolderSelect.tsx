@@ -52,7 +52,7 @@ export function FolderSelect({
     const { data, error } = await supabase
       .from('folders')
       .select('*')
-      .order('created_at');
+      .order('name');
 
     if (error) {
       console.error('Error fetching folders:', error);
@@ -80,6 +80,7 @@ export function FolderSelect({
   const renderFolderOptions = (parentId: string | null = null, level = 0) => {
     return folders
       .filter(folder => folder.parent_id === parentId)
+      .sort((a, b) => a.name.localeCompare(b.name))
       .map(folder => (
         <div key={folder.id}>
           <SelectItem
