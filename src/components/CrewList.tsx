@@ -20,7 +20,7 @@ const MOCK_CREW = [
   {
     id: "1",
     name: "John Doe",
-    role: "Sound Engineer",
+    role: "FOH, MON",
     email: "john@soniccity.no",
     phone: "+47 123 45 678",
     folder: "Sonic City",
@@ -28,7 +28,7 @@ const MOCK_CREW = [
   {
     id: "2",
     name: "Jane Smith",
-    role: "Lighting Technician",
+    role: "PLAYBACK, BACKLINE",
     email: "jane@soniccity.no",
     phone: "+47 234 56 789",
     folder: "Freelance",
@@ -36,12 +36,19 @@ const MOCK_CREW = [
   {
     id: "3",
     name: "Mike Johnson",
-    role: "Stage Manager",
+    role: "FOH",
     email: "mike@soniccity.no",
     phone: "+47 345 67 890",
     folder: "Sonic City",
   },
 ];
+
+const TAG_COLORS: { [key: string]: string } = {
+  FOH: "bg-[#8B5CF6] text-white",
+  MON: "bg-[#D946EF] text-white",
+  PLAYBACK: "bg-[#F97316] text-white",
+  BACKLINE: "bg-[#0EA5E9] text-white",
+};
 
 export function CrewList() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -88,6 +95,25 @@ export function CrewList() {
 
   const selectedCrew = crewMembers.filter(crew => selectedItems.includes(crew.id));
 
+  const renderTags = (role: string) => {
+    const tags = role.split(", ");
+    return (
+      <div className="flex gap-1 flex-wrap">
+        {tags.map((tag, index) => {
+          const upperTag = tag.toUpperCase();
+          return (
+            <span
+              key={index}
+              className={`px-2 py-0.5 rounded text-xs font-medium ${TAG_COLORS[upperTag] || 'bg-zinc-700 text-white'}`}
+            >
+              {upperTag}
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <CrewHeader selectedCount={selectedItems.length} onAddCrewMember={handleAddCrewMember} />
@@ -128,7 +154,9 @@ export function CrewList() {
                   />
                 </TableCell>
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{crew.name}</TableCell>
-                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{crew.role}</TableCell>
+                <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">
+                  {renderTags(crew.role)}
+                </TableCell>
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{crew.email}</TableCell>
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{crew.phone}</TableCell>
                 <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis">{crew.folder}</TableCell>
