@@ -38,7 +38,7 @@ const MOCK_CREW = [
 export function CrewList() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [startDate, setStartDate] = useState(new Date());
-  const daysToShow = 14; // Show two weeks at a time
+  const daysToShow = 14;
 
   const days = eachDayOfInterval({
     start: startDate,
@@ -61,6 +61,8 @@ export function CrewList() {
   const handleNextPeriod = () => {
     setStartDate(prev => addDays(prev, daysToShow));
   };
+
+  const selectedCrew = MOCK_CREW.filter(crew => selectedItems.includes(crew.id));
 
   return (
     <div className="space-y-6">
@@ -168,29 +170,35 @@ export function CrewList() {
               ))}
             </div>
             
-            {MOCK_CREW.map((crew) => (
-              <div key={crew.id} className="mb-6">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium">{crew.name}</span>
-                  <span className="text-xs text-zinc-400">{crew.hours} hours</span>
+            {selectedItems.length > 0 ? (
+              selectedCrew.map((crew) => (
+                <div key={crew.id} className="mb-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-medium">{crew.name}</span>
+                    <span className="text-xs text-zinc-400">{crew.hours} hours</span>
+                  </div>
+                  <div className="grid grid-cols-14 gap-1">
+                    {days.map((day) => (
+                      <div 
+                        key={day.toISOString()} 
+                        className="h-4 bg-zinc-800/50 rounded-sm relative"
+                      >
+                        {Math.random() > 0.5 && (
+                          <div 
+                            className="absolute top-0 left-0 h-full bg-blue-500/50 rounded-sm"
+                            style={{ width: '100%' }}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="grid grid-cols-14 gap-1">
-                  {days.map((day) => (
-                    <div 
-                      key={day.toISOString()} 
-                      className="h-4 bg-zinc-800/50 rounded-sm relative"
-                    >
-                      {Math.random() > 0.5 && (
-                        <div 
-                          className="absolute top-0 left-0 h-full bg-blue-500/50 rounded-sm"
-                          style={{ width: '100%' }}
-                        />
-                      )}
-                    </div>
-                  ))}
-                </div>
+              ))
+            ) : (
+              <div className="text-center py-4 text-zinc-400">
+                Select crew members to view their timeline
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
