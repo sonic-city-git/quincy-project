@@ -30,7 +30,7 @@ export function FolderSelect({ selectedFolder, onFolderChange, required = false 
             {getFolderPath(selectedFolder, EQUIPMENT_FOLDERS)}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="max-h-[200px] overflow-y-auto touch-none select-none">
+        <SelectContent className="max-h-[200px] overflow-y-auto touch-none select-none hover:overflow-y-scroll">
           {EQUIPMENT_FOLDERS.map((folder) => (
             <React.Fragment key={folder.id}>
               <SelectItem 
