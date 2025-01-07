@@ -90,7 +90,7 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
   const currentCustomerId = customers.find(c => c.name === selectedCustomer)?.id;
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 relative">
       <p className="text-sm text-muted-foreground">Customer</p>
       <Select 
         value={currentCustomerId}
@@ -101,9 +101,10 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
           <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
         </SelectTrigger>
         <SelectContent 
-          className="bg-zinc-900 border border-zinc-700 min-w-[240px]"
+          className="bg-zinc-900 border border-zinc-700 min-w-[240px] z-50"
           position="popper"
           align="start"
+          sideOffset={5}
         >
           {customers.map((customer) => (
             <SelectItem 
