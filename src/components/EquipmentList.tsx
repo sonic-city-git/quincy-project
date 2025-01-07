@@ -65,6 +65,32 @@ export function EquipmentList() {
 
   useEffect(() => {
     fetchEquipment();
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('equipment_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'equipment'
+        },
+        (payload) => {
+          console.log('Real-time update received:', payload);
+          fetchEquipment(); // Refresh the equipment list
+          toast({
+            title: "Equipment Updated",
+            description: "The equipment list has been updated",
+          });
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const handleResize = useCallback(() => {
@@ -73,34 +99,91 @@ export function EquipmentList() {
 
   const { observe, unobserve } = useDebounceResize(handleResize);
 
-  const handleAddEquipment = (newEquipment: Equipment) => {
-    setEquipment(prev => [...prev, newEquipment]);
-    toast({
-      title: "Equipment added",
-      description: "New equipment has been added successfully",
-    });
+  const handleAddEquipment = async (newEquipment: Equipment) => {
+    try {
+      const { error } = await supabase
+        .from('equipment')
+        .insert([{
+          id: newEquipment.id,
+          Code: newEquipment.code,
+          Name: newEquipment.name,
+          Price: parseFloat(newEquipment.price),
+          "Book Value": parseFloat(newEquipment.value),
+          Weight: parseFloat(newEquipment.weight),
+          Stock: newEquipment.stock,
+          Folder: newEquipment.folderId,
+        }]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Equipment added",
+        description: "New equipment has been added successfully",
+      });
+    } catch (error) {
+      console.error('Error adding equipment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add equipment",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEditEquipment = (editedEquipment: Equipment) => {
-    setEquipment(prev => 
-      prev.map(item => 
-        item.id === editedEquipment.id ? editedEquipment : item
-      )
-    );
-    setSelectedItems([]);
-    toast({
-      title: "Equipment updated",
-      description: "Equipment has been updated successfully",
-    });
+  const handleEditEquipment = async (editedEquipment: Equipment) => {
+    try {
+      const { error } = await supabase
+        .from('equipment')
+        .update({
+          Code: editedEquipment.code,
+          Name: editedEquipment.name,
+          Price: parseFloat(editedEquipment.price),
+          "Book Value": parseFloat(editedEquipment.value),
+          Weight: parseFloat(editedEquipment.weight),
+          Stock: editedEquipment.stock,
+          Folder: editedEquipment.folderId,
+        })
+        .eq('id', editedEquipment.id);
+
+      if (error) throw error;
+
+      setSelectedItems([]);
+      toast({
+        title: "Equipment updated",
+        description: "Equipment has been updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating equipment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update equipment",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteEquipment = () => {
-    setEquipment(prev => prev.filter(item => !selectedItems.includes(item.id)));
-    setSelectedItems([]);
-    toast({
-      title: "Equipment deleted",
-      description: `${selectedItems.length} equipment item(s) have been removed`,
-    });
+  const handleDeleteEquipment = async () => {
+    try {
+      const { error } = await supabase
+        .from('equipment')
+        .delete()
+        .in('id', selectedItems);
+
+      if (error) throw error;
+
+      setSelectedItems([]);
+      toast({
+        title: "Equipment deleted",
+        description: `${selectedItems.length} equipment item(s) have been removed`,
+      });
+    } catch (error) {
+      console.error('Error deleting equipment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete equipment",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleItemSelect = (id: string) => {
