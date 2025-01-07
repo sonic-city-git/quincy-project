@@ -22,7 +22,7 @@ export function useProjectDetails(projectId: string | undefined) {
             )
           `)
           .eq('id', projectId)
-          .single();
+          .maybeSingle();
 
         if (projectError) throw projectError;
 
@@ -35,6 +35,13 @@ export function useProjectDetails(projectId: string | undefined) {
             color: projectData.color,
             gig_price: projectData.gig_price,
             yearly_revenue: projectData.yearly_revenue
+          });
+        } else {
+          // Handle case when no project is found
+          toast({
+            title: "Project not found",
+            description: "The requested project could not be found.",
+            variant: "destructive",
           });
         }
       } catch (error) {
