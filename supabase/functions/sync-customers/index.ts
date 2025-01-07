@@ -40,7 +40,7 @@ serve(async (req) => {
     console.log('Fetching customers from Tripletex...')
     
     const headers = {
-      'Authorization': `0:${sessionToken}`,
+      'Authorization': `Basic ${btoa('0:' + sessionToken)}`,
       'consumerToken': consumerToken,
       'Content-Type': 'application/json',
       'Accept': 'application/json'
