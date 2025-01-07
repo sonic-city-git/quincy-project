@@ -10,12 +10,33 @@ interface CrewTableProps {
 }
 
 export function CrewTable({ crewMembers, selectedItems, onItemSelect }: CrewTableProps) {
+  const handleSelectAll = () => {
+    if (selectedItems.length === crewMembers.length) {
+      // If all items are selected, unselect all
+      crewMembers.forEach((crew) => {
+        if (selectedItems.includes(crew.id)) {
+          onItemSelect(crew.id);
+        }
+      });
+    } else {
+      // If not all items are selected, select all
+      crewMembers.forEach((crew) => {
+        if (!selectedItems.includes(crew.id)) {
+          onItemSelect(crew.id);
+        }
+      });
+    }
+  };
+
   return (
     <Table>
       <TableHeader>
         <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
           <TableHead className="w-12">
-            <Checkbox />
+            <Checkbox 
+              checked={selectedItems.length === crewMembers.length && crewMembers.length > 0}
+              onCheckedChange={handleSelectAll}
+            />
           </TableHead>
           <TableHead className="whitespace-nowrap">Name</TableHead>
           <TableHead className="whitespace-nowrap">Role</TableHead>
