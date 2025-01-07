@@ -57,23 +57,27 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
       }
 
       console.log('Updating project with customer:', selectedCustomerData.name);
-      const { error: updateError } = await supabase
-        .from('projects')
-        .update({ customer: selectedCustomerData.name })
-        .eq('id', projectId);
+      if (projectId) {
+        const { error: updateError } = await supabase
+          .from('projects')
+          .update({ customer: selectedCustomerData.name })
+          .eq('id', projectId);
 
-      if (updateError) {
-        console.error('Error updating project:', updateError);
-        throw updateError;
+        if (updateError) {
+          console.error('Error updating project:', updateError);
+          throw updateError;
+        }
       }
 
       setSelectedCustomer(selectedCustomerData.name);
       console.log('Successfully updated customer to:', selectedCustomerData.name);
       
-      toast({
-        title: "Success",
-        description: "Customer updated successfully",
-      });
+      if (projectId) {
+        toast({
+          title: "Success",
+          description: "Customer updated successfully",
+        });
+      }
     } catch (error) {
       console.error('Error updating customer:', error);
       toast({
@@ -97,33 +101,24 @@ export function CustomerSelect({ projectId, initialCustomer }: CustomerSelectPro
   console.log('Current customer ID:', currentCustomerId, 'Selected customer:', selectedCustomer);
 
   return (
-    <div className="space-y-2">
-      <p className="text-sm text-muted-foreground">Customer</p>
-      <Select 
-        value={currentCustomerId}
-        onValueChange={handleCustomerChange}
-        disabled={isLoading}
-      >
-        <SelectTrigger className="w-[240px] h-12 bg-zinc-900 text-white border-zinc-700">
-          <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
-        </SelectTrigger>
-        <SelectContent 
-          className="bg-zinc-900 border border-zinc-700 min-w-[240px]"
-          position="popper"
-          align="start"
-          sideOffset={5}
-        >
-          {customers.map((customer) => (
-            <SelectItem 
-              key={customer.id} 
-              value={customer.id}
-              className="text-white hover:bg-zinc-800 cursor-pointer py-3 px-4"
-            >
-              {customer.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <Select 
+      value={currentCustomerId}
+      onValueChange={handleCustomerChange}
+      disabled={isLoading}
+    >
+      <SelectTrigger className="w-full h-10">
+        <SelectValue placeholder={isLoading ? "Loading customers..." : "Select customer"} />
+      </SelectTrigger>
+      <SelectContent>
+        {customers.map((customer) => (
+          <SelectItem 
+            key={customer.id} 
+            value={customer.id}
+          >
+            {customer.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }

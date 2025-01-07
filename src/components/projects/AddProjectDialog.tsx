@@ -66,7 +66,7 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
             <Input
               id="name"
               name="name"
-              placeholder="Summer Tour 2024"
+              placeholder="Taylor Swift"
               required
             />
           </div>
@@ -74,17 +74,16 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
           <div className="grid gap-2">
             <Label>Owner</Label>
             <OwnerSelect
-              selectedOwner={selectedOwner}
-              onOwnerSelect={setSelectedOwner}
-              required
+              projectId=""
+              initialOwner={selectedOwner}
             />
           </div>
 
           <div className="grid gap-2">
             <Label>Customer</Label>
             <CustomerSelect
-              selectedCustomer={selectedCustomer}
-              onCustomerSelect={setSelectedCustomer}
+              projectId=""
+              initialCustomer={selectedCustomer || ""}
             />
           </div>
 
