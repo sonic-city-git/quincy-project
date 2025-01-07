@@ -71,13 +71,10 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
             />
           </div>
           
-          <div className="grid gap-2">
-            <Label>Owner</Label>
-            <OwnerSelect
-              projectId=""
-              initialOwner={selectedOwner}
-            />
-          </div>
+          <OwnerSelect
+            projectId=""
+            initialOwner={selectedOwner}
+          />
 
           <div className="grid gap-2">
             <Label>Customer</Label>
