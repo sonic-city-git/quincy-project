@@ -76,13 +76,10 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
             initialOwner={selectedOwner}
           />
 
-          <div className="grid gap-2">
-            <Label>Customer</Label>
-            <CustomerSelect
-              projectId=""
-              initialCustomer={selectedCustomer || ""}
-            />
-          </div>
+          <CustomerSelect
+            projectId=""
+            initialCustomer={selectedCustomer || ""}
+          />
 
           <Button type="submit" className="mt-4">Create project</Button>
         </form>
