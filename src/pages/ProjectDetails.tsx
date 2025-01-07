@@ -2,40 +2,78 @@ import { useParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProjectHeader } from "@/components/projects/ProjectHeader";
 import { ProjectGeneralTab } from "@/components/projects/ProjectGeneralTab";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-const MOCK_PROJECTS = {
-  "sondre-justad": {
-    name: "Sondre Justad",
-    lastInvoiced: "28.06.24",
-    owner: "Sondre Sandhaug",
-    customer: "Universal Music",
-    color: "bg-amber-700",
-    gigPrice: "15 000 000kr",
-    yearlyRevenue: "180 000 000kr"
-  },
-  "briskeby": {
-    name: "Briskeby",
-    lastInvoiced: "29.09.24",
-    owner: "Stian Sagholen",
-    customer: "Sony Music",
-    color: "bg-rose-800",
-    gigPrice: "12 000 000kr",
-    yearlyRevenue: "144 000 000kr"
-  },
-  "highasakite": {
-    name: "Highasakite",
-    lastInvoiced: "28.06.24",
-    owner: "Raymond Hellem",
-    customer: "Warner Music",
-    color: "bg-blue-700",
-    gigPrice: "18 000 000kr",
-    yearlyRevenue: "216 000 000kr"
-  }
-};
+interface ProjectData {
+  name: string;
+  last_invoiced: string;
+  owner: string;
+  customer: string | null;
+  color: string;
+  gig_price: string | null;
+  yearly_revenue: string | null;
+}
 
 const ProjectDetails = () => {
   const { projectId } = useParams();
-  const project = projectId ? MOCK_PROJECTS[projectId as keyof typeof MOCK_PROJECTS] : null;
+  const [project, setProject] = useState<ProjectData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      try {
+        if (!projectId) return;
+
+        // Fetch project and join with crew_members to get owner name
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select(`
+            *,
+            crew_members (
+              name
+            )
+          `)
+          .eq('id', projectId)
+          .single();
+
+        if (projectError) throw projectError;
+
+        if (projectData) {
+          setProject({
+            name: projectData.name,
+            last_invoiced: projectData.last_invoiced || '',
+            owner: projectData.crew_members?.name || '',
+            customer: projectData.customer,
+            color: projectData.color,
+            gig_price: projectData.gig_price,
+            yearly_revenue: projectData.yearly_revenue
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching project:', error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch project details",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjectData();
+  }, [projectId, toast]);
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   if (!project) {
     return (
@@ -49,7 +87,7 @@ const ProjectDetails = () => {
     <div className="min-h-screen">
       <ProjectHeader 
         name={project.name}
-        lastInvoiced={project.lastInvoiced}
+        lastInvoiced={project.last_invoiced}
         color={project.color}
       />
 
@@ -66,9 +104,9 @@ const ProjectDetails = () => {
             <ProjectGeneralTab 
               projectId={projectId || ""}
               initialOwner={project.owner}
-              initialCustomer={project.customer}
-              gigPrice={project.gigPrice}
-              yearlyRevenue={project.yearlyRevenue}
+              initialCustomer={project.customer || ""}
+              gigPrice={project.gig_price || ""}
+              yearlyRevenue={project.yearly_revenue || ""}
             />
           </TabsContent>
 
