@@ -84,6 +84,7 @@ export function EditEquipmentDialog({ equipment, onEditEquipment, onDeleteEquipm
           <FolderSelect
             selectedFolder={selectedFolder}
             onFolderSelect={setSelectedFolder}
+            showAllFolders={false}
           />
           <div className="grid gap-2">
             <Label htmlFor="code">Code</Label>

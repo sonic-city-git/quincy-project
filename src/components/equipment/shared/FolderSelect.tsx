@@ -14,9 +14,15 @@ interface FolderSelectProps {
   selectedFolder: string | null;
   onFolderSelect: (folderId: string | null) => void;
   required?: boolean;
+  showAllFolders?: boolean;
 }
 
-export function FolderSelect({ selectedFolder, onFolderSelect, required }: FolderSelectProps) {
+export function FolderSelect({ 
+  selectedFolder, 
+  onFolderSelect, 
+  required,
+  showAllFolders = true 
+}: FolderSelectProps) {
   const renderFolderOptions = (folders: typeof EQUIPMENT_FOLDERS, level = 0) => {
     return folders.map((folder) => (
       <React.Fragment key={folder.id}>
@@ -45,7 +51,7 @@ export function FolderSelect({ selectedFolder, onFolderSelect, required }: Folde
       </SelectTrigger>
       <SelectContent>
         <ScrollArea className="h-[200px] w-full rounded-md">
-          <SelectItem value="all">All folders</SelectItem>
+          {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
           {renderFolderOptions(EQUIPMENT_FOLDERS)}
         </ScrollArea>
       </SelectContent>

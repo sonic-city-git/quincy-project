@@ -84,6 +84,7 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
             selectedFolder={selectedFolder}
             onFolderSelect={setSelectedFolder}
             required
+            showAllFolders={false}
           />
           <div className="grid gap-2">
             <Label htmlFor="code">Code</Label>
