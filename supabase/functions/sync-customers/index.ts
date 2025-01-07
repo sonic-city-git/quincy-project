@@ -28,18 +28,17 @@ serve(async (req) => {
     )
 
     // Tripletex API credentials
-    const apiToken = Deno.env.get('TRIPLETEX_API_TOKEN')
     const consumerToken = Deno.env.get('TRIPLETEX_CONSUMER_TOKEN')
     const employeeToken = Deno.env.get('TRIPLETEX_EMPLOYEE_TOKEN')
 
-    if (!apiToken || !consumerToken || !employeeToken) {
+    if (!consumerToken || !employeeToken) {
       throw new Error('Missing Tripletex API credentials')
     }
 
     // Fetch customers from Tripletex
     const tripletexResponse = await fetch('https://tripletex.no/v2/customer', {
       headers: {
-        'Authorization': `Basic ${btoa(`0:${apiToken}`)}`,
+        'Authorization': `Basic ${btoa(`0:`)}`, // No API token needed
         'consumerToken': consumerToken,
         'employeeToken': employeeToken,
         'Content-Type': 'application/json',
