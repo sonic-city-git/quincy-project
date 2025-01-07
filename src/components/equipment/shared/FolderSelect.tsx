@@ -13,9 +13,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 interface FolderSelectProps {
   selectedFolder: string | null;
   onFolderSelect: (folderId: string | null) => void;
+  required?: boolean;
 }
 
-export function FolderSelect({ selectedFolder, onFolderSelect }: FolderSelectProps) {
+export function FolderSelect({ selectedFolder, onFolderSelect, required }: FolderSelectProps) {
   const renderFolderOptions = (folders: typeof EQUIPMENT_FOLDERS, level = 0) => {
     return folders.map((folder) => (
       <React.Fragment key={folder.id}>
@@ -34,6 +35,7 @@ export function FolderSelect({ selectedFolder, onFolderSelect }: FolderSelectPro
     <Select
       value={selectedFolder || "all"}
       onValueChange={(value) => onFolderSelect(value === "all" ? null : value)}
+      required={required}
     >
       <SelectTrigger className="w-[200px]">
         <SelectValue>
