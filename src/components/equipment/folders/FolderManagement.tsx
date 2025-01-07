@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Pencil, Trash2, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, ChevronRight, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -12,10 +12,15 @@ interface FolderManagementProps {
   onClose: () => void;
 }
 
+interface FolderItemState {
+  [key: string]: boolean;
+}
+
 export function FolderManagement({ folders, onClose }: FolderManagementProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newFolderName, setNewFolderName] = useState("");
   const [parentId, setParentId] = useState<string | null>(null);
+  const [expandedFolders, setExpandedFolders] = useState<FolderItemState>({});
   const { toast } = useToast();
 
   const handleAddFolder = async () => {
@@ -88,14 +93,37 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
     }
   };
 
+  const toggleFolder = (folderId: string) => {
+    setExpandedFolders(prev => ({
+      ...prev,
+      [folderId]: !prev[folderId]
+    }));
+  };
+
   const renderFolderItem = (folder: Folder, level: number = 0) => {
     const isEditing = editingId === folder.id;
     const children = folders.filter(f => f.parent_id === folder.id);
+    const hasChildren = children.length > 0;
+    const isExpanded = expandedFolders[folder.id];
 
     return (
       <div key={folder.id} className="space-y-2">
         <div className="flex items-center gap-2" style={{ marginLeft: `${level * 20}px` }}>
-          {children.length > 0 && <ChevronRight className="h-4 w-4" />}
+          {hasChildren && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-0 h-4 w-4 hover:bg-transparent"
+              onClick={() => toggleFolder(folder.id)}
+            >
+              {isExpanded ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </Button>
+          )}
+          {!hasChildren && <div className="w-4" />}
           {isEditing ? (
             <Input
               value={folder.name}
@@ -124,7 +152,11 @@ export function FolderManagement({ folders, onClose }: FolderManagementProps) {
             </>
           )}
         </div>
-        {children.map(child => renderFolderItem(child, level + 1))}
+        {hasChildren && isExpanded && (
+          <div className="ml-4">
+            {children.map(child => renderFolderItem(child, level + 1))}
+          </div>
+        )}
       </div>
     );
   };
