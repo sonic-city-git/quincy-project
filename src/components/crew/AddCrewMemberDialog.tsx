@@ -18,6 +18,7 @@ import {
 import { UserPlus } from "lucide-react";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { NewCrewMember } from "@/types/crew";
 
 const TAGS = [
   { id: "foh", label: "FOH" },
@@ -27,14 +28,7 @@ const TAGS = [
 ] as const;
 
 interface AddCrewMemberDialogProps {
-  onAddCrewMember: (newMember: {
-    firstName: string;
-    lastName: string;
-    phone: string;
-    email: string;
-    folder: string;
-    tags: string[];
-  }) => void;
+  onAddCrewMember: (newMember: NewCrewMember) => void;
 }
 
 export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProps) {
@@ -45,7 +39,7 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    const newCrewMember = {
+    const newCrewMember: NewCrewMember = {
       firstName: formData.get("firstName") as string,
       lastName: formData.get("lastName") as string,
       phone: formData.get("phone") as string,
