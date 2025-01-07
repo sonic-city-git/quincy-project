@@ -42,12 +42,11 @@ serve(async (req) => {
     // Create session token by combining consumer and employee tokens
     const sessionToken = btoa(`${consumerToken}:${employeeToken}`)
     
-    // Fetch customers from Tripletex
-    const tripletexResponse = await fetch('https://api.tripletex.io/v2/customer', {
+    // Fetch customers from Tripletex with apikey as URL parameter
+    const tripletexResponse = await fetch(`https://api.tripletex.io/v2/customer?apikey=${consumerToken}`, {
       headers: {
         'Authorization': `Basic ${sessionToken}`,
         'Content-Type': 'application/json',
-        'apikey': consumerToken, // Add the apikey header
       },
     })
 
