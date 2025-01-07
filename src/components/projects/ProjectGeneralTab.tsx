@@ -49,14 +49,24 @@ export const ProjectGeneralTab = ({
     fetchSonicCityCrewMembers();
   }, [toast]);
 
-  const handleOwnerChange = async (newOwner: string) => {
+  const handleOwnerChange = async (newOwnerName: string) => {
     try {
-      // Update the local state
-      setSelectedOwner(newOwner);
-      
-      // Update the project in the mock data
-      // In a real application, this would be a database update
-      console.log(`Updating owner for project ${projectId} to ${newOwner}`);
+      // Find the crew member's ID based on their name
+      const crewMember = sonicCityCrewMembers.find(crew => crew.name === newOwnerName);
+      if (!crewMember) {
+        throw new Error('Selected crew member not found');
+      }
+
+      // Update the project in Supabase
+      const { error } = await supabase
+        .from('projects')
+        .update({ owner_id: crewMember.id })
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      // Update local state
+      setSelectedOwner(newOwnerName);
       
       toast({
         title: "Success",
@@ -67,6 +77,31 @@ export const ProjectGeneralTab = ({
       toast({
         title: "Error",
         description: "Failed to update project owner",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCustomerChange = async (newCustomer: string) => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .update({ customer: newCustomer })
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      setSelectedCustomer(newCustomer);
+      
+      toast({
+        title: "Success",
+        description: "Customer updated successfully",
+      });
+    } catch (error) {
+      console.error('Error updating customer:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update customer",
         variant: "destructive",
       });
     }
@@ -104,7 +139,7 @@ export const ProjectGeneralTab = ({
               <Separator className="my-4" />
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">Customer</p>
-                <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
+                <Select value={selectedCustomer} onValueChange={handleCustomerChange}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select customer" />
                   </SelectTrigger>

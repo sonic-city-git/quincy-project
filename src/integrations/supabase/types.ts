@@ -39,6 +39,50 @@ export type Database = {
         }
         Relationships: []
       }
+      projects: {
+        Row: {
+          color: string
+          created_at: string
+          customer: string | null
+          gig_price: string | null
+          id: string
+          last_invoiced: string | null
+          name: string
+          owner_id: string
+          yearly_revenue: string | null
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          customer?: string | null
+          gig_price?: string | null
+          id: string
+          last_invoiced?: string | null
+          name: string
+          owner_id: string
+          yearly_revenue?: string | null
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          customer?: string | null
+          gig_price?: string | null
+          id?: string
+          last_invoiced?: string | null
+          name?: string
+          owner_id?: string
+          yearly_revenue?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
