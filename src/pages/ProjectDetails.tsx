@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MOCK_CREW } from "@/data/mockCrew";
 import { useState } from "react";
+import { Calendar } from "@/components/ui/calendar";
 
 const MOCK_PROJECTS = {
   "sondre-justad": {
@@ -47,6 +48,7 @@ const ProjectDetails = () => {
   
   const [selectedOwner, setSelectedOwner] = useState(project?.owner || "");
   const [selectedCustomer, setSelectedCustomer] = useState(project?.customer || "");
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   if (!project) {
     return (
@@ -138,6 +140,17 @@ const ProjectDetails = () => {
                     <p className="text-sm text-muted-foreground">Yearly Revenue</p>
                     <p className="text-base">{project.yearlyRevenue}</p>
                   </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-4">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    className="rounded-md border"
+                  />
                 </CardContent>
               </Card>
             </div>
