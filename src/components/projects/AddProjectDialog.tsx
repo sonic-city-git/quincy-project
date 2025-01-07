@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { OwnerSelect } from "./owner/OwnerSelect";
 import { CustomerSelect } from "./customer/CustomerSelect";
 import { useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
 
 interface AddProjectDialogProps {
   onAddProject: (project: {
@@ -21,7 +22,7 @@ interface AddProjectDialogProps {
     owner_id: string;
     customer: string | null;
     color: string;
-  }) => void;
+  }) => Promise<any>;
 }
 
 export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
@@ -30,6 +31,7 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -63,7 +65,7 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
     };
 
     try {
-      await onAddProject(newProject);
+      const data = await onAddProject(newProject);
       // Invalidate and refetch projects query
       await queryClient.invalidateQueries({ queryKey: ['projects'] });
       setOpen(false);
@@ -71,6 +73,10 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
         title: "Success",
         description: "Project created successfully",
       });
+      // Navigate to the project detail page using the first project's ID from the returned data
+      if (data && data[0] && data[0].id) {
+        navigate(`/projects/${data[0].id}`);
+      }
     } catch (error) {
       console.error('Error creating project:', error);
       toast({
