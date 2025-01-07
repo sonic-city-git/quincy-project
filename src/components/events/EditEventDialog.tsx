@@ -28,7 +28,6 @@ export const EditEventDialog = ({
   const [name, setName] = useState(event.name);
   const [type, setType] = useState<EventType>(event.type);
 
-  // Reset form when event changes
   useEffect(() => {
     if (event) {
       setName(event.name);
