@@ -27,13 +27,13 @@ export function EntitySelect({
         <SelectValue placeholder={isLoading ? `Loading ${placeholder}...` : `Select ${placeholder}`} />
       </SelectTrigger>
       <SelectContent>
-        <ScrollArea className="h-[200px]">
+        <ScrollArea className="h-[200px] w-full rounded-md">
           <div className="p-1">
             {entities.map((entity) => (
               <SelectItem 
                 key={entity.id} 
                 value={entity.id}
-                className="cursor-pointer"
+                className="cursor-pointer relative flex w-full select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
               >
                 {entity.name}
               </SelectItem>
