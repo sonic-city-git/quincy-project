@@ -17,20 +17,20 @@ interface ProjectCalendarProps {
 }
 
 export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
 
-  const handleDateSelect = (selectedDate: Date | undefined) => {
-    if (selectedDate) {
-      setDate(selectedDate);
+  const handleSelect = (date: Date | undefined) => {
+    if (date) {
+      setSelectedDate(date);
       setIsDialogOpen(true);
     }
   };
 
   const handleEventSubmit = (eventName: string, eventType: EventType) => {
-    if (date) {
-      setEvents([...events, { date, name: eventName, type: eventType }]);
+    if (selectedDate) {
+      setEvents([...events, { date: selectedDate, name: eventName, type: eventType }]);
       setIsDialogOpen(false);
     }
   };
@@ -39,8 +39,8 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
     <>
       <Calendar
         mode="single"
-        selected={date}
-        onSelect={handleDateSelect}
+        selected={selectedDate}
+        onSelect={handleSelect}
         className={`w-full rounded-md border ${className}`}
         modifiers={{ today: undefined }}
         modifiersClassNames={{
@@ -73,7 +73,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
         isOpen={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         onSubmit={handleEventSubmit}
-        date={date}
+        date={selectedDate}
       />
     </>
   );
