@@ -5,6 +5,12 @@ import { EditEventDialog } from "./EditEventDialog";
 import { CalendarEvent, EventType } from "@/types/events";
 import { DayProps } from "react-day-picker";
 import { useParams } from "react-router-dom";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const EVENT_COLORS: Record<EventType, string> = {
   "Show": "bg-green-500",
@@ -104,22 +110,32 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
             );
             
             return (
-              <button 
-                {...props}
-                className={`
-                  relative h-9 w-9 p-0 font-normal 
-                  flex items-center justify-center text-sm 
-                  cursor-pointer hover:bg-accent 
-                  transition-colors duration-200
-                  rounded-md shadow-sm
-                  ${props.className || ''} 
-                  ${event ? `${EVENT_COLORS[event.type]} text-white font-medium` : ''}
-                `}
-                onClick={() => handleSelect(dayDate)}
-                title={event?.name}
-              >
-                {dayDate.getDate()}
-              </button>
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button 
+                      {...props}
+                      className={`
+                        relative h-9 w-9 p-0 font-normal 
+                        flex items-center justify-center text-sm 
+                        cursor-pointer hover:bg-accent 
+                        transition-colors duration-200
+                        rounded-md shadow-sm
+                        ${props.className || ''} 
+                        ${event ? `${EVENT_COLORS[event.type]} text-white font-medium` : ''}
+                      `}
+                      onClick={() => handleSelect(dayDate)}
+                    >
+                      {dayDate.getDate()}
+                    </button>
+                  </TooltipTrigger>
+                  {event && (
+                    <TooltipContent className="text-base px-4 py-2">
+                      {event.name}
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             );
           },
         }}
