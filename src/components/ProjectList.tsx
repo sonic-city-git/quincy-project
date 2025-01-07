@@ -16,6 +16,19 @@ export function ProjectList() {
   const navigate = useNavigate();
   const { projects, loading } = useProjects();
 
+  const getColorStyle = (color: string, index: number) => {
+    // If color starts with 'bg-', it's a Tailwind class
+    if (color?.startsWith('bg-')) {
+      return { className: color };
+    }
+    // Otherwise use it as a direct color value, or fall back to default colors
+    return { 
+      style: { 
+        backgroundColor: color || DEFAULT_COLORS[index % DEFAULT_COLORS.length]
+      }
+    };
+  };
+
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -61,11 +74,13 @@ export function ProjectList() {
                 </TableCell>
                 <TableCell className="pl-0">
                   <span 
-                    className="inline-block px-3 py-1 rounded font-medium"
+                    {...getColorStyle(project.color, index)}
+                    className={`inline-block px-3 py-1 rounded font-medium text-white ${
+                      project.color?.startsWith('bg-') ? project.color : ''
+                    }`}
                     style={{ 
-                      backgroundColor: project.color || DEFAULT_COLORS[index % DEFAULT_COLORS.length],
-                      color: '#fff',
-                      minWidth: '120px'
+                      minWidth: '120px',
+                      ...(getColorStyle(project.color, index).style || {})
                     }}
                   >
                     {project.name}
