@@ -22,7 +22,8 @@ export function FolderSelect({ selectedFolder, onFolderSelect, required }: Folde
       <React.Fragment key={folder.id}>
         <SelectItem
           value={folder.id}
-          className={`pl-[${level * 16}px]`}
+          className={`${level > 0 ? `pl-${level * 4}` : ''}`}
+          style={{ paddingLeft: level > 0 ? `${level * 16 + 8}px` : '8px' }}
         >
           {folder.name}
         </SelectItem>
