@@ -39,8 +39,8 @@ serve(async (req) => {
 
     console.log('Fetching customers from Tripletex...')
     
-    // Create session token for Tripletex API using the correct format
-    const authString = `${consumerToken}:${employeeToken}`
+    // Create session token for Tripletex API using the correct format with '0' as the customer ID
+    const authString = `0:${employeeToken}`
     const sessionToken = btoa(authString)
     
     console.log('Making request to Tripletex API...')
@@ -51,6 +51,7 @@ serve(async (req) => {
         'Authorization': `Basic ${sessionToken}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json',
+        'consumerToken': consumerToken,
       },
     })
 
