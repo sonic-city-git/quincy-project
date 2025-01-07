@@ -60,9 +60,13 @@ export function CrewTimeline({
     <div className="border-t border-zinc-800/50">
       <div className="p-4 flex flex-col items-center gap-2">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={onPreviousPeriod}>
-            <ChevronsLeft className="h-4 w-4" />
+</lov-replace>
+<lov-search>
+          <Button variant="ghost" size="sm" onClick={onNextPeriod}>
+            <ChevronsRight className="h-4 w-4" />
           </Button>
+</lov-search>
+<lov-replace>
           <Button variant="ghost" size="sm" onClick={onPreviousPeriod}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
