@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 import {
@@ -9,7 +10,8 @@ import {
 } from "@/components/ui/dialog";
 import { FolderSelect } from "./shared/FolderSelect";
 import { FolderManagement } from "./folders/FolderManagement";
-import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Folder } from "@/types/folders";
 
 interface EquipmentFolderSelectProps {
   selectedFolder: string | null;
@@ -21,6 +23,44 @@ export function EquipmentFolderSelect({
   onFolderSelect,
 }: EquipmentFolderSelectProps) {
   const [isManaging, setIsManaging] = useState(false);
+  const [folders, setFolders] = useState<Folder[]>([]);
+
+  useEffect(() => {
+    fetchFolders();
+
+    const channel = supabase
+      .channel('folders_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'folders'
+        },
+        () => {
+          fetchFolders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const fetchFolders = async () => {
+    const { data, error } = await supabase
+      .from('folders')
+      .select('*')
+      .order('created_at');
+
+    if (error) {
+      console.error('Error fetching folders:', error);
+      return;
+    }
+
+    setFolders(data);
+  };
 
   return (
     <div className="flex items-center gap-2">
@@ -42,7 +82,7 @@ export function EquipmentFolderSelect({
             <DialogTitle>Manage Folders</DialogTitle>
           </DialogHeader>
           <FolderManagement
-            folders={[]}
+            folders={folders}
             onClose={() => setIsManaging(false)}
           />
         </DialogContent>
