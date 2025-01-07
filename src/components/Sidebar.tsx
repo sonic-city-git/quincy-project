@@ -11,31 +11,31 @@ export function Sidebar() {
   ];
 
   return (
-    <aside className="fixed top-0 left-0 w-sidebar h-screen bg-zinc-900 p-3 flex flex-col border-r border-zinc-800">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-amber-600">QUINCY</h1>
+    <div className="w-64 min-h-screen bg-zinc-900 p-4 flex flex-col">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-amber-600">QUINCY</h1>
       </div>
-      <nav className="space-y-1.5">
+      <nav className="space-y-2">
         {links.map((link) => (
           <NavLink
             key={link.path}
             to={link.path}
             className={({ isActive }) =>
-              `flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors text-sm ${
+              `flex items-center gap-3 px-4 py-2 rounded-md transition-colors ${
                 isActive
                   ? "bg-zinc-800 text-white"
                   : "text-zinc-400 hover:bg-zinc-800 hover:text-white"
               }`
             }
           >
-            <link.icon className="h-4 w-4" />
+            <link.icon className="h-5 w-5" />
             {link.name}
           </NavLink>
         ))}
       </nav>
-      <div className="mt-auto text-zinc-500 text-xs">
+      <div className="mt-auto text-zinc-500 text-sm">
         SONIC CITY - 2024
       </div>
-    </aside>
+    </div>
   );
 }

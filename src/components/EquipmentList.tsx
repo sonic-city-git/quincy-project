@@ -137,8 +137,8 @@ export function EquipmentList() {
     }));
 
   return (
-    <div className="p-8 space-y-8 max-w-[1600px] mx-auto" ref={containerRef}>
-      <div className="flex justify-between items-center gap-6">
+    <div className="space-y-6" ref={containerRef}>
+      <div className="flex justify-between items-center gap-4">
         <div className="flex items-center gap-4 flex-1">
           <EquipmentFolderSelect
             selectedFolder={selectedFolder}
@@ -148,7 +148,7 @@ export function EquipmentList() {
         <AddEquipmentDialog onAddEquipment={handleAddEquipment} />
       </div>
 
-      <div className="bg-zinc-900/50 rounded-xl border border-zinc-800/50 backdrop-blur-sm shadow-xl">
+      <div className="bg-zinc-900 rounded-md">
         <EquipmentSelectionHeader
           selectedItems={selectedItems}
           equipment={equipment}
