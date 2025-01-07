@@ -63,13 +63,27 @@ export function useCrewManagement() {
     )
   ).sort();
 
-  // Filter crew members based on selected roles
-  const filteredCrewMembers = crewMembers.filter((member) => {
-    if (selectedRoles.length === 0) return true;
-    return member.role
-      .split(", ")
-      .some((role) => selectedRoles.includes(role.toUpperCase()));
-  });
+  // Filter and sort crew members
+  const filteredCrewMembers = crewMembers
+    .filter((member) => {
+      if (selectedRoles.length === 0) return true;
+      return member.role
+        .split(", ")
+        .some((role) => selectedRoles.includes(role.toUpperCase()));
+    })
+    .sort((a, b) => {
+      // First sort by folder (Sonic City first, then others)
+      if (a.folder === "Sonic City" && b.folder !== "Sonic City") return -1;
+      if (a.folder !== "Sonic City" && b.folder === "Sonic City") return 1;
+      
+      // If folders are the same, sort alphabetically by name
+      if (a.folder === b.folder) {
+        return a.name.localeCompare(b.name);
+      }
+      
+      // If folders are different (and neither is Sonic City), sort alphabetically by folder
+      return a.folder.localeCompare(b.folder);
+    });
 
   const selectedCrew = filteredCrewMembers.filter(crew => 
     selectedItems.includes(crew.id)
