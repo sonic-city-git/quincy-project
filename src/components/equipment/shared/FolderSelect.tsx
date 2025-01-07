@@ -63,7 +63,7 @@ export function FolderSelect({
   };
 
   const getFolderPath = (folderId: string | null): string => {
-    if (!folderId) return 'All folders';
+    if (!folderId || folderId === "all") return 'All folders';
 
     const folder = folders.find(f => f.id === folderId);
     if (!folder) return 'All folders';
@@ -94,8 +94,8 @@ export function FolderSelect({
 
   return (
     <Select
-      value={selectedFolder || undefined}
-      onValueChange={(value) => onFolderSelect(value)}
+      value={selectedFolder || "all"}
+      onValueChange={(value) => onFolderSelect(value === "all" ? null : value)}
       required={required}
     >
       <SelectTrigger className="w-full">
@@ -105,7 +105,7 @@ export function FolderSelect({
       </SelectTrigger>
       <SelectContent>
         <ScrollArea className="h-[400px]">
-          {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
+          <SelectItem value="all">All folders</SelectItem>
           {renderFolderOptions()}
         </ScrollArea>
       </SelectContent>

@@ -2,7 +2,6 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { addDays, subDays } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { Equipment } from "@/types/equipment";
-import { EQUIPMENT_FOLDERS } from "@/data/equipmentFolders";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
 import { isItemInFolder } from "@/utils/folderUtils";
 import { AddEquipmentDialog } from "./equipment/AddEquipmentDialog";
@@ -222,7 +221,7 @@ export function EquipmentList() {
     const matchesSearch = searchTerm === "" || 
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFolder = !selectedFolder || isItemInFolder(item.folderId, selectedFolder);
+    const matchesFolder = !selectedFolder || selectedFolder === "all" || isItemInFolder(item.folderId, selectedFolder);
     return matchesSearch && matchesFolder;
   });
 
