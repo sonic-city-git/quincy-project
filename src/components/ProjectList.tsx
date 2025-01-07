@@ -13,6 +13,10 @@ export function ProjectList() {
     setSelectedItem(prev => prev === id ? null : id);
   };
 
+  const handleProjectDeleted = () => {
+    setSelectedItem(null);
+  };
+
   const filteredProjects = selectedOwner
     ? projects.filter(project => project.owner === selectedOwner)
     : projects;
@@ -28,7 +32,10 @@ export function ProjectList() {
           selectedOwner={selectedOwner}
           onOwnerSelect={setSelectedOwner}
         />
-        <ProjectActions selectedItems={selectedItem ? [selectedItem] : []} />
+        <ProjectActions 
+          selectedItems={selectedItem ? [selectedItem] : []} 
+          onProjectDeleted={handleProjectDeleted}
+        />
       </div>
       <ProjectTable 
         projects={filteredProjects} 

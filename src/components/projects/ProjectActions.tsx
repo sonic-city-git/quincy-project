@@ -19,9 +19,10 @@ import { useQueryClient } from "@tanstack/react-query";
 
 interface ProjectActionsProps {
   selectedItems?: string[];
+  onProjectDeleted?: () => void;
 }
 
-export function ProjectActions({ selectedItems = [] }: ProjectActionsProps) {
+export function ProjectActions({ selectedItems = [], onProjectDeleted }: ProjectActionsProps) {
   const hasSelection = selectedItems.length > 0;
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -38,13 +39,16 @@ export function ProjectActions({ selectedItems = [] }: ProjectActionsProps) {
 
       if (error) throw error;
 
+      // Clear selection
+      onProjectDeleted?.();
+
       toast({
         title: "Project deleted",
         description: "The project has been deleted successfully",
       });
 
       // Invalidate the projects query to trigger a refresh
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      await queryClient.invalidateQueries({ queryKey: ['projects'] });
       
       // Navigate back to projects list after successful deletion
       navigate('/projects');
