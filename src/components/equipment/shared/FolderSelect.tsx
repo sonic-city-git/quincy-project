@@ -64,6 +64,7 @@ export function FolderSelect({
 
   const getFolderPath = (folderId: string | null): string => {
     if (!folderId || folderId === "all") return 'All folders';
+    if (folderId === "none") return 'No folder';
 
     const folder = folders.find(f => f.id === folderId);
     if (!folder) return 'All folders';
@@ -106,6 +107,7 @@ export function FolderSelect({
       <SelectContent>
         <ScrollArea className="h-[400px]">
           <SelectItem value="all">All folders</SelectItem>
+          <SelectItem value="none">No folder</SelectItem>
           {renderFolderOptions()}
         </ScrollArea>
       </SelectContent>

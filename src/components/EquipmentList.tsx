@@ -221,7 +221,10 @@ export function EquipmentList() {
     const matchesSearch = searchTerm === "" || 
       item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFolder = !selectedFolder || selectedFolder === "all" || isItemInFolder(item.folderId, selectedFolder);
+    const matchesFolder = !selectedFolder || 
+      selectedFolder === "all" || 
+      (selectedFolder === "none" && !item.folderId) ||
+      isItemInFolder(item.folderId, selectedFolder);
     return matchesSearch && matchesFolder;
   });
 
