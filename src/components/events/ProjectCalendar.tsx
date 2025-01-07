@@ -7,11 +7,11 @@ import { DayProps } from "react-day-picker";
 import { useParams } from "react-router-dom";
 
 const EVENT_COLORS: Record<EventType, string> = {
-  "Show": "bg-green-500/80 hover:bg-green-600/80",
-  "Preprod": "bg-amber-500/80 hover:bg-amber-600/80",
-  "Travel": "bg-blue-500/80 hover:bg-blue-600/80",
-  "INT Storage": "bg-purple-500/80 hover:bg-purple-600/80",
-  "EXT Storage": "bg-red-500/80 hover:bg-red-600/80"
+  "Show": "bg-green-500",
+  "Preprod": "bg-yellow-500",
+  "Travel": "bg-blue-500",
+  "INT Storage": "bg-pink-500",
+  "EXT Storage": "bg-red-500"
 };
 
 interface ProjectCalendarProps {
