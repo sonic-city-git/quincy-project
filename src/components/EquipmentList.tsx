@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Plus, Package } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
+import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
+import { addDays, subDays } from "date-fns";
 
 const MOCK_EQUIPMENT = [
   {
@@ -36,6 +38,7 @@ const MOCK_EQUIPMENT = [
 
 export function EquipmentList() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [startDate, setStartDate] = useState(new Date());
 
   const handleItemSelect = (id: string) => {
     setSelectedItems((prev) => {
@@ -45,6 +48,23 @@ export function EquipmentList() {
       return [...prev, id];
     });
   };
+
+  const daysToShow = 14;
+
+  const handlePreviousPeriod = () => {
+    setStartDate(prev => subDays(prev, daysToShow));
+  };
+
+  const handleNextPeriod = () => {
+    setStartDate(prev => addDays(prev, daysToShow));
+  };
+
+  const selectedEquipment = MOCK_EQUIPMENT
+    .filter(equipment => selectedItems.includes(equipment.id))
+    .map(equipment => ({
+      id: equipment.id,
+      name: equipment.name
+    }));
 
   return (
     <div className="space-y-6">
@@ -111,6 +131,14 @@ export function EquipmentList() {
             ))}
           </TableBody>
         </Table>
+
+        <EquipmentTimeline
+          startDate={startDate}
+          daysToShow={daysToShow}
+          selectedEquipment={selectedEquipment}
+          onPreviousPeriod={handlePreviousPeriod}
+          onNextPeriod={handleNextPeriod}
+        />
       </div>
     </div>
   );
