@@ -38,7 +38,7 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
           />
         </TableHead>
         <TableHead className="w-[240px] pl-0">Name</TableHead>
-        <TableHead className="w-[400px]">Role</TableHead>
+        <TableHead className="w-[400px] pl-2">Role</TableHead>
         <TableHead className="w-[250px]">Email</TableHead>
         <TableHead className="w-[150px]">Phone</TableHead>
         <TableHead>Folder</TableHead>
