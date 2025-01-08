@@ -13,7 +13,14 @@ export function useEquipmentQueries() {
       setIsLoading(true);
       const { data: equipmentData, error: equipmentError } = await supabase
         .from('equipment')
-        .select('*, equipment_serial_numbers(*)');
+        .select(`
+          *,
+          equipment_serial_numbers (
+            serial_number,
+            status,
+            notes
+          )
+        `);
 
       if (equipmentError) {
         console.error('Error fetching equipment:', equipmentError);
@@ -24,6 +31,8 @@ export function useEquipmentQueries() {
         });
         return;
       }
+
+      console.log('Raw equipment data:', equipmentData);
 
       const formattedEquipment: Equipment[] = equipmentData.map(item => ({
         id: item.id,
@@ -43,6 +52,7 @@ export function useEquipmentQueries() {
         })) || [],
       }));
 
+      console.log('Formatted equipment:', formattedEquipment);
       setEquipment(formattedEquipment);
     } catch (error) {
       console.error('Error:', error);
