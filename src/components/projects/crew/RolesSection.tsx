@@ -18,7 +18,6 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   const [editMode, setEditMode] = useState(false);
   const [editValues, setEditValues] = useState<{
     roleId: string;
-    quantity: number;
     dailyRate: number;
     hourlyRate: number;
   } | null>(null);
@@ -58,7 +57,6 @@ export function RolesSection({ projectId }: RolesSectionProps) {
 
   const handleAddRole = async (data: {
     roleId: string;
-    quantity: number;
     dailyRate: number;
     hourlyRate: number;
   }) => {
@@ -81,20 +79,21 @@ export function RolesSection({ projectId }: RolesSectionProps) {
         .insert({
           project_id: projectId,
           role_id: data.roleId,
-          quantity: data.quantity,
           daily_rate: data.dailyRate,
           hourly_rate: data.hourlyRate,
         });
 
-      if (insertError) throw insertError;
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        throw insertError;
+      }
       
+      await refetchProjectRoles();
+      setOpen(false);
       toast({
         title: "Success",
         description: "Role added to project",
       });
-      
-      await refetchProjectRoles();
-      setOpen(false);
     } catch (error) {
       console.error('Error adding role:', error);
       toast({
@@ -113,7 +112,6 @@ export function RolesSection({ projectId }: RolesSectionProps) {
       setEditMode(true);
       setEditValues({
         roleId: role.role_id,
-        quantity: role.quantity,
         dailyRate: Number(role.daily_rate),
         hourlyRate: Number(role.hourly_rate),
       });
