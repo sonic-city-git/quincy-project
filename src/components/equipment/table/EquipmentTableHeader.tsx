@@ -27,7 +27,6 @@ export function EquipmentTableHeader({
         <TableHead className="py-2">Stock</TableHead>
         <TableHead className="py-2">Price</TableHead>
         <TableHead className="py-2">Weight (kg)</TableHead>
-        <TableHead className="py-2">Book value</TableHead>
       </TableRow>
     </TableHeader>
   );

@@ -45,9 +45,6 @@ export function EquipmentTableRow({
       <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-2">
         {item.weight} kg
       </TableCell>
-      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-2">
-        {formatValue(item.value)}
-      </TableCell>
     </TableRow>
   );
 }
