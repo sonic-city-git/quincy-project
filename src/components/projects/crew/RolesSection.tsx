@@ -81,6 +81,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
           role_id: data.roleId,
           daily_rate: data.dailyRate,
           hourly_rate: data.hourlyRate,
+          quantity: 1, // Add default quantity
         });
 
       if (insertError) {
