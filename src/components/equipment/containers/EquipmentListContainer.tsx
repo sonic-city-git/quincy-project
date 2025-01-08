@@ -3,7 +3,7 @@ import { useEquipmentData } from "@/hooks/useEquipmentData";
 import { useEquipmentFilter } from "@/hooks/useEquipmentFilter";
 import { useEquipmentSelection } from "@/hooks/useEquipmentSelection";
 import { useEquipmentTimeline } from "@/hooks/useEquipmentTimeline";
-import { useEffect } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 
 export function EquipmentListContainer() {
   const { 
