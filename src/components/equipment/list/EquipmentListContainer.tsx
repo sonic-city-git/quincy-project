@@ -40,7 +40,7 @@ export function EquipmentListContainer() {
     if (equipment && Array.isArray(equipment)) {
       filterEquipment(equipment);
     }
-  }, [equipment, filterEquipment]);
+  }, [equipment, filterEquipment, searchTerm, selectedFolder]);
 
   const handleFolderSelect = (folderId: string | null) => {
     setSelectedFolder(folderId);

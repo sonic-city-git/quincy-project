@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Equipment } from "@/types/equipment";
 
 export function useEquipmentFilter() {
@@ -6,12 +6,12 @@ export function useEquipmentFilter() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
 
-  const filterEquipment = useCallback((equipment: Equipment[]) => {
+  const filterFunction = useCallback((equipment: Equipment[]) => {
     if (!equipment || !Array.isArray(equipment)) {
       return [];
     }
 
-    const filtered = equipment.filter((item) => {
+    return equipment.filter((item) => {
       const matchesSearch = searchTerm === "" || 
         (item.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
         item.code?.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -24,10 +24,13 @@ export function useEquipmentFilter() {
       
       return matchesSearch && matchesFolder;
     });
+  }, [selectedFolder, searchTerm]);
 
+  const filterEquipment = useCallback((equipment: Equipment[]) => {
+    const filtered = filterFunction(equipment);
     setFilteredEquipment(filtered);
     return filtered;
-  }, [selectedFolder, searchTerm]);
+  }, [filterFunction]);
 
   return {
     selectedFolder,
