@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { CalendarEvent, EventType } from "@/types/events";
 import { useToast } from "@/hooks/use-toast";
 import { formatDatabaseDate } from "@/utils/dateFormatters";
-import { fetchProjectEvents, insertEvent, updateEventInDb } from "@/utils/eventDatabase";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useCalendarEvents = (projectId: string | undefined) => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -13,7 +13,19 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       if (!projectId) return;
 
       try {
-        const fetchedEvents = await fetchProjectEvents(projectId);
+        const { data, error } = await supabase
+          .from('project_events')
+          .select('*')
+          .eq('project_id', projectId);
+
+        if (error) throw error;
+
+        const fetchedEvents = data.map(event => ({
+          date: new Date(event.date),
+          name: event.name,
+          type: event.type as EventType
+        }));
+
         setEvents(fetchedEvents);
       } catch (error) {
         console.error('Error loading events:', error);
@@ -34,12 +46,25 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     }
 
     try {
-      const newEventData = await insertEvent(projectId, date, eventName, eventType);
+      const formattedDate = formatDatabaseDate(date);
       
+      const { data, error } = await supabase
+        .from('project_events')
+        .insert({
+          project_id: projectId,
+          date: formattedDate,
+          name: eventName.trim() || eventType,
+          type: eventType
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
       const newEvent: CalendarEvent = {
-        date: new Date(newEventData.date),
-        name: newEventData.name,
-        type: newEventData.type as EventType
+        date: new Date(data.date),
+        name: data.name,
+        type: data.type as EventType
       };
 
       setEvents(prev => [...prev, newEvent]);
@@ -65,7 +90,18 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     if (!projectId) throw new Error('Project ID is missing');
 
     try {
-      await updateEventInDb(projectId, updatedEvent);
+      const formattedDate = formatDatabaseDate(updatedEvent.date);
+
+      const { error } = await supabase
+        .from('project_events')
+        .update({
+          name: updatedEvent.name.trim() || updatedEvent.type,
+          type: updatedEvent.type
+        })
+        .eq('project_id', projectId)
+        .eq('date', formattedDate);
+
+      if (error) throw error;
 
       setEvents(prev => 
         prev.map(event => 
