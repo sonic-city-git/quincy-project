@@ -1,88 +1,102 @@
-import { Equipment } from "@/types/equipment";
-import { EquipmentHeader } from "../EquipmentHeader";
-import { EquipmentTable } from "../EquipmentTable";
-import { EquipmentTimeline } from "../EquipmentTimeline";
-import { useRef } from "react";
+import { useState, useCallback, useRef } from "react";
+import { addDays, subDays } from "date-fns";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
+import { EquipmentHeader } from "../header/EquipmentHeader";
+import { EquipmentContent } from "./EquipmentContent";
+import { useEquipmentData } from "@/hooks/useEquipmentData";
+import { useEquipmentFilter } from "@/hooks/useEquipmentFilter";
+import { useEquipmentSelection } from "@/hooks/useEquipmentSelection";
 
-interface EquipmentListProps {
-  equipment: Equipment[];
-  selectedEquipment: { id: string; name: string; }[];
-  selectedItems: string[];
-  selectedFolder: string | null;
-  searchTerm: string;
-  startDate: Date;
-  onSearchChange: (value: string) => void;
-  onFolderSelect: (folderId: string | null) => void;
-  onAddEquipment: (equipment: Equipment) => void;
-  onEditEquipment: (equipment: Equipment) => void;
-  onDeleteEquipment: () => void;
-  onItemSelect: (id: string) => void;
-  onSelectAll: () => void;
-  onPreviousPeriod: () => void;
-  onNextPeriod: () => void;
-}
-
-export function EquipmentList({
-  equipment,
-  selectedEquipment,
-  selectedItems,
-  selectedFolder,
-  searchTerm,
-  startDate,
-  onSearchChange,
-  onFolderSelect,
-  onAddEquipment,
-  onEditEquipment,
-  onDeleteEquipment,
-  onItemSelect,
-  onSelectAll,
-  onPreviousPeriod,
-  onNextPeriod,
-}: EquipmentListProps) {
+export function EquipmentList() {
+  const [startDate, setStartDate] = useState(new Date());
   const containerRef = useRef<HTMLDivElement>(null);
   const daysToShow = 14;
 
-  const { observe, unobserve } = useDebounceResize(() => {
+  const { 
+    equipment, 
+    isLoading, 
+    handleAddEquipment, 
+    handleEditEquipment, 
+    handleDeleteEquipment,
+  } = useEquipmentData();
+
+  const {
+    selectedFolder,
+    setSelectedFolder,
+    searchTerm,
+    setSearchTerm,
+    filterEquipment,
+  } = useEquipmentFilter();
+
+  const {
+    selectedItems,
+    handleItemSelect,
+    handleSelectAll,
+    clearSelection,
+  } = useEquipmentSelection();
+
+  const handleResize = useCallback(() => {
     // This empty callback is enough to trigger the debounced resize handling
-  });
+  }, []);
+
+  const { observe, unobserve } = useDebounceResize(handleResize);
+
+  const handleFolderSelect = (folderId: string | null) => {
+    setSelectedFolder(folderId);
+    clearSelection();
+  };
+
+  const handlePreviousPeriod = () => {
+    setStartDate(prev => subDays(prev, daysToShow));
+  };
+
+  const handleNextPeriod = () => {
+    setStartDate(prev => addDays(prev, daysToShow));
+  };
+
+  const filteredEquipment = filterEquipment(equipment);
+
+  const selectedEquipment = equipment
+    .filter(item => selectedItems.includes(item.id))
+    .map(item => ({
+      id: item.id,
+      name: item.name
+    }));
+
+  if (isLoading) {
+    return <div className="flex justify-center items-center h-[400px]">Loading equipment...</div>;
+  }
 
   return (
     <div className="flex flex-col h-[calc(100vh-theme(spacing.16))]" ref={containerRef}>
       <EquipmentHeader
         selectedFolder={selectedFolder}
-        onFolderSelect={onFolderSelect}
-        onAddEquipment={onAddEquipment}
-        onEditEquipment={onEditEquipment}
-        onDeleteEquipment={onDeleteEquipment}
+        onFolderSelect={handleFolderSelect}
+        onAddEquipment={handleAddEquipment}
+        onEditEquipment={handleEditEquipment}
+        onDeleteEquipment={() => {
+          handleDeleteEquipment(selectedItems);
+          clearSelection();
+        }}
         searchTerm={searchTerm}
-        onSearchChange={onSearchChange}
+        onSearchChange={setSearchTerm}
         selectedItems={selectedItems}
         equipment={equipment}
       />
 
-      <div className="flex-1 flex flex-col bg-zinc-900 rounded-md mt-4 overflow-hidden">
-        <div className="flex-1 overflow-auto">
-          <EquipmentTable
-            equipment={equipment}
-            selectedItems={selectedItems}
-            onSelectAll={onSelectAll}
-            onItemSelect={onItemSelect}
-          />
-        </div>
-
-        <div className="flex-shrink-0">
-          <EquipmentTimeline
-            startDate={startDate}
-            daysToShow={daysToShow}
-            selectedEquipment={selectedEquipment}
-            onPreviousPeriod={onPreviousPeriod}
-            onNextPeriod={onNextPeriod}
-            onMount={observe}
-            onUnmount={unobserve}
-          />
-        </div>
-      </div>
+      <EquipmentContent
+        filteredEquipment={filteredEquipment}
+        selectedItems={selectedItems}
+        selectedEquipment={selectedEquipment}
+        startDate={startDate}
+        daysToShow={daysToShow}
+        onSelectAll={() => handleSelectAll(filteredEquipment)}
+        onItemSelect={handleItemSelect}
+        onPreviousPeriod={handlePreviousPeriod}
+        onNextPeriod={handleNextPeriod}
+        observe={observe}
+        unobserve={unobserve}
+      />
     </div>
   );
 }
