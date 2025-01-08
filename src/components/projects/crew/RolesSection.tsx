@@ -9,6 +9,7 @@ import { ProjectRoleCard } from "./ProjectRoleCard";
 import { supabase } from "@/integrations/supabase/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RoleSelectionActions } from "./RoleSelectionActions";
+import { RatesHeader } from "./RatesHeader";
 
 interface RolesSectionProps {
   projectId: string;
@@ -162,17 +163,11 @@ export function RolesSection({ projectId }: RolesSectionProps) {
         </div>
       </div>
 
-      <div className="bg-zinc-900/50 rounded-lg p-4">
-        <div className="grid gap-2">
-          <div className="flex items-center px-3">
-            <div className="min-w-[232px]" />
-            <div className="flex items-center gap-6">
-              <span className="text-xs text-muted-foreground w-24">Daily rate</span>
-              <span className="text-xs text-muted-foreground w-24">Hourly rate</span>
-            </div>
-          </div>
+      <div className="bg-zinc-900/50 rounded-lg p-3">
+        <div className="grid gap-1.5">
+          <RatesHeader />
           {projectRoles?.map((projectRole) => (
-            <div key={projectRole.id} className="flex items-center gap-4">
+            <div key={projectRole.id} className="flex items-center gap-2">
               <Checkbox
                 checked={selectedItems.includes(projectRole.role_id)}
                 onCheckedChange={() => handleItemSelect(projectRole.role_id)}
@@ -192,7 +187,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
             </div>
           ))}
           {projectRoles?.length === 0 && (
-            <div className="text-center py-6 text-sm text-muted-foreground">
+            <div className="text-center py-4 text-sm text-muted-foreground">
               No roles added to this project yet
             </div>
           )}

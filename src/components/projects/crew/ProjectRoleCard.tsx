@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { RoleInfo } from "./RoleInfo";
 
 interface ProjectRoleCardProps {
   id: string;
@@ -74,23 +75,15 @@ export function ProjectRoleCard({
   };
 
   return (
-    <Card className="p-3">
+    <Card className="p-2">
       <div className="flex items-center gap-6">
-        <div className="flex items-center gap-3 min-w-[200px]">
-          <span className="text-sm text-muted-foreground">{quantity}×</span>
-          <div
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ backgroundColor: color }}
-          />
-          <h3 className="text-sm font-medium">{name}</h3>
-        </div>
+        <RoleInfo quantity={quantity} color={color} name={name} />
         <div className="flex items-center gap-6">
           <Input
             type="number"
             value={localDailyRate}
             onChange={(e) => setLocalDailyRate(e.target.value)}
             onBlur={handleBlur}
-            placeholder="Daily rate"
             className="h-7 w-24"
             disabled={isUpdating}
           />
@@ -99,7 +92,6 @@ export function ProjectRoleCard({
             value={localHourlyRate}
             onChange={(e) => setLocalHourlyRate(e.target.value)}
             onBlur={handleBlur}
-            placeholder="Hourly rate"
             className="h-7 w-24"
             disabled={isUpdating}
           />
