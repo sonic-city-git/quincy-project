@@ -4,6 +4,17 @@ import { EquipmentFolderSelect } from "./EquipmentFolderSelect";
 import { EquipmentSearch } from "./EquipmentSearch";
 import { Button } from "../ui/button";
 import { Edit, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface EquipmentHeaderProps {
   selectedFolder: string | null;
@@ -59,15 +70,30 @@ export function EquipmentHeader({
             </Button>
           )}
           {hasSelection && (
-            <Button
-              variant="destructive"
-              size="sm"
-              className="gap-2"
-              onClick={onDeleteEquipment}
-            >
-              <Trash2 className="h-4 w-4" />
-              DELETE
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  DELETE
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete {selectedItems.length} {selectedItems.length === 1 ? 'item' : 'items'}.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={onDeleteEquipment}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           )}
           <AddEquipmentDialog onAddEquipment={onAddEquipment} />
         </div>
