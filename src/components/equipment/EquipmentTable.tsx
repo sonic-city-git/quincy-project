@@ -14,13 +14,13 @@ interface EquipmentTableProps {
 export function EquipmentTable({ equipment, selectedItems, onSelectAll, onItemSelect }: EquipmentTableProps) {
   const allFolders = flattenFolders(EQUIPMENT_FOLDERS);
 
-  const getFolderName = (folderId: string | undefined): string => {
-    const folder = allFolders.find(f => f.id === folderId);
+  const getFolderName = (folder_id: string | undefined): string => {
+    const folder = allFolders.find(f => f.id === folder_id);
     return folder?.name || '';
   };
 
   const groupedEquipment = equipment.reduce((acc, item) => {
-    const folderName = getFolderName(item.folderId);
+    const folderName = getFolderName(item.folder_id);
     if (!acc[folderName]) {
       acc[folderName] = [];
     }

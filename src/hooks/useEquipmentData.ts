@@ -33,7 +33,9 @@ export function useEquipmentData() {
         value: item["Book Value"]?.toString() || '0',
         weight: item.Weight?.toString() || '0',
         stock: item.Stock || 0,
-        folderId: item.Folder || undefined,
+        folder_id: item.folder_id || undefined,
+        Folder: item.Folder || undefined,
+        serialNumbers: item["Serial number"] ? [item["Serial number"]] : undefined,
       }));
 
       setEquipment(formattedEquipment);
@@ -61,7 +63,8 @@ export function useEquipmentData() {
           "Book Value": parseFloat(newEquipment.value),
           Weight: parseFloat(newEquipment.weight),
           Stock: newEquipment.stock,
-          Folder: newEquipment.folderId,
+          folder_id: newEquipment.folder_id,
+          "Serial number": newEquipment.serialNumbers?.[0],
         }]);
 
       if (error) throw error;
