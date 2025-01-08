@@ -87,6 +87,7 @@ export type Database = {
           "Internal remark": string | null
           Name: string | null
           Price: number | null
+          "Rental/sales": string | null
           "Serial number": string | null
           "Serial number remark": string | null
           Stock: number | null
@@ -104,6 +105,7 @@ export type Database = {
           "Internal remark"?: string | null
           Name?: string | null
           Price?: number | null
+          "Rental/sales"?: string | null
           "Serial number"?: string | null
           "Serial number remark"?: string | null
           Stock?: number | null
@@ -121,13 +123,22 @@ export type Database = {
           "Internal remark"?: string | null
           Name?: string | null
           Price?: number | null
+          "Rental/sales"?: string | null
           "Serial number"?: string | null
           "Serial number remark"?: string | null
           Stock?: number | null
           "Stock calculation method"?: string | null
           Weight?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "equipment_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       event_types: {
         Row: {
