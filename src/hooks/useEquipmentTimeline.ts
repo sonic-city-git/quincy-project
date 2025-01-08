@@ -1,16 +1,17 @@
-import { useState, useCallback } from 'react';
-import { addDays, subDays } from 'date-fns';
+import { useState } from "react";
+import { addDays, subDays } from "date-fns";
 
-export function useEquipmentTimeline(daysToShow: number = 14) {
+export function useEquipmentTimeline() {
   const [startDate, setStartDate] = useState(new Date());
+  const daysToShow = 14;
 
-  const handlePreviousPeriod = useCallback(() => {
+  const handlePreviousPeriod = () => {
     setStartDate(prev => subDays(prev, daysToShow));
-  }, [daysToShow]);
+  };
 
-  const handleNextPeriod = useCallback(() => {
+  const handleNextPeriod = () => {
     setStartDate(prev => addDays(prev, daysToShow));
-  }, [daysToShow]);
+  };
 
   return {
     startDate,

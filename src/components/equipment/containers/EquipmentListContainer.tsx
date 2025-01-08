@@ -3,7 +3,7 @@ import { useEquipmentData } from "@/hooks/useEquipmentData";
 import { useEquipmentFilter } from "@/hooks/useEquipmentFilter";
 import { useEquipmentSelection } from "@/hooks/useEquipmentSelection";
 import { useEquipmentTimeline } from "@/hooks/useEquipmentTimeline";
-import { useEffect, useCallback, useMemo } from "react";
+import { useEffect } from "react";
 
 export function EquipmentListContainer() {
   const { 
@@ -42,19 +42,17 @@ export function EquipmentListContainer() {
     }
   }, [equipment, filterEquipment]);
 
-  const handleFolderSelect = useCallback((folderId: string | null) => {
+  const handleFolderSelect = (folderId: string | null) => {
     setSelectedFolder(folderId);
     clearSelection();
-  }, [setSelectedFolder, clearSelection]);
+  };
 
-  const selectedEquipment = useMemo(() => {
-    return filteredEquipment
-      .filter(item => selectedItems.includes(item.id))
-      .map(item => ({
-        id: item.id,
-        name: item.name
-      }));
-  }, [filteredEquipment, selectedItems]);
+  const selectedEquipment = filteredEquipment
+    .filter(item => selectedItems.includes(item.id))
+    .map(item => ({
+      id: item.id,
+      name: item.name
+    }));
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-[400px]">Loading equipment...</div>;
