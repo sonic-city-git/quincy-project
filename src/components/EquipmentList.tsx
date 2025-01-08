@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { addDays, subDays } from "date-fns";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
 import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
@@ -8,14 +8,11 @@ import { EquipmentHeader } from "./equipment/EquipmentHeader";
 import { useEquipmentData } from "@/hooks/useEquipmentData";
 import { useEquipmentFilter } from "@/hooks/useEquipmentFilter";
 import { useEquipmentSelection } from "@/hooks/useEquipmentSelection";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 export function EquipmentList() {
   const [startDate, setStartDate] = useState(new Date());
   const containerRef = useRef<HTMLDivElement>(null);
   const daysToShow = 14;
-  const { toast } = useToast();
 
   const { 
     equipment, 
@@ -23,7 +20,6 @@ export function EquipmentList() {
     handleAddEquipment, 
     handleEditEquipment, 
     handleDeleteEquipment,
-    refetchEquipment 
   } = useEquipmentData();
 
   const {
@@ -59,33 +55,6 @@ export function EquipmentList() {
   const handleNextPeriod = () => {
     setStartDate(prev => addDays(prev, daysToShow));
   };
-
-  useEffect(() => {
-    const migrateFolders = async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke('migrate-equipment-folders');
-        
-        if (error) throw error;
-
-        toast({
-          title: "Success",
-          description: data.message,
-        });
-
-        // Refresh the equipment list to show updated folder IDs
-        refetchEquipment();
-      } catch (error) {
-        console.error('Error migrating equipment folders:', error);
-        toast({
-          title: "Error",
-          description: "Failed to migrate equipment folders",
-          variant: "destructive",
-        });
-      }
-    };
-
-    migrateFolders();
-  }, []); // Run once when component mounts
 
   const filteredEquipment = filterEquipment(equipment);
 
