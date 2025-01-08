@@ -9,12 +9,12 @@ import {
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Equipment } from "@/types/equipment";
-import { FolderSelect } from "./shared/FolderSelect";
 import { SerialNumbersSection } from "./add/SerialNumbersSection";
 import { BasicEquipmentFields } from "./add/BasicEquipmentFields";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { EquipmentFolderSelect } from "./EquipmentFolderSelect";
 
 interface AddEquipmentDialogProps {
   onAddEquipment: (newEquipment: Equipment) => void;
@@ -137,11 +137,9 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
 
               <div className="grid gap-2">
                 <Label>Folder</Label>
-                <FolderSelect
+                <EquipmentFolderSelect
                   selectedFolder={selectedFolder}
                   onFolderSelect={setSelectedFolder}
-                  required
-                  showAllFolders={false}
                 />
               </div>
             </div>
