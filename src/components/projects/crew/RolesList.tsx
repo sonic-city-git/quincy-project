@@ -23,7 +23,6 @@ export function RolesList({ projectRoles, selectedItems, onItemSelect, onUpdate 
               projectId={projectRole.project_id}
               name={projectRole.crew_roles.name}
               color={projectRole.crew_roles.color}
-              quantity={projectRole.quantity}
               dailyRate={projectRole.daily_rate}
               hourlyRate={projectRole.hourly_rate}
               onUpdate={onUpdate}
