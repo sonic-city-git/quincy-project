@@ -87,8 +87,8 @@ serve(async (req) => {
     // Process each equipment item
     const updates = equipment.map(item => ({
       id: item.id,
-      Folder: findFolderId(item.Folder)
-    })).filter(update => update.Folder !== null)
+      folder_id: findFolderId(item.Folder)
+    })).filter(update => update.folder_id !== null)
 
     // Update equipment records in batches
     const batchSize = 100
