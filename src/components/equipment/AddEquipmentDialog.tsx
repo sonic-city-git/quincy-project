@@ -86,59 +86,67 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
           Add equipment
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>Add Equipment</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-          <BasicEquipmentFields required />
-          
-          <div className="grid gap-2">
-            <Label>Stock Calculation Method</Label>
-            <Select
-              value={stockCalculationMethod}
-              onValueChange={(value: "manual" | "serial_numbers") => setStockCalculationMethod(value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select stock calculation method" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="manual">Manual Stock</SelectItem>
-                <SelectItem value="serial_numbers">Serial Numbers</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {stockCalculationMethod === "manual" ? (
-            <div className="grid gap-2">
-              <Label>Stock</Label>
-              <Input
-                type="number"
-                min="0"
-                value={manualStock}
-                onChange={(e) => setManualStock(e.target.value)}
-                required
-              />
+        <form onSubmit={handleSubmit} className="py-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Column */}
+            <div className="space-y-4">
+              <BasicEquipmentFields required />
             </div>
-          ) : (
-            <SerialNumbersSection
-              serialNumbers={serialNumbers}
-              onSerialNumberChange={handleSerialNumberChange}
-              onAddSerialNumber={handleAddSerialNumber}
-              onRemoveSerialNumber={handleRemoveSerialNumber}
-            />
-          )}
 
-          <div className="grid gap-2">
-            <Label>Folder</Label>
-            <FolderSelect
-              selectedFolder={selectedFolder}
-              onFolderSelect={setSelectedFolder}
-              required
-              showAllFolders={false}
-            />
+            {/* Right Column */}
+            <div className="space-y-4">
+              <div className="grid gap-2">
+                <Label>Stock Calculation Method</Label>
+                <Select
+                  value={stockCalculationMethod}
+                  onValueChange={(value: "manual" | "serial_numbers") => setStockCalculationMethod(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select stock calculation method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="manual">Manual Stock</SelectItem>
+                    <SelectItem value="serial_numbers">Serial Numbers</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {stockCalculationMethod === "manual" ? (
+                <div className="grid gap-2">
+                  <Label>Stock</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={manualStock}
+                    onChange={(e) => setManualStock(e.target.value)}
+                    required
+                  />
+                </div>
+              ) : (
+                <SerialNumbersSection
+                  serialNumbers={serialNumbers}
+                  onSerialNumberChange={handleSerialNumberChange}
+                  onAddSerialNumber={handleAddSerialNumber}
+                  onRemoveSerialNumber={handleRemoveSerialNumber}
+                />
+              )}
+
+              <div className="grid gap-2">
+                <Label>Folder</Label>
+                <FolderSelect
+                  selectedFolder={selectedFolder}
+                  onFolderSelect={setSelectedFolder}
+                  required
+                  showAllFolders={false}
+                />
+              </div>
+            </div>
           </div>
-          <Button type="submit" className="mt-4">Add equipment</Button>
+          <Button type="submit" className="mt-6 w-full">Add equipment</Button>
         </form>
       </DialogContent>
     </Dialog>
