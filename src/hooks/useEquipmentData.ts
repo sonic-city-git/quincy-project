@@ -96,7 +96,8 @@ export function useEquipmentData() {
           "Book Value": parseFloat(editedEquipment.value),
           Weight: parseFloat(editedEquipment.weight),
           Stock: editedEquipment.stock,
-          Folder: editedEquipment.folderId,
+          folder_id: editedEquipment.folder_id,
+          "Serial number": editedEquipment.serialNumbers?.[0],
         })
         .eq('id', editedEquipment.id);
 

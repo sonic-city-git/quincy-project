@@ -26,7 +26,7 @@ export function EditEquipmentDialog({ equipment, onEditEquipment, onDeleteEquipm
   const [serialNumbers, setSerialNumbers] = useState<string[]>(
     equipment.serialNumbers || ['']
   );
-  const [selectedFolder, setSelectedFolder] = useState<string | null>(equipment.folderId || null);
+  const [selectedFolder, setSelectedFolder] = useState<string | null>(equipment.folder_id || null);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -45,7 +45,7 @@ export function EditEquipmentDialog({ equipment, onEditEquipment, onDeleteEquipm
       weight: formData.get("weight") as string,
       stock: hasSerialNumbers ? serialNumbersList.length : Number(formData.get("stock")),
       serialNumbers: serialNumbersList,
-      folderId: selectedFolder,
+      folder_id: selectedFolder,
     };
 
     onEditEquipment(editedEquipment);

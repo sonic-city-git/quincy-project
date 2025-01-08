@@ -43,7 +43,7 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
       stock: hasSerialNumbers ? serialNumbersList.length : Number(formData.get("stock")),
       serialNumbers: serialNumbersList,
       id: Math.random().toString(36).substr(2, 9),
-      folderId: selectedFolder,
+      folder_id: selectedFolder,
     };
 
     onAddEquipment(newEquipment);
