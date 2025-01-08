@@ -1,8 +1,7 @@
-import { Table, TableBody } from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Equipment } from "@/types/equipment";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { EquipmentTableHeader } from "./table/EquipmentTableHeader";
-import { EquipmentTableRow } from "./table/EquipmentTableRow";
+import { EQUIPMENT_FOLDERS, flattenFolders } from "@/data/equipmentFolders";
 
 interface EquipmentTableProps {
   equipment: Equipment[];
@@ -11,33 +10,68 @@ interface EquipmentTableProps {
   onItemSelect: (id: string) => void;
 }
 
-export function EquipmentTable({ 
-  equipment, 
-  selectedItems, 
-  onSelectAll, 
-  onItemSelect 
-}: EquipmentTableProps) {
-  const equipmentArray = Array.isArray(equipment) ? equipment : [];
+export function EquipmentTable({ equipment, selectedItems, onSelectAll, onItemSelect }: EquipmentTableProps) {
+  const allFolders = flattenFolders(EQUIPMENT_FOLDERS);
+
+  const getFolderName = (folderId: string | undefined): string => {
+    const folder = allFolders.find(f => f.id === folderId);
+    return folder?.name || '';
+  };
+
+  const groupedEquipment = equipment.reduce((acc, item) => {
+    const folderName = getFolderName(item.folderId);
+    if (!acc[folderName]) {
+      acc[folderName] = [];
+    }
+    acc[folderName].push(item);
+    return acc;
+  }, {} as Record<string, Equipment[]>);
 
   return (
-    <ScrollArea className="h-[400px] w-full">
+    <div className="rounded-md border">
       <Table>
-        <EquipmentTableHeader 
-          equipment={equipmentArray}
-          selectedItems={selectedItems}
-          onSelectAll={onSelectAll}
-        />
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[50px]">
+              <Checkbox
+                checked={selectedItems.length === equipment.length && equipment.length > 0}
+                onCheckedChange={onSelectAll}
+                aria-label="Select all"
+              />
+            </TableHead>
+            <TableHead>Name</TableHead>
+            <TableHead>Code</TableHead>
+            <TableHead>Stock</TableHead>
+            <TableHead>Price</TableHead>
+          </TableRow>
+        </TableHeader>
         <TableBody>
-          {equipmentArray.map((item) => (
-            <EquipmentTableRow
-              key={item.id}
-              item={item}
-              isSelected={selectedItems.includes(item.id)}
-              onItemSelect={onItemSelect}
-            />
+          {Object.entries(groupedEquipment).sort(([a], [b]) => a.localeCompare(b)).map(([folderName, items]) => (
+            <React.Fragment key={folderName}>
+              <TableRow className="bg-zinc-900/50">
+                <TableCell colSpan={5} className="py-2">
+                  <h3 className="text-sm font-semibold text-zinc-200">{folderName}</h3>
+                </TableCell>
+              </TableRow>
+              {items.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="w-[50px]">
+                    <Checkbox
+                      checked={selectedItems.includes(item.id)}
+                      onCheckedChange={() => onItemSelect(item.id)}
+                      aria-label={`Select ${item.name}`}
+                    />
+                  </TableCell>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>{item.code}</TableCell>
+                  <TableCell>{item.stock}</TableCell>
+                  <TableCell>{item.price}</TableCell>
+                </TableRow>
+              ))}
+            </React.Fragment>
           ))}
         </TableBody>
       </Table>
-    </ScrollArea>
+    </div>
   );
 }
