@@ -75,41 +75,39 @@ export function ProjectRoleCard({
 
   return (
     <Card className="p-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 min-w-[200px]">
           <span className="text-sm text-muted-foreground">{quantity}×</span>
           <div
             className="w-2.5 h-2.5 rounded-full"
             style={{ backgroundColor: color }}
           />
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">{name}</h3>
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground w-20">Daily rate:</span>
-                <Input
-                  type="number"
-                  value={localDailyRate}
-                  onChange={(e) => setLocalDailyRate(e.target.value)}
-                  onBlur={handleBlur}
-                  placeholder="Enter daily rate"
-                  className="h-7 w-28"
-                  disabled={isUpdating}
-                />
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground w-20">Hourly rate:</span>
-                <Input
-                  type="number"
-                  value={localHourlyRate}
-                  onChange={(e) => setLocalHourlyRate(e.target.value)}
-                  onBlur={handleBlur}
-                  placeholder="Enter hourly rate"
-                  className="h-7 w-28"
-                  disabled={isUpdating}
-                />
-              </div>
-            </div>
+          <h3 className="text-sm font-medium">{name}</h3>
+        </div>
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Daily:</span>
+            <Input
+              type="number"
+              value={localDailyRate}
+              onChange={(e) => setLocalDailyRate(e.target.value)}
+              onBlur={handleBlur}
+              placeholder="Daily rate"
+              className="h-7 w-24"
+              disabled={isUpdating}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">Hourly:</span>
+            <Input
+              type="number"
+              value={localHourlyRate}
+              onChange={(e) => setLocalHourlyRate(e.target.value)}
+              onBlur={handleBlur}
+              placeholder="Hourly rate"
+              className="h-7 w-24"
+              disabled={isUpdating}
+            />
           </div>
         </div>
       </div>
