@@ -5,26 +5,27 @@ import { isItemInFolder } from "@/utils/folderUtils";
 export function useEquipmentFilter() {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
 
   const filterEquipment = useCallback(async (equipment: Equipment[]) => {
-    const filteredEquipment = [];
-    
-    for (const item of equipment) {
-      const matchesSearch = searchTerm === "" || 
-        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.code.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesFolder = !selectedFolder || 
-        selectedFolder === "all" || 
-        (selectedFolder === "none" && !item.folderId) ||
-        await isItemInFolder(item.folderId, selectedFolder);
+    const filtered = await Promise.all(
+      equipment.map(async (item) => {
+        const matchesSearch = searchTerm === "" || 
+          item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.code.toLowerCase().includes(searchTerm.toLowerCase());
+        
+        const matchesFolder = !selectedFolder || 
+          selectedFolder === "all" || 
+          (selectedFolder === "none" && !item.folderId) ||
+          await isItemInFolder(item.folderId, selectedFolder);
 
-      if (matchesSearch && matchesFolder) {
-        filteredEquipment.push(item);
-      }
-    }
-    
-    return filteredEquipment;
+        return matchesSearch && matchesFolder ? item : null;
+      })
+    );
+
+    const result = filtered.filter((item): item is Equipment => item !== null);
+    setFilteredEquipment(result);
+    return result;
   }, [selectedFolder, searchTerm]);
 
   return {
@@ -33,5 +34,6 @@ export function useEquipmentFilter() {
     searchTerm,
     setSearchTerm,
     filterEquipment,
+    filteredEquipment,
   };
 }

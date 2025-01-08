@@ -3,6 +3,7 @@ import { useEquipmentData } from "@/hooks/useEquipmentData";
 import { useEquipmentFilter } from "@/hooks/useEquipmentFilter";
 import { useEquipmentSelection } from "@/hooks/useEquipmentSelection";
 import { useEquipmentTimeline } from "@/hooks/useEquipmentTimeline";
+import { useEffect } from "react";
 
 export function EquipmentListContainer() {
   const { 
@@ -19,6 +20,7 @@ export function EquipmentListContainer() {
     searchTerm,
     setSearchTerm,
     filterEquipment,
+    filteredEquipment,
   } = useEquipmentFilter();
 
   const {
@@ -34,12 +36,16 @@ export function EquipmentListContainer() {
     handleNextPeriod,
   } = useEquipmentTimeline();
 
+  useEffect(() => {
+    if (equipment.length > 0) {
+      filterEquipment(equipment);
+    }
+  }, [equipment, filterEquipment]);
+
   const handleFolderSelect = (folderId: string | null) => {
     setSelectedFolder(folderId);
     clearSelection();
   };
-
-  const filteredEquipment = filterEquipment(equipment);
 
   const selectedEquipment = equipment
     .filter(item => selectedItems.includes(item.id))

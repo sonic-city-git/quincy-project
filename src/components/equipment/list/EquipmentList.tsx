@@ -3,7 +3,7 @@ import { EquipmentHeader } from "../EquipmentHeader";
 import { EquipmentSelectionHeader } from "../EquipmentSelectionHeader";
 import { EquipmentTable } from "../EquipmentTable";
 import { EquipmentTimeline } from "../EquipmentTimeline";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect } from "react";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
 
 interface EquipmentListProps {
@@ -43,28 +43,6 @@ export function EquipmentList({
 }: EquipmentListProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const daysToShow = 14;
-  const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>(equipment);
-
-  useEffect(() => {
-    const updateFilteredEquipment = async () => {
-      const filtered = await Promise.all(equipment.map(async (item) => {
-        const matchesSearch = searchTerm === "" || 
-          item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.code.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        const matchesFolder = !selectedFolder || 
-          selectedFolder === "all" || 
-          (selectedFolder === "none" && !item.folderId) ||
-          await isItemInFolder(item.folderId, selectedFolder);
-
-        return matchesSearch && matchesFolder ? item : null;
-      }));
-
-      setFilteredEquipment(filtered.filter((item): item is Equipment => item !== null));
-    };
-
-    updateFilteredEquipment();
-  }, [equipment, searchTerm, selectedFolder]);
 
   const { observe, unobserve } = useDebounceResize(() => {
     // This empty callback is enough to trigger the debounced resize handling
@@ -89,9 +67,9 @@ export function EquipmentList({
         />
 
         <EquipmentTable
-          equipment={filteredEquipment}
+          equipment={equipment}
           selectedItems={selectedItems}
-          onSelectAll={() => onSelectAll()}
+          onSelectAll={onSelectAll}
           onItemSelect={onItemSelect}
         />
 
