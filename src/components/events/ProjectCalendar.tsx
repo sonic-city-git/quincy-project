@@ -8,6 +8,7 @@ import { useParams } from "react-router-dom";
 import { CalendarDay } from "./CalendarDay";
 import { EVENT_COLORS } from "@/constants/eventColors";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProjectCalendarProps {
   className?: string;
@@ -19,13 +20,13 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent>();
+  const { toast } = useToast();
   
   const { events, addEvent, updateEvent, findEvent } = useCalendarEvents(projectId);
 
   const handleSelect = (date: Date | undefined) => {
     if (!date) return;
     
-    // Create a new date at midnight UTC
     const normalizedDate = new Date(Date.UTC(
       date.getFullYear(),
       date.getMonth(),
@@ -43,18 +44,43 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   };
 
   const handleEventSubmit = async (eventName: string, eventType: EventType) => {
-    if (!selectedDate || !projectId) return;
+    if (!selectedDate || !projectId) {
+      toast({
+        title: "Error",
+        description: "Missing required data to add event",
+        variant: "destructive",
+      });
+      return;
+    }
     
-    console.log('Submitting event:', { eventName, eventType, selectedDate });
-    await addEvent(selectedDate, eventName, eventType);
-    setIsAddDialogOpen(false);
-    setSelectedDate(undefined);
+    try {
+      console.log('Submitting event:', { eventName, eventType, selectedDate });
+      await addEvent(selectedDate, eventName, eventType);
+      setIsAddDialogOpen(false);
+      setSelectedDate(undefined);
+    } catch (error) {
+      console.error('Error submitting event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add event. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEventUpdate = async (updatedEvent: CalendarEvent) => {
-    await updateEvent(updatedEvent);
-    setIsEditDialogOpen(false);
-    setSelectedEvent(undefined);
+    try {
+      await updateEvent(updatedEvent);
+      setIsEditDialogOpen(false);
+      setSelectedEvent(undefined);
+    } catch (error) {
+      console.error('Error updating event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update event. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

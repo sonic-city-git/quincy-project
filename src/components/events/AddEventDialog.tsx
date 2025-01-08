@@ -33,13 +33,19 @@ export const AddEventDialog = ({
 }: AddEventDialogProps) => {
   const [eventName, setEventName] = useState("");
   const [eventType, setEventType] = useState<EventType>("Show");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const finalEventName = eventName.trim() || eventType;
-    onSubmit(finalEventName, eventType);
-    setEventName("");
-    setEventType("Show");
+    setIsSubmitting(true);
+    try {
+      const finalEventName = eventName.trim() || eventType;
+      await onSubmit(finalEventName, eventType);
+      setEventName("");
+      setEventType("Show");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -81,7 +87,9 @@ export const AddEventDialog = ({
             </Select>
           </div>
           <div className="flex justify-end">
-            <Button type="submit">Add Event</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Adding..." : "Add Event"}
+            </Button>
           </div>
         </form>
       </DialogContent>
