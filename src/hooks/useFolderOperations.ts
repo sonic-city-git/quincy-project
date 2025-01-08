@@ -91,8 +91,8 @@ export function useFolderOperations() {
     }
   };
 
-  const handleAddSubfolder = async (parentId: string, name: string) => {
-    if (!name.trim()) {
+  const handleAddSubfolder = async (parentId: string) => {
+    if (!newFolderName.trim()) {
       toast({
         title: "Error",
         description: "Please enter a folder name",
@@ -105,7 +105,7 @@ export function useFolderOperations() {
       const { error } = await supabase
         .from('folders')
         .insert([{ 
-          name: name,
+          name: newFolderName,
           parent_id: parentId 
         }]);
 

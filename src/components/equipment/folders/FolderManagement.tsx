@@ -38,7 +38,7 @@ export function FolderManagement({ folders: initialFolders, onClose }: FolderMan
         onToggle={toggleFolder}
         onUpdate={handleUpdateFolder}
         onDelete={handleDeleteFolder}
-        onAddSubfolder={(parentId) => handleAddSubfolder(parentId, newFolderName)}
+        onAddSubfolder={handleAddSubfolder}
         showAddSubfolder={level === 0}
       >
         {children.length > 0 && children.map(child => renderFolderItem(child, level + 1))}
