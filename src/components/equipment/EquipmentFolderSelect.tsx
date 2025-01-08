@@ -101,7 +101,7 @@ export function EquipmentFolderSelect({
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
-          <ScrollArea className="h-[400px]">
+          <ScrollArea className="h-[300px] pr-4">
             <SelectItem value="all">All folders</SelectItem>
             {renderFolderOptions()}
           </ScrollArea>
