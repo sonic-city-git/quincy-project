@@ -137,6 +137,44 @@ export type Database = {
           },
         ]
       }
+      equipment_serial_numbers: {
+        Row: {
+          created_at: string
+          equipment_id: string
+          id: string
+          notes: string | null
+          serial_number: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          equipment_id: string
+          id?: string
+          notes?: string | null
+          serial_number: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          equipment_id?: string
+          id?: string
+          notes?: string | null
+          serial_number?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_serial_numbers_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_types: {
         Row: {
           color: string
