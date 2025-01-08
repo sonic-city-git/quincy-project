@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { CrewMember, NewCrewMember } from "@/types/crew";
 import { useCrewSelection } from "./useCrewSelection";
+import { useRoleSelection } from "./useRoleSelection";
 import { useCrewRoles } from "./useCrewRoles";
 import { getAllUniqueRoles, filterCrewByRoles, sortCrewMembers } from "@/utils/crewUtils";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +14,8 @@ export function useCrewManagement() {
   const { toast } = useToast();
   
   const { selectedItems, handleItemSelect, getSelectedCrew, clearSelection } = useCrewSelection();
-  const { selectedRoles, handleRoleSelect } = useCrewRoles();
+  const { selectedRoles, handleRoleSelect } = useRoleSelection();
+  const { roles } = useCrewRoles();
 
   const fetchCrewMembers = useCallback(async () => {
     try {

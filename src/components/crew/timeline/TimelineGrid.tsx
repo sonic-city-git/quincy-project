@@ -1,5 +1,5 @@
 import { format, isWeekend } from "date-fns";
-import { PROJECT_ASSIGNMENTS } from "../constants";
+import { PROJECT_ASSIGNMENTS } from "./timelineConstants";
 
 interface TimelineGridProps {
   days: Date[];
