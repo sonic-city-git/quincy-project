@@ -8,6 +8,7 @@ import {
 import { CrewRole } from "@/types/crew";
 import { useState } from "react";
 import { RoleFormFields } from "./RoleFormFields";
+import { useToast } from "@/hooks/use-toast";
 
 interface AddRoleDialogProps {
   roles?: CrewRole[];
@@ -38,6 +39,7 @@ export function AddRoleDialog({
   const [dailyRate, setDailyRate] = useState(initialValues?.dailyRate?.toString() || "");
   const [hourlyRate, setHourlyRate] = useState(initialValues?.hourlyRate?.toString() || "");
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { toast } = useToast();
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -47,9 +49,13 @@ export function AddRoleDialog({
     }
     if (!dailyRate) {
       newErrors.dailyRate = "Daily rate is required";
+    } else if (isNaN(parseFloat(dailyRate)) || parseFloat(dailyRate) < 0) {
+      newErrors.dailyRate = "Daily rate must be a valid positive number";
     }
     if (!hourlyRate) {
       newErrors.hourlyRate = "Hourly rate is required";
+    } else if (isNaN(parseFloat(hourlyRate)) || parseFloat(hourlyRate) < 0) {
+      newErrors.hourlyRate = "Hourly rate must be a valid positive number";
     }
     
     setErrors(newErrors);
@@ -58,11 +64,24 @@ export function AddRoleDialog({
 
   const handleSubmit = () => {
     if (validateForm()) {
-      onSubmit({
-        roleId: selectedRole,
-        dailyRate: parseFloat(dailyRate),
-        hourlyRate: parseFloat(hourlyRate),
-      });
+      try {
+        onSubmit({
+          roleId: selectedRole,
+          dailyRate: parseFloat(dailyRate),
+          hourlyRate: parseFloat(hourlyRate),
+        });
+        toast({
+          title: editMode ? "Role Updated" : "Role Added",
+          description: editMode ? "The role has been updated successfully." : "The role has been added successfully.",
+        });
+        onClose();
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "There was an error processing your request.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
