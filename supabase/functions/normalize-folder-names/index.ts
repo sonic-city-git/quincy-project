@@ -34,7 +34,7 @@ serve(async (req) => {
 
     // Process each folder and update if needed
     const updates = folders.map(folder => {
-      const normalizedName = folder.name.trim().replace(/\s+/g, '');
+      const normalizedName = folder.name.trim().replace(/[\s-]+/g, '');
       
       // Only include folders that need updating
       if (normalizedName !== folder.name) {
