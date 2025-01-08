@@ -22,6 +22,7 @@ export function BasicEquipmentFields({ required = false, defaultValues }: BasicE
         <Input
           id="code"
           name="code"
+          placeholder="Enter equipment code"
           defaultValue={defaultValues?.code}
           required={required}
         />
@@ -31,6 +32,7 @@ export function BasicEquipmentFields({ required = false, defaultValues }: BasicE
         <Input
           id="name"
           name="name"
+          placeholder="Enter equipment name"
           defaultValue={defaultValues?.name}
           required={required}
         />
@@ -42,6 +44,7 @@ export function BasicEquipmentFields({ required = false, defaultValues }: BasicE
           name="price"
           type="number"
           step="0.01"
+          placeholder="Enter price"
           defaultValue={defaultValues?.price}
           required={required}
         />
@@ -53,6 +56,7 @@ export function BasicEquipmentFields({ required = false, defaultValues }: BasicE
           name="value"
           type="number"
           step="0.01"
+          placeholder="Enter book value"
           defaultValue={defaultValues?.value}
           required={required}
         />
@@ -64,6 +68,7 @@ export function BasicEquipmentFields({ required = false, defaultValues }: BasicE
           name="weight"
           type="number"
           step="0.01"
+          placeholder="Enter weight in kilograms"
           defaultValue={defaultValues?.weight}
           required={required}
         />
