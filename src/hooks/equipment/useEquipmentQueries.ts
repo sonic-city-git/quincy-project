@@ -34,25 +34,36 @@ export function useEquipmentQueries() {
 
       console.log('Raw equipment data:', equipmentData);
 
-      const formattedEquipment: Equipment[] = equipmentData.map(item => ({
-        id: item.id,
-        code: item.Code || '',
-        name: item.Name || '',
-        price: item.Price?.toString() || '0',
-        value: item["Book Value"]?.toString() || '0',
-        weight: item.Weight?.toString() || '0',
-        stock: item["Stock calculation method"] === "serial_numbers" 
-          ? (item.equipment_serial_numbers?.length || 0)
-          : (item.Stock || 0),
-        folder_id: item.folder_id || undefined,
-        Folder: item.Folder || undefined,
-        stockCalculationMethod: item["Stock calculation method"] as "manual" | "serial_numbers" || "manual",
-        serialNumbers: item.equipment_serial_numbers?.map((sn: any) => ({
-          number: sn.serial_number,
-          status: sn.status || "Available",
-          notes: sn.notes
-        })) || [],
-      }));
+      const formattedEquipment: Equipment[] = equipmentData.map(item => {
+        const stockCalculationMethod = item["Stock calculation method"]?.toLowerCase();
+        const isSerialNumberBased = stockCalculationMethod === "serial_numbers";
+        
+        console.log(`Equipment ${item.Name}:`, {
+          stockCalculationMethod,
+          isSerialNumberBased,
+          serialNumbers: item.equipment_serial_numbers
+        });
+
+        return {
+          id: item.id,
+          code: item.Code || '',
+          name: item.Name || '',
+          price: item.Price?.toString() || '0',
+          value: item["Book Value"]?.toString() || '0',
+          weight: item.Weight?.toString() || '0',
+          stock: isSerialNumberBased
+            ? (item.equipment_serial_numbers?.length || 0)
+            : (item.Stock || 0),
+          folder_id: item.folder_id || undefined,
+          Folder: item.Folder || undefined,
+          stockCalculationMethod: isSerialNumberBased ? "serial_numbers" : "manual",
+          serialNumbers: item.equipment_serial_numbers?.map((sn: any) => ({
+            number: sn.serial_number,
+            status: sn.status || "Available",
+            notes: sn.notes
+          })) || [],
+        };
+      });
 
       console.log('Formatted equipment:', formattedEquipment);
       setEquipment(formattedEquipment);
