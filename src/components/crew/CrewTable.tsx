@@ -31,7 +31,7 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
   const tableHeader = (
     <TableHeader>
       <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
-        <TableHead className="w-[48px] px-4">
+        <TableHead className="w-[48px]">
           <Checkbox 
             checked={selectedItems.length === crewMembers.length && crewMembers.length > 0}
             onCheckedChange={handleSelectAll}
@@ -50,7 +50,7 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
     <TableBody>
       {crewMembers.map((crew) => (
         <TableRow key={crew.id} className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
-          <TableCell className="w-[48px] px-4">
+          <TableCell className="w-[48px]">
             <Checkbox 
               checked={selectedItems.includes(crew.id)}
               onCheckedChange={() => onItemSelect(crew.id)}
