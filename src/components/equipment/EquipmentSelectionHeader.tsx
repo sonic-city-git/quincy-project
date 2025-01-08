@@ -21,15 +21,15 @@ export function EquipmentSelectionHeader({
 }: EquipmentSelectionHeaderProps) {
   return (
     <div className="p-4 border-b flex justify-between items-center gap-4">
-      <EquipmentSearch
-        searchTerm={searchTerm}
-        onSearchChange={onSearchChange}
-      />
       <EquipmentActions
         selectedItems={selectedItems}
         equipment={equipment}
         onEditEquipment={onEditEquipment}
         onDeleteEquipment={onDeleteEquipment}
+      />
+      <EquipmentSearch
+        searchTerm={searchTerm}
+        onSearchChange={onSearchChange}
       />
     </div>
   );
