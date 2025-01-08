@@ -41,7 +41,9 @@ export function useEquipmentQueries() {
         price: item.Price?.toString() || '0',
         value: item["Book Value"]?.toString() || '0',
         weight: item.Weight?.toString() || '0',
-        stock: item.Stock || 0,
+        stock: item["Stock calculation method"] === "serial_numbers" 
+          ? (item.equipment_serial_numbers?.length || 0)
+          : (item.Stock || 0),
         folder_id: item.folder_id || undefined,
         Folder: item.Folder || undefined,
         stockCalculationMethod: item["Stock calculation method"] as "manual" | "serial_numbers" || "manual",
