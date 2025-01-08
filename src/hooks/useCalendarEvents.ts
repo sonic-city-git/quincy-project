@@ -4,6 +4,13 @@ import { useToast } from "@/hooks/use-toast";
 import { formatDatabaseDate } from "@/utils/dateFormatters";
 import { supabase } from "@/integrations/supabase/client";
 
+interface DatabaseEvent {
+  project_id: string;
+  date: string;
+  name: string;
+  type: EventType;
+}
+
 export const useCalendarEvents = (projectId: string | undefined) => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const { toast } = useToast();
@@ -19,11 +26,11 @@ export const useCalendarEvents = (projectId: string | undefined) => {
         const { data, error } = await supabase
           .from('project_events')
           .select('*')
-          .eq('project_id', projectId);  // Using snake_case for database column
+          .eq('project_id', projectId);
 
         if (error) throw error;
 
-        const fetchedEvents = data.map(event => ({
+        const fetchedEvents = (data as DatabaseEvent[]).map(event => ({
           date: new Date(event.date),
           name: event.name,
           type: event.type as EventType
@@ -57,7 +64,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       const { data, error } = await supabase
         .from('project_events')
         .insert({
-          project_id: projectId,  // Using snake_case for database column
+          project_id: projectId,
           date: formattedDate,
           name: eventName.trim() || eventType,
           type: eventType
@@ -97,7 +104,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
           name: updatedEvent.name.trim() || updatedEvent.type,
           type: updatedEvent.type
         })
-        .eq('project_id', projectId)  // Using snake_case for database column
+        .eq('project_id', projectId)
         .eq('date', formattedDate);
 
       if (error) throw error;
