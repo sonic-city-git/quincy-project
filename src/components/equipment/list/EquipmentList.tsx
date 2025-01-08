@@ -49,39 +49,43 @@ export function EquipmentList({
   });
 
   return (
-    <div className="space-y-4" ref={containerRef}>
+    <div className="flex flex-col h-[calc(100vh-theme(spacing.16))]" ref={containerRef}>
       <EquipmentHeader
         selectedFolder={selectedFolder}
         onFolderSelect={onFolderSelect}
         onAddEquipment={onAddEquipment}
       />
 
-      <div className="bg-zinc-900 rounded-md">
-        <EquipmentSelectionHeader
-          selectedItems={selectedItems}
-          equipment={equipment}
-          searchTerm={searchTerm}
-          onSearchChange={onSearchChange}
-          onEditEquipment={onEditEquipment}
-          onDeleteEquipment={onDeleteEquipment}
-        />
+      <div className="flex-1 flex flex-col bg-zinc-900 rounded-md mt-4 overflow-hidden">
+        <div className="flex-1 overflow-auto">
+          <EquipmentSelectionHeader
+            selectedItems={selectedItems}
+            equipment={equipment}
+            searchTerm={searchTerm}
+            onSearchChange={onSearchChange}
+            onEditEquipment={onEditEquipment}
+            onDeleteEquipment={onDeleteEquipment}
+          />
 
-        <EquipmentTable
-          equipment={equipment}
-          selectedItems={selectedItems}
-          onSelectAll={onSelectAll}
-          onItemSelect={onItemSelect}
-        />
+          <EquipmentTable
+            equipment={equipment}
+            selectedItems={selectedItems}
+            onSelectAll={onSelectAll}
+            onItemSelect={onItemSelect}
+          />
+        </div>
 
-        <EquipmentTimeline
-          startDate={startDate}
-          daysToShow={daysToShow}
-          selectedEquipment={selectedEquipment}
-          onPreviousPeriod={onPreviousPeriod}
-          onNextPeriod={onNextPeriod}
-          onMount={observe}
-          onUnmount={unobserve}
-        />
+        <div className="flex-shrink-0">
+          <EquipmentTimeline
+            startDate={startDate}
+            daysToShow={daysToShow}
+            selectedEquipment={selectedEquipment}
+            onPreviousPeriod={onPreviousPeriod}
+            onNextPeriod={onNextPeriod}
+            onMount={observe}
+            onUnmount={unobserve}
+          />
+        </div>
       </div>
     </div>
   );
