@@ -1,19 +1,19 @@
 import { Equipment } from "@/types/equipment";
-import { EquipmentActions } from "./actions/EquipmentActions";
+import { EquipmentActions } from "./EquipmentActions";
 
-interface EquipmentSelectionHeaderProps {
+interface EquipmentSelectionActionsProps {
   selectedItems: string[];
   equipment: Equipment[];
   onEditEquipment: (equipment: Equipment) => void;
   onDeleteEquipment: () => void;
 }
 
-export function EquipmentSelectionHeader({
+export function EquipmentSelectionActions({
   selectedItems,
   equipment,
   onEditEquipment,
   onDeleteEquipment,
-}: EquipmentSelectionHeaderProps) {
+}: EquipmentSelectionActionsProps) {
   if (selectedItems.length === 0) {
     return null;
   }
