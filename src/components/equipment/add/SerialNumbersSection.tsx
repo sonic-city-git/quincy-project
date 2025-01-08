@@ -27,28 +27,31 @@ export function SerialNumbersSection({
   return (
     <div className="grid gap-2">
       <Label>Serial Numbers</Label>
-      <ScrollArea className="h-[200px] border rounded-lg p-4">
+      <ScrollArea className="h-[200px] border rounded-lg p-2">
         {serialNumbers.map((sn, index) => (
-          <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
-            <div>
-              <p className="font-medium">{sn.number}</p>
-              {sn.notes && <p className="text-sm text-muted-foreground">{sn.notes}</p>}
+          <div key={index} className="flex items-center justify-between py-1 border-b last:border-0">
+            <div className="flex flex-col gap-0.5">
+              <p className="text-sm font-medium leading-none">{sn.number}</p>
+              {sn.notes && (
+                <p className="text-xs text-muted-foreground leading-none">{sn.notes}</p>
+              )}
             </div>
             {sn.number && (
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
+                        size="sm"
+                        className="h-7 w-7"
                         onClick={() => {
                           // Edit functionality will be implemented here
                           console.log('Edit serial number:', sn.number);
                         }}
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
@@ -61,10 +64,11 @@ export function SerialNumbersSection({
                       <Button
                         type="button"
                         variant="ghost"
-                        size="icon"
+                        size="sm"
+                        className="h-7 w-7"
                         onClick={() => onRemoveSerialNumber(index)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>
