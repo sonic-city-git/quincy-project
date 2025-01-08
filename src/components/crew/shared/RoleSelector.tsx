@@ -1,12 +1,6 @@
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-
-const TAGS = [
-  { id: "foh", label: "FOH" },
-  { id: "mon", label: "MON" },
-  { id: "playback", label: "Playback" },
-  { id: "backline", label: "Backline" },
-] as const;
+import { TAGS } from "../constants";
 
 interface RoleSelectorProps {
   selectedTags: string[];
@@ -14,6 +8,14 @@ interface RoleSelectorProps {
 }
 
 export function RoleSelector({ selectedTags, onTagsChange }: RoleSelectorProps) {
+  const handleTagChange = (tag: string, checked: boolean) => {
+    if (checked) {
+      onTagsChange([...selectedTags, tag]);
+    } else {
+      onTagsChange(selectedTags.filter(t => t !== tag));
+    }
+  };
+
   return (
     <div className="grid gap-2">
       <Label>Role</Label>
@@ -24,11 +26,7 @@ export function RoleSelector({ selectedTags, onTagsChange }: RoleSelectorProps) 
               id={tag.id}
               checked={selectedTags.includes(tag.id)}
               onCheckedChange={(checked) => {
-                onTagsChange(
-                  checked
-                    ? [...selectedTags, tag.id]
-                    : selectedTags.filter((t) => t !== tag.id)
-                );
+                handleTagChange(tag.id, checked as boolean);
               }}
             />
             <Label htmlFor={tag.id} className="text-sm font-normal">

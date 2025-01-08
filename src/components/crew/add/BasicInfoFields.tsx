@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -8,29 +7,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CrewMember } from "@/types/crew";
-import { DeleteCrewMemberButton } from "./DeleteCrewMemberButton";
-import { RoleSelector } from "../shared/RoleSelector";
 
-interface EditCrewMemberFormProps {
-  crewMember: CrewMember;
-  selectedTags: string[];
-  onTagsChange: (tags: string[]) => void;
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-  onDelete: () => void;
-}
-
-export function EditCrewMemberForm({
-  crewMember,
-  selectedTags,
-  onTagsChange,
-  onSubmit,
-  onDelete,
-}: EditCrewMemberFormProps) {
-  const [firstName, lastName] = crewMember.name.split(" ");
-
+export function BasicInfoFields() {
   return (
-    <form onSubmit={onSubmit} className="grid gap-4 py-4">
+    <>
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
           <Label htmlFor="firstName">First name</Label>
@@ -38,7 +18,7 @@ export function EditCrewMemberForm({
             id="firstName"
             name="firstName"
             placeholder="John"
-            defaultValue={firstName}
+            required
           />
         </div>
         <div className="grid gap-2">
@@ -47,7 +27,7 @@ export function EditCrewMemberForm({
             id="lastName"
             name="lastName"
             placeholder="Doe"
-            defaultValue={lastName}
+            required
           />
         </div>
       </div>
@@ -58,7 +38,7 @@ export function EditCrewMemberForm({
           name="phone"
           type="tel"
           placeholder="+47 123 45 678"
-          defaultValue={crewMember.phone}
+          required
         />
       </div>
       <div className="grid gap-2">
@@ -68,12 +48,12 @@ export function EditCrewMemberForm({
           name="email"
           type="email"
           placeholder="john@example.com"
-          defaultValue={crewMember.email}
+          required
         />
       </div>
       <div className="grid gap-2">
         <Label htmlFor="folder">Folder</Label>
-        <Select name="folder" defaultValue={crewMember.folder}>
+        <Select name="folder" required>
           <SelectTrigger>
             <SelectValue placeholder="Select folder" />
           </SelectTrigger>
@@ -83,14 +63,6 @@ export function EditCrewMemberForm({
           </SelectContent>
         </Select>
       </div>
-      <RoleSelector 
-        selectedTags={selectedTags}
-        onTagsChange={onTagsChange}
-      />
-      <div className="flex justify-between items-center">
-        <Button type="submit">Save Changes</Button>
-        <DeleteCrewMemberButton onDelete={onDelete} />
-      </div>
-    </form>
+    </>
   );
 }
