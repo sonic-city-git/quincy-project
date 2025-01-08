@@ -41,7 +41,9 @@ export function RolesList({ projectRoles, selectedItems, onItemSelect, onUpdate 
     try {
       const { error } = await supabase
         .from('project_roles')
-        .update({ preferred_status: crewMemberId })
+        .update({ 
+          preferred_status: crewMemberId // Supabase will handle the UUID conversion internally
+        })
         .eq('id', projectRoleId);
 
       if (error) throw error;
