@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { Equipment } from "@/types/equipment";
-import { isItemInFolder } from "@/utils/folderUtils";
 
 export function useEquipmentFilter() {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
@@ -21,7 +20,8 @@ export function useEquipmentFilter() {
       const matchesFolder = !selectedFolder || 
         selectedFolder === "all" || 
         (selectedFolder === "none" && !item.folderId) ||
-        item.Folder === selectedFolder;
+        item.Folder === selectedFolder ||
+        item.folderId === selectedFolder;
       
       return matchesSearch && matchesFolder;
     });
