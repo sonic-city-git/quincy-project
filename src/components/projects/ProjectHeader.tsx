@@ -7,7 +7,23 @@ interface ProjectHeaderProps {
   color: string;
 }
 
+const getTailwindColor = (colorClass: string) => {
+  // Map Tailwind color classes to hex values
+  const colorMap: { [key: string]: string } = {
+    'bg-rose-800': '#9f1239',
+    'bg-blue-800': '#1e40af',
+    'bg-green-800': '#166534',
+    'bg-purple-800': '#6b21a8',
+    'bg-orange-800': '#9a3412',
+    // Add more color mappings as needed
+  };
+
+  return colorMap[colorClass] || '#9f1239'; // Default to rose if color not found
+};
+
 export const ProjectHeader = ({ name, lastInvoiced, color }: ProjectHeaderProps) => {
+  const backgroundColor = getTailwindColor(color);
+  
   return (
     <div className="w-full bg-secondary/20 px-6 py-6 mb-4">
       <div className="max-w-7xl mx-auto">
@@ -15,8 +31,8 @@ export const ProjectHeader = ({ name, lastInvoiced, color }: ProjectHeaderProps)
           <div 
             className="p-4 rounded-lg shadow-lg transition-all duration-200"
             style={{ 
-              background: color,
-              boxShadow: `0 4px 6px -1px ${color}40, 0 2px 4px -1px ${color}60`
+              background: backgroundColor,
+              boxShadow: `0 4px 6px -1px ${backgroundColor}40, 0 2px 4px -1px ${backgroundColor}60`
             }}
           >
             <h1 className="text-3xl font-bold text-white">{name}</h1>
