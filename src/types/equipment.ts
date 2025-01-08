@@ -10,6 +10,8 @@ export type SerialNumber = {
   notes?: string;
 };
 
+export type StockCalculationMethod = "manual" | "serial_numbers";
+
 export type Equipment = {
   id: string;
   code: string;
@@ -21,4 +23,5 @@ export type Equipment = {
   folder_id?: string;
   Folder?: string;
   serialNumbers?: SerialNumber[];
+  stockCalculationMethod?: StockCalculationMethod;
 };

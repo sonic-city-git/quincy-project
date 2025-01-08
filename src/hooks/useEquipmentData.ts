@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Equipment, SerialNumber } from "@/types/equipment";
+import { Equipment, SerialNumber, StockCalculationMethod } from "@/types/equipment";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { calculateAvailableStock } from "@/utils/equipmentUtils";
 
 export function useEquipmentData() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
@@ -35,6 +36,7 @@ export function useEquipmentData() {
         stock: item.Stock || 0,
         folder_id: item.folder_id || undefined,
         Folder: item.Folder || undefined,
+        stockCalculationMethod: item["Stock calculation method"] as StockCalculationMethod || "manual",
         serialNumbers: item.equipment_serial_numbers?.map((sn: any) => ({
           number: sn.serial_number,
           status: sn.status || "Available",
@@ -57,6 +59,10 @@ export function useEquipmentData() {
 
   const handleAddEquipment = async (newEquipment: Equipment) => {
     try {
+      const finalStock = newEquipment.stockCalculationMethod === 'serial_numbers'
+        ? calculateAvailableStock(newEquipment.serialNumbers || [])
+        : newEquipment.stock;
+
       // First, insert the equipment
       const { data: equipmentData, error: equipmentError } = await supabase
         .from('equipment')
@@ -67,7 +73,8 @@ export function useEquipmentData() {
           Price: parseFloat(newEquipment.price),
           "Book Value": parseFloat(newEquipment.value),
           Weight: parseFloat(newEquipment.weight),
-          Stock: newEquipment.stock,
+          Stock: finalStock,
+          "Stock calculation method": newEquipment.stockCalculationMethod || "manual",
           folder_id: newEquipment.folder_id,
         }])
         .select()
@@ -75,8 +82,10 @@ export function useEquipmentData() {
 
       if (equipmentError) throw equipmentError;
 
-      // Then, insert the serial numbers
-      if (newEquipment.serialNumbers && newEquipment.serialNumbers.length > 0) {
+      // Then, insert the serial numbers if using serial number calculation
+      if (newEquipment.stockCalculationMethod === 'serial_numbers' && 
+          newEquipment.serialNumbers && 
+          newEquipment.serialNumbers.length > 0) {
         const { error: serialNumberError } = await supabase
           .from('equipment_serial_numbers')
           .insert(

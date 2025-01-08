@@ -1,25 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Package, Calendar, AlertTriangle } from "lucide-react";
+import { calculateAvailableStock, calculateTotalStock } from "@/utils/equipmentUtils";
+import { Equipment } from "@/types/equipment";
 
 interface EquipmentCardProps {
-  name: string;
-  category: string;
+  equipment: Equipment;
   status: "Available" | "In Use" | "Maintenance";
   nextBooking?: string;
-  serialNumber: string;
-  totalStock: number;
-  availableStock: number;
 }
 
 export function EquipmentCard({ 
-  name, 
-  category, 
+  equipment,
   status, 
-  nextBooking, 
-  serialNumber, 
-  totalStock,
-  availableStock 
+  nextBooking,
 }: EquipmentCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -34,26 +28,31 @@ export function EquipmentCard({
     }
   };
 
+  const getStockDisplay = () => {
+    if (equipment.stockCalculationMethod === 'serial_numbers' && equipment.serialNumbers) {
+      const available = calculateAvailableStock(equipment.serialNumbers);
+      const total = calculateTotalStock(equipment.serialNumbers);
+      return `${available} / ${total}`;
+    }
+    return equipment.stock.toString();
+  };
+
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200 font-inter">
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
-          <span className="text-lg font-semibold">{name}</span>
+          <span className="text-lg font-semibold">{equipment.name}</span>
           <Badge variant="outline" className={`${getStatusColor(status)} text-white border-none`}>
             {status}
           </Badge>
         </CardTitle>
-        <p className="text-sm text-muted-foreground">{category}</p>
+        <p className="text-sm text-muted-foreground">{equipment.code}</p>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Package className="h-4 w-4" />
-            <span>SN: {serialNumber}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Package className="h-4 w-4" />
-            <span>Stock: {availableStock} / {totalStock}</span>
+            <span>Stock: {getStockDisplay()}</span>
           </div>
           {nextBooking && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
