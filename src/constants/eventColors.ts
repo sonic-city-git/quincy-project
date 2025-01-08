@@ -4,5 +4,5 @@ export const EVENT_COLORS: Record<string, string> = {
   "Preprod": "bg-yellow-500",
   "INT Storage": "bg-pink-600",
   "EXT Storage": "bg-red-600",
-  "Hours": "bg-indigo-500"
+  "Hours": "bg-orange-500"
 };
