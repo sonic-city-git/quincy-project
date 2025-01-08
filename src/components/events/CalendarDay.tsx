@@ -1,13 +1,7 @@
 import { DayProps } from "react-day-picker";
 import { CalendarEvent, EventType } from "@/types/events";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { useCalendarDate } from "@/hooks/useCalendarDate";
-import { format } from "date-fns";
+import { CalendarDayContent } from "./CalendarDayContent";
 
 interface CalendarDayProps extends Omit<DayProps, 'date'> {
   date: Date;
@@ -33,34 +27,12 @@ export const CalendarDay = ({
   };
 
   return (
-    <TooltipProvider delayDuration={100}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <button 
-            {...props}
-            className={`
-              relative h-9 w-9 p-0 font-normal 
-              flex items-center justify-center text-sm 
-              cursor-pointer hover:bg-accent 
-              transition-colors duration-200
-              rounded-md shadow-sm
-              ${className || ''} 
-              ${event ? `${eventColors[event.type]} text-white font-medium` : ''}
-            `}
-            onClick={handleClick}
-          >
-            {dayDate.getDate()}
-          </button>
-        </TooltipTrigger>
-        {event && (
-          <TooltipContent className="text-base px-4 py-2">
-            <div>{event.name}</div>
-            <div className="text-sm text-muted-foreground">
-              {format(event.date, 'dd.MM.yy')}
-            </div>
-          </TooltipContent>
-        )}
-      </Tooltip>
-    </TooltipProvider>
+    <CalendarDayContent
+      date={dayDate}
+      event={event}
+      eventColors={eventColors}
+      onClick={handleClick}
+      className={className}
+    />
   );
 };

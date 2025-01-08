@@ -31,11 +31,6 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
     closeEditDialog,
   } = useEventDialog();
 
-  console.log('ProjectCalendar - Route params:', useParams()); // Debug log
-  console.log('ProjectCalendar - projectId from params:', projectId); // Debug log
-  console.log('ProjectCalendar - isAddDialogOpen:', isAddDialogOpen); // Debug log
-  console.log('ProjectCalendar - selectedDate:', selectedDate); // Debug log
-
   const handleSelect = (date: Date | undefined) => {
     if (!date) return;
     
@@ -50,21 +45,10 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   };
 
   const handleEventSubmit = async (eventName: string, eventType: EventType) => {
-    if (!selectedDate) {
-      console.error('Missing selectedDate:', selectedDate);
+    if (!selectedDate || !projectId) {
       toast({
         title: "Error",
-        description: "No date selected",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!projectId) {
-      console.error('Missing projectId:', projectId);
-      toast({
-        title: "Error",
-        description: "Project ID is missing",
+        description: selectedDate ? "Project ID is missing" : "No date selected",
         variant: "destructive",
       });
       return;
@@ -91,8 +75,17 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
     try {
       await updateEvent(updatedEvent);
       closeEditDialog();
+      toast({
+        title: "Success",
+        description: "Event updated successfully",
+      });
     } catch (error) {
       console.error('Error updating event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update event",
+        variant: "destructive",
+      });
     }
   };
 
@@ -102,16 +95,28 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
         mode="single"
         selected={selectedDate}
         onSelect={handleSelect}
-        className={`w-full rounded-md border ${className}`}
-        modifiers={{ today: undefined }}
-        modifiersClassNames={{
-          selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        }}
-        modifiersStyles={{
-          today: {
-            fontWeight: 'normal',
-            border: 'none'
-          }
+        className={`w-full rounded-lg border-none bg-background ${className}`}
+        classNames={{
+          months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+          month: "space-y-4",
+          caption: "flex justify-center pt-1 relative items-center",
+          caption_label: "text-lg font-medium",
+          nav: "space-x-1 flex items-center",
+          nav_button: "h-9 w-9 bg-transparent p-0 opacity-50 hover:opacity-100 transition-opacity",
+          nav_button_previous: "absolute left-1",
+          nav_button_next: "absolute right-1",
+          table: "w-full border-collapse space-y-1",
+          head_row: "flex w-full",
+          head_cell: "text-muted-foreground rounded-md w-12 font-normal text-[0.8rem] h-12",
+          row: "flex w-full mt-2",
+          cell: "relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md",
+          day: "h-12 w-12 p-0 font-normal",
+          day_range_end: "day-range-end",
+          day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+          day_today: "bg-accent text-accent-foreground",
+          day_outside: "text-muted-foreground opacity-50",
+          day_disabled: "text-muted-foreground opacity-50",
+          day_hidden: "invisible",
         }}
         components={{
           Day: ({ date, ...props }: DayProps) => (
