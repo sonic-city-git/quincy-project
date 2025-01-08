@@ -1,4 +1,6 @@
 import { Calendar } from "@/components/ui/calendar";
+import { AddEventDialog } from "./AddEventDialog";
+import { EditEventDialog } from "./EditEventDialog";
 import { CalendarEvent, EventType } from "@/types/events";
 import { DayProps } from "react-day-picker";
 import { useParams } from "react-router-dom";
@@ -8,7 +10,6 @@ import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useToast } from "@/hooks/use-toast";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useCalendarDate } from "@/hooks/useCalendarDate";
-import { CalendarDialogs } from "./calendar/CalendarDialogs";
 
 interface ProjectCalendarProps {
   className?: string;
@@ -30,6 +31,11 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
     closeEditDialog,
   } = useEventDialog();
 
+  console.log('ProjectCalendar - Route params:', useParams()); // Debug log
+  console.log('ProjectCalendar - projectId from params:', projectId); // Debug log
+  console.log('ProjectCalendar - isAddDialogOpen:', isAddDialogOpen); // Debug log
+  console.log('ProjectCalendar - selectedDate:', selectedDate); // Debug log
+
   const handleSelect = (date: Date | undefined) => {
     if (!date) return;
     
@@ -44,11 +50,21 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   };
 
   const handleEventSubmit = async (eventName: string, eventType: EventType) => {
-    if (!selectedDate || !projectId) {
-      console.error('Missing required data:', { selectedDate, projectId });
+    if (!selectedDate) {
+      console.error('Missing selectedDate:', selectedDate);
       toast({
         title: "Error",
-        description: "Missing required data",
+        description: "No date selected",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!projectId) {
+      console.error('Missing projectId:', projectId);
+      toast({
+        title: "Error",
+        description: "Project ID is missing",
         variant: "destructive",
       });
       return;
@@ -75,17 +91,8 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
     try {
       await updateEvent(updatedEvent);
       closeEditDialog();
-      toast({
-        title: "Success",
-        description: "Event updated successfully",
-      });
     } catch (error) {
       console.error('Error updating event:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update event",
-        variant: "destructive",
-      });
     }
   };
 
@@ -118,16 +125,18 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
           ),
         }}
       />
-      <CalendarDialogs
-        isAddDialogOpen={isAddDialogOpen}
-        isEditDialogOpen={isEditDialogOpen}
-        selectedDate={selectedDate}
-        selectedEvent={selectedEvent}
+      <AddEventDialog
+        isOpen={isAddDialogOpen}
+        onOpenChange={closeAddDialog}
+        onSubmit={handleEventSubmit}
+        date={selectedDate}
         projectId={projectId}
-        onCloseAddDialog={closeAddDialog}
-        onCloseEditDialog={closeEditDialog}
-        onEventSubmit={handleEventSubmit}
-        onEventUpdate={handleEventUpdate}
+      />
+      <EditEventDialog
+        isOpen={isEditDialogOpen}
+        onOpenChange={closeEditDialog}
+        event={selectedEvent}
+        onSave={handleEventUpdate}
       />
     </>
   );
