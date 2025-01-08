@@ -1,49 +1,54 @@
 import { Equipment } from "@/types/equipment";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash } from "lucide-react";
+import { Edit, Trash } from "lucide-react";
 
 interface EquipmentActionsProps {
   selectedItems: string[];
-  equipment: Equipment[];
-  onEditEquipment: (equipment: Equipment) => void;
-  onDeleteEquipment: () => void;
+  equipment: Equipment | undefined;
+  onEdit: (equipment: Equipment) => void;
+  onDelete: () => void;
 }
 
 export function EquipmentActions({
   selectedItems,
   equipment,
-  onEditEquipment,
-  onDeleteEquipment,
+  onEdit,
+  onDelete,
 }: EquipmentActionsProps) {
-  const selectedEquipment = equipment && Array.isArray(equipment) 
-    ? equipment.find(item => item.id === selectedItems[0])
-    : undefined;
-    
-  const canEdit = selectedItems.length === 1 && selectedEquipment;
-  const canDelete = selectedItems.length > 0;
+  if (!equipment || selectedItems.length !== 1) {
+    return (
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={onDelete}
+        className="h-8"
+      >
+        <Trash className="h-4 w-4 mr-2" />
+        Delete
+      </Button>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">
-      {canEdit && selectedEquipment && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onEditEquipment(selectedEquipment)}
-        >
-          <Pencil className="h-4 w-4 mr-2" />
-          Edit
-        </Button>
-      )}
-      {canDelete && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onDeleteEquipment}
-        >
-          <Trash className="h-4 w-4 mr-2" />
-          Delete
-        </Button>
-      )}
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={() => onEdit(equipment)}
+        className="h-8"
+      >
+        <Edit className="h-4 w-4 mr-2" />
+        Edit
+      </Button>
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={onDelete}
+        className="h-8"
+      >
+        <Trash className="h-4 w-4 mr-2" />
+        Delete
+      </Button>
     </div>
   );
 }

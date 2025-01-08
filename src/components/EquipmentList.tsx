@@ -75,14 +75,14 @@ export function EquipmentList() {
         selectedFolder={selectedFolder}
         onFolderSelect={handleFolderSelect}
         onAddEquipment={handleAddEquipment}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
       />
 
       <div className="bg-zinc-900 rounded-md">
         <EquipmentSelectionHeader
           selectedItems={selectedItems}
           equipment={equipment}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
           onEditEquipment={handleEditEquipment}
           onDeleteEquipment={() => {
             handleDeleteEquipment(selectedItems);
