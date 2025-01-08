@@ -3,6 +3,7 @@ import { useEquipmentData } from "@/hooks/useEquipmentData";
 import { useEquipmentFilter } from "@/hooks/useEquipmentFilter";
 import { useEquipmentSelection } from "@/hooks/useEquipmentSelection";
 import { useEquipmentTimeline } from "@/hooks/useEquipmentTimeline";
+import { useEffect } from "react";
 
 export function EquipmentListContainer() {
   const { 
@@ -19,6 +20,7 @@ export function EquipmentListContainer() {
     searchTerm,
     setSearchTerm,
     filterEquipment,
+    filteredEquipment,
   } = useEquipmentFilter();
 
   const {
@@ -34,19 +36,25 @@ export function EquipmentListContainer() {
     handleNextPeriod,
   } = useEquipmentTimeline();
 
-  const handleFolderSelect = (folderId: string | null) => {
+  useEffect(() => {
+    if (equipment && Array.isArray(equipment)) {
+      filterEquipment(equipment);
+    }
+  }, [equipment, filterEquipment]);
+
+  const handleFolderSelect = useCallback((folderId: string | null) => {
     setSelectedFolder(folderId);
     clearSelection();
-  };
+  }, [setSelectedFolder, clearSelection]);
 
-  const filteredEquipment = filterEquipment(equipment);
-
-  const selectedEquipment = equipment
-    .filter(item => selectedItems.includes(item.id))
-    .map(item => ({
-      id: item.id,
-      name: item.name
-    }));
+  const selectedEquipment = useMemo(() => {
+    return filteredEquipment
+      .filter(item => selectedItems.includes(item.id))
+      .map(item => ({
+        id: item.id,
+        name: item.name
+      }));
+  }, [filteredEquipment, selectedItems]);
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-[400px]">Loading equipment...</div>;

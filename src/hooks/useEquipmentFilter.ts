@@ -1,11 +1,10 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Equipment } from "@/types/equipment";
 
 export function useEquipmentFilter() {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
-  const [equipment, setEquipment] = useState<Equipment[]>([]);
 
   const filterFunction = useCallback((items: Equipment[]) => {
     if (!items || !Array.isArray(items)) {
@@ -27,14 +26,10 @@ export function useEquipmentFilter() {
     });
   }, [selectedFolder, searchTerm]);
 
-  useEffect(() => {
-    const filtered = filterFunction(equipment);
-    setFilteredEquipment(filtered);
-  }, [equipment, filterFunction]);
-
   const filterEquipment = useCallback((newEquipment: Equipment[]) => {
-    setEquipment(newEquipment);
-    return filterFunction(newEquipment);
+    const filtered = filterFunction(newEquipment);
+    setFilteredEquipment(filtered);
+    return filtered;
   }, [filterFunction]);
 
   return {
