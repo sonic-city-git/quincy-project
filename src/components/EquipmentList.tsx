@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { addDays, subDays } from "date-fns";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
 import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
@@ -8,7 +8,6 @@ import { EquipmentHeader } from "./equipment/EquipmentHeader";
 import { useEquipmentData } from "@/hooks/useEquipmentData";
 import { useEquipmentFilter } from "@/hooks/useEquipmentFilter";
 import { useEquipmentSelection } from "@/hooks/useEquipmentSelection";
-import { Button } from "./ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -61,51 +60,32 @@ export function EquipmentList() {
     setStartDate(prev => addDays(prev, daysToShow));
   };
 
-  const handleDeleteSalesEquipment = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('delete-sales-equipment');
-      
-      if (error) throw error;
+  useEffect(() => {
+    const migrateFolders = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('migrate-equipment-folders');
+        
+        if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: data.message,
-      });
+        toast({
+          title: "Success",
+          description: data.message,
+        });
 
-      // Refresh the equipment list
-      refetchEquipment();
-    } catch (error) {
-      console.error('Error deleting sales equipment:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete sales equipment",
-        variant: "destructive",
-      });
-    }
-  };
+        // Refresh the equipment list to show updated folder IDs
+        refetchEquipment();
+      } catch (error) {
+        console.error('Error migrating equipment folders:', error);
+        toast({
+          title: "Error",
+          description: "Failed to migrate equipment folders",
+          variant: "destructive",
+        });
+      }
+    };
 
-  const handleMigrateFolders = async () => {
-    try {
-      const { data, error } = await supabase.functions.invoke('migrate-equipment-folders');
-      
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: data.message,
-      });
-
-      // Refresh the equipment list to show updated folder IDs
-      refetchEquipment();
-    } catch (error) {
-      console.error('Error migrating equipment folders:', error);
-      toast({
-        title: "Error",
-        description: "Failed to migrate equipment folders",
-        variant: "destructive",
-      });
-    }
-  };
+    migrateFolders();
+  }, []); // Run once when component mounts
 
   const filteredEquipment = filterEquipment(equipment);
 
@@ -122,29 +102,11 @@ export function EquipmentList() {
 
   return (
     <div className="space-y-4" ref={containerRef}>
-      <div className="flex justify-between items-center mb-4">
-        <EquipmentHeader
-          selectedFolder={selectedFolder}
-          onFolderSelect={handleFolderSelect}
-          onAddEquipment={handleAddEquipment}
-        />
-        <div className="flex gap-2">
-          <Button 
-            variant="secondary"
-            onClick={handleMigrateFolders}
-            className="whitespace-nowrap"
-          >
-            Migrate Folders
-          </Button>
-          <Button 
-            variant="destructive"
-            onClick={handleDeleteSalesEquipment}
-            className="whitespace-nowrap"
-          >
-            Delete Sales Equipment
-          </Button>
-        </div>
-      </div>
+      <EquipmentHeader
+        selectedFolder={selectedFolder}
+        onFolderSelect={handleFolderSelect}
+        onAddEquipment={handleAddEquipment}
+      />
 
       <div className="bg-zinc-900 rounded-md">
         <EquipmentSelectionHeader
