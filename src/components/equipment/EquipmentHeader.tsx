@@ -4,6 +4,7 @@ import { EquipmentFolderSelect } from "./EquipmentFolderSelect";
 import { EquipmentSearch } from "./EquipmentSearch";
 import { Button } from "../ui/button";
 import { Edit, Trash2 } from "lucide-react";
+import { EditEquipmentDialog } from "./EditEquipmentDialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -58,16 +59,12 @@ export function EquipmentHeader({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {hasSelection && selectedItems.length === 1 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="gap-2"
-              onClick={() => selectedEquipment && onEditEquipment(selectedEquipment)}
-            >
-              <Edit className="h-4 w-4" />
-              EDIT
-            </Button>
+          {hasSelection && selectedItems.length === 1 && selectedEquipment && (
+            <EditEquipmentDialog
+              equipment={selectedEquipment}
+              onEditEquipment={onEditEquipment}
+              onDeleteEquipment={onDeleteEquipment}
+            />
           )}
           {hasSelection && (
             <AlertDialog>
