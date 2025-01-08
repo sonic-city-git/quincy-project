@@ -164,6 +164,13 @@ export function RolesSection({ projectId }: RolesSectionProps) {
 
       <div className="bg-zinc-900/50 rounded-lg p-4">
         <div className="grid gap-2">
+          <div className="flex items-center px-3">
+            <div className="min-w-[232px]" />
+            <div className="flex items-center gap-6">
+              <span className="text-xs text-muted-foreground w-24">Daily rate</span>
+              <span className="text-xs text-muted-foreground w-24">Hourly rate</span>
+            </div>
+          </div>
           {projectRoles?.map((projectRole) => (
             <div key={projectRole.id} className="flex items-center gap-4">
               <Checkbox
