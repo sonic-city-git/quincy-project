@@ -125,6 +125,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
         onOpenChange={closeAddDialog}
         onSubmit={handleEventSubmit}
         date={selectedDate}
+        projectId={projectId || ''}
       />
       <EditEventDialog
         isOpen={isEditDialogOpen}

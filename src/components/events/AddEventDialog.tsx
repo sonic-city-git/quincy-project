@@ -24,6 +24,7 @@ interface AddEventDialogProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (eventName: string, eventType: EventType) => void;
   date: Date | undefined;
+  projectId: string;
 }
 
 export const AddEventDialog = ({
@@ -31,6 +32,7 @@ export const AddEventDialog = ({
   onOpenChange,
   onSubmit,
   date,
+  projectId,
 }: AddEventDialogProps) => {
   const [eventName, setEventName] = useState("");
   const [eventType, setEventType] = useState<EventType>("Show");
@@ -38,7 +40,7 @@ export const AddEventDialog = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting || !date) return;
+    if (isSubmitting || !date || !projectId) return;
 
     setIsSubmitting(true);
     try {
