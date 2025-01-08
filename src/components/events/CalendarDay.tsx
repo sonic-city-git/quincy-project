@@ -7,6 +7,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCalendarDate } from "@/hooks/useCalendarDate";
+import { format } from "date-fns";
 
 interface CalendarDayProps extends Omit<DayProps, 'date'> {
   date: Date;
@@ -53,7 +54,10 @@ export const CalendarDay = ({
         </TooltipTrigger>
         {event && (
           <TooltipContent className="text-base px-4 py-2">
-            {event.name}
+            <div>{event.name}</div>
+            <div className="text-sm text-muted-foreground">
+              {format(event.date, 'dd.MM.yy')}
+            </div>
           </TooltipContent>
         )}
       </Tooltip>

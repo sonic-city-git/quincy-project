@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { EventType } from "@/types/events";
+import { format } from "date-fns";
 
 interface AddEventDialogProps {
   isOpen: boolean;
@@ -59,7 +60,7 @@ export const AddEventDialog = ({
         <DialogHeader>
           <DialogTitle>Add Event</DialogTitle>
           <DialogDescription>
-            Add an event for {date?.toLocaleDateString()}
+            Add an event for {date ? format(date, 'dd.MM.yy') : ''}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
