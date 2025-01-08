@@ -1,6 +1,7 @@
 import { Equipment } from "@/types/equipment";
 import { AddEquipmentDialog } from "./AddEquipmentDialog";
 import { EquipmentFolderSelect } from "./EquipmentFolderSelect";
+import { FolderAnalysis } from "./FolderAnalysis";
 
 interface EquipmentHeaderProps {
   selectedFolder: string | null;
@@ -14,14 +15,17 @@ export function EquipmentHeader({
   onAddEquipment,
 }: EquipmentHeaderProps) {
   return (
-    <div className="flex justify-between items-center gap-2">
-      <div className="flex items-center gap-2 flex-1">
-        <EquipmentFolderSelect
-          selectedFolder={selectedFolder}
-          onFolderSelect={onFolderSelect}
-        />
+    <div className="space-y-4">
+      <div className="flex justify-between items-center gap-2">
+        <div className="flex items-center gap-2 flex-1">
+          <EquipmentFolderSelect
+            selectedFolder={selectedFolder}
+            onFolderSelect={onFolderSelect}
+          />
+        </div>
+        <AddEquipmentDialog onAddEquipment={onAddEquipment} />
       </div>
-      <AddEquipmentDialog onAddEquipment={onAddEquipment} />
+      <FolderAnalysis />
     </div>
   );
 }
