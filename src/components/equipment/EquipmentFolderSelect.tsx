@@ -1,15 +1,12 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { FolderSelect } from "./shared/FolderSelect";
-import { FolderManagement } from "./folders/FolderManagement";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { Folder } from "@/types/folders";
 
@@ -22,7 +19,6 @@ export function EquipmentFolderSelect({
   selectedFolder,
   onFolderSelect,
 }: EquipmentFolderSelectProps) {
-  const [isManaging, setIsManaging] = useState(false);
   const [folders, setFolders] = useState<Folder[]>([]);
 
   useEffect(() => {
@@ -52,7 +48,7 @@ export function EquipmentFolderSelect({
     const { data, error } = await supabase
       .from('folders')
       .select('*')
-      .order('created_at');
+      .order('name');
 
     if (error) {
       console.error('Error fetching folders:', error);
@@ -62,31 +58,57 @@ export function EquipmentFolderSelect({
     setFolders(data);
   };
 
+  const getFolderPath = (folderId: string | null): string => {
+    if (!folderId || folderId === "all") return 'All folders';
+    if (folderId === "none") return 'No folder';
+
+    const folder = folders.find(f => f.id === folderId);
+    if (!folder) return 'All folders';
+
+    if (folder.parent_id) {
+      const parent = folders.find(f => f.id === folder.parent_id);
+      return parent ? `${parent.name} -> ${folder.name}` : folder.name;
+    }
+
+    return folder.name;
+  };
+
+  const renderFolderOptions = (parentId: string | null = null, level = 0) => {
+    return folders
+      .filter(folder => folder.parent_id === parentId)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(folder => (
+        <div key={folder.id}>
+          <SelectItem
+            value={folder.id}
+            className={`${level > 0 ? "ml-4 italic" : "font-bold"}`}
+          >
+            {folder.name}
+          </SelectItem>
+          {renderFolderOptions(folder.id, level + 1)}
+        </div>
+      ));
+  };
+
   return (
     <div className="flex items-center gap-2">
-      <FolderSelect
-        selectedFolder={selectedFolder}
-        onFolderSelect={onFolderSelect}
-        required={false}
-        showAllFolders={true}
-      />
-      
-      <Dialog open={isManaging} onOpenChange={setIsManaging}>
-        <DialogTrigger asChild>
-          <Button variant="outline" size="icon">
-            <Settings className="h-4 w-4" />
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Manage Folders</DialogTitle>
-          </DialogHeader>
-          <FolderManagement
-            folders={folders}
-            onClose={() => setIsManaging(false)}
-          />
-        </DialogContent>
-      </Dialog>
+      <Select
+        value={selectedFolder || "all"}
+        onValueChange={(value) => onFolderSelect(value === "all" ? null : value)}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Select folder">
+            {getFolderPath(selectedFolder)}
+          </SelectValue>
+        </SelectTrigger>
+        <SelectContent>
+          <ScrollArea className="h-[400px]">
+            <SelectItem value="all">All folders</SelectItem>
+            <SelectItem value="none">No folder</SelectItem>
+            {renderFolderOptions()}
+          </ScrollArea>
+        </SelectContent>
+      </Select>
     </div>
   );
 }
