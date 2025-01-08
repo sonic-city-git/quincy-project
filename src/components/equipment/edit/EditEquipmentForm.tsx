@@ -92,12 +92,12 @@ export function EditEquipmentForm({
             required 
           />
           <div className="grid gap-2">
-            <Label>Total Book Value</Label>
+            <Label className="text-base font-semibold">Total Book Value</Label>
             <Input
               type="text"
               value={`${totalBookValue}`}
               readOnly
-              className="bg-gray-100"
+              className="bg-background border-input text-foreground text-lg font-medium h-12"
             />
           </div>
         </div>
