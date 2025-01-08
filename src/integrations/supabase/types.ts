@@ -87,7 +87,6 @@ export type Database = {
           "Internal remark": string | null
           Name: string | null
           Price: number | null
-          "Rental/sales": string | null
           "Serial number": string | null
           "Serial number remark": string | null
           Stock: number | null
@@ -105,7 +104,6 @@ export type Database = {
           "Internal remark"?: string | null
           Name?: string | null
           Price?: number | null
-          "Rental/sales"?: string | null
           "Serial number"?: string | null
           "Serial number remark"?: string | null
           Stock?: number | null
@@ -123,7 +121,6 @@ export type Database = {
           "Internal remark"?: string | null
           Name?: string | null
           Price?: number | null
-          "Rental/sales"?: string | null
           "Serial number"?: string | null
           "Serial number remark"?: string | null
           Stock?: number | null
