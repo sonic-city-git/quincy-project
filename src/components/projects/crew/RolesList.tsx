@@ -29,7 +29,7 @@ export function RolesList({ projectRoles, selectedItems, onItemSelect, onUpdate 
       const { data, error } = await supabase
         .from('crew_members')
         .select('*')
-        .order('folder', { ascending: false }) // This will make 'Sonic City' appear first
+        .order('folder', { ascending: false })
         .order('name');
       
       if (error) throw error;
@@ -42,7 +42,7 @@ export function RolesList({ projectRoles, selectedItems, onItemSelect, onUpdate 
       const { error } = await supabase
         .from('project_roles')
         .update({ 
-          preferred_status: crewMemberId // Supabase will handle the UUID conversion internally
+          preferred_id: crewMemberId
         })
         .eq('id', projectRoleId);
 
@@ -94,7 +94,7 @@ export function RolesList({ projectRoles, selectedItems, onItemSelect, onUpdate 
 
   const getSelectedCrewMember = (projectRole: any) => {
     if (!crewMembers) return null;
-    return crewMembers.find(crew => crew.id === projectRole.preferred_status);
+    return crewMembers.find(crew => crew.id === projectRole.preferred_id);
   };
 
   return (
