@@ -29,13 +29,16 @@ export function RoleFormFields({
   onDailyRateChange,
   onHourlyRateChange,
 }: RoleFormFieldsProps) {
+  // Find the selected role
+  const selectedRoleData = roles?.find(role => role.id === selectedRole);
+
   return (
     <div className="space-y-4 py-4">
       <div className="space-y-2">
         <Label htmlFor="role" className="after:content-['*'] after:ml-0.5 after:text-red-500">Role</Label>
         {editMode ? (
-          <div className="w-full p-2 rounded-md border border-zinc-800 bg-zinc-900 text-muted-foreground">
-            {roles?.find(role => role.id === selectedRole)?.name || 'Unknown Role'}
+          <div className="w-full p-2 rounded-md border border-zinc-800 bg-zinc-900">
+            {selectedRoleData?.name}
           </div>
         ) : (
           <select
