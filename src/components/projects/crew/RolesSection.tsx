@@ -1,13 +1,14 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Plus, Pencil } from "lucide-react";
+import { Plus } from "lucide-react";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { AddRoleDialog } from "./AddRoleDialog";
 import { ProjectRoleCard } from "./ProjectRoleCard";
-import { DeleteCrewMemberButton } from "@/components/crew/edit/DeleteCrewMemberButton";
+import { supabase } from "@/integrations/supabase/client";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RoleSelectionActions } from "./RoleSelectionActions";
 
 interface RolesSectionProps {
   projectId: string;
@@ -17,7 +18,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState<any>(null);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
   const { data: roles } = useQuery({
     queryKey: ['crew-roles'],
@@ -60,55 +61,25 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   }) => {
     setLoading(true);
     try {
-      // First check if the role already exists
-      const { data: existingRole } = await supabase
+      const { error: insertError } = await supabase
         .from('project_roles')
-        .select('*')
-        .eq('project_id', projectId)
-        .eq('role_id', data.roleId)
-        .single();
-
-      if (existingRole) {
-        // Update existing role
-        const { error: updateError } = await supabase
-          .from('project_roles')
-          .update({
-            quantity: data.quantity,
-            daily_rate: data.dailyRate,
-            hourly_rate: data.hourlyRate,
-          })
-          .eq('project_id', projectId)
-          .eq('role_id', data.roleId);
-
-        if (updateError) throw updateError;
-        
-        toast({
-          title: "Success",
-          description: "Role updated in project",
+        .insert({
+          project_id: projectId,
+          role_id: data.roleId,
+          quantity: data.quantity,
+          daily_rate: data.dailyRate,
+          hourly_rate: data.hourlyRate,
         });
-      } else {
-        // Insert new role
-        const { error: insertError } = await supabase
-          .from('project_roles')
-          .insert({
-            project_id: projectId,
-            role_id: data.roleId,
-            quantity: data.quantity,
-            daily_rate: data.dailyRate,
-            hourly_rate: data.hourlyRate,
-          });
 
-        if (insertError) throw insertError;
-        
-        toast({
-          title: "Success",
-          description: "Role added to project",
-        });
-      }
+      if (insertError) throw insertError;
+      
+      toast({
+        title: "Success",
+        description: "Role added to project",
+      });
       
       await refetchProjectRoles();
       setOpen(false);
-      setSelectedRole(null);
     } catch (error) {
       console.error('Error adding role:', error);
       toast({
@@ -136,6 +107,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
         description: "Role deleted from project",
       });
 
+      setSelectedItems([]);
       await refetchProjectRoles();
     } catch (error) {
       console.error('Error deleting role:', error);
@@ -147,40 +119,57 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     }
   };
 
-  const handleEditRole = (role: any) => {
-    setSelectedRole(role);
-    setOpen(true);
+  const handleEditRole = (roleId: string) => {
+    const role = projectRoles?.find(r => r.role_id === roleId);
+    if (role) {
+      setOpen(true);
+    }
+  };
+
+  const handleItemSelect = (roleId: string) => {
+    setSelectedItems(prev => {
+      if (prev.includes(roleId)) {
+        return prev.filter(id => id !== roleId);
+      }
+      return [roleId];
+    });
   };
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Roles</h2>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm" className="gap-2">
-              <Plus className="h-4 w-4" />
-              Add role
-            </Button>
-          </DialogTrigger>
-          <AddRoleDialog
-            roles={roles}
-            onClose={() => {
-              setOpen(false);
-              setSelectedRole(null);
-            }}
-            onSubmit={handleAddRole}
-            loading={loading}
-            initialData={selectedRole}
+        <div className="flex items-center gap-2">
+          <RoleSelectionActions
+            selectedItems={selectedItems}
+            onEdit={handleEditRole}
+            onDelete={handleDeleteRole}
           />
-        </Dialog>
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add role
+              </Button>
+            </DialogTrigger>
+            <AddRoleDialog
+              roles={roles}
+              onClose={() => setOpen(false)}
+              onSubmit={handleAddRole}
+              loading={loading}
+            />
+          </Dialog>
+        </div>
       </div>
 
-      {/* Project Roles Display */}
       <div className="bg-zinc-900/50 rounded-lg p-4">
         <div className="grid gap-2">
           {projectRoles?.map((projectRole) => (
-            <div key={projectRole.id} className="flex items-center gap-2">
+            <div key={projectRole.id} className="flex items-center gap-4">
+              <Checkbox
+                checked={selectedItems.includes(projectRole.role_id)}
+                onCheckedChange={() => handleItemSelect(projectRole.role_id)}
+              />
               <div className="flex-grow">
                 <ProjectRoleCard
                   name={projectRole.crew_roles.name}
@@ -188,23 +177,6 @@ export function RolesSection({ projectId }: RolesSectionProps) {
                   quantity={projectRole.quantity}
                   dailyRate={projectRole.daily_rate}
                   hourlyRate={projectRole.hourly_rate}
-                />
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleEditRole({
-                    roleId: projectRole.role_id,
-                    quantity: projectRole.quantity,
-                    dailyRate: projectRole.daily_rate,
-                    hourlyRate: projectRole.hourly_rate,
-                  })}
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <DeleteCrewMemberButton
-                  onDelete={() => handleDeleteRole(projectRole.role_id)}
                 />
               </div>
             </div>
