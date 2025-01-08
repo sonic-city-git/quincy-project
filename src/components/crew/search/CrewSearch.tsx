@@ -14,7 +14,7 @@ export function CrewSearch({ searchTerm, onSearchChange }: CrewSearchProps) {
         placeholder="Search crew..."
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="pl-8 w-[200px]"
+        className="pl-8"
       />
     </div>
   );
