@@ -1,47 +1,30 @@
 import { useState, useEffect } from "react";
 import { CalendarEvent, EventType } from "@/types/events";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useCalendarDate } from "@/hooks/useCalendarDate";
+import { formatDatabaseDate } from "@/utils/dateFormatters";
+import { fetchProjectEvents, insertEvent, updateEventInDb } from "@/utils/eventDatabase";
 
 export const useCalendarEvents = (projectId: string | undefined) => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const { toast } = useToast();
-  const { normalizeDate } = useCalendarDate();
 
   useEffect(() => {
-    const fetchEvents = async () => {
+    const loadEvents = async () => {
       if (!projectId) return;
 
-      console.log('Fetching events for project:', projectId);
-
-      const { data, error } = await supabase
-        .from('project_events')
-        .select('*')
-        .eq('project_id', projectId);
-
-      if (error) {
-        console.error('Error fetching events:', error);
+      try {
+        const fetchedEvents = await fetchProjectEvents(projectId);
+        setEvents(fetchedEvents);
+      } catch (error) {
         toast({
           title: "Error",
           description: "Failed to load calendar events",
           variant: "destructive",
         });
-        return;
-      }
-
-      if (data) {
-        console.log('Fetched events:', data);
-        const parsedEvents = data.map(event => ({
-          date: new Date(event.date),
-          name: event.name,
-          type: event.type as EventType
-        }));
-        setEvents(parsedEvents);
       }
     };
 
-    fetchEvents();
+    loadEvents();
   }, [projectId, toast]);
 
   const addEvent = async (date: Date, eventName: string, eventType: EventType) => {
@@ -49,29 +32,24 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       throw new Error('Project ID is missing');
     }
 
-    // Format date as YYYY-MM-DD for database
-    const formattedDate = date.toISOString().split('T')[0];
-    
-    console.log('Adding event:', {
-      project_id: projectId,
-      date: formattedDate,
-      name: eventName,
-      type: eventType
-    });
+    try {
+      const newEventData = await insertEvent(projectId, date, eventName, eventType);
+      
+      const newEvent: CalendarEvent = {
+        date: new Date(newEventData.date),
+        name: newEventData.name,
+        type: newEventData.type as EventType
+      };
 
-    const { data, error } = await supabase
-      .from('project_events')
-      .insert([{
-        project_id: projectId,
-        date: formattedDate,
-        name: eventName.trim() || eventType,
-        type: eventType
-      }])
-      .select()
-      .single();
+      setEvents(prev => [...prev, newEvent]);
+      
+      toast({
+        title: "Success",
+        description: "Event added successfully",
+      });
 
-    if (error) {
-      console.error('Error adding event:', error);
+      return newEvent;
+    } catch (error) {
       toast({
         title: "Error",
         description: "Failed to add event",
@@ -79,41 +57,27 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       });
       throw error;
     }
-
-    console.log('Event added successfully:', data);
-
-    const newEvent: CalendarEvent = {
-      date: new Date(data.date),
-      name: data.name,
-      type: data.type as EventType
-    };
-
-    setEvents(prev => [...prev, newEvent]);
-    
-    toast({
-      title: "Success",
-      description: "Event added successfully",
-    });
-
-    return newEvent;
   };
 
   const updateEvent = async (updatedEvent: CalendarEvent) => {
     if (!projectId) throw new Error('Project ID is missing');
 
-    const formattedDate = updatedEvent.date.toISOString().split('T')[0];
+    try {
+      await updateEventInDb(projectId, updatedEvent);
 
-    const { error } = await supabase
-      .from('project_events')
-      .update({
-        name: updatedEvent.name.trim() || updatedEvent.type,
-        type: updatedEvent.type
-      })
-      .eq('project_id', projectId)
-      .eq('date', formattedDate);
+      setEvents(prev => 
+        prev.map(event => 
+          formatDatabaseDate(event.date) === formatDatabaseDate(updatedEvent.date)
+            ? { ...updatedEvent, name: updatedEvent.name.trim() || updatedEvent.type }
+            : event
+        )
+      );
 
-    if (error) {
-      console.error('Error updating event:', error);
+      toast({
+        title: "Success",
+        description: "Event updated successfully",
+      });
+    } catch (error) {
       toast({
         title: "Error",
         description: "Failed to update event",
@@ -121,25 +85,12 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       });
       throw error;
     }
-
-    setEvents(prev => 
-      prev.map(event => 
-        event.date.toISOString().split('T')[0] === formattedDate
-          ? { ...updatedEvent, name: updatedEvent.name.trim() || updatedEvent.type }
-          : event
-      )
-    );
-
-    toast({
-      title: "Success",
-      description: "Event updated successfully",
-    });
   };
 
   const findEvent = (date: Date) => {
-    const searchDate = date.toISOString().split('T')[0];
+    const searchDate = formatDatabaseDate(date);
     return events.find(event => 
-      event.date.toISOString().split('T')[0] === searchDate
+      formatDatabaseDate(event.date) === searchDate
     );
   };
 
