@@ -4,6 +4,7 @@ import { CrewTable } from "./crew/CrewTable";
 import { addDays, subDays } from "date-fns";
 import { EditCrewMemberDialog } from "./crew/EditCrewMemberDialog";
 import { useCrewManagement } from "@/hooks/useCrewManagement";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function CrewList() {
   const {
@@ -52,7 +53,7 @@ export function CrewList() {
         />
       </div>
 
-      <div className="bg-zinc-900 rounded-md">
+      <div className="bg-zinc-900 rounded-md flex flex-col">
         <div className="h-[48px] border-b border-zinc-800/50">
           <div className={`h-full flex items-center justify-between px-2 transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
             <div className="flex items-center gap-2">
@@ -68,19 +69,23 @@ export function CrewList() {
           </div>
         </div>
 
-        <CrewTable 
-          crewMembers={filteredCrewMembers}
-          selectedItems={selectedItems}
-          onItemSelect={handleItemSelect}
-        />
+        <ScrollArea className="h-[calc(100vh-26rem)]">
+          <CrewTable 
+            crewMembers={filteredCrewMembers}
+            selectedItems={selectedItems}
+            onItemSelect={handleItemSelect}
+          />
+        </ScrollArea>
 
-        <CrewTimeline 
-          startDate={startDate}
-          daysToShow={daysToShow}
-          selectedCrew={selectedCrew}
-          onPreviousPeriod={handlePreviousPeriod}
-          onNextPeriod={handleNextPeriod}
-        />
+        <div className="border-t border-zinc-800/50">
+          <CrewTimeline 
+            startDate={startDate}
+            daysToShow={daysToShow}
+            selectedCrew={selectedCrew}
+            onPreviousPeriod={handlePreviousPeriod}
+            onNextPeriod={handleNextPeriod}
+          />
+        </div>
       </div>
     </div>
   );
