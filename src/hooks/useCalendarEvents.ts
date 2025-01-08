@@ -27,6 +27,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       }
 
       if (data) {
+        console.log('Fetched events:', data);
         const parsedEvents = data.map(event => ({
           date: new Date(event.date),
           name: event.name,
@@ -40,21 +41,30 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   }, [projectId, toast]);
 
   const addEvent = async (date: Date, eventName: string, eventType: EventType) => {
-    if (!projectId) return;
+    if (!projectId) {
+      console.error('No project ID provided');
+      return;
+    }
 
-    console.log('Adding event:', { date, eventName, eventType, projectId });
-    
     const formattedDate = date.toISOString().split('T')[0];
-    console.log('Formatted date:', formattedDate);
+    
+    console.log('Adding event:', {
+      project_id: projectId,
+      date: formattedDate,
+      name: eventName,
+      type: eventType
+    });
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('project_events')
       .insert({
         project_id: projectId,
         date: formattedDate,
         name: eventName.trim() || eventType,
         type: eventType
-      });
+      })
+      .select()
+      .single();
 
     if (error) {
       console.error('Error adding event:', error);
@@ -66,11 +76,15 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       return;
     }
 
-    setEvents(prev => [...prev, { 
-      date, 
-      name: eventName.trim() || eventType, 
-      type: eventType 
-    }]);
+    console.log('Successfully added event:', data);
+    
+    const newEvent: CalendarEvent = {
+      date: new Date(data.date),
+      name: data.name,
+      type: data.type as EventType
+    };
+
+    setEvents(prev => [...prev, newEvent]);
 
     toast({
       title: "Success",
