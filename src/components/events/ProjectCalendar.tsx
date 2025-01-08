@@ -16,7 +16,7 @@ interface ProjectCalendarProps {
 }
 
 export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
-  const { projectId } = useParams();
+  const { projectId } = useParams<{ projectId: string }>();
   const { toast } = useToast();
   const { events, addEvent, updateEvent, findEvent } = useCalendarEvents(projectId);
   const { normalizeDate } = useCalendarDate();
@@ -45,11 +45,21 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   };
 
   const handleEventSubmit = async (eventName: string, eventType: EventType) => {
-    if (!selectedDate || !projectId) {
-      console.error('Missing required data:', { selectedDate, projectId });
+    if (!selectedDate) {
+      console.error('Missing selectedDate:', selectedDate);
       toast({
         title: "Error",
-        description: "Missing required data to add event",
+        description: "No date selected",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!projectId) {
+      console.error('Missing projectId:', projectId);
+      toast({
+        title: "Error",
+        description: "Project ID is missing",
         variant: "destructive",
       });
       return;

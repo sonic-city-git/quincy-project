@@ -42,7 +42,9 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       }
     };
 
-    loadEvents();
+    if (projectId) {
+      loadEvents();
+    }
   }, [projectId, toast]);
 
   const addEvent = async (date: Date, eventName: string, eventType: EventType) => {
