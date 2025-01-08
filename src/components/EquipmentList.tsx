@@ -84,6 +84,29 @@ export function EquipmentList() {
     }
   };
 
+  const handleMigrateFolders = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('migrate-equipment-folders');
+      
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: data.message,
+      });
+
+      // Refresh the equipment list to show updated folder IDs
+      refetchEquipment();
+    } catch (error) {
+      console.error('Error migrating equipment folders:', error);
+      toast({
+        title: "Error",
+        description: "Failed to migrate equipment folders",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredEquipment = filterEquipment(equipment);
 
   const selectedEquipment = equipment
@@ -105,13 +128,20 @@ export function EquipmentList() {
           onFolderSelect={handleFolderSelect}
           onAddEquipment={handleAddEquipment}
         />
-        <Button 
-          variant="destructive"
-          onClick={handleDeleteSalesEquipment}
-          className="ml-4"
-        >
-          Delete Sales Equipment
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="secondary"
+            onClick={handleMigrateFolders}
+          >
+            Migrate Folders
+          </Button>
+          <Button 
+            variant="destructive"
+            onClick={handleDeleteSalesEquipment}
+          >
+            Delete Sales Equipment
+          </Button>
+        </div>
       </div>
 
       <div className="bg-zinc-900 rounded-md">
