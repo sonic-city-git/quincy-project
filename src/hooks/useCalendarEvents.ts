@@ -43,12 +43,15 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     if (!projectId) return;
 
     console.log('Adding event:', { date, eventName, eventType, projectId });
+    
+    const formattedDate = date.toISOString().split('T')[0];
+    console.log('Formatted date:', formattedDate);
 
     const { error } = await supabase
       .from('project_events')
       .insert({
         project_id: projectId,
-        date: date.toISOString().split('T')[0],
+        date: formattedDate,
         name: eventName.trim() || eventType,
         type: eventType
       });
@@ -63,7 +66,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       return;
     }
 
-    setEvents([...events, { 
+    setEvents(prev => [...prev, { 
       date, 
       name: eventName.trim() || eventType, 
       type: eventType 
@@ -78,6 +81,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   const updateEvent = async (updatedEvent: CalendarEvent) => {
     if (!projectId) return;
 
+    const formattedDate = updatedEvent.date.toISOString().split('T')[0];
+
     const { error } = await supabase
       .from('project_events')
       .update({
@@ -85,7 +90,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
         type: updatedEvent.type
       })
       .eq('project_id', projectId)
-      .eq('date', updatedEvent.date.toISOString().split('T')[0]);
+      .eq('date', formattedDate);
 
     if (error) {
       console.error('Error updating event:', error);
@@ -97,12 +102,11 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       return;
     }
 
-    const updatedEvents = events.map(event => 
+    setEvents(prev => prev.map(event => 
       event.date.toDateString() === updatedEvent.date.toDateString() 
         ? { ...updatedEvent, name: updatedEvent.name.trim() || updatedEvent.type }
         : event
-    );
-    setEvents(updatedEvents);
+    ));
 
     toast({
       title: "Success",

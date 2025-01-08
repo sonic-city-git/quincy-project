@@ -15,7 +15,7 @@ interface ProjectCalendarProps {
 
 export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   const { projectId } = useParams();
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date>();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent>();
@@ -23,29 +23,31 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   const { events, addEvent, updateEvent, findEvent } = useCalendarEvents(projectId);
 
   const handleSelect = (date: Date | undefined) => {
-    if (date) {
-      const event = findEvent(date);
-      
-      if (event) {
-        setSelectedEvent(event);
-        setIsEditDialogOpen(true);
-      } else {
-        setSelectedDate(date);
-        setIsAddDialogOpen(true);
-      }
+    if (!date) return;
+    
+    const event = findEvent(date);
+    if (event) {
+      setSelectedEvent(event);
+      setIsEditDialogOpen(true);
+    } else {
+      setSelectedDate(date);
+      setIsAddDialogOpen(true);
     }
   };
 
-  const handleEventSubmit = (eventName: string, eventType: EventType) => {
-    if (selectedDate) {
-      addEvent(selectedDate, eventName, eventType);
-      setIsAddDialogOpen(false);
-    }
+  const handleEventSubmit = async (eventName: string, eventType: EventType) => {
+    if (!selectedDate) return;
+    
+    console.log('Submitting event:', { eventName, eventType, selectedDate });
+    await addEvent(selectedDate, eventName, eventType);
+    setIsAddDialogOpen(false);
+    setSelectedDate(undefined);
   };
 
-  const handleEventUpdate = (updatedEvent: CalendarEvent) => {
-    updateEvent(updatedEvent);
+  const handleEventUpdate = async (updatedEvent: CalendarEvent) => {
+    await updateEvent(updatedEvent);
     setIsEditDialogOpen(false);
+    setSelectedEvent(undefined);
   };
 
   return (
