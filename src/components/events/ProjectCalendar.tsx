@@ -16,8 +16,7 @@ interface ProjectCalendarProps {
 }
 
 export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
-  const params = useParams<{ projectId: string }>();
-  const projectId = params.projectId;
+  const { projectId } = useParams<{ projectId: string }>();
   const { toast } = useToast();
   const { events, addEvent, updateEvent, findEvent } = useCalendarEvents(projectId);
   const { normalizeDate } = useCalendarDate();
