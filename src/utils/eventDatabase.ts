@@ -37,12 +37,12 @@ export const insertEvent = async (
 
   const { data, error } = await supabase
     .from('project_events')
-    .insert([{
+    .insert({
       project_id: projectId,
       date: formattedDate,
       name: eventName.trim() || eventType,
       type: eventType
-    }])
+    })
     .select()
     .single();
 

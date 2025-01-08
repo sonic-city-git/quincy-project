@@ -16,6 +16,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
         const fetchedEvents = await fetchProjectEvents(projectId);
         setEvents(fetchedEvents);
       } catch (error) {
+        console.error('Error loading events:', error);
         toast({
           title: "Error",
           description: "Failed to load calendar events",
@@ -50,6 +51,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
       return newEvent;
     } catch (error) {
+      console.error('Error adding event:', error);
       toast({
         title: "Error",
         description: "Failed to add event",
@@ -68,7 +70,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       setEvents(prev => 
         prev.map(event => 
           formatDatabaseDate(event.date) === formatDatabaseDate(updatedEvent.date)
-            ? { ...updatedEvent, name: updatedEvent.name.trim() || updatedEvent.type }
+            ? updatedEvent
             : event
         )
       );
@@ -78,6 +80,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
         description: "Event updated successfully",
       });
     } catch (error) {
+      console.error('Error updating event:', error);
       toast({
         title: "Error",
         description: "Failed to update event",
@@ -88,9 +91,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   };
 
   const findEvent = (date: Date) => {
-    const searchDate = formatDatabaseDate(date);
     return events.find(event => 
-      formatDatabaseDate(event.date) === searchDate
+      formatDatabaseDate(event.date) === formatDatabaseDate(date)
     );
   };
 

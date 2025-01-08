@@ -46,7 +46,6 @@ export const AddEventDialog = ({
       await onSubmit(finalEventName, eventType);
       setEventName("");
       setEventType("Show");
-      onOpenChange(false);
     } catch (error) {
       console.error('Error submitting event:', error);
     } finally {
