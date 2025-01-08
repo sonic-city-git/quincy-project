@@ -9,7 +9,6 @@ interface EquipmentSelectionHeaderProps {
   onSearchChange: (value: string) => void;
   onEditEquipment: (equipment: Equipment) => void;
   onDeleteEquipment: () => void;
-  onAddEquipment: (equipment: Equipment) => void;
 }
 
 export function EquipmentSelectionHeader({
@@ -19,7 +18,6 @@ export function EquipmentSelectionHeader({
   onSearchChange,
   onEditEquipment,
   onDeleteEquipment,
-  onAddEquipment,
 }: EquipmentSelectionHeaderProps) {
   return (
     <div className="p-4 border-b flex justify-between items-center gap-4">
@@ -30,7 +28,6 @@ export function EquipmentSelectionHeader({
       <EquipmentActions
         selectedItems={selectedItems}
         equipment={equipment}
-        onAddEquipment={onAddEquipment}
         onEditEquipment={onEditEquipment}
         onDeleteEquipment={onDeleteEquipment}
       />
