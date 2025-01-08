@@ -1,6 +1,6 @@
 import { Equipment } from "@/types/equipment";
 import { EquipmentHeader } from "../EquipmentHeader";
-import { EquipmentSelectionHeader } from "../EquipmentSelectionHeader";
+import { EquipmentSelectionActions } from "../actions/EquipmentSelectionActions";
 import { EquipmentTable } from "../EquipmentTable";
 import { EquipmentTimeline } from "../EquipmentTimeline";
 import { useRef } from "react";
@@ -60,7 +60,7 @@ export function EquipmentList({
 
       <div className="flex-1 flex flex-col bg-zinc-900 rounded-md mt-4 overflow-hidden">
         <div className="flex-1 overflow-auto">
-          <EquipmentSelectionHeader
+          <EquipmentSelectionActions
             selectedItems={selectedItems}
             equipment={equipment}
             onEditEquipment={onEditEquipment}
