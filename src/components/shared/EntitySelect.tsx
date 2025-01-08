@@ -12,6 +12,7 @@ interface EntitySelectProps {
   onValueChange: (value: string) => void;
   placeholder: string;
   isLoading?: boolean;
+  required?: boolean;
 }
 
 export function EntitySelect({ 
@@ -19,10 +20,11 @@ export function EntitySelect({
   value, 
   onValueChange, 
   placeholder,
-  isLoading 
+  isLoading,
+  required 
 }: EntitySelectProps) {
   return (
-    <Select value={value} onValueChange={onValueChange}>
+    <Select value={value} onValueChange={onValueChange} required={required}>
       <SelectTrigger className="w-full">
         <SelectValue placeholder={isLoading ? `Loading ${placeholder}...` : `Select ${placeholder}`} />
       </SelectTrigger>
