@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Plus } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { AddSerialNumberDialog } from "./AddSerialNumberDialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SerialNumber {
   number: string;
@@ -33,14 +34,46 @@ export function SerialNumbersSection({
               <p className="font-medium">{sn.number}</p>
               {sn.notes && <p className="text-sm text-muted-foreground">{sn.notes}</p>}
             </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onRemoveSerialNumber(index)}
-            >
-              Remove
-            </Button>
+            {sn.number && (
+              <div className="flex gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          // Edit functionality will be implemented here
+                          console.log('Edit serial number:', sn.number);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Edit serial number</p>
+                    </TooltipContent>
+                  </Tooltip>
+
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => onRemoveSerialNumber(index)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Delete serial number</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )}
           </div>
         ))}
         {serialNumbers.length === 0 && (
