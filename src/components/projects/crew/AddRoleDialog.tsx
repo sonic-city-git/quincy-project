@@ -1,7 +1,4 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   DialogContent,
   DialogDescription,
@@ -9,6 +6,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CrewRole } from "@/types/crew";
+import { useState } from "react";
+import { RoleFormFields } from "./RoleFormFields";
 
 interface AddRoleDialogProps {
   roles?: CrewRole[];
@@ -82,62 +81,19 @@ export function AddRoleDialog({
           }
         </DialogDescription>
       </DialogHeader>
-      <div className="space-y-4 py-4">
-        <div className="space-y-2">
-          <Label htmlFor="role" className="after:content-['*'] after:ml-0.5 after:text-red-500">Role</Label>
-          <select
-            id="role"
-            className="w-full p-2 rounded-md border border-zinc-800 bg-zinc-950"
-            value={selectedRole}
-            onChange={(e) => setSelectedRole(e.target.value)}
-            disabled={editMode}
-          >
-            <option value="">Select a role</option>
-            {roles?.map((role) => (
-              <option key={role.id} value={role.id}>
-                {role.name}
-              </option>
-            ))}
-          </select>
-          {errors.role && <p className="text-sm text-red-500">{errors.role}</p>}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="quantity">Quantity</Label>
-          <Input
-            id="quantity"
-            type="number"
-            min="1"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="dailyRate" className="after:content-['*'] after:ml-0.5 after:text-red-500">Daily Rate</Label>
-          <Input
-            id="dailyRate"
-            type="number"
-            min="0"
-            step="0.01"
-            value={dailyRate}
-            onChange={(e) => setDailyRate(e.target.value)}
-            placeholder="Enter daily rate"
-          />
-          {errors.dailyRate && <p className="text-sm text-red-500">{errors.dailyRate}</p>}
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="hourlyRate" className="after:content-['*'] after:ml-0.5 after:text-red-500">Hourly Rate</Label>
-          <Input
-            id="hourlyRate"
-            type="number"
-            min="0"
-            step="0.01"
-            value={hourlyRate}
-            onChange={(e) => setHourlyRate(e.target.value)}
-            placeholder="Enter hourly rate"
-          />
-          {errors.hourlyRate && <p className="text-sm text-red-500">{errors.hourlyRate}</p>}
-        </div>
-      </div>
+      <RoleFormFields
+        roles={roles}
+        selectedRole={selectedRole}
+        quantity={quantity}
+        dailyRate={dailyRate}
+        hourlyRate={hourlyRate}
+        errors={errors}
+        editMode={editMode}
+        onRoleChange={setSelectedRole}
+        onQuantityChange={setQuantity}
+        onDailyRateChange={setDailyRate}
+        onHourlyRateChange={setHourlyRate}
+      />
       <div className="flex justify-end gap-2">
         <Button variant="outline" onClick={onClose}>
           Cancel
