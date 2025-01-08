@@ -1,49 +1,33 @@
-import { EquipmentFolder } from "@/types/equipment";
-import { Folder } from "@/types/folders";
-import { EQUIPMENT_FOLDERS } from "@/data/equipmentFolders";
+import { supabase } from "@/integrations/supabase/client";
 
-export const isItemInFolder = (itemFolderId: string | undefined, selectedFolderId: string | null): boolean => {
-  if (!selectedFolderId || !itemFolderId) return false;
+export const sortFoldersByName = (folders: any[]) => {
+  return [...folders].sort((a, b) => a.name.localeCompare(b.name));
+};
 
-  // Direct match
-  if (itemFolderId === selectedFolderId) return true;
+export const isItemInFolder = async (itemFolderId: string | undefined | null, selectedFolderId: string | null): Promise<boolean> => {
+  if (!itemFolderId || !selectedFolderId) {
+    return !selectedFolderId && !itemFolderId;
+  }
 
-  // Check if the item's folder is a subfolder of the selected folder
-  const findParentFolder = (folders: EquipmentFolder[], targetId: string): boolean => {
-    for (const folder of folders) {
-      if (folder.id === selectedFolderId) {
-        return !!folder.subfolders?.some(sub => sub.id === targetId);
-      }
-      if (folder.subfolders) {
-        if (findParentFolder(folder.subfolders, targetId)) {
-          return true;
-        }
-      }
-    }
+  // If the folder IDs match directly
+  if (itemFolderId === selectedFolderId) {
+    return true;
+  }
+
+  // Check if the item's folder is a child of the selected folder
+  const { data: folders } = await supabase
+    .from('folders')
+    .select('*');
+
+  if (!folders) return false;
+
+  const findParentFolders = (folderId: string, parentId: string): boolean => {
+    const folder = folders.find(f => f.id === folderId);
+    if (!folder) return false;
+    if (folder.parent_id === parentId) return true;
+    if (folder.parent_id) return findParentFolders(folder.parent_id, parentId);
     return false;
   };
 
-  return findParentFolder(EQUIPMENT_FOLDERS, itemFolderId);
-};
-
-export const getFolderPath = (folderId: string | null, folders: EquipmentFolder[]): string => {
-  if (!folderId) return 'All folders';
-
-  for (const folder of folders) {
-    if (folder.id === folderId) {
-      return folder.name;
-    }
-    if (folder.subfolders) {
-      for (const subfolder of folder.subfolders) {
-        if (subfolder.id === folderId) {
-          return `${folder.name} -> ${subfolder.name}`;
-        }
-      }
-    }
-  }
-  return 'All folders';
-};
-
-export const sortFoldersByName = (folders: Folder[]): Folder[] => {
-  return [...folders].sort((a, b) => a.name.localeCompare(b.name));
+  return findParentFolders(itemFolderId, selectedFolderId);
 };
