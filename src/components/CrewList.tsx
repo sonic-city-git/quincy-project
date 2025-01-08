@@ -65,6 +65,8 @@ export function CrewList() {
           selectedRoles={selectedRoles}
           allRoles={allRoles}
           onRoleSelect={handleRoleSelect}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
         />
       </div>
 
@@ -81,10 +83,6 @@ export function CrewList() {
                 />
               )}
             </div>
-            <CrewSearch 
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-            />
           </div>
         </div>
 
