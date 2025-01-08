@@ -24,6 +24,7 @@ export function FolderSelect({
   showAllFolders = true,
 }: FolderSelectProps) {
   const [folders, setFolders] = useState<Folder[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchFolders();
@@ -49,17 +50,22 @@ export function FolderSelect({
   }, []);
 
   const fetchFolders = async () => {
-    const { data, error } = await supabase
-      .from('folders')
-      .select('*')
-      .order('name');
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('folders')
+        .select('*')
+        .order('name');
 
-    if (error) {
-      console.error('Error fetching folders:', error);
-      return;
+      if (error) {
+        console.error('Error fetching folders:', error);
+        return;
+      }
+
+      setFolders(data || []);
+    } finally {
+      setLoading(false);
     }
-
-    setFolders(data);
   };
 
   const getFolderPath = (folderId: string | null): string => {
@@ -101,13 +107,13 @@ export function FolderSelect({
       required={required}
     >
       <SelectTrigger className="w-full">
-        <SelectValue placeholder="Select folder">
+        <SelectValue placeholder={loading ? "Loading folders..." : "Select folder"}>
           {getFolderPath(selectedFolder)}
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
         <ScrollArea className="h-[400px]">
-          <SelectItem value="all">All folders</SelectItem>
+          {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
           <SelectItem value="none">No folder</SelectItem>
           {renderFolderOptions()}
         </ScrollArea>
