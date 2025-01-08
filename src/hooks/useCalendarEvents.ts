@@ -43,10 +43,18 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   const addEvent = async (date: Date, eventName: string, eventType: EventType) => {
     if (!projectId) {
       console.error('No project ID provided');
+      toast({
+        title: "Error",
+        description: "Project ID is missing",
+        variant: "destructive",
+      });
       return;
     }
 
-    const formattedDate = date.toISOString().split('T')[0];
+    // Format date to YYYY-MM-DD
+    const formattedDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000))
+      .toISOString()
+      .split('T')[0];
     
     console.log('Adding event:', {
       project_id: projectId,
@@ -95,7 +103,9 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   const updateEvent = async (updatedEvent: CalendarEvent) => {
     if (!projectId) return;
 
-    const formattedDate = updatedEvent.date.toISOString().split('T')[0];
+    const formattedDate = new Date(updatedEvent.date.getTime() - (updatedEvent.date.getTimezoneOffset() * 60000))
+      .toISOString()
+      .split('T')[0];
 
     const { error } = await supabase
       .from('project_events')

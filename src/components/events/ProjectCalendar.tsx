@@ -25,12 +25,19 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   const handleSelect = (date: Date | undefined) => {
     if (!date) return;
     
-    const event = findEvent(date);
+    // Normalize the date to midnight UTC
+    const normalizedDate = new Date(Date.UTC(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    ));
+    
+    const event = findEvent(normalizedDate);
     if (event) {
       setSelectedEvent(event);
       setIsEditDialogOpen(true);
     } else {
-      setSelectedDate(date);
+      setSelectedDate(normalizedDate);
       setIsAddDialogOpen(true);
     }
   };
