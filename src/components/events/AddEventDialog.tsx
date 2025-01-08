@@ -37,12 +37,17 @@ export const AddEventDialog = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+
     setIsSubmitting(true);
     try {
+      console.log('Submitting event:', { eventName, eventType, date });
       const finalEventName = eventName.trim() || eventType;
       await onSubmit(finalEventName, eventType);
       setEventName("");
       setEventType("Show");
+    } catch (error) {
+      console.error('Error in handleSubmit:', error);
     } finally {
       setIsSubmitting(false);
     }
@@ -87,7 +92,10 @@ export const AddEventDialog = ({
             </Select>
           </div>
           <div className="flex justify-end">
-            <Button type="submit" disabled={isSubmitting}>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+            >
               {isSubmitting ? "Adding..." : "Add Event"}
             </Button>
           </div>
