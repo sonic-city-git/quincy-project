@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { Folder } from "@/types/folders";
+import { EntitySelect } from "@/components/shared/EntitySelect";
 
 interface FolderSelectProps {
   selectedFolder: string | null;
@@ -81,38 +75,29 @@ export function FolderSelect({
     return folder.name;
   };
 
-  const renderFolderOptions = (parentId: string | null = null, level = 0) => {
+  const renderFolderOptions = (parentId: string | null = null, level = 0): Folder[] => {
     return folders
       .filter(folder => folder.parent_id === parentId)
       .sort((a, b) => a.name.localeCompare(b.name))
-      .map(folder => (
-        <div key={folder.id}>
-          <SelectItem
-            value={folder.id}
-            className={`${level > 0 ? "ml-4 italic" : "font-bold"}`}
-          >
-            {folder.name}
-          </SelectItem>
-          {renderFolderOptions(folder.id, level + 1)}
-        </div>
-      ));
+      .reduce((acc: Folder[], folder) => {
+        return [...acc, folder, ...renderFolderOptions(folder.id, level + 1)];
+      }, []);
   };
 
+  const allFolders = showAllFolders ? [{ id: 'all', name: 'All folders', parent_id: null }] : [];
+  const flattenedFolders = [...allFolders, ...renderFolderOptions()];
+
   return (
-    <Select
-      value={selectedFolder || "all"}
-      onValueChange={(value) => onFolderSelect(value === "all" ? null : value)}
-      required={required}
-    >
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder={loading ? "Loading folders..." : "Select folder"}>
-          {getFolderPath(selectedFolder)}
-        </SelectValue>
-      </SelectTrigger>
-      <SelectContent>
-        {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
-        {renderFolderOptions()}
-      </SelectContent>
-    </Select>
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">Folder</p>
+      <EntitySelect
+        entities={flattenedFolders}
+        value={selectedFolder || 'all'}
+        onValueChange={(value) => onFolderSelect(value === "all" ? null : value)}
+        placeholder={loading ? "Loading folders..." : "Select folder"}
+        isLoading={loading}
+        required={required}
+      />
+    </div>
   );
 }
