@@ -1,7 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus, X } from "lucide-react";
+import { Plus } from "lucide-react";
+import { AddSerialNumberDialog } from "./AddSerialNumberDialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface SerialNumber {
   number: string;
@@ -25,46 +26,36 @@ export function SerialNumbersSection({
   return (
     <div className="grid gap-2">
       <Label>Serial Numbers</Label>
-      {serialNumbers.map((sn, index) => (
-        <div key={index} className="grid gap-2 p-4 border rounded-lg">
-          <div className="flex gap-2">
-            <Input
-              placeholder={`Serial number ${index + 1}`}
-              value={sn.number}
-              onChange={(e) => onSerialNumberChange(index, "number", e.target.value)}
-              required
-            />
-            {serialNumbers.length > 1 && (
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                onClick={() => onRemoveSerialNumber(index)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
+      <ScrollArea className="h-[200px] border rounded-lg p-4">
+        {serialNumbers.map((sn, index) => (
+          <div key={index} className="flex items-center justify-between py-2 border-b last:border-0">
+            <div>
+              <p className="font-medium">{sn.number}</p>
+              {sn.notes && <p className="text-sm text-muted-foreground">{sn.notes}</p>}
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => onRemoveSerialNumber(index)}
+            >
+              Remove
+            </Button>
           </div>
+        ))}
+        {serialNumbers.length === 0 && (
+          <p className="text-sm text-muted-foreground text-center py-8">
+            No serial numbers added yet
+          </p>
+        )}
+      </ScrollArea>
+      
+      <AddSerialNumberDialog onAddSerialNumber={(number: string, notes: string) => {
+        onSerialNumberChange(serialNumbers.length, "number", number);
+        if (notes) onSerialNumberChange(serialNumbers.length, "notes", notes);
+        onAddSerialNumber();
+      }} />
 
-          <div className="grid gap-2">
-            <Label>Notes</Label>
-            <Input
-              placeholder="Optional notes"
-              value={sn.notes || ""}
-              onChange={(e) => onSerialNumberChange(index, "notes", e.target.value)}
-            />
-          </div>
-        </div>
-      ))}
-      <Button
-        type="button"
-        variant="outline"
-        onClick={onAddSerialNumber}
-        className="mt-2"
-      >
-        <Plus className="h-4 w-4 mr-2" />
-        Add Serial Number
-      </Button>
       <p className="text-sm text-muted-foreground">
         Stock: {serialNumbers.filter(sn => sn.number.trim() !== "").length} items
       </p>
