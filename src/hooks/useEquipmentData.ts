@@ -70,6 +70,8 @@ export function useEquipmentData() {
         title: "Equipment added",
         description: "New equipment has been added successfully",
       });
+      
+      fetchEquipment();
     } catch (error) {
       console.error('Error adding equipment:', error);
       toast({
@@ -101,6 +103,8 @@ export function useEquipmentData() {
         title: "Equipment updated",
         description: "Equipment has been updated successfully",
       });
+      
+      fetchEquipment();
     } catch (error) {
       console.error('Error updating equipment:', error);
       toast({
@@ -124,6 +128,8 @@ export function useEquipmentData() {
         title: "Equipment deleted",
         description: `${selectedItems.length} equipment item(s) have been removed`,
       });
+      
+      fetchEquipment();
     } catch (error) {
       console.error('Error deleting equipment:', error);
       toast({
@@ -168,5 +174,6 @@ export function useEquipmentData() {
     handleAddEquipment,
     handleEditEquipment,
     handleDeleteEquipment,
+    refetchEquipment: fetchEquipment,
   };
 }

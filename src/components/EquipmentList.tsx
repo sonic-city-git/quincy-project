@@ -8,18 +8,23 @@ import { EquipmentHeader } from "./equipment/EquipmentHeader";
 import { useEquipmentData } from "@/hooks/useEquipmentData";
 import { useEquipmentFilter } from "@/hooks/useEquipmentFilter";
 import { useEquipmentSelection } from "@/hooks/useEquipmentSelection";
+import { Button } from "./ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export function EquipmentList() {
   const [startDate, setStartDate] = useState(new Date());
   const containerRef = useRef<HTMLDivElement>(null);
   const daysToShow = 14;
+  const { toast } = useToast();
 
   const { 
     equipment, 
     isLoading, 
     handleAddEquipment, 
     handleEditEquipment, 
-    handleDeleteEquipment 
+    handleDeleteEquipment,
+    refetchEquipment 
   } = useEquipmentData();
 
   const {
@@ -56,6 +61,29 @@ export function EquipmentList() {
     setStartDate(prev => addDays(prev, daysToShow));
   };
 
+  const handleDeleteSalesEquipment = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-sales-equipment');
+      
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: data.message,
+      });
+
+      // Refresh the equipment list
+      refetchEquipment();
+    } catch (error) {
+      console.error('Error deleting sales equipment:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete sales equipment",
+        variant: "destructive",
+      });
+    }
+  };
+
   const filteredEquipment = filterEquipment(equipment);
 
   const selectedEquipment = equipment
@@ -71,11 +99,20 @@ export function EquipmentList() {
 
   return (
     <div className="space-y-4" ref={containerRef}>
-      <EquipmentHeader
-        selectedFolder={selectedFolder}
-        onFolderSelect={handleFolderSelect}
-        onAddEquipment={handleAddEquipment}
-      />
+      <div className="flex justify-between items-center">
+        <EquipmentHeader
+          selectedFolder={selectedFolder}
+          onFolderSelect={handleFolderSelect}
+          onAddEquipment={handleAddEquipment}
+        />
+        <Button 
+          variant="destructive"
+          onClick={handleDeleteSalesEquipment}
+          className="ml-4"
+        >
+          Delete Sales Equipment
+        </Button>
+      </div>
 
       <div className="bg-zinc-900 rounded-md">
         <EquipmentSelectionHeader
