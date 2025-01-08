@@ -29,9 +29,9 @@ export function EditCrewMemberDialog({
 
   if (!crewMember) return null;
 
-  // Initialize selectedTags from the crew member's existing roles
+  // Initialize selectedTags safely handling null roles
   const [selectedTags, setSelectedTags] = useState<string[]>(
-    crewMember.role.split(", ").map(role => role.toLowerCase())
+    crewMember.role ? crewMember.role.split(", ").map(role => role.toLowerCase()) : []
   );
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -41,7 +41,7 @@ export function EditCrewMemberDialog({
     const editedMember: CrewMember = {
       id: crewMember.id,
       name: `${formData.get("firstName")} ${formData.get("lastName")}`,
-      role: selectedTags.map(tag => tag.toUpperCase()).join(", "),
+      role: selectedTags.length > 0 ? selectedTags.map(tag => tag.toUpperCase()).join(", ") : null,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
       folder: formData.get("folder") as string,
