@@ -11,7 +11,7 @@ interface CalendarDayContentProps {
   date: Date;
   event?: CalendarEvent;
   eventColors: Record<EventType, string>;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
   className?: string;
 }
 
