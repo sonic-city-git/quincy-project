@@ -111,10 +111,10 @@ export function FolderSelect({
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        <ScrollArea className="h-[200px]">
+        <div className="h-[200px] overflow-y-auto">
           {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
           {renderFolderOptions()}
-        </ScrollArea>
+        </div>
       </SelectContent>
     </Select>
   );
