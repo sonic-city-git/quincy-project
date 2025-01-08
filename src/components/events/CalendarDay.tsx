@@ -6,6 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useCalendarDate } from "@/hooks/useCalendarDate";
 
 interface CalendarDayProps extends Omit<DayProps, 'date'> {
   date: Date;
@@ -23,9 +24,11 @@ export const CalendarDay = ({
   className,
   ...props 
 }: CalendarDayProps) => {
+  const { normalizeDate } = useCalendarDate();
+  
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    onSelect(dayDate);
+    onSelect(normalizeDate(dayDate));
   };
 
   return (

@@ -46,7 +46,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       throw new Error('Project ID is missing');
     }
 
-    const formattedDate = date.toISOString().split('T')[0];
+    const normalizedDate = normalizeDate(date);
+    const formattedDate = normalizedDate.toISOString().split('T')[0];
     
     console.log('Adding event:', {
       project_id: projectId,
@@ -131,7 +132,10 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   };
 
   const findEvent = (date: Date) => {
-    return events.find(e => e.date.toDateString() === date.toDateString());
+    const normalizedSearchDate = normalizeDate(date);
+    return events.find(event => 
+      normalizeDate(event.date).toDateString() === normalizedSearchDate.toDateString()
+    );
   };
 
   return {
