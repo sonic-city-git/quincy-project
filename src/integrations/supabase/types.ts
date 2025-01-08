@@ -83,11 +83,9 @@ export type Database = {
           Folder: string | null
           folder_id: string | null
           id: string
-          "Internal remark": string | null
           Name: string | null
+          Notes: string | null
           Price: number | null
-          "Serial number": string | null
-          "Serial number remark": string | null
           Stock: number | null
           "Stock calculation method": string | null
           Weight: number | null
@@ -99,11 +97,9 @@ export type Database = {
           Folder?: string | null
           folder_id?: string | null
           id?: string
-          "Internal remark"?: string | null
           Name?: string | null
+          Notes?: string | null
           Price?: number | null
-          "Serial number"?: string | null
-          "Serial number remark"?: string | null
           Stock?: number | null
           "Stock calculation method"?: string | null
           Weight?: number | null
@@ -115,11 +111,9 @@ export type Database = {
           Folder?: string | null
           folder_id?: string | null
           id?: string
-          "Internal remark"?: string | null
           Name?: string | null
+          Notes?: string | null
           Price?: number | null
-          "Serial number"?: string | null
-          "Serial number remark"?: string | null
           Stock?: number | null
           "Stock calculation method"?: string | null
           Weight?: number | null
