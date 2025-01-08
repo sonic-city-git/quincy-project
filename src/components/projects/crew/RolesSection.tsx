@@ -20,6 +20,13 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [editMode, setEditMode] = useState(false);
+  const [editValues, setEditValues] = useState<{
+    roleId: string;
+    quantity: number;
+    dailyRate: number;
+    hourlyRate: number;
+  } | null>(null);
 
   const { data: roles } = useQuery({
     queryKey: ['crew-roles'],
@@ -62,7 +69,6 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   }) => {
     setLoading(true);
     try {
-      // Check if role already exists for this project
       const existingRole = projectRoles?.find(role => role.role_id === data.roleId);
       
       if (existingRole) {
@@ -106,6 +112,26 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     }
   };
 
+  const handleEditRole = (roleId: string) => {
+    const role = projectRoles?.find(r => r.role_id === roleId);
+    if (role) {
+      setEditMode(true);
+      setEditValues({
+        roleId: role.role_id,
+        quantity: role.quantity,
+        dailyRate: Number(role.daily_rate),
+        hourlyRate: Number(role.hourly_rate),
+      });
+      setOpen(true);
+    }
+  };
+
+  const handleDialogClose = () => {
+    setOpen(false);
+    setEditMode(false);
+    setEditValues(null);
+  };
+
   const handleDeleteRole = async (roleId: string) => {
     try {
       const { error } = await supabase
@@ -133,13 +159,6 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     }
   };
 
-  const handleEditRole = (roleId: string) => {
-    const role = projectRoles?.find(r => r.role_id === roleId);
-    if (role) {
-      setOpen(true);
-    }
-  };
-
   const handleItemSelect = (roleId: string) => {
     setSelectedItems(prev => {
       if (prev.includes(roleId)) {
@@ -160,7 +179,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
               onEdit={handleEditRole}
               onDelete={handleDeleteRole}
             />
-            <Dialog open={open} onOpenChange={setOpen}>
+            <Dialog open={open} onOpenChange={handleDialogClose}>
               <DialogTrigger asChild>
                 <Button size="sm" className="gap-2">
                   <Plus className="h-4 w-4" />
@@ -169,9 +188,11 @@ export function RolesSection({ projectId }: RolesSectionProps) {
               </DialogTrigger>
               <AddRoleDialog
                 roles={roles}
-                onClose={() => setOpen(false)}
+                onClose={handleDialogClose}
                 onSubmit={handleAddRole}
                 loading={loading}
+                editMode={editMode}
+                initialValues={editValues || undefined}
               />
             </Dialog>
           </div>
