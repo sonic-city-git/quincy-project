@@ -7,7 +7,6 @@ import { EquipmentHeader } from "./equipment/EquipmentHeader";
 import { useEquipmentData } from "@/hooks/useEquipmentData";
 import { useEquipmentFilter } from "@/hooks/useEquipmentFilter";
 import { useEquipmentSelection } from "@/hooks/useEquipmentSelection";
-import { EquipmentSelectionActions } from "./equipment/actions/EquipmentSelectionActions";
 
 export function EquipmentList() {
   const [startDate, setStartDate] = useState(new Date());
@@ -75,22 +74,19 @@ export function EquipmentList() {
         selectedFolder={selectedFolder}
         onFolderSelect={handleFolderSelect}
         onAddEquipment={handleAddEquipment}
+        onEditEquipment={handleEditEquipment}
+        onDeleteEquipment={() => {
+          handleDeleteEquipment(selectedItems);
+          clearSelection();
+        }}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        selectedItems={selectedItems}
+        equipment={equipment}
       />
 
       <div className="flex-1 flex flex-col bg-zinc-900 rounded-md mt-4 overflow-hidden">
         <div className="flex-1 overflow-auto">
-          <EquipmentSelectionActions
-            selectedItems={selectedItems}
-            equipment={equipment}
-            onEditEquipment={handleEditEquipment}
-            onDeleteEquipment={() => {
-              handleDeleteEquipment(selectedItems);
-              clearSelection();
-            }}
-          />
-
           <EquipmentTable
             equipment={filteredEquipment}
             selectedItems={selectedItems}
