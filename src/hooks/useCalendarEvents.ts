@@ -85,19 +85,9 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
       setEvents(prev => [...prev, newEvent]);
       
-      toast({
-        title: "Success",
-        description: "Event added successfully",
-      });
-
       return newEvent;
     } catch (error) {
       console.error('Error adding event:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add event",
-        variant: "destructive",
-      });
       throw error;
     }
   };
