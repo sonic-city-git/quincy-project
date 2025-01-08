@@ -88,6 +88,7 @@ export function EquipmentList() {
             handleDeleteEquipment(selectedItems);
             clearSelection();
           }}
+          onAddEquipment={handleAddEquipment}
         />
 
         <EquipmentTable
