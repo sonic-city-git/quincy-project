@@ -88,13 +88,24 @@ export function CrewList() {
           </div>
         </div>
 
-        <ScrollArea className="h-[calc(100vh-26rem)]">
-          <CrewTable 
-            crewMembers={filteredBySearch}
-            selectedItems={selectedItems}
-            onItemSelect={handleItemSelect}
-          />
-        </ScrollArea>
+        <div className="relative">
+          <div className="sticky top-0 z-10 bg-zinc-900 border-b border-zinc-800/50">
+            <CrewTable 
+              crewMembers={[]}
+              selectedItems={[]}
+              onItemSelect={() => {}}
+              headerOnly
+            />
+          </div>
+          <ScrollArea className="h-[calc(100vh-26rem)]">
+            <CrewTable 
+              crewMembers={filteredBySearch}
+              selectedItems={selectedItems}
+              onItemSelect={handleItemSelect}
+              bodyOnly
+            />
+          </ScrollArea>
+        </div>
 
         <div className="border-t border-zinc-800/50">
           <CrewTimeline 
