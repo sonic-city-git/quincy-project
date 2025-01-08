@@ -128,6 +128,30 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     }
   };
 
+  const handleUpdateRates = async (roleId: string, dailyRate: number | null, hourlyRate: number | null) => {
+    try {
+      const { error } = await supabase
+        .from('project_roles')
+        .update({ 
+          daily_rate: dailyRate,
+          hourly_rate: hourlyRate
+        })
+        .eq('project_id', projectId)
+        .eq('role_id', roleId);
+
+      if (error) throw error;
+      
+      await refetchProjectRoles();
+    } catch (error) {
+      console.error('Error updating rates:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update rates",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getProjectRole = (roleId: string) => {
     return projectRoles?.find(pr => pr.role_id === roleId);
   };
@@ -146,9 +170,14 @@ export function RolesSection({ projectId }: RolesSectionProps) {
                   name={role.name}
                   color={role.color}
                   quantity={projectRole?.quantity}
+                  dailyRate={projectRole?.daily_rate}
+                  hourlyRate={projectRole?.hourly_rate}
                   onAdd={() => handleAddRole(role.id)}
                   onUpdateQuantity={(increment) => 
                     handleUpdateQuantity(role.id, projectRole?.quantity || 0, increment)
+                  }
+                  onUpdateRates={(dailyRate, hourlyRate) =>
+                    handleUpdateRates(role.id, dailyRate, hourlyRate)
                   }
                   loading={loading}
                 />

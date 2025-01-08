@@ -279,6 +279,8 @@ export type Database = {
       project_roles: {
         Row: {
           created_at: string
+          daily_rate: number | null
+          hourly_rate: number | null
           id: string
           project_id: string
           quantity: number
@@ -286,6 +288,8 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          daily_rate?: number | null
+          hourly_rate?: number | null
           id?: string
           project_id: string
           quantity?: number
@@ -293,6 +297,8 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          daily_rate?: number | null
+          hourly_rate?: number | null
           id?: string
           project_id?: string
           quantity?: number
