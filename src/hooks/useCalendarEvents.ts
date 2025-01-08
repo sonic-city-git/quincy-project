@@ -47,6 +47,12 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
     try {
       const formattedDate = formatDatabaseDate(date);
+      console.log('Adding event to database:', {
+        projectId,
+        date: formattedDate,
+        name: eventName,
+        type: eventType
+      });
       
       const { data, error } = await supabase
         .from('project_events')
