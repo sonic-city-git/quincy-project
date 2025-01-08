@@ -6,6 +6,7 @@ import { UserPlus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { RolesSection } from "./RolesSection";
+import { Input } from "@/components/ui/input";
 
 interface ProjectCrewTabProps {
   projectId: string;
@@ -25,6 +26,26 @@ export function ProjectCrewTab({ projectId }: ProjectCrewTabProps) {
     },
   });
 
+  const { data: projectRoles } = useQuery({
+    queryKey: ['project-roles', projectId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_roles')
+        .select(`
+          *,
+          crew_roles (
+            id,
+            name,
+            color
+          )
+        `)
+        .eq('project_id', projectId);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   if (isLoadingCrewMembers) {
     return (
       <div className="flex items-center justify-center h-[400px]">
@@ -33,15 +54,61 @@ export function ProjectCrewTab({ projectId }: ProjectCrewTabProps) {
     );
   }
 
+  const activeRoles = projectRoles?.filter(role => role.quantity > 0) || [];
+
   return (
     <div className="space-y-6">
       <div className="flex gap-6">
         {/* Roles Section */}
         <RolesSection projectId={projectId} />
         
-        {/* Right side placeholder */}
-        <div className="w-1/2 h-[200px] bg-zinc-900/50 rounded-md flex items-center justify-center">
-          <span className="text-sm text-muted-foreground">Additional content coming soon...</span>
+        {/* Rates Section */}
+        <div className="w-1/2 bg-zinc-900 rounded-md p-4">
+          <h2 className="text-lg font-semibold mb-4">Role Rates</h2>
+          {activeRoles.length > 0 ? (
+            <div className="space-y-3">
+              {activeRoles.map((role) => (
+                <div 
+                  key={role.id}
+                  className="flex items-center justify-between p-2 rounded-md"
+                  style={{ backgroundColor: role.crew_roles.color + '20' }}
+                >
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className="h-2 w-2 rounded-full"
+                      style={{ backgroundColor: role.crew_roles.color }}
+                    />
+                    <span className="text-sm">{role.crew_roles.name}</span>
+                    <span className="text-sm text-muted-foreground">
+                      ({role.quantity} {role.quantity === 1 ? 'person' : 'people'})
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      type="number"
+                      placeholder="Daily rate"
+                      className="h-7 w-24"
+                      value={role.daily_rate || ''}
+                      onChange={() => {}}
+                      disabled
+                    />
+                    <Input
+                      type="number"
+                      placeholder="Hourly rate"
+                      className="h-7 w-24"
+                      value={role.hourly_rate || ''}
+                      onChange={() => {}}
+                      disabled
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-sm text-muted-foreground text-center py-8">
+              Add roles to see their rates here
+            </div>
+          )}
         </div>
       </div>
 
