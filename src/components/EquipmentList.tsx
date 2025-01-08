@@ -37,7 +37,7 @@ export function EquipmentList({
   const daysToShow = 14;
 
   const handleResize = useCallback(() => {
-    // This empty callback is enough to trigger the debounced resize handling
+    // Empty callback is enough to trigger the debounced resize handling
   }, []);
 
   const { observe, unobserve } = useDebounceResize(handleResize);
@@ -49,6 +49,10 @@ export function EquipmentList({
   const handleNextPeriod = useCallback(() => {
     setStartDate(prev => addDays(prev, daysToShow));
   }, [daysToShow]);
+
+  const handleDeleteEquipment = useCallback(() => {
+    onDeleteEquipment(selectedItems);
+  }, [onDeleteEquipment, selectedItems]);
 
   const selectedEquipment = equipment
     .filter(item => selectedItems.includes(item.id))
@@ -64,9 +68,7 @@ export function EquipmentList({
         onFolderSelect={onFolderSelect}
         onAddEquipment={onAddEquipment}
         onEditEquipment={onEditEquipment}
-        onDeleteEquipment={() => {
-          onDeleteEquipment(selectedItems);
-        }}
+        onDeleteEquipment={handleDeleteEquipment}
         searchTerm={searchTerm}
         onSearchChange={onSearchChange}
         selectedItems={selectedItems}
