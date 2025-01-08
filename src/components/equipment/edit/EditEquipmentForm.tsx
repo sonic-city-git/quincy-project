@@ -1,12 +1,12 @@
 import { Equipment, SerialNumber } from "@/types/equipment";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { SerialNumbersSection } from "../add/SerialNumbersSection";
-import { FolderSelect } from "../shared/FolderSelect";
 import { BasicEquipmentFields } from "../add/BasicEquipmentFields";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { EquipmentFolderSelect } from "../EquipmentFolderSelect";
 
 interface EditEquipmentFormProps {
   equipment: Equipment;
@@ -67,65 +67,71 @@ export function EditEquipmentForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="grid gap-4 py-4">
-      <BasicEquipmentFields 
-        defaultValues={{
-          code: equipment.code,
-          name: equipment.name,
-          price: equipment.price,
-          value: equipment.value,
-          weight: equipment.weight,
-        }}
-        required 
-      />
-
-      <div className="grid gap-2">
-        <Label>Stock Calculation Method</Label>
-        <Select
-          value={stockCalculationMethod}
-          onValueChange={(value: "manual" | "serial_numbers") => setStockCalculationMethod(value)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select stock calculation method" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="manual">Manual Stock</SelectItem>
-            <SelectItem value="serial_numbers">Serial Numbers</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {stockCalculationMethod === "manual" ? (
-        <div className="grid gap-2">
-          <Label>Stock</Label>
-          <Input
-            type="number"
-            min="0"
-            value={manualStock}
-            onChange={(e) => setManualStock(e.target.value)}
-            required
+    <form onSubmit={handleSubmit} className="py-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Left Column */}
+        <div className="space-y-4">
+          <BasicEquipmentFields 
+            defaultValues={{
+              code: equipment.code,
+              name: equipment.name,
+              price: equipment.price,
+              value: equipment.value,
+              weight: equipment.weight,
+            }}
+            required 
           />
         </div>
-      ) : (
-        <SerialNumbersSection
-          serialNumbers={serialNumbers}
-          onSerialNumberChange={handleSerialNumberChange}
-          onAddSerialNumber={addSerialNumberField}
-          onRemoveSerialNumber={removeSerialNumber}
-        />
-      )}
 
-      <div className="grid gap-2">
-        <Label>Folder</Label>
-        <FolderSelect
-          selectedFolder={selectedFolder}
-          onFolderSelect={setSelectedFolder}
-          required
-          showAllFolders={false}
-        />
+        {/* Right Column */}
+        <div className="space-y-4">
+          <div className="grid gap-2">
+            <Label>Stock Calculation Method</Label>
+            <Select
+              value={stockCalculationMethod}
+              onValueChange={(value: "manual" | "serial_numbers") => setStockCalculationMethod(value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select stock calculation method" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="manual">Manual Stock</SelectItem>
+                <SelectItem value="serial_numbers">Serial Numbers</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {stockCalculationMethod === "manual" ? (
+            <div className="grid gap-2">
+              <Label>Stock</Label>
+              <Input
+                type="number"
+                min="0"
+                value={manualStock}
+                onChange={(e) => setManualStock(e.target.value)}
+                required
+              />
+            </div>
+          ) : (
+            <SerialNumbersSection
+              serialNumbers={serialNumbers}
+              onSerialNumberChange={handleSerialNumberChange}
+              onAddSerialNumber={addSerialNumberField}
+              onRemoveSerialNumber={removeSerialNumber}
+            />
+          )}
+
+          <div className="grid gap-2">
+            <Label>Folder</Label>
+            <EquipmentFolderSelect
+              selectedFolder={selectedFolder}
+              onFolderSelect={setSelectedFolder}
+            />
+          </div>
+        </div>
       </div>
 
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mt-6">
         <Button type="submit">Save changes</Button>
         <Button type="button" variant="destructive" onClick={onDelete}>
           Delete
