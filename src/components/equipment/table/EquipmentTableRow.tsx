@@ -13,6 +13,15 @@ export function EquipmentTableRow({
   isSelected, 
   onItemSelect 
 }: EquipmentTableRowProps) {
+  const formatValue = (value: string | undefined) => {
+    if (!value) return "0.00";
+    const num = parseFloat(value.replace(',', ''));
+    return num.toLocaleString('en-US', { 
+      minimumFractionDigits: 2, 
+      maximumFractionDigits: 2 
+    });
+  };
+
   return (
     <TableRow className="hover:bg-zinc-800/50 border-b border-zinc-800/50">
       <TableCell className="w-12 py-2">
@@ -31,16 +40,13 @@ export function EquipmentTableRow({
         {item.stock}
       </TableCell>
       <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-2">
-        {item.price}
+        {formatValue(item.price)}
       </TableCell>
       <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-2">
         {item.weight} kg
       </TableCell>
       <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-2">
-        {(parseFloat(item.value.replace(',', '')) * item.stock).toLocaleString('en-US', { 
-          minimumFractionDigits: 2, 
-          maximumFractionDigits: 2 
-        })}
+        {formatValue(item.value)}
       </TableCell>
     </TableRow>
   );
