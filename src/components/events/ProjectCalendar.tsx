@@ -27,7 +27,7 @@ export const ProjectCalendar = () => {
 
   return (
     <EventsProvider projectId={projectId}>
-      <div className="w-full space-y-4">
+      <div className="w-full">
         <Calendar
           mode="single"
           selected={selectedDate}
