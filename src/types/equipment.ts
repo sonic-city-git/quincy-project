@@ -12,7 +12,6 @@ export type Equipment = {
   value: string;
   weight: string;
   stock: number;
-  folderId?: string;
-  Folder?: string;  // Added to match database schema
-  serialNumbers?: string[];
+  folder_id?: string;  // Changed from folderId to match database schema
+  Folder?: string;
 };

@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Equipment } from "@/types/equipment";
 import { supabase } from "@/integrations/supabase/client";
 import { Folder } from "@/types/folders";
@@ -9,19 +9,19 @@ export function useEquipmentFilter() {
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
 
-  const getFolderOrder = (folderId: string | undefined): string => {
+  const getFolderOrder = useCallback((folderId: string | undefined): string => {
     const folder = folders.find(f => f.id === folderId);
     return folder?.name || 'zzz'; // Items without a folder go last
-  };
+  }, [folders]);
 
-  const sortByFolderStructure = (items: Equipment[]): Equipment[] => {
+  const sortByFolderStructure = useCallback((items: Equipment[]): Equipment[] => {
     return [...items].sort((a, b) => {
-      const folderA = getFolderOrder(a.folderId);
-      const folderB = getFolderOrder(b.folderId);
+      const folderA = getFolderOrder(a.folder_id);
+      const folderB = getFolderOrder(b.folder_id);
       if (folderA !== folderB) return folderA.localeCompare(folderB);
       return (a.name || '').localeCompare(b.name || '');
     });
-  };
+  }, [getFolderOrder]);
 
   const fetchFolders = useCallback(async () => {
     const { data, error } = await supabase
@@ -80,7 +80,7 @@ export function useEquipmentFilter() {
 
     // Sort the filtered results by folder structure
     return sortByFolderStructure(filtered);
-  }, [selectedFolder, searchTerm, isFolderChild]);
+  }, [selectedFolder, searchTerm, isFolderChild, sortByFolderStructure]);
 
   const filterEquipment = useCallback((newEquipment: Equipment[]) => {
     const filtered = filterFunction(newEquipment);
@@ -88,8 +88,8 @@ export function useEquipmentFilter() {
     return filtered;
   }, [filterFunction]);
 
-  // Fetch folders when the hook is initialized
-  useMemo(() => {
+  // Fetch folders when the hook is mounted
+  useEffect(() => {
     fetchFolders();
   }, [fetchFolders]);
 
