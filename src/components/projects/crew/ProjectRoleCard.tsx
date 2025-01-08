@@ -74,19 +74,25 @@ export function ProjectRoleCard({
   };
 
   return (
-    <Card className="p-3">
-      <div className="flex items-center gap-6">
-        <div className="flex items-center gap-3 min-w-[200px]">
-          <span className="text-sm text-muted-foreground">{quantity}×</span>
-          <div
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ backgroundColor: color }}
-          />
-          <h3 className="text-sm font-medium">{name}</h3>
-        </div>
+    <div className="space-y-2">
+      <div className="flex items-center gap-6 px-3">
+        <div className="min-w-[200px]" />
         <div className="flex items-center gap-6">
-          <div className="flex flex-col gap-1">
-            <span className="text-xs text-muted-foreground">Daily rate</span>
+          <span className="text-xs text-muted-foreground w-24">Daily rate</span>
+          <span className="text-xs text-muted-foreground w-24">Hourly rate</span>
+        </div>
+      </div>
+      <Card className="p-3">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 min-w-[200px]">
+            <span className="text-sm text-muted-foreground">{quantity}×</span>
+            <div
+              className="w-2.5 h-2.5 rounded-full"
+              style={{ backgroundColor: color }}
+            />
+            <h3 className="text-sm font-medium">{name}</h3>
+          </div>
+          <div className="flex items-center gap-6">
             <Input
               type="number"
               value={localDailyRate}
@@ -96,9 +102,6 @@ export function ProjectRoleCard({
               className="h-7 w-24"
               disabled={isUpdating}
             />
-          </div>
-          <div className="flex flex-col gap-1">
-            <span className="text-xs text-muted-foreground">Hourly rate</span>
             <Input
               type="number"
               value={localHourlyRate}
@@ -110,7 +113,7 @@ export function ProjectRoleCard({
             />
           </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }
