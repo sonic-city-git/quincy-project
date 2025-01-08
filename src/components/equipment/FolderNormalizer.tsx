@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 interface NormalizationResult {
   total_folders: number;
@@ -16,14 +17,20 @@ interface NormalizationResult {
 export function FolderNormalizer() {
   const [isNormalizing, setIsNormalizing] = useState(false);
   const [result, setResult] = useState<NormalizationResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const normalizeFolders = async () => {
     try {
       setIsNormalizing(true);
+      setError(null);
+      
       const { data, error } = await supabase.functions.invoke('normalize-folder-names');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error from Edge Function:', error);
+        throw new Error('Failed to normalize folder names. Please try again.');
+      }
       
       setResult(data as NormalizationResult);
       
@@ -33,6 +40,7 @@ export function FolderNormalizer() {
       });
     } catch (error) {
       console.error('Error normalizing folders:', error);
+      setError(error.message || 'An unexpected error occurred');
       toast({
         title: "Error",
         description: "Failed to normalize folder names",
@@ -51,6 +59,13 @@ export function FolderNormalizer() {
       >
         {isNormalizing ? 'Normalizing...' : 'Normalize Folder Names'}
       </Button>
+
+      {error && (
+        <Alert variant="destructive">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
       {result && (
         <div className="space-y-2">
