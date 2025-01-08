@@ -8,8 +8,8 @@ interface RolesSectionProps {
   projectId: string;
 }
 
-// Define the custom sort order
-const ROLE_ORDER = ['FOH', 'MON', 'PLAYBACK', 'BACKLINE'];
+// Define the custom sort order with exact case matching
+const ROLE_ORDER = ['FOH', 'MON', 'Playback', 'Backline'];
 
 export function RolesSection({ projectId }: RolesSectionProps) {
   const { toast } = useToast();
@@ -27,8 +27,8 @@ export function RolesSection({ projectId }: RolesSectionProps) {
 
       // Sort the roles according to the custom order
       return data.sort((a, b) => {
-        const indexA = ROLE_ORDER.indexOf(a.name.toUpperCase());
-        const indexB = ROLE_ORDER.indexOf(b.name.toUpperCase());
+        const indexA = ROLE_ORDER.indexOf(a.name);
+        const indexB = ROLE_ORDER.indexOf(b.name);
         
         // If both roles are in the custom order list
         if (indexA !== -1 && indexB !== -1) {
