@@ -37,7 +37,7 @@ export function EquipmentListContainer() {
   } = useEquipmentTimeline();
 
   useEffect(() => {
-    if (equipment && Array.isArray(equipment) && equipment.length > 0) {
+    if (equipment && Array.isArray(equipment)) {
       filterEquipment(equipment);
     }
   }, [equipment, filterEquipment]);

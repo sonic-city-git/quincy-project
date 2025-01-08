@@ -17,7 +17,7 @@ export type Database = {
           id: string
           name: string
           phone: string
-          role: string
+          role: string | null
         }
         Insert: {
           created_at?: string
@@ -26,7 +26,7 @@ export type Database = {
           id?: string
           name: string
           phone: string
-          role: string
+          role?: string | null
         }
         Update: {
           created_at?: string
@@ -35,7 +35,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string
-          role?: string
+          role?: string | null
         }
         Relationships: []
       }

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Equipment } from "@/types/equipment";
 
 export function useEquipmentFilter() {
@@ -8,7 +8,6 @@ export function useEquipmentFilter() {
 
   const filterEquipment = useCallback((equipment: Equipment[]) => {
     if (!equipment || !Array.isArray(equipment)) {
-      setFilteredEquipment([]);
       return [];
     }
 
