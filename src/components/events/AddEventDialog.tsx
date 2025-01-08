@@ -28,6 +28,8 @@ interface AddEventDialogProps {
   projectId: string | undefined;
 }
 
+const EVENT_TYPE_ORDER = ["Show", "Travel", "Preprod", "INT Storage", "EXT Storage", "Hours"];
+
 export const AddEventDialog = ({
   isOpen,
   onOpenChange,
@@ -41,6 +43,12 @@ export const AddEventDialog = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const selectedEventType = eventTypes?.find(et => et.id === selectedEventTypeId);
+
+  const sortedEventTypes = eventTypes?.slice().sort((a, b) => {
+    const indexA = EVENT_TYPE_ORDER.indexOf(a.name);
+    const indexB = EVENT_TYPE_ORDER.indexOf(b.name);
+    return indexA - indexB;
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +113,7 @@ export const AddEventDialog = ({
                 <SelectValue placeholder="Select event type" />
               </SelectTrigger>
               <SelectContent>
-                {eventTypes?.map(eventType => (
+                {sortedEventTypes?.map(eventType => (
                   <SelectItem key={eventType.id} value={eventType.id}>
                     {eventType.name}
                   </SelectItem>
