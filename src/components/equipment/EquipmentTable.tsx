@@ -17,16 +17,18 @@ export function EquipmentTable({
   onSelectAll, 
   onItemSelect 
 }: EquipmentTableProps) {
+  const equipmentArray = Array.isArray(equipment) ? equipment : [];
+
   return (
     <ScrollArea className="h-[400px] w-full">
       <Table>
         <EquipmentTableHeader 
-          equipment={equipment}
+          equipment={equipmentArray}
           selectedItems={selectedItems}
           onSelectAll={onSelectAll}
         />
         <TableBody>
-          {equipment.map((item) => (
+          {equipmentArray.map((item) => (
             <EquipmentTableRow
               key={item.id}
               item={item}

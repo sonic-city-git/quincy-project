@@ -1,5 +1,4 @@
 import { Equipment } from "@/types/equipment";
-import { AddEquipmentDialog } from "../AddEquipmentDialog";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash } from "lucide-react";
 
@@ -16,8 +15,11 @@ export function EquipmentActions({
   onEditEquipment,
   onDeleteEquipment,
 }: EquipmentActionsProps) {
-  const selectedEquipment = equipment.find(item => item.id === selectedItems[0]);
-  const canEdit = selectedItems.length === 1;
+  const selectedEquipment = equipment && Array.isArray(equipment) 
+    ? equipment.find(item => item.id === selectedItems[0])
+    : undefined;
+    
+  const canEdit = selectedItems.length === 1 && selectedEquipment;
   const canDelete = selectedItems.length > 0;
 
   return (

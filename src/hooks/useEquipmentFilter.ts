@@ -7,30 +7,27 @@ export function useEquipmentFilter() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
 
-  const filterEquipment = useCallback(async (equipment: Equipment[]) => {
+  const filterEquipment = useCallback((equipment: Equipment[]) => {
     if (!equipment || !Array.isArray(equipment)) {
       setFilteredEquipment([]);
       return [];
     }
 
-    const filtered = await Promise.all(
-      equipment.map(async (item) => {
-        const matchesSearch = searchTerm === "" || 
-          item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.code?.toLowerCase().includes(searchTerm.toLowerCase());
-        
-        const matchesFolder = !selectedFolder || 
-          selectedFolder === "all" || 
-          (selectedFolder === "none" && !item.folderId) ||
-          await isItemInFolder(item.folderId, selectedFolder);
+    const filtered = equipment.filter((item) => {
+      const matchesSearch = searchTerm === "" || 
+        (item.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        item.code?.toLowerCase().includes(searchTerm.toLowerCase()));
+      
+      const matchesFolder = !selectedFolder || 
+        selectedFolder === "all" || 
+        (selectedFolder === "none" && !item.folderId) ||
+        item.Folder === selectedFolder;
+      
+      return matchesSearch && matchesFolder;
+    });
 
-        return matchesSearch && matchesFolder ? item : null;
-      })
-    );
-
-    const result = filtered.filter((item): item is Equipment => item !== null);
-    setFilteredEquipment(result);
-    return result;
+    setFilteredEquipment(filtered);
+    return filtered;
   }, [selectedFolder, searchTerm]);
 
   return {
