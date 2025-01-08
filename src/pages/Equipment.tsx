@@ -1,9 +1,5 @@
-import { EquipmentListContainer } from "@/components/equipment/list/EquipmentListContainer";
+import { EquipmentListContainer } from "@/components/equipment/containers/EquipmentListContainer";
 
 export default function Equipment() {
-  return (
-    <div className="p-6 font-inter">
-      <EquipmentListContainer />
-    </div>
-  );
+  return <EquipmentListContainer />;
 }
