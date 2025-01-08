@@ -111,7 +111,7 @@ export function FolderSelect({
         </SelectValue>
       </SelectTrigger>
       <SelectContent>
-        <ScrollArea className="h-[400px]" type="hover">
+        <ScrollArea className="h-[200px]">
           {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
           {renderFolderOptions()}
         </ScrollArea>
