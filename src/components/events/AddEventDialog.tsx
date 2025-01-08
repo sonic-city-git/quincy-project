@@ -107,7 +107,7 @@ export const AddEventDialog = ({
           <div className="flex justify-end">
             <Button 
               type="submit" 
-              disabled={isSubmitting}
+              disabled={isSubmitting || !projectId.trim()}
             >
               {isSubmitting ? "Adding..." : "Add Event"}
             </Button>
