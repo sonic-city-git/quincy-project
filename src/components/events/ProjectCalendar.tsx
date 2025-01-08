@@ -31,49 +31,51 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
 
   return (
     <EventsProvider projectId={projectId}>
-      <Calendar
-        mode="single"
-        selected={selectedDate}
-        onSelect={(date) => {
-          if (!date) return;
-          const normalizedDate = normalizeDate(date);
-          openAddDialog(normalizedDate);
-        }}
-        className={`w-full rounded-md border ${className}`}
-        modifiers={{ today: undefined }}
-        modifiersClassNames={{
-          selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        }}
-        modifiersStyles={{
-          today: {
-            fontWeight: 'normal',
-            border: 'none'
-          }
-        }}
-        components={{
-          Day: ({ date, ...props }: DayProps) => (
-            <CalendarDay
-              date={date}
-              eventColors={EVENT_COLORS}
-              onSelect={(date) => {
-                const normalizedDate = normalizeDate(date);
-                openAddDialog(normalizedDate);
-              }}
-              {...props}
-            />
-          ),
-        }}
-      />
-      <AddEventDialog
-        isOpen={isAddDialogOpen}
-        onOpenChange={closeAddDialog}
-        date={selectedDate}
-      />
-      <EditEventDialog
-        isOpen={isEditDialogOpen}
-        onOpenChange={closeEditDialog}
-        event={selectedEvent}
-      />
+      <div className="w-full">
+        <Calendar
+          mode="single"
+          selected={selectedDate}
+          onSelect={(date) => {
+            if (!date) return;
+            const normalizedDate = normalizeDate(date);
+            openAddDialog(normalizedDate);
+          }}
+          className={`w-full rounded-md border ${className}`}
+          modifiers={{ today: undefined }}
+          modifiersClassNames={{
+            selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+          }}
+          modifiersStyles={{
+            today: {
+              fontWeight: 'normal',
+              border: 'none'
+            }
+          }}
+          components={{
+            Day: ({ date, ...props }: DayProps) => (
+              <CalendarDay
+                date={date}
+                eventColors={EVENT_COLORS}
+                onSelect={(date) => {
+                  const normalizedDate = normalizeDate(date);
+                  openAddDialog(normalizedDate);
+                }}
+                {...props}
+              />
+            ),
+          }}
+        />
+        <AddEventDialog
+          isOpen={isAddDialogOpen}
+          onOpenChange={closeAddDialog}
+          date={selectedDate}
+        />
+        <EditEventDialog
+          isOpen={isEditDialogOpen}
+          onOpenChange={closeEditDialog}
+          event={selectedEvent}
+        />
+      </div>
     </EventsProvider>
   );
 };
