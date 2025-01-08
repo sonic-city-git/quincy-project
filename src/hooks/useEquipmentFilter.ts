@@ -1,15 +1,16 @@
 import { useState, useCallback, useMemo } from "react";
 import { Equipment } from "@/types/equipment";
-import { EQUIPMENT_FOLDERS, flattenFolders } from "@/data/equipmentFolders";
+import { supabase } from "@/integrations/supabase/client";
+import { Folder } from "@/types/folders";
 
 export function useEquipmentFilter() {
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
 
   const getFolderOrder = (folderId: string | undefined): string => {
-    const allFolders = flattenFolders(EQUIPMENT_FOLDERS);
-    const folder = allFolders.find(f => f.id === folderId);
+    const folder = folders.find(f => f.id === folderId);
     return folder?.name || 'zzz'; // Items without a folder go last
   };
 
@@ -22,6 +23,31 @@ export function useEquipmentFilter() {
     });
   };
 
+  const fetchFolders = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('folders')
+      .select('*');
+
+    if (error) {
+      console.error('Error fetching folders:', error);
+      return;
+    }
+
+    setFolders(data);
+  }, []);
+
+  // Helper function to check if a folder is a child of another folder
+  const isFolderChild = useCallback((childId: string | null, parentId: string | null): boolean => {
+    if (!childId || !parentId) return false;
+    
+    const folder = folders.find(f => f.id === childId);
+    if (!folder) return false;
+    
+    if (folder.parent_id === parentId) return true;
+    
+    return folder.parent_id ? isFolderChild(folder.parent_id, parentId) : false;
+  }, [folders]);
+
   const filterFunction = useCallback((items: Equipment[]) => {
     if (!items || !Array.isArray(items)) {
       return [];
@@ -32,29 +58,14 @@ export function useEquipmentFilter() {
     // Apply folder filter if a folder is selected
     if (selectedFolder && selectedFolder !== "all") {
       filtered = filtered.filter(item => {
-        // First check if the item has a Folder field (from database) or folderId
-        const itemFolderId = item.folderId || item.Folder;
+        // Check both folder_id and Folder fields from the equipment item
+        const itemFolderId = item.folder_id || item.Folder;
         
-        // Direct match
+        // Direct match with the selected folder
         if (itemFolderId === selectedFolder) return true;
-
-        // Check parent-child relationship
-        const selectedFolderParent = EQUIPMENT_FOLDERS.find(folder => 
-          folder.subfolders?.some(sub => sub.id === selectedFolder)
-        );
-
-        // If selected folder is a subfolder, only show items in that specific subfolder
-        if (selectedFolderParent) {
-          return itemFolderId === selectedFolder;
-        }
-
-        // If selected folder is a parent folder, show all items in its subfolders
-        const selectedParentFolder = EQUIPMENT_FOLDERS.find(f => f.id === selectedFolder);
-        if (selectedParentFolder?.subfolders) {
-          return selectedParentFolder.subfolders.some(sub => sub.id === itemFolderId);
-        }
-
-        return false;
+        
+        // Check if the item's folder is a child of the selected folder
+        return isFolderChild(itemFolderId, selectedFolder);
       });
     }
 
@@ -69,13 +80,18 @@ export function useEquipmentFilter() {
 
     // Sort the filtered results by folder structure
     return sortByFolderStructure(filtered);
-  }, [selectedFolder, searchTerm]);
+  }, [selectedFolder, searchTerm, isFolderChild]);
 
   const filterEquipment = useCallback((newEquipment: Equipment[]) => {
     const filtered = filterFunction(newEquipment);
     setFilteredEquipment(filtered);
     return filtered;
   }, [filterFunction]);
+
+  // Fetch folders when the hook is initialized
+  useMemo(() => {
+    fetchFolders();
+  }, [fetchFolders]);
 
   return {
     selectedFolder,
