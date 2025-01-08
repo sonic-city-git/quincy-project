@@ -2,7 +2,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { RoleItem } from "./RoleItem";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
@@ -153,74 +152,75 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Roles</h2>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add role
-              </Button>
-            </DialogTrigger>
-            <AddRoleDialog
-              roles={roles}
-              onClose={() => setOpen(false)}
-              onSubmit={handleAddRole}
-              loading={loading}
-            />
-          </Dialog>
-        </div>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-lg font-semibold">Roles</h2>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add role
+            </Button>
+          </DialogTrigger>
+          <AddRoleDialog
+            roles={roles}
+            onClose={() => setOpen(false)}
+            onSubmit={handleAddRole}
+            loading={loading}
+          />
+        </Dialog>
       </div>
 
       {/* Project Roles Display */}
-      <div className="grid gap-4">
-        {projectRoles?.map((projectRole) => (
-          <Card key={projectRole.id} className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: projectRole.crew_roles.color }}
-                />
-                <div>
-                  <h3 className="font-medium">{projectRole.crew_roles.name}</h3>
-                  <div className="text-sm text-muted-foreground">
-                    {projectRole.daily_rate && (
-                      <p>Daily rate: ${projectRole.daily_rate}</p>
-                    )}
-                    {projectRole.hourly_rate && (
-                      <p>Hourly rate: ${projectRole.hourly_rate}</p>
-                    )}
+      <div className="bg-zinc-900/50 rounded-lg p-4">
+        <div className="grid gap-2">
+          {projectRoles?.map((projectRole) => (
+            <Card key={projectRole.id} className="p-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ backgroundColor: projectRole.crew_roles.color }}
+                  />
+                  <div>
+                    <h3 className="text-sm font-medium">{projectRole.crew_roles.name}</h3>
+                    <div className="text-xs text-muted-foreground space-y-0.5">
+                      {projectRole.daily_rate && (
+                        <p>Daily rate: ${projectRole.daily_rate}</p>
+                      )}
+                      {projectRole.hourly_rate && (
+                        <p>Hourly rate: ${projectRole.hourly_rate}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7"
+                    onClick={() => handleUpdateQuantity(projectRole.role_id, projectRole.quantity, false)}
+                  >
+                    -
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7"
+                    onClick={() => handleUpdateQuantity(projectRole.role_id, projectRole.quantity, true)}
+                  >
+                    +
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleUpdateQuantity(projectRole.role_id, projectRole.quantity, false)}
-                >
-                  -
-                </Button>
-                <span className="w-8 text-center">{projectRole.quantity}</span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleUpdateQuantity(projectRole.role_id, projectRole.quantity, true)}
-                >
-                  +
-                </Button>
-              </div>
+            </Card>
+          ))}
+          {projectRoles?.length === 0 && (
+            <div className="text-center py-6 text-sm text-muted-foreground">
+              No roles added to this project yet
             </div>
-          </Card>
-        ))}
-        {projectRoles?.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            No roles added to this project yet
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
