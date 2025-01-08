@@ -1,12 +1,11 @@
 import { Equipment, SerialNumber } from "@/types/equipment";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { useState, useMemo } from "react";
-import { SerialNumbersSection } from "../add/SerialNumbersSection";
-import { BasicEquipmentFields } from "../add/BasicEquipmentFields";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { EquipmentFolderSelect } from "../EquipmentFolderSelect";
+import { Label } from "@/components/ui/label";
+import { BasicInfoSection } from "./sections/BasicInfoSection";
+import { StockManagementSection } from "./sections/StockManagementSection";
+import { TotalBookValueSection } from "./sections/TotalBookValueSection";
 
 interface EditEquipmentFormProps {
   equipment: Equipment;
@@ -69,11 +68,11 @@ export function EditEquipmentForm({
     });
   };
 
-  const addSerialNumberField = () => {
+  const handleAddSerialNumber = () => {
     setSerialNumbers(prev => [...prev, { number: "", status: "Available" }]);
   };
 
-  const removeSerialNumber = (index: number) => {
+  const handleRemoveSerialNumber = (index: number) => {
     setSerialNumbers(prev => prev.filter((_, i) => i !== index));
   };
 
@@ -82,64 +81,22 @@ export function EditEquipmentForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Column */}
         <div className="space-y-4">
-          <BasicEquipmentFields 
-            defaultValues={{
-              code: equipment.code,
-              name: equipment.name,
-              price: equipment.price,
-              value: equipment.value,
-              weight: equipment.weight,
-            }}
-            required 
-          />
-          <div className="grid gap-2">
-            <Label className="text-base font-semibold">Total Book Value</Label>
-            <Input
-              type="text"
-              value={totalBookValue}
-              readOnly
-              className="bg-background border-input text-foreground text-lg font-medium h-12"
-            />
-          </div>
+          <BasicInfoSection equipment={equipment} />
+          <TotalBookValueSection totalBookValue={totalBookValue} />
         </div>
 
         {/* Right Column */}
         <div className="space-y-4">
-          <div className="grid gap-2">
-            <Label>Stock Calculation Method</Label>
-            <Select
-              value={stockCalculationMethod}
-              onValueChange={(value: "manual" | "serial_numbers") => setStockCalculationMethod(value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select stock calculation method" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="manual">Manual Stock</SelectItem>
-                <SelectItem value="serial_numbers">Serial Numbers</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {stockCalculationMethod === "manual" ? (
-            <div className="grid gap-2">
-              <Label>Stock</Label>
-              <Input
-                type="number"
-                min="0"
-                value={manualStock}
-                onChange={(e) => setManualStock(e.target.value)}
-                required
-              />
-            </div>
-          ) : (
-            <SerialNumbersSection
-              serialNumbers={serialNumbers}
-              onSerialNumberChange={handleSerialNumberChange}
-              onAddSerialNumber={addSerialNumberField}
-              onRemoveSerialNumber={removeSerialNumber}
-            />
-          )}
+          <StockManagementSection
+            stockCalculationMethod={stockCalculationMethod}
+            manualStock={manualStock}
+            serialNumbers={serialNumbers}
+            onStockMethodChange={setStockCalculationMethod}
+            onManualStockChange={setManualStock}
+            onSerialNumberChange={handleSerialNumberChange}
+            onAddSerialNumber={handleAddSerialNumber}
+            onRemoveSerialNumber={handleRemoveSerialNumber}
+          />
 
           <div className="grid gap-2">
             <Label>Folder</Label>
