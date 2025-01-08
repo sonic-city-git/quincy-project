@@ -1,7 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, X } from "lucide-react";
 
 interface SerialNumber {
@@ -45,23 +44,6 @@ export function SerialNumbersSection({
                 <X className="h-4 w-4" />
               </Button>
             )}
-          </div>
-          
-          <div className="grid gap-2">
-            <Label>Status</Label>
-            <Select
-              value={sn.status}
-              onValueChange={(value) => onSerialNumberChange(index, "status", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Available">Available</SelectItem>
-                <SelectItem value="In Use">In Use</SelectItem>
-                <SelectItem value="Maintenance">Maintenance</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="grid gap-2">
