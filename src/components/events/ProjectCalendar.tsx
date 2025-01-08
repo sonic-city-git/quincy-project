@@ -25,7 +25,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   const handleSelect = (date: Date | undefined) => {
     if (!date) return;
     
-    // Normalize the date to midnight UTC
+    // Create a new date at midnight UTC
     const normalizedDate = new Date(Date.UTC(
       date.getFullYear(),
       date.getMonth(),
@@ -43,7 +43,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   };
 
   const handleEventSubmit = async (eventName: string, eventType: EventType) => {
-    if (!selectedDate) return;
+    if (!selectedDate || !projectId) return;
     
     console.log('Submitting event:', { eventName, eventType, selectedDate });
     await addEvent(selectedDate, eventName, eventType);

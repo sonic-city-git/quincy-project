@@ -51,8 +51,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       return;
     }
 
-    // Format date to YYYY-MM-DD
-    const formattedDate = new Date(date.getTime() - (date.getTimezoneOffset() * 60000))
+    // Format date to YYYY-MM-DD using UTC
+    const formattedDate = new Date(date.getTime())
       .toISOString()
       .split('T')[0];
     
@@ -103,7 +103,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   const updateEvent = async (updatedEvent: CalendarEvent) => {
     if (!projectId) return;
 
-    const formattedDate = new Date(updatedEvent.date.getTime() - (updatedEvent.date.getTimezoneOffset() * 60000))
+    const formattedDate = new Date(updatedEvent.date.getTime())
       .toISOString()
       .split('T')[0];
 
