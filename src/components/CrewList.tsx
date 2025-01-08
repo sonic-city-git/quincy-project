@@ -5,8 +5,10 @@ import { addDays, subDays } from "date-fns";
 import { EditCrewMemberDialog } from "./crew/EditCrewMemberDialog";
 import { useCrewManagement } from "@/hooks/useCrewManagement";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useState } from "react";
 
 export function CrewList() {
+  const [searchTerm, setSearchTerm] = useState("");
   const {
     selectedItems,
     startDate,
@@ -33,6 +35,18 @@ export function CrewList() {
     setStartDate(prev => addDays(prev, daysToShow));
   };
 
+  const filteredBySearch = filteredCrewMembers.filter(crew => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      crew.name.toLowerCase().includes(searchLower) ||
+      crew.email.toLowerCase().includes(searchLower) ||
+      crew.phone.toLowerCase().includes(searchLower) ||
+      crew.role?.toLowerCase().includes(searchLower) ||
+      crew.folder.toLowerCase().includes(searchLower)
+    );
+  });
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[400px]">
@@ -50,6 +64,8 @@ export function CrewList() {
           selectedRoles={selectedRoles}
           allRoles={allRoles}
           onRoleSelect={handleRoleSelect}
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
         />
       </div>
 
@@ -71,7 +87,7 @@ export function CrewList() {
 
         <ScrollArea className="h-[calc(100vh-26rem)]">
           <CrewTable 
-            crewMembers={filteredCrewMembers}
+            crewMembers={filteredBySearch}
             selectedItems={selectedItems}
             onItemSelect={handleItemSelect}
           />
