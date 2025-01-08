@@ -27,7 +27,7 @@ export const ProjectCalendar = () => {
 
   return (
     <EventsProvider projectId={projectId}>
-      <div className="w-full min-h-[400px]">
+      <div className="w-full">
         <Calendar
           mode="single"
           selected={selectedDate}
@@ -36,7 +36,7 @@ export const ProjectCalendar = () => {
             const normalizedDate = normalizeDate(date);
             openAddDialog(normalizedDate);
           }}
-          className="w-full rounded-md border shadow-sm"
+          className="w-full rounded-md border shadow-sm p-3"
           modifiers={{ today: undefined }}
           modifiersClassNames={{
             selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
