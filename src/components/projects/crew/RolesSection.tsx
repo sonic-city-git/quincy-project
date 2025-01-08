@@ -20,6 +20,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     roleId: string;
     dailyRate: number;
     hourlyRate: number;
+    quantity?: number;
   } | null>(null);
 
   const { data: roles } = useQuery({
@@ -59,6 +60,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     roleId: string;
     dailyRate: number;
     hourlyRate: number;
+    quantity: number;
   }) => {
     setLoading(true);
     try {
@@ -81,7 +83,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
           role_id: data.roleId,
           daily_rate: data.dailyRate,
           hourly_rate: data.hourlyRate,
-          quantity: 1, // Default quantity
+          quantity: data.quantity,
         });
 
       if (insertError) {
