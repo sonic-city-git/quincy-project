@@ -93,11 +93,6 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
     }
   };
 
-  if (!projectId) {
-    console.error('No projectId available');
-    return null;
-  }
-
   return (
     <>
       <Calendar
@@ -132,7 +127,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
         onOpenChange={closeAddDialog}
         onSubmit={handleEventSubmit}
         date={selectedDate}
-        projectId={projectId}
+        projectId={projectId || ''}
       />
       <EditEventDialog
         isOpen={isEditDialogOpen}
