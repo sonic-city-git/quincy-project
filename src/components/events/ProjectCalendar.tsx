@@ -57,16 +57,6 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
       return;
     }
 
-    if (!projectId) {
-      console.error('Missing projectId:', projectId);
-      toast({
-        title: "Error",
-        description: "Project ID is missing",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       await addEvent(selectedDate, eventName, eventType);
       closeAddDialog();
