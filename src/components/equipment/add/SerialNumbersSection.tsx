@@ -84,8 +84,9 @@ export function SerialNumbersSection({
       </ScrollArea>
       
       <AddSerialNumberDialog onAddSerialNumber={(number: string, notes: string) => {
-        onSerialNumberChange(serialNumbers.length, "number", number);
-        if (notes) onSerialNumberChange(serialNumbers.length, "notes", notes);
+        const newIndex = serialNumbers.length;
+        onSerialNumberChange(newIndex, "number", number);
+        if (notes) onSerialNumberChange(newIndex, "notes", notes);
         onAddSerialNumber();
       }} />
 
