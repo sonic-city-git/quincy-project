@@ -14,7 +14,6 @@ interface AddRoleDialogProps {
   onClose: () => void;
   onSubmit: (data: {
     roleId: string;
-    quantity: number;
     dailyRate: number;
     hourlyRate: number;
   }) => void;
@@ -22,7 +21,6 @@ interface AddRoleDialogProps {
   editMode?: boolean;
   initialValues?: {
     roleId: string;
-    quantity: number;
     dailyRate: number;
     hourlyRate: number;
   };
@@ -37,7 +35,6 @@ export function AddRoleDialog({
   initialValues 
 }: AddRoleDialogProps) {
   const [selectedRole, setSelectedRole] = useState<string>(initialValues?.roleId || "");
-  const [quantity, setQuantity] = useState(initialValues?.quantity?.toString() || "1");
   const [dailyRate, setDailyRate] = useState(initialValues?.dailyRate?.toString() || "");
   const [hourlyRate, setHourlyRate] = useState(initialValues?.hourlyRate?.toString() || "");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -63,7 +60,6 @@ export function AddRoleDialog({
     if (validateForm()) {
       onSubmit({
         roleId: selectedRole,
-        quantity: parseInt(quantity),
         dailyRate: parseFloat(dailyRate),
         hourlyRate: parseFloat(hourlyRate),
       });
@@ -77,20 +73,18 @@ export function AddRoleDialog({
         <DialogDescription>
           {editMode 
             ? "Update the role details for this project."
-            : "Select a role and specify the quantity needed for this project."
+            : "Select a role and specify the rates for this project."
           }
         </DialogDescription>
       </DialogHeader>
       <RoleFormFields
         roles={roles}
         selectedRole={selectedRole}
-        quantity={quantity}
         dailyRate={dailyRate}
         hourlyRate={hourlyRate}
         errors={errors}
         editMode={editMode}
         onRoleChange={setSelectedRole}
-        onQuantityChange={setQuantity}
         onDailyRateChange={setDailyRate}
         onHourlyRateChange={setHourlyRate}
       />

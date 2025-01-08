@@ -1,7 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 import { RoleInfo } from "./RoleInfo";
 
 interface ProjectRoleCardProps {
@@ -9,7 +6,6 @@ interface ProjectRoleCardProps {
   projectId: string;
   name: string;
   color: string;
-  quantity: number;
   dailyRate?: number | null;
   hourlyRate?: number | null;
   onUpdate?: () => void;
@@ -20,7 +16,6 @@ export function ProjectRoleCard({
   projectId,
   name, 
   color, 
-  quantity,
   dailyRate,
   hourlyRate,
   onUpdate
@@ -28,7 +23,7 @@ export function ProjectRoleCard({
   return (
     <Card className="p-2">
       <div className="flex items-center gap-6">
-        <RoleInfo quantity={quantity} color={color} name={name} />
+        <RoleInfo color={color} name={name} />
         <div className="flex items-center gap-6">
           <span className="w-24 text-sm">{dailyRate || '-'}</span>
           <span className="w-24 text-sm">{hourlyRate || '-'}</span>

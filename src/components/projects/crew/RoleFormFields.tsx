@@ -5,13 +5,11 @@ import { CrewRole } from "@/types/crew";
 interface RoleFormFieldsProps {
   roles?: CrewRole[];
   selectedRole: string;
-  quantity: string;
   dailyRate: string;
   hourlyRate: string;
   errors: Record<string, string>;
   editMode?: boolean;
   onRoleChange: (value: string) => void;
-  onQuantityChange: (value: string) => void;
   onDailyRateChange: (value: string) => void;
   onHourlyRateChange: (value: string) => void;
 }
@@ -19,13 +17,11 @@ interface RoleFormFieldsProps {
 export function RoleFormFields({
   roles,
   selectedRole,
-  quantity,
   dailyRate,
   hourlyRate,
   errors,
   editMode = false,
   onRoleChange,
-  onQuantityChange,
   onDailyRateChange,
   onHourlyRateChange,
 }: RoleFormFieldsProps) {
@@ -55,16 +51,6 @@ export function RoleFormFields({
           </select>
         )}
         {errors.role && <p className="text-sm text-red-500">{errors.role}</p>}
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="quantity">Quantity</Label>
-        <Input
-          id="quantity"
-          type="number"
-          min="1"
-          value={quantity}
-          onChange={(e) => onQuantityChange(e.target.value)}
-        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="dailyRate" className="after:content-['*'] after:ml-0.5 after:text-red-500">Daily Rate</Label>
