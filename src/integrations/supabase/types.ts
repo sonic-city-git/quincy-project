@@ -276,6 +276,45 @@ export type Database = {
           },
         ]
       }
+      project_roles: {
+        Row: {
+          created_at: string
+          id: string
+          project_id: string
+          quantity: number
+          role_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          project_id: string
+          quantity?: number
+          role_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          project_id?: string
+          quantity?: number
+          role_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_roles_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "crew_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           color: string
