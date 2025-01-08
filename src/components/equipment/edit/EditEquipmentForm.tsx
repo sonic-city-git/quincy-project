@@ -24,7 +24,9 @@ export function EditEquipmentForm({
   );
   const [manualStock, setManualStock] = useState(equipment.stock.toString());
   const [serialNumbers, setSerialNumbers] = useState<SerialNumber[]>(
-    equipment.serialNumbers || [{ number: "", status: "Available" }]
+    equipment.serialNumbers?.length 
+      ? equipment.serialNumbers 
+      : [{ number: "", status: "Available" }]
   );
   const [selectedFolder, setSelectedFolder] = useState<string | null>(equipment.folder_id || null);
 
