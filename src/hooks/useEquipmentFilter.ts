@@ -27,18 +27,40 @@ export function useEquipmentFilter() {
       return [];
     }
 
-    const filtered = items.filter((item) => {
-      const matchesSearch = searchTerm === "" || 
-        (item.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        item.code?.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-      const matchesFolder = !selectedFolder || 
-        selectedFolder === "all" || 
-        item.folderId === selectedFolder;
-      
-      return matchesSearch && matchesFolder;
-    });
+    let filtered = items;
 
+    // Apply folder filter if a folder is selected
+    if (selectedFolder && selectedFolder !== "all") {
+      filtered = filtered.filter(item => {
+        // Check if the item's folder matches the selected folder
+        // or if it's in a subfolder of the selected folder
+        const allFolders = flattenFolders(EQUIPMENT_FOLDERS);
+        const selectedFolderObj = allFolders.find(f => f.id === selectedFolder);
+        const itemFolderObj = allFolders.find(f => f.id === item.folderId);
+        
+        if (!selectedFolderObj || !itemFolderObj) return false;
+
+        // If the folders match directly
+        if (item.folderId === selectedFolder) return true;
+
+        // Check if the item's folder is a subfolder of the selected folder
+        const parentFolder = EQUIPMENT_FOLDERS.find(f => 
+          f.subfolders?.some(sub => sub.id === item.folderId)
+        );
+        return parentFolder?.id === selectedFolder;
+      });
+    }
+
+    // Apply search filter if there's a search term
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(item =>
+        (item.name?.toLowerCase().includes(searchLower) || 
+         item.code?.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Sort the filtered results by folder structure
     return sortByFolderStructure(filtered);
   }, [selectedFolder, searchTerm]);
 
