@@ -8,6 +8,9 @@ interface RolesSectionProps {
   projectId: string;
 }
 
+// Define the custom sort order
+const ROLE_ORDER = ['FOH', 'MON', 'PLAYBACK', 'BACKLINE'];
+
 export function RolesSection({ projectId }: RolesSectionProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -21,7 +24,24 @@ export function RolesSection({ projectId }: RolesSectionProps) {
         .order('name');
       
       if (error) throw error;
-      return data;
+
+      // Sort the roles according to the custom order
+      return data.sort((a, b) => {
+        const indexA = ROLE_ORDER.indexOf(a.name.toUpperCase());
+        const indexB = ROLE_ORDER.indexOf(b.name.toUpperCase());
+        
+        // If both roles are in the custom order list
+        if (indexA !== -1 && indexB !== -1) {
+          return indexA - indexB;
+        }
+        
+        // If only one role is in the list, prioritize it
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        
+        // For roles not in the list, maintain alphabetical order
+        return a.name.localeCompare(b.name);
+      });
     },
   });
 
