@@ -60,7 +60,7 @@ export function EquipmentHeader({
           )}
           {hasSelection && (
             <Button
-              variant="ghost"
+              variant="destructive"
               size="sm"
               className="gap-2"
               onClick={onDeleteEquipment}

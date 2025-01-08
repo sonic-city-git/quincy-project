@@ -1,9 +1,8 @@
 import { useState, useCallback, useRef } from "react";
 import { addDays, subDays } from "date-fns";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
-import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
-import { EquipmentTable } from "./equipment/EquipmentTable";
 import { EquipmentHeader } from "./equipment/EquipmentHeader";
+import { EquipmentContent } from "./equipment/EquipmentContent";
 import { useEquipmentData } from "@/hooks/useEquipmentData";
 import { useEquipmentFilter } from "@/hooks/useEquipmentFilter";
 import { useEquipmentSelection } from "@/hooks/useEquipmentSelection";
@@ -85,28 +84,19 @@ export function EquipmentList() {
         equipment={equipment}
       />
 
-      <div className="flex-1 flex flex-col bg-zinc-900 rounded-md mt-4 overflow-hidden">
-        <div className="flex-1 overflow-auto">
-          <EquipmentTable
-            equipment={filteredEquipment}
-            selectedItems={selectedItems}
-            onSelectAll={() => handleSelectAll(filteredEquipment)}
-            onItemSelect={handleItemSelect}
-          />
-        </div>
-
-        <div className="flex-shrink-0">
-          <EquipmentTimeline
-            startDate={startDate}
-            daysToShow={daysToShow}
-            selectedEquipment={selectedEquipment}
-            onPreviousPeriod={handlePreviousPeriod}
-            onNextPeriod={handleNextPeriod}
-            onMount={observe}
-            onUnmount={unobserve}
-          />
-        </div>
-      </div>
+      <EquipmentContent
+        filteredEquipment={filteredEquipment}
+        selectedItems={selectedItems}
+        selectedEquipment={selectedEquipment}
+        startDate={startDate}
+        daysToShow={daysToShow}
+        onSelectAll={() => handleSelectAll(filteredEquipment)}
+        onItemSelect={handleItemSelect}
+        onPreviousPeriod={handlePreviousPeriod}
+        onNextPeriod={handleNextPeriod}
+        observe={observe}
+        unobserve={unobserve}
+      />
     </div>
   );
 }
