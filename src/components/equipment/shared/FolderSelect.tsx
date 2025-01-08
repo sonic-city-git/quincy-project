@@ -6,7 +6,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { Folder } from "@/types/folders";
 
@@ -110,11 +109,9 @@ export function FolderSelect({
           {getFolderPath(selectedFolder)}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent>
-        <div className="h-[200px] overflow-y-auto">
-          {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
-          {renderFolderOptions()}
-        </div>
+      <SelectContent className="max-h-[200px] overflow-y-auto">
+        {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
+        {renderFolderOptions()}
       </SelectContent>
     </Select>
   );
