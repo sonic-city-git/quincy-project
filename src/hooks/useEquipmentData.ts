@@ -1,8 +1,7 @@
 import { useState, useEffect } from "react";
-import { Equipment, SerialNumber, StockCalculationMethod } from "@/types/equipment";
+import { Equipment, SerialNumber } from "@/types/equipment";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { calculateAvailableStock } from "@/utils/equipmentUtils";
 
 export function useEquipmentData() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
@@ -36,7 +35,7 @@ export function useEquipmentData() {
         stock: item.Stock || 0,
         folder_id: item.folder_id || undefined,
         Folder: item.Folder || undefined,
-        stockCalculationMethod: item["Stock calculation method"] as StockCalculationMethod || "manual",
+        stockCalculationMethod: item["Stock calculation method"] as "manual" | "serial_numbers" || "manual",
         serialNumbers: item.equipment_serial_numbers?.map((sn: any) => ({
           number: sn.serial_number,
           status: sn.status || "Available",
@@ -59,10 +58,6 @@ export function useEquipmentData() {
 
   const handleAddEquipment = async (newEquipment: Equipment) => {
     try {
-      const finalStock = newEquipment.stockCalculationMethod === 'serial_numbers'
-        ? calculateAvailableStock(newEquipment.serialNumbers || [])
-        : newEquipment.stock;
-
       // First, insert the equipment
       const { data: equipmentData, error: equipmentError } = await supabase
         .from('equipment')
@@ -73,8 +68,8 @@ export function useEquipmentData() {
           Price: parseFloat(newEquipment.price),
           "Book Value": parseFloat(newEquipment.value),
           Weight: parseFloat(newEquipment.weight),
-          Stock: finalStock,
-          "Stock calculation method": newEquipment.stockCalculationMethod || "manual",
+          Stock: newEquipment.stock,
+          "Stock calculation method": newEquipment.stockCalculationMethod,
           folder_id: newEquipment.folder_id,
         }])
         .select()
@@ -128,6 +123,7 @@ export function useEquipmentData() {
           "Book Value": parseFloat(editedEquipment.value),
           Weight: parseFloat(editedEquipment.weight),
           Stock: editedEquipment.stock,
+          "Stock calculation method": editedEquipment.stockCalculationMethod,
           folder_id: editedEquipment.folder_id,
         })
         .eq('id', editedEquipment.id);
@@ -142,8 +138,10 @@ export function useEquipmentData() {
 
       if (deleteError) throw deleteError;
 
-      // Insert new serial numbers
-      if (editedEquipment.serialNumbers && editedEquipment.serialNumbers.length > 0) {
+      // Insert new serial numbers if using serial number calculation
+      if (editedEquipment.stockCalculationMethod === 'serial_numbers' && 
+          editedEquipment.serialNumbers && 
+          editedEquipment.serialNumbers.length > 0) {
         const { error: serialNumberError } = await supabase
           .from('equipment_serial_numbers')
           .insert(

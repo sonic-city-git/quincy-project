@@ -6,6 +6,7 @@ import { useState } from "react";
 import { SerialNumbersSection } from "../add/SerialNumbersSection";
 import { FolderSelect } from "../shared/FolderSelect";
 import { BasicEquipmentFields } from "../add/BasicEquipmentFields";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EditEquipmentFormProps {
   equipment: Equipment;
@@ -18,6 +19,10 @@ export function EditEquipmentForm({
   onSubmit,
   onDelete,
 }: EditEquipmentFormProps) {
+  const [stockCalculationMethod, setStockCalculationMethod] = useState<"manual" | "serial_numbers">(
+    equipment.stockCalculationMethod || "manual"
+  );
+  const [manualStock, setManualStock] = useState(equipment.stock.toString());
   const [serialNumbers, setSerialNumbers] = useState<SerialNumber[]>(
     equipment.serialNumbers || [{ number: "", status: "Available" }]
   );
@@ -36,8 +41,9 @@ export function EditEquipmentForm({
       price: formData.get("price") as string,
       value: formData.get("value") as string,
       weight: formData.get("weight") as string,
-      stock: validSerialNumbers.length,
-      serialNumbers: validSerialNumbers,
+      stock: stockCalculationMethod === "manual" ? parseInt(manualStock, 10) : validSerialNumbers.length,
+      serialNumbers: stockCalculationMethod === "serial_numbers" ? validSerialNumbers : undefined,
+      stockCalculationMethod,
       folder_id: selectedFolder,
     };
 
@@ -73,12 +79,41 @@ export function EditEquipmentForm({
         required 
       />
 
-      <SerialNumbersSection
-        serialNumbers={serialNumbers}
-        onSerialNumberChange={handleSerialNumberChange}
-        onAddSerialNumber={addSerialNumberField}
-        onRemoveSerialNumber={removeSerialNumber}
-      />
+      <div className="grid gap-2">
+        <Label>Stock Calculation Method</Label>
+        <Select
+          value={stockCalculationMethod}
+          onValueChange={(value: "manual" | "serial_numbers") => setStockCalculationMethod(value)}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select stock calculation method" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="manual">Manual Stock</SelectItem>
+            <SelectItem value="serial_numbers">Serial Numbers</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {stockCalculationMethod === "manual" ? (
+        <div className="grid gap-2">
+          <Label>Stock</Label>
+          <Input
+            type="number"
+            min="0"
+            value={manualStock}
+            onChange={(e) => setManualStock(e.target.value)}
+            required
+          />
+        </div>
+      ) : (
+        <SerialNumbersSection
+          serialNumbers={serialNumbers}
+          onSerialNumberChange={handleSerialNumberChange}
+          onAddSerialNumber={addSerialNumberField}
+          onRemoveSerialNumber={removeSerialNumber}
+        />
+      )}
 
       <div className="grid gap-2">
         <Label>Folder</Label>
