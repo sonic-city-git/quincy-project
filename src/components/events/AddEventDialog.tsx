@@ -41,13 +41,13 @@ export const AddEventDialog = ({
 
     setIsSubmitting(true);
     try {
-      console.log('Submitting event:', { eventName, eventType, date });
       const finalEventName = eventName.trim() || eventType;
       await onSubmit(finalEventName, eventType);
       setEventName("");
       setEventType("Show");
+      onOpenChange(false);
     } catch (error) {
-      console.error('Error in handleSubmit:', error);
+      console.error('Error submitting event:', error);
     } finally {
       setIsSubmitting(false);
     }

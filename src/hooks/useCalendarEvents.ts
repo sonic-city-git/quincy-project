@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useCalendarDate } from "@/hooks/useCalendarDate";
 
 export const useCalendarEvents = (projectId: string | undefined) => {
-  const [events, setEvents] = useState<CalendarEvent[]>();
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const { toast } = useToast();
   const { normalizeDate } = useCalendarDate();
 
@@ -29,7 +29,6 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       }
 
       if (data) {
-        console.log('Fetched events:', data);
         const parsedEvents = data.map(event => ({
           date: new Date(event.date),
           name: event.name,
@@ -44,7 +43,6 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
   const addEvent = async (date: Date, eventName: string, eventType: EventType) => {
     if (!projectId) {
-      console.error('No project ID provided');
       throw new Error('Project ID is missing');
     }
 
@@ -70,23 +68,28 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
     if (error) {
       console.error('Error adding event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add event",
+        variant: "destructive",
+      });
       throw error;
     }
 
-    console.log('Successfully added event:', data);
-    
     const newEvent: CalendarEvent = {
       date: new Date(data.date),
       name: data.name,
       type: data.type as EventType
     };
 
-    setEvents(prev => [...(prev || []), newEvent]);
+    setEvents(prev => [...prev, newEvent]);
     
     toast({
       title: "Success",
       description: "Event added successfully",
     });
+
+    return newEvent;
   };
 
   const updateEvent = async (updatedEvent: CalendarEvent) => {
@@ -105,11 +108,16 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
     if (error) {
       console.error('Error updating event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update event",
+        variant: "destructive",
+      });
       throw error;
     }
 
     setEvents(prev => 
-      prev?.map(event => 
+      prev.map(event => 
         event.date.toDateString() === updatedEvent.date.toDateString() 
           ? { ...updatedEvent, name: updatedEvent.name.trim() || updatedEvent.type }
           : event
@@ -123,11 +131,11 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   };
 
   const findEvent = (date: Date) => {
-    return events?.find(e => e.date.toDateString() === date.toDateString());
+    return events.find(e => e.date.toDateString() === date.toDateString());
   };
 
   return {
-    events: events || [],
+    events,
     addEvent,
     updateEvent,
     findEvent

@@ -55,16 +55,10 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
     }
     
     try {
-      console.log('Submitting event:', { eventName, eventType, selectedDate });
       await addEvent(selectedDate, eventName, eventType);
       closeAddDialog();
     } catch (error) {
       console.error('Error submitting event:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add event. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -74,11 +68,6 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
       closeEditDialog();
     } catch (error) {
       console.error('Error updating event:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update event. Please try again.",
-        variant: "destructive",
-      });
     }
   };
 
