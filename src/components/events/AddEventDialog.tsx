@@ -38,6 +38,8 @@ export const AddEventDialog = ({
   const [eventType, setEventType] = useState<EventType>("Show");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  console.log('AddEventDialog - projectId:', projectId); // Debug log
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!date) {
@@ -107,7 +109,7 @@ export const AddEventDialog = ({
           <div className="flex justify-end">
             <Button 
               type="submit" 
-              disabled={isSubmitting || !projectId.trim()}
+              disabled={isSubmitting}
             >
               {isSubmitting ? "Adding..." : "Add Event"}
             </Button>
