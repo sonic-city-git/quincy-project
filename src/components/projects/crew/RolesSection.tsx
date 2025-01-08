@@ -57,8 +57,8 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   const handleAddRole = async (data: {
     roleId: string;
     quantity: number;
-    dailyRate?: number;
-    hourlyRate?: number;
+    dailyRate: number;
+    hourlyRate: number;
   }) => {
     setLoading(true);
     try {
