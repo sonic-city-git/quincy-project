@@ -47,7 +47,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     }
 
     // Format date to YYYY-MM-DD for PostgreSQL date column
-    const formattedDate = date.toISOString().split('T')[0];
+    const formattedDate = normalizeDate(date).toISOString().split('T')[0];
     
     console.log('Adding event:', {
       project_id: projectId,
@@ -96,7 +96,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   const updateEvent = async (updatedEvent: CalendarEvent) => {
     if (!projectId) throw new Error('Project ID is missing');
 
-    const formattedDate = updatedEvent.date.toISOString().split('T')[0];
+    const formattedDate = normalizeDate(updatedEvent.date).toISOString().split('T')[0];
 
     const { error } = await supabase
       .from('project_events')
