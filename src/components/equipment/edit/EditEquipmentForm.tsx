@@ -35,7 +35,8 @@ export function EditEquipmentForm({
     const stock = stockCalculationMethod === "manual" 
       ? parseInt(manualStock, 10) 
       : serialNumbers.filter(sn => sn.number.trim() !== '').length;
-    return (bookValue * stock).toFixed(2);
+    const total = Math.round(bookValue * stock);
+    return total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
   }, [equipment.value, manualStock, serialNumbers, stockCalculationMethod]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
@@ -95,7 +96,7 @@ export function EditEquipmentForm({
             <Label className="text-base font-semibold">Total Book Value</Label>
             <Input
               type="text"
-              value={`${totalBookValue}`}
+              value={totalBookValue}
               readOnly
               className="bg-background border-input text-foreground text-lg font-medium h-12"
             />
