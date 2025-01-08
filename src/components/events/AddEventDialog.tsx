@@ -5,6 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,19 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-
-const EVENT_TYPES = [
-  "Show",
-  "Travel",
-  "Preprod",
-  "INT Storage",
-  "EXT Storage"
-] as const;
+import { EventType } from "@/types/events";
 
 interface AddEventDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (eventName: string, eventType: typeof EVENT_TYPES[number]) => void;
+  onSubmit: (eventName: string, eventType: EventType) => void;
   date: Date | undefined;
 }
 
@@ -38,7 +32,7 @@ export const AddEventDialog = ({
   date,
 }: AddEventDialogProps) => {
   const [eventName, setEventName] = useState("");
-  const [eventType, setEventType] = useState<typeof EVENT_TYPES[number]>("Show");
+  const [eventType, setEventType] = useState<EventType>("Show");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,6 +47,9 @@ export const AddEventDialog = ({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Event</DialogTitle>
+          <DialogDescription>
+            Add an event for {date?.toLocaleDateString()}
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
@@ -68,18 +65,18 @@ export const AddEventDialog = ({
             <Label htmlFor="eventType">Type</Label>
             <Select 
               value={eventType} 
-              onValueChange={(value) => setEventType(value as typeof EVENT_TYPES[number])}
+              onValueChange={(value) => setEventType(value as EventType)}
               required
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select event type" />
               </SelectTrigger>
               <SelectContent>
-                {EVENT_TYPES.map((type) => (
-                  <SelectItem key={type} value={type}>
-                    {type}
-                  </SelectItem>
-                ))}
+                <SelectItem value="Show">Show</SelectItem>
+                <SelectItem value="Travel">Travel</SelectItem>
+                <SelectItem value="Preprod">Preprod</SelectItem>
+                <SelectItem value="INT Storage">INT Storage</SelectItem>
+                <SelectItem value="EXT Storage">EXT Storage</SelectItem>
               </SelectContent>
             </Select>
           </div>

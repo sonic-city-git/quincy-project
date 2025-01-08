@@ -23,6 +23,11 @@ export const CalendarDay = ({
   className,
   ...props 
 }: CalendarDayProps) => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onSelect(dayDate);
+  };
+
   return (
     <TooltipProvider delayDuration={100}>
       <Tooltip>
@@ -38,7 +43,7 @@ export const CalendarDay = ({
               ${className || ''} 
               ${event ? `${eventColors[event.type]} text-white font-medium` : ''}
             `}
-            onClick={() => onSelect(dayDate)}
+            onClick={handleClick}
           >
             {dayDate.getDate()}
           </button>
