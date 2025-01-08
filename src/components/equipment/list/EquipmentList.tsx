@@ -54,6 +54,8 @@ export function EquipmentList({
         selectedFolder={selectedFolder}
         onFolderSelect={onFolderSelect}
         onAddEquipment={onAddEquipment}
+        searchTerm={searchTerm}
+        onSearchChange={onSearchChange}
       />
 
       <div className="flex-1 flex flex-col bg-zinc-900 rounded-md mt-4 overflow-hidden">
@@ -61,8 +63,6 @@ export function EquipmentList({
           <EquipmentSelectionHeader
             selectedItems={selectedItems}
             equipment={equipment}
-            searchTerm={searchTerm}
-            onSearchChange={onSearchChange}
             onEditEquipment={onEditEquipment}
             onDeleteEquipment={onDeleteEquipment}
           />

@@ -1,12 +1,9 @@
 import { Equipment } from "@/types/equipment";
 import { EquipmentActions } from "./actions/EquipmentActions";
-import { EquipmentSearch } from "./search/EquipmentSearch";
 
 interface EquipmentSelectionHeaderProps {
   selectedItems: string[];
   equipment: Equipment[];
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
   onEditEquipment: (equipment: Equipment) => void;
   onDeleteEquipment: () => void;
 }
@@ -14,23 +11,28 @@ interface EquipmentSelectionHeaderProps {
 export function EquipmentSelectionHeader({
   selectedItems,
   equipment,
-  searchTerm,
-  onSearchChange,
   onEditEquipment,
   onDeleteEquipment,
 }: EquipmentSelectionHeaderProps) {
+  if (selectedItems.length === 0) {
+    return null;
+  }
+
+  const selectedEquipment = equipment.find(item => item.id === selectedItems[0]);
+
   return (
-    <div className="p-4 border-b flex justify-between items-center gap-4">
-      <EquipmentActions
-        selectedItems={selectedItems}
-        equipment={equipment}
-        onEditEquipment={onEditEquipment}
-        onDeleteEquipment={onDeleteEquipment}
-      />
-      <EquipmentSearch
-        searchTerm={searchTerm}
-        onSearchChange={onSearchChange}
-      />
+    <div className="p-4 border-b border-zinc-800">
+      <div className="flex items-center justify-between">
+        <div className="text-sm text-zinc-400">
+          {selectedItems.length} item{selectedItems.length !== 1 ? 's' : ''} selected
+        </div>
+        <EquipmentActions
+          selectedItems={selectedItems}
+          equipment={selectedEquipment}
+          onEdit={onEditEquipment}
+          onDelete={onDeleteEquipment}
+        />
+      </div>
     </div>
   );
 }
