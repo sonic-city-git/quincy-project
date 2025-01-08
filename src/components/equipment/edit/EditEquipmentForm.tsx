@@ -1,8 +1,7 @@
-import { Equipment } from "@/types/equipment";
+import { Equipment, SerialNumber } from "@/types/equipment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { SerialNumbersSection } from "../add/SerialNumbersSection";
 import { FolderSelect } from "../shared/FolderSelect";
@@ -19,9 +18,8 @@ export function EditEquipmentForm({
   onSubmit,
   onDelete,
 }: EditEquipmentFormProps) {
-  const [hasSerialNumbers, setHasSerialNumbers] = useState(!!equipment.serialNumbers);
-  const [serialNumbers, setSerialNumbers] = useState<string[]>(
-    equipment.serialNumbers || ['']
+  const [serialNumbers, setSerialNumbers] = useState<SerialNumber[]>(
+    equipment.serialNumbers || [{ number: "", status: "Available" }]
   );
   const [selectedFolder, setSelectedFolder] = useState<string | null>(equipment.folder_id || null);
 
@@ -29,9 +27,7 @@ export function EditEquipmentForm({
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    const serialNumbersList = hasSerialNumbers 
-      ? serialNumbers.filter(sn => sn.trim() !== '')
-      : [];
+    const validSerialNumbers = serialNumbers.filter(sn => sn.number.trim() !== '');
 
     const editedEquipment: Equipment = {
       ...equipment,
@@ -40,24 +36,24 @@ export function EditEquipmentForm({
       price: formData.get("price") as string,
       value: formData.get("value") as string,
       weight: formData.get("weight") as string,
-      stock: hasSerialNumbers ? serialNumbersList.length : Number(formData.get("stock")),
-      serialNumbers: serialNumbersList,
+      stock: validSerialNumbers.length,
+      serialNumbers: validSerialNumbers,
       folder_id: selectedFolder,
     };
 
     onSubmit(editedEquipment);
   };
 
-  const handleSerialNumberChange = (index: number, value: string) => {
+  const handleSerialNumberChange = (index: number, field: keyof SerialNumber, value: string) => {
     setSerialNumbers(prev => {
       const updated = [...prev];
-      updated[index] = value;
+      updated[index] = { ...updated[index], [field]: value };
       return updated;
     });
   };
 
   const addSerialNumberField = () => {
-    setSerialNumbers(prev => [...prev, '']);
+    setSerialNumbers(prev => [...prev, { number: "", status: "Available" }]);
   };
 
   const removeSerialNumber = (index: number) => {
@@ -76,38 +72,13 @@ export function EditEquipmentForm({
         }}
         required 
       />
-      
-      <div className="flex items-center space-x-2">
-        <Checkbox
-          id="hasSerialNumbers"
-          checked={hasSerialNumbers}
-          onCheckedChange={(checked) => setHasSerialNumbers(checked as boolean)}
-        />
-        <Label htmlFor="hasSerialNumbers" className="text-sm font-normal">
-          This equipment requires serial numbers
-        </Label>
-      </div>
 
-      {hasSerialNumbers ? (
-        <SerialNumbersSection
-          serialNumbers={serialNumbers}
-          onSerialNumberChange={handleSerialNumberChange}
-          onAddSerialNumber={addSerialNumberField}
-          onRemoveSerialNumber={removeSerialNumber}
-        />
-      ) : (
-        <div className="grid gap-2">
-          <Label htmlFor="stock">Stock</Label>
-          <Input
-            id="stock"
-            name="stock"
-            type="number"
-            placeholder="5"
-            defaultValue={equipment.stock}
-            required
-          />
-        </div>
-      )}
+      <SerialNumbersSection
+        serialNumbers={serialNumbers}
+        onSerialNumberChange={handleSerialNumberChange}
+        onAddSerialNumber={addSerialNumberField}
+        onRemoveSerialNumber={removeSerialNumber}
+      />
 
       <div className="grid gap-2">
         <Label>Folder</Label>

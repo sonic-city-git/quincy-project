@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Equipment } from "@/types/equipment";
+import { Equipment, SerialNumber } from "@/types/equipment";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -11,12 +11,12 @@ export function useEquipmentData() {
   const fetchEquipment = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
+      const { data: equipmentData, error: equipmentError } = await supabase
         .from('equipment')
-        .select('*');
+        .select('*, equipment_serial_numbers(*)');
 
-      if (error) {
-        console.error('Error fetching equipment:', error);
+      if (equipmentError) {
+        console.error('Error fetching equipment:', equipmentError);
         toast({
           title: "Error",
           description: "Failed to load equipment data",
@@ -25,7 +25,7 @@ export function useEquipmentData() {
         return;
       }
 
-      const formattedEquipment: Equipment[] = data.map(item => ({
+      const formattedEquipment: Equipment[] = equipmentData.map(item => ({
         id: item.id,
         code: item.Code || '',
         name: item.Name || '',
@@ -35,7 +35,11 @@ export function useEquipmentData() {
         stock: item.Stock || 0,
         folder_id: item.folder_id || undefined,
         Folder: item.Folder || undefined,
-        serialNumbers: item["Serial number"] ? [item["Serial number"]] : undefined,
+        serialNumbers: item.equipment_serial_numbers?.map((sn: any) => ({
+          number: sn.serial_number,
+          status: sn.status || "Available",
+          notes: sn.notes
+        })) || [],
       }));
 
       setEquipment(formattedEquipment);
@@ -53,7 +57,8 @@ export function useEquipmentData() {
 
   const handleAddEquipment = async (newEquipment: Equipment) => {
     try {
-      const { error } = await supabase
+      // First, insert the equipment
+      const { data: equipmentData, error: equipmentError } = await supabase
         .from('equipment')
         .insert([{
           id: newEquipment.id,
@@ -64,10 +69,27 @@ export function useEquipmentData() {
           Weight: parseFloat(newEquipment.weight),
           Stock: newEquipment.stock,
           folder_id: newEquipment.folder_id,
-          "Serial number": newEquipment.serialNumbers?.[0],
-        }]);
+        }])
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (equipmentError) throw equipmentError;
+
+      // Then, insert the serial numbers
+      if (newEquipment.serialNumbers && newEquipment.serialNumbers.length > 0) {
+        const { error: serialNumberError } = await supabase
+          .from('equipment_serial_numbers')
+          .insert(
+            newEquipment.serialNumbers.map(sn => ({
+              equipment_id: equipmentData.id,
+              serial_number: sn.number,
+              status: sn.status,
+              notes: sn.notes
+            }))
+          );
+
+        if (serialNumberError) throw serialNumberError;
+      }
 
       toast({
         title: "Equipment added",
@@ -87,7 +109,8 @@ export function useEquipmentData() {
 
   const handleEditEquipment = async (editedEquipment: Equipment) => {
     try {
-      const { error } = await supabase
+      // Update equipment details
+      const { error: equipmentError } = await supabase
         .from('equipment')
         .update({
           Code: editedEquipment.code,
@@ -97,11 +120,34 @@ export function useEquipmentData() {
           Weight: parseFloat(editedEquipment.weight),
           Stock: editedEquipment.stock,
           folder_id: editedEquipment.folder_id,
-          "Serial number": editedEquipment.serialNumbers?.[0],
         })
         .eq('id', editedEquipment.id);
 
-      if (error) throw error;
+      if (equipmentError) throw equipmentError;
+
+      // Delete existing serial numbers
+      const { error: deleteError } = await supabase
+        .from('equipment_serial_numbers')
+        .delete()
+        .eq('equipment_id', editedEquipment.id);
+
+      if (deleteError) throw deleteError;
+
+      // Insert new serial numbers
+      if (editedEquipment.serialNumbers && editedEquipment.serialNumbers.length > 0) {
+        const { error: serialNumberError } = await supabase
+          .from('equipment_serial_numbers')
+          .insert(
+            editedEquipment.serialNumbers.map(sn => ({
+              equipment_id: editedEquipment.id,
+              serial_number: sn.number,
+              status: sn.status,
+              notes: sn.notes
+            }))
+          );
+
+        if (serialNumberError) throw serialNumberError;
+      }
 
       toast({
         title: "Equipment updated",
@@ -121,12 +167,21 @@ export function useEquipmentData() {
 
   const handleDeleteEquipment = async (selectedItems: string[]) => {
     try {
-      const { error } = await supabase
+      // First delete serial numbers (due to foreign key constraint)
+      const { error: serialNumberError } = await supabase
+        .from('equipment_serial_numbers')
+        .delete()
+        .in('equipment_id', selectedItems);
+
+      if (serialNumberError) throw serialNumberError;
+
+      // Then delete equipment
+      const { error: equipmentError } = await supabase
         .from('equipment')
         .delete()
         .in('id', selectedItems);
 
-      if (error) throw error;
+      if (equipmentError) throw equipmentError;
 
       toast({
         title: "Equipment deleted",
