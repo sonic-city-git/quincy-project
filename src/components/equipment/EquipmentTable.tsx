@@ -16,7 +16,7 @@ export function EquipmentTable({ equipment, selectedItems, onSelectAll, onItemSe
 
   const getFolderName = (folder_id: string | undefined): string => {
     const folder = allFolders.find(f => f.id === folder_id);
-    return folder?.name || '';
+    return folder?.name || 'Uncategorized';
   };
 
   const groupedEquipment = equipment.reduce((acc, item) => {
