@@ -19,6 +19,14 @@ interface AddCrewMemberFormProps {
 }
 
 export function AddCrewMemberForm({ selectedTags, setSelectedTags, onSubmit }: AddCrewMemberFormProps) {
+  const handleTagChange = (tag: string, checked: boolean) => {
+    if (checked) {
+      setSelectedTags([...selectedTags, tag]);
+    } else {
+      setSelectedTags(selectedTags.filter(t => t !== tag));
+    }
+  };
+
   return (
     <form onSubmit={onSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-2 gap-4">
@@ -82,11 +90,7 @@ export function AddCrewMemberForm({ selectedTags, setSelectedTags, onSubmit }: A
                 id={tag.id}
                 checked={selectedTags.includes(tag.id)}
                 onCheckedChange={(checked) => {
-                  setSelectedTags(prev =>
-                    checked
-                      ? [...prev, tag.id]
-                      : prev.filter(t => t !== tag.id)
-                  );
+                  handleTagChange(tag.id, checked as boolean);
                 }}
               />
               <Label htmlFor={tag.id} className="text-sm font-normal">
