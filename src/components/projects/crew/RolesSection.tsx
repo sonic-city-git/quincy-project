@@ -62,6 +62,19 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   }) => {
     setLoading(true);
     try {
+      // Check if role already exists for this project
+      const existingRole = projectRoles?.find(role => role.role_id === data.roleId);
+      
+      if (existingRole) {
+        toast({
+          title: "Error",
+          description: "This role is already added to the project",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       const { error: insertError } = await supabase
         .from('project_roles')
         .insert({
