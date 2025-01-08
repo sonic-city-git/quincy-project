@@ -3,10 +3,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { AddRoleDialog } from "./AddRoleDialog";
 import { ProjectRoleCard } from "./ProjectRoleCard";
+import { DeleteCrewMemberButton } from "@/components/crew/edit/DeleteCrewMemberButton";
 
 interface RolesSectionProps {
   projectId: string;
@@ -16,6 +17,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<any>(null);
 
   const { data: roles } = useQuery({
     queryKey: ['crew-roles'],
@@ -106,6 +108,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
       
       await refetchProjectRoles();
       setOpen(false);
+      setSelectedRole(null);
     } catch (error) {
       console.error('Error adding role:', error);
       toast({
@@ -116,6 +119,37 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteRole = async (roleId: string) => {
+    try {
+      const { error } = await supabase
+        .from('project_roles')
+        .delete()
+        .eq('project_id', projectId)
+        .eq('role_id', roleId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Role deleted from project",
+      });
+
+      await refetchProjectRoles();
+    } catch (error) {
+      console.error('Error deleting role:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete role",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditRole = (role: any) => {
+    setSelectedRole(role);
+    setOpen(true);
   };
 
   return (
@@ -131,9 +165,13 @@ export function RolesSection({ projectId }: RolesSectionProps) {
           </DialogTrigger>
           <AddRoleDialog
             roles={roles}
-            onClose={() => setOpen(false)}
+            onClose={() => {
+              setOpen(false);
+              setSelectedRole(null);
+            }}
             onSubmit={handleAddRole}
             loading={loading}
+            initialData={selectedRole}
           />
         </Dialog>
       </div>
@@ -142,14 +180,34 @@ export function RolesSection({ projectId }: RolesSectionProps) {
       <div className="bg-zinc-900/50 rounded-lg p-4">
         <div className="grid gap-2">
           {projectRoles?.map((projectRole) => (
-            <ProjectRoleCard
-              key={projectRole.id}
-              name={projectRole.crew_roles.name}
-              color={projectRole.crew_roles.color}
-              quantity={projectRole.quantity}
-              dailyRate={projectRole.daily_rate}
-              hourlyRate={projectRole.hourly_rate}
-            />
+            <div key={projectRole.id} className="flex items-center gap-2">
+              <div className="flex-grow">
+                <ProjectRoleCard
+                  name={projectRole.crew_roles.name}
+                  color={projectRole.crew_roles.color}
+                  quantity={projectRole.quantity}
+                  dailyRate={projectRole.daily_rate}
+                  hourlyRate={projectRole.hourly_rate}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleEditRole({
+                    roleId: projectRole.role_id,
+                    quantity: projectRole.quantity,
+                    dailyRate: projectRole.daily_rate,
+                    hourlyRate: projectRole.hourly_rate,
+                  })}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <DeleteCrewMemberButton
+                  onDelete={() => handleDeleteRole(projectRole.role_id)}
+                />
+              </div>
+            </div>
           ))}
           {projectRoles?.length === 0 && (
             <div className="text-center py-6 text-sm text-muted-foreground">
