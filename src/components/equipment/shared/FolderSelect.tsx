@@ -109,9 +109,11 @@ export function FolderSelect({
           {getFolderPath(selectedFolder)}
         </SelectValue>
       </SelectTrigger>
-      <SelectContent className="max-h-[200px] overflow-y-auto">
-        {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
-        {renderFolderOptions()}
+      <SelectContent className="h-[200px] overflow-y-auto overscroll-contain">
+        <div className="p-1">
+          {showAllFolders && <SelectItem value="all">All folders</SelectItem>}
+          {renderFolderOptions()}
+        </div>
       </SelectContent>
     </Select>
   );
