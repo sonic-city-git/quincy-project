@@ -57,18 +57,16 @@ export function CrewList() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <CrewHeader 
-          selectedCount={selectedItems.length} 
-          onAddCrewMember={handleAddCrewMember}
-          selectedRoles={selectedRoles}
-          allRoles={allRoles}
-          onRoleSelect={handleRoleSelect}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-        />
-      </div>
+    <div className="space-y-4">
+      <CrewHeader 
+        selectedCount={selectedItems.length} 
+        onAddCrewMember={handleAddCrewMember}
+        selectedRoles={selectedRoles}
+        allRoles={allRoles}
+        onRoleSelect={handleRoleSelect}
+        searchTerm={searchTerm}
+        onSearchChange={setSearchTerm}
+      />
 
       <div className="bg-zinc-900 rounded-md flex flex-col">
         <div className="h-[48px] border-b border-zinc-800/50">
