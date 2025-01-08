@@ -85,8 +85,8 @@ export function ProjectRoleCard({
           <h3 className="text-sm font-medium">{name}</h3>
         </div>
         <div className="flex items-center gap-6">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Daily:</span>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground">Daily rate</span>
             <Input
               type="number"
               value={localDailyRate}
@@ -97,8 +97,8 @@ export function ProjectRoleCard({
               disabled={isUpdating}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Hourly:</span>
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-muted-foreground">Hourly rate</span>
             <Input
               type="number"
               value={localHourlyRate}
