@@ -12,8 +12,8 @@ interface EquipmentContentProps {
   onItemSelect: (id: string) => void;
   onPreviousPeriod: () => void;
   onNextPeriod: () => void;
-  observe: () => void;
-  unobserve: () => void;
+  observe: (element: Element | null) => void;
+  unobserve: (element: Element | null) => void;
 }
 
 export function EquipmentContent({
