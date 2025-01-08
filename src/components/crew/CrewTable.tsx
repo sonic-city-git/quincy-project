@@ -37,10 +37,10 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
             onCheckedChange={handleSelectAll}
           />
         </TableHead>
-        <TableHead className="w-[240px]">Name</TableHead>
-        <TableHead className="w-[280px]">Role</TableHead>
-        <TableHead className="w-[280px]">Email</TableHead>
-        <TableHead className="w-[180px]">Phone</TableHead>
+        <TableHead className="w-[200px]">Name</TableHead>
+        <TableHead className="w-[400px]">Role</TableHead>
+        <TableHead className="w-[250px]">Email</TableHead>
+        <TableHead className="w-[150px]">Phone</TableHead>
         <TableHead>Folder</TableHead>
       </TableRow>
     </TableHeader>
@@ -56,12 +56,12 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
               onCheckedChange={() => onItemSelect(crew.id)}
             />
           </TableCell>
-          <TableCell className="w-[240px] truncate">{crew.name}</TableCell>
-          <TableCell className="w-[280px]">
+          <TableCell className="w-[200px] truncate">{crew.name}</TableCell>
+          <TableCell className="w-[400px]">
             <RoleTags role={crew.role} />
           </TableCell>
-          <TableCell className="w-[280px] truncate">{crew.email}</TableCell>
-          <TableCell className="w-[180px] truncate">{crew.phone}</TableCell>
+          <TableCell className="w-[250px] truncate">{crew.email}</TableCell>
+          <TableCell className="w-[150px] truncate">{crew.phone}</TableCell>
           <TableCell className="truncate">{crew.folder}</TableCell>
         </TableRow>
       ))}
