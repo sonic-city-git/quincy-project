@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { EquipmentList } from "@/components/EquipmentList";
 import { useEquipmentData } from "@/hooks/useEquipmentData";
 import { useEquipmentFilter } from "@/hooks/useEquipmentFilter";
 import { useEquipmentSelection } from "@/hooks/useEquipmentSelection";
+import { useEquipmentTimeline } from "@/hooks/useEquipmentTimeline";
 
 export function EquipmentListContainer() {
   const { 
@@ -28,7 +29,16 @@ export function EquipmentListContainer() {
     clearSelection,
   } = useEquipmentSelection();
 
-  const filteredEquipment = filterEquipment(equipment);
+  const {
+    startDate,
+    handlePreviousPeriod,
+    handleNextPeriod,
+  } = useEquipmentTimeline();
+
+  // Memoize filtered equipment to prevent unnecessary recalculations
+  const filteredEquipment = useMemo(() => {
+    return filterEquipment(equipment);
+  }, [equipment, filterEquipment]);
 
   const handleFolderSelect = (folderId: string | null) => {
     setSelectedFolder(folderId);

@@ -36,7 +36,6 @@ export function useEquipmentFilter() {
     setFolders(data);
   }, []);
 
-  // Helper function to check if a folder is a child of another folder
   const isFolderChild = useCallback((childId: string | null, parentId: string | null): boolean => {
     if (!childId || !parentId) return false;
     
@@ -55,21 +54,13 @@ export function useEquipmentFilter() {
 
     let filtered = items;
 
-    // Apply folder filter if a folder is selected
     if (selectedFolder && selectedFolder !== "all") {
       filtered = filtered.filter(item => {
-        // Check both folder_id and Folder fields from the equipment item
         const itemFolderId = item.folder_id || item.Folder;
-        
-        // Direct match with the selected folder
-        if (itemFolderId === selectedFolder) return true;
-        
-        // Check if the item's folder is a child of the selected folder
-        return isFolderChild(itemFolderId, selectedFolder);
+        return itemFolderId === selectedFolder || isFolderChild(itemFolderId, selectedFolder);
       });
     }
 
-    // Apply search filter if there's a search term
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter(item =>
@@ -78,7 +69,6 @@ export function useEquipmentFilter() {
       );
     }
 
-    // Sort the filtered results by folder structure
     return sortByFolderStructure(filtered);
   }, [selectedFolder, searchTerm, isFolderChild, sortByFolderStructure]);
 
@@ -88,7 +78,6 @@ export function useEquipmentFilter() {
     return filtered;
   }, [filterFunction]);
 
-  // Fetch folders when the hook is mounted
   useEffect(() => {
     fetchFolders();
   }, [fetchFolders]);
