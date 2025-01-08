@@ -56,10 +56,20 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
     }
     
     try {
+      console.log('Adding event with data:', { selectedDate, eventName, eventType, projectId });
       await addEvent(selectedDate, eventName, eventType);
       closeAddDialog();
+      toast({
+        title: "Success",
+        description: "Event added successfully",
+      });
     } catch (error) {
       console.error('Error submitting event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add event",
+        variant: "destructive",
+      });
     }
   };
 
