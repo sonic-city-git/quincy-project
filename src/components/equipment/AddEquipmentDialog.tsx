@@ -6,8 +6,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,24 +13,32 @@ import { Equipment } from "@/types/equipment";
 import { FolderSelect } from "./shared/FolderSelect";
 import { SerialNumbersSection } from "./add/SerialNumbersSection";
 import { BasicEquipmentFields } from "./add/BasicEquipmentFields";
+import { Label } from "@/components/ui/label";
 
 interface AddEquipmentDialogProps {
   onAddEquipment: (newEquipment: Equipment) => void;
 }
 
+interface SerialNumber {
+  number: string;
+  status: "Available" | "In Use" | "Maintenance";
+  notes?: string;
+}
+
 export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) {
   const [open, setOpen] = useState(false);
-  const [hasSerialNumbers, setHasSerialNumbers] = useState(false);
-  const [serialNumbers, setSerialNumbers] = useState<string[]>(['']);
+  const [hasSerialNumbers, setHasSerialNumbers] = useState(true); // Default to true since we now always use serial numbers
+  const [serialNumbers, setSerialNumbers] = useState<SerialNumber[]>([{
+    number: "",
+    status: "Available"
+  }]);
   const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    const serialNumbersList = hasSerialNumbers 
-      ? serialNumbers.filter(sn => sn.trim() !== '')
-      : [];
+    const validSerialNumbers = serialNumbers.filter(sn => sn.number.trim() !== "");
 
     const newEquipment: Equipment = {
       code: formData.get("code") as string,
@@ -40,29 +46,32 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
       price: formData.get("price") as string,
       value: formData.get("value") as string,
       weight: formData.get("weight") as string,
-      stock: hasSerialNumbers ? serialNumbersList.length : Number(formData.get("stock")),
-      serialNumbers: serialNumbersList,
+      stock: validSerialNumbers.length,
+      serialNumbers: validSerialNumbers.map(sn => ({
+        number: sn.number,
+        status: sn.status,
+        notes: sn.notes
+      })),
       id: Math.random().toString(36).substr(2, 9),
       folder_id: selectedFolder,
     };
 
     onAddEquipment(newEquipment);
     setOpen(false);
-    setSerialNumbers(['']);
-    setHasSerialNumbers(false);
+    setSerialNumbers([{ number: "", status: "Available" }]);
     setSelectedFolder(null);
   };
 
-  const handleSerialNumberChange = (index: number, value: string) => {
+  const handleSerialNumberChange = (index: number, field: keyof SerialNumber, value: string) => {
     setSerialNumbers(prev => {
       const updated = [...prev];
-      updated[index] = value;
+      updated[index] = { ...updated[index], [field]: value };
       return updated;
     });
   };
 
   const handleAddSerialNumber = () => {
-    setSerialNumbers(prev => [...prev, '']);
+    setSerialNumbers(prev => [...prev, { number: "", status: "Available" }]);
   };
 
   const handleRemoveSerialNumber = (index: number) => {
@@ -84,36 +93,12 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
         <form onSubmit={handleSubmit} className="grid gap-4 py-4">
           <BasicEquipmentFields required />
           
-          <div className="flex items-center space-x-2">
-            <Checkbox
-              id="hasSerialNumbers"
-              checked={hasSerialNumbers}
-              onCheckedChange={(checked) => setHasSerialNumbers(checked as boolean)}
-            />
-            <Label htmlFor="hasSerialNumbers" className="text-sm font-normal">
-              This equipment requires serial numbers
-            </Label>
-          </div>
-
-          {hasSerialNumbers ? (
-            <SerialNumbersSection
-              serialNumbers={serialNumbers}
-              onSerialNumberChange={handleSerialNumberChange}
-              onAddSerialNumber={handleAddSerialNumber}
-              onRemoveSerialNumber={handleRemoveSerialNumber}
-            />
-          ) : (
-            <div className="grid gap-2">
-              <Label htmlFor="stock">Stock</Label>
-              <Input
-                id="stock"
-                name="stock"
-                type="number"
-                placeholder="5"
-                required
-              />
-            </div>
-          )}
+          <SerialNumbersSection
+            serialNumbers={serialNumbers}
+            onSerialNumberChange={handleSerialNumberChange}
+            onAddSerialNumber={handleAddSerialNumber}
+            onRemoveSerialNumber={handleRemoveSerialNumber}
+          />
 
           <div className="grid gap-2">
             <Label>Folder</Label>

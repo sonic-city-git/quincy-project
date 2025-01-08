@@ -8,9 +8,19 @@ interface EquipmentCardProps {
   status: "Available" | "In Use" | "Maintenance";
   nextBooking?: string;
   serialNumber: string;
+  totalStock: number;
+  availableStock: number;
 }
 
-export function EquipmentCard({ name, category, status, nextBooking, serialNumber }: EquipmentCardProps) {
+export function EquipmentCard({ 
+  name, 
+  category, 
+  status, 
+  nextBooking, 
+  serialNumber, 
+  totalStock,
+  availableStock 
+}: EquipmentCardProps) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Available":
@@ -40,6 +50,10 @@ export function EquipmentCard({ name, category, status, nextBooking, serialNumbe
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Package className="h-4 w-4" />
             <span>SN: {serialNumber}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Package className="h-4 w-4" />
+            <span>Stock: {availableStock} / {totalStock}</span>
           </div>
           {nextBooking && (
             <div className="flex items-center gap-2 text-sm text-muted-foreground">

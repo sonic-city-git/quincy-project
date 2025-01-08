@@ -4,6 +4,12 @@ export type EquipmentFolder = {
   subfolders?: EquipmentFolder[];
 };
 
+export type SerialNumber = {
+  number: string;
+  status: "Available" | "In Use" | "Maintenance";
+  notes?: string;
+};
+
 export type Equipment = {
   id: string;
   code: string;
@@ -12,7 +18,7 @@ export type Equipment = {
   value: string;
   weight: string;
   stock: number;
-  folder_id?: string;  // Using folder_id to match database schema
-  Folder?: string;     // Keeping Folder as it exists in the database
-  serialNumbers?: string[]; // Adding serialNumbers support
+  folder_id?: string;
+  Folder?: string;
+  serialNumbers?: SerialNumber[];
 };
