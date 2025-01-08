@@ -1,5 +1,13 @@
 import { ProjectRoleCard } from "./ProjectRoleCard";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { ChevronDown } from "lucide-react";
 
 interface RolesListProps {
   projectRoles: any[];
@@ -24,7 +32,8 @@ export function RolesList({ projectRoles, selectedItems, onItemSelect, onUpdate 
     }
     
     // If only one role is in our predefined order, prioritize it
-    if (indexA !== -1) return -1; 1;
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
     
     // For roles not in our predefined order, sort alphabetically
     return roleA.localeCompare(roleB);
@@ -49,6 +58,29 @@ export function RolesList({ projectRoles, selectedItems, onItemSelect, onUpdate 
               onUpdate={onUpdate}
             />
           </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="w-[120px] justify-between"
+              >
+                Preferred
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[120px]">
+              <DropdownMenuItem>
+                First Choice
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                Second Choice
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                Third Choice
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ))}
       {sortedRoles?.length === 0 && (
