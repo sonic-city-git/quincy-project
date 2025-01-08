@@ -5,7 +5,7 @@ interface CalendarDayWrapperProps {
   children: React.ReactNode;
   eventType?: EventType;
   className?: string;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent) => void;
 }
 
 export const CalendarDayWrapper = ({ 
