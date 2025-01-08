@@ -7,7 +7,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useCalendarDate } from "@/hooks/useCalendarDate";
-import { format } from "date-fns";
+import { CalendarDayContent } from "./calendar/CalendarDayContent";
+import { CalendarDayWrapper } from "./calendar/CalendarDayWrapper";
 
 interface CalendarDayProps extends Omit<DayProps, 'date'> {
   date: Date;
@@ -20,7 +21,6 @@ interface CalendarDayProps extends Omit<DayProps, 'date'> {
 export const CalendarDay = ({ 
   date: dayDate,
   event,
-  eventColors,
   onSelect,
   className,
   ...props 
@@ -36,28 +36,25 @@ export const CalendarDay = ({
     <TooltipProvider delayDuration={100}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button 
-            {...props}
-            className={`
-              relative h-9 w-9 p-0 font-normal 
-              flex items-center justify-center text-sm 
-              cursor-pointer hover:bg-accent 
-              transition-colors duration-200
-              rounded-md shadow-sm
-              ${className || ''} 
-              ${event ? `${eventColors[event.type]} text-white font-medium` : ''}
-            `}
+          <CalendarDayWrapper
+            eventType={event?.type}
+            className={className}
             onClick={handleClick}
           >
-            {dayDate.getDate()}
-          </button>
+            <CalendarDayContent
+              date={dayDate}
+              eventName={event?.name}
+              eventType={event?.type}
+            />
+          </CalendarDayWrapper>
         </TooltipTrigger>
         {event && (
           <TooltipContent className="text-base px-4 py-2">
-            <div>{event.name}</div>
-            <div className="text-sm text-muted-foreground">
-              {format(event.date, 'dd.MM.yy')}
-            </div>
+            <CalendarDayContent
+              date={event.date}
+              eventName={event.name}
+              eventType={event.type}
+            />
           </TooltipContent>
         )}
       </Tooltip>
