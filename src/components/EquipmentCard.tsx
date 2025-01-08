@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Package, Calendar, AlertTriangle } from "lucide-react";
+import { Package, Calendar, AlertTriangle, FileText } from "lucide-react";
 import { calculateAvailableStock, calculateTotalStock } from "@/utils/equipmentUtils";
 import { Equipment } from "@/types/equipment";
 
@@ -64,6 +64,12 @@ export function EquipmentCard({
             <div className="flex items-center gap-2 text-sm text-red-400">
               <AlertTriangle className="h-4 w-4" />
               <span>Under maintenance</span>
+            </div>
+          )}
+          {equipment.notes && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <FileText className="h-4 w-4" />
+              <span className="line-clamp-2">{equipment.notes}</span>
             </div>
           )}
         </div>

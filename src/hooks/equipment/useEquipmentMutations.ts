@@ -20,6 +20,7 @@ export function useEquipmentMutations() {
           Stock: newEquipment.stock,
           "Stock calculation method": newEquipment.stockCalculationMethod,
           folder_id: newEquipment.folder_id,
+          Notes: newEquipment.notes,
         }])
         .select()
         .single();
@@ -75,6 +76,7 @@ export function useEquipmentMutations() {
           Stock: editedEquipment.stock,
           "Stock calculation method": editedEquipment.stockCalculationMethod,
           folder_id: editedEquipment.folder_id,
+          Notes: editedEquipment.notes,
         })
         .eq('id', editedEquipment.id);
 

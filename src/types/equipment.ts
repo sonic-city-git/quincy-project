@@ -22,6 +22,7 @@ export type Equipment = {
   stock: number;
   folder_id?: string;
   Folder?: string;
+  notes?: string;
   serialNumbers?: SerialNumber[];
   stockCalculationMethod?: StockCalculationMethod;
 };

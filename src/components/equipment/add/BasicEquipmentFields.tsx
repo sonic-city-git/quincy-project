@@ -1,21 +1,20 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface BasicEquipmentFieldsProps {
   required?: boolean;
   defaultValues?: {
-    code: string;
-    name: string;
-    price: string;
-    value: string;
-    weight: string;
+    code?: string;
+    name?: string;
+    price?: string;
+    value?: string;
+    weight?: string;
+    notes?: string;
   };
 }
 
-export function BasicEquipmentFields({ 
-  required = false,
-  defaultValues
-}: BasicEquipmentFieldsProps) {
+export function BasicEquipmentFields({ required = false, defaultValues }: BasicEquipmentFieldsProps) {
   return (
     <>
       <div className="grid gap-2">
@@ -23,9 +22,8 @@ export function BasicEquipmentFields({
         <Input
           id="code"
           name="code"
-          placeholder="4U-AIR"
-          required={required}
           defaultValue={defaultValues?.code}
+          required={required}
         />
       </div>
       <div className="grid gap-2">
@@ -33,9 +31,8 @@ export function BasicEquipmentFields({
         <Input
           id="name"
           name="name"
-          placeholder="Peli Air with 4U"
-          required={required}
           defaultValue={defaultValues?.name}
+          required={required}
         />
       </div>
       <div className="grid gap-2">
@@ -45,9 +42,8 @@ export function BasicEquipmentFields({
           name="price"
           type="number"
           step="0.01"
-          placeholder="60.80"
-          required={required}
           defaultValue={defaultValues?.price}
+          required={required}
         />
       </div>
       <div className="grid gap-2">
@@ -57,9 +53,8 @@ export function BasicEquipmentFields({
           name="value"
           type="number"
           step="0.01"
-          placeholder="1500.00"
-          required={required}
           defaultValue={defaultValues?.value}
+          required={required}
         />
       </div>
       <div className="grid gap-2">
@@ -69,9 +64,19 @@ export function BasicEquipmentFields({
           name="weight"
           type="number"
           step="0.01"
-          placeholder="10.50"
-          required={required}
           defaultValue={defaultValues?.weight}
+          required={required}
+        />
+      </div>
+      <div className="grid gap-2">
+        <Label htmlFor="notes">Notes</Label>
+        <Textarea
+          id="notes"
+          name="notes"
+          defaultValue={defaultValues?.notes}
+          placeholder="Add any additional notes here..."
+          className="resize-none"
+          rows={3}
         />
       </div>
     </>

@@ -56,6 +56,7 @@ export function useEquipmentQueries() {
             : (item.Stock || 0),
           folder_id: item.folder_id || undefined,
           Folder: item.Folder || undefined,
+          notes: item.Notes || undefined,
           stockCalculationMethod: isSerialNumberBased ? "serial_numbers" : "manual",
           serialNumbers: item.equipment_serial_numbers?.map((sn: any) => ({
             number: sn.serial_number,

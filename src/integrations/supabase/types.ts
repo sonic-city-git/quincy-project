@@ -79,7 +79,6 @@ export type Database = {
         Row: {
           "Book Value": number | null
           Code: string | null
-          "External remark": string | null
           Folder: string | null
           folder_id: string | null
           id: string
@@ -93,7 +92,6 @@ export type Database = {
         Insert: {
           "Book Value"?: number | null
           Code?: string | null
-          "External remark"?: string | null
           Folder?: string | null
           folder_id?: string | null
           id?: string
@@ -107,7 +105,6 @@ export type Database = {
         Update: {
           "Book Value"?: number | null
           Code?: string | null
-          "External remark"?: string | null
           Folder?: string | null
           folder_id?: string | null
           id?: string
