@@ -1,7 +1,7 @@
 import { Equipment, SerialNumber } from "@/types/equipment";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { SerialNumbersSection } from "../add/SerialNumbersSection";
 import { BasicEquipmentFields } from "../add/BasicEquipmentFields";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,6 +29,14 @@ export function EditEquipmentForm({
       : [{ number: "", status: "Available" }]
   );
   const [selectedFolder, setSelectedFolder] = useState<string | null>(equipment.folder_id || null);
+
+  const totalBookValue = useMemo(() => {
+    const bookValue = parseFloat(equipment.value) || 0;
+    const stock = stockCalculationMethod === "manual" 
+      ? parseInt(manualStock, 10) 
+      : serialNumbers.filter(sn => sn.number.trim() !== '').length;
+    return (bookValue * stock).toFixed(2);
+  }, [equipment.value, manualStock, serialNumbers, stockCalculationMethod]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -83,6 +91,15 @@ export function EditEquipmentForm({
             }}
             required 
           />
+          <div className="grid gap-2">
+            <Label>Total Book Value</Label>
+            <Input
+              type="text"
+              value={`${totalBookValue}`}
+              readOnly
+              className="bg-gray-100"
+            />
+          </div>
         </div>
 
         {/* Right Column */}
