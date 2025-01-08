@@ -37,7 +37,7 @@ export function EquipmentListContainer() {
   } = useEquipmentTimeline();
 
   useEffect(() => {
-    if (equipment.length > 0) {
+    if (equipment && equipment.length > 0) {
       filterEquipment(equipment);
     }
   }, [equipment, filterEquipment]);
@@ -47,7 +47,7 @@ export function EquipmentListContainer() {
     clearSelection();
   };
 
-  const selectedEquipment = equipment
+  const selectedEquipment = filteredEquipment
     .filter(item => selectedItems.includes(item.id))
     .map(item => ({
       id: item.id,

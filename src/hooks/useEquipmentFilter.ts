@@ -8,11 +8,16 @@ export function useEquipmentFilter() {
   const [filteredEquipment, setFilteredEquipment] = useState<Equipment[]>([]);
 
   const filterEquipment = useCallback(async (equipment: Equipment[]) => {
+    if (!equipment || !Array.isArray(equipment)) {
+      setFilteredEquipment([]);
+      return [];
+    }
+
     const filtered = await Promise.all(
       equipment.map(async (item) => {
         const matchesSearch = searchTerm === "" || 
-          item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          item.code.toLowerCase().includes(searchTerm.toLowerCase());
+          item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.code?.toLowerCase().includes(searchTerm.toLowerCase());
         
         const matchesFolder = !selectedFolder || 
           selectedFolder === "all" || 

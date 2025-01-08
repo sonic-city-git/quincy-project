@@ -3,7 +3,7 @@ import { EquipmentHeader } from "../EquipmentHeader";
 import { EquipmentSelectionHeader } from "../EquipmentSelectionHeader";
 import { EquipmentTable } from "../EquipmentTable";
 import { EquipmentTimeline } from "../EquipmentTimeline";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
 
 interface EquipmentListProps {
