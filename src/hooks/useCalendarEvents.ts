@@ -2,10 +2,12 @@ import { useState, useEffect } from "react";
 import { CalendarEvent, EventType } from "@/types/events";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useCalendarDate } from "@/hooks/useCalendarDate";
 
 export const useCalendarEvents = (projectId: string | undefined) => {
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>();
   const { toast } = useToast();
+  const { normalizeDate } = useCalendarDate();
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -43,12 +45,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   const addEvent = async (date: Date, eventName: string, eventType: EventType) => {
     if (!projectId) {
       console.error('No project ID provided');
-      toast({
-        title: "Error",
-        description: "Project ID is missing",
-        variant: "destructive",
-      });
-      return;
+      throw new Error('Project ID is missing');
     }
 
     const formattedDate = date.toISOString().split('T')[0];
@@ -60,50 +57,40 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       type: eventType
     });
 
-    try {
-      const { data, error } = await supabase
-        .from('project_events')
-        .insert({
-          project_id: projectId,
-          date: formattedDate,
-          name: eventName.trim() || eventType,
-          type: eventType
-        })
-        .select()
-        .single();
+    const { data, error } = await supabase
+      .from('project_events')
+      .insert({
+        project_id: projectId,
+        date: formattedDate,
+        name: eventName.trim() || eventType,
+        type: eventType
+      })
+      .select()
+      .single();
 
-      if (error) {
-        console.error('Error adding event:', error);
-        toast({
-          title: "Error",
-          description: "Failed to save event",
-          variant: "destructive",
-        });
-        throw error;
-      }
-
-      console.log('Successfully added event:', data);
-      
-      const newEvent: CalendarEvent = {
-        date: new Date(data.date),
-        name: data.name,
-        type: data.type as EventType
-      };
-
-      setEvents(prev => [...prev, newEvent]);
-
-      toast({
-        title: "Success",
-        description: "Event added successfully",
-      });
-    } catch (error) {
-      console.error('Error in addEvent:', error);
+    if (error) {
+      console.error('Error adding event:', error);
       throw error;
     }
+
+    console.log('Successfully added event:', data);
+    
+    const newEvent: CalendarEvent = {
+      date: new Date(data.date),
+      name: data.name,
+      type: data.type as EventType
+    };
+
+    setEvents(prev => [...(prev || []), newEvent]);
+    
+    toast({
+      title: "Success",
+      description: "Event added successfully",
+    });
   };
 
   const updateEvent = async (updatedEvent: CalendarEvent) => {
-    if (!projectId) return;
+    if (!projectId) throw new Error('Project ID is missing');
 
     const formattedDate = updatedEvent.date.toISOString().split('T')[0];
 
@@ -118,19 +105,16 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
     if (error) {
       console.error('Error updating event:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update event",
-        variant: "destructive",
-      });
-      return;
+      throw error;
     }
 
-    setEvents(prev => prev.map(event => 
-      event.date.toDateString() === updatedEvent.date.toDateString() 
-        ? { ...updatedEvent, name: updatedEvent.name.trim() || updatedEvent.type }
-        : event
-    ));
+    setEvents(prev => 
+      prev?.map(event => 
+        event.date.toDateString() === updatedEvent.date.toDateString() 
+          ? { ...updatedEvent, name: updatedEvent.name.trim() || updatedEvent.type }
+          : event
+      )
+    );
 
     toast({
       title: "Success",
@@ -139,11 +123,11 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   };
 
   const findEvent = (date: Date) => {
-    return events.find(e => e.date.toDateString() === date.toDateString());
+    return events?.find(e => e.date.toDateString() === date.toDateString());
   };
 
   return {
-    events,
+    events: events || [],
     addEvent,
     updateEvent,
     findEvent

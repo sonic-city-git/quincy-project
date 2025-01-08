@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Calendar } from "@/components/ui/calendar";
 import { AddEventDialog } from "./AddEventDialog";
 import { EditEventDialog } from "./EditEventDialog";
@@ -9,6 +8,8 @@ import { CalendarDay } from "./CalendarDay";
 import { EVENT_COLORS } from "@/constants/eventColors";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useToast } from "@/hooks/use-toast";
+import { useEventDialog } from "@/hooks/useEventDialog";
+import { useCalendarDate } from "@/hooks/useCalendarDate";
 
 interface ProjectCalendarProps {
   className?: string;
@@ -16,30 +17,30 @@ interface ProjectCalendarProps {
 
 export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   const { projectId } = useParams();
-  const [selectedDate, setSelectedDate] = useState<Date>();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent>();
   const { toast } = useToast();
-  
   const { events, addEvent, updateEvent, findEvent } = useCalendarEvents(projectId);
+  const { normalizeDate } = useCalendarDate();
+  const {
+    selectedDate,
+    isAddDialogOpen,
+    isEditDialogOpen,
+    selectedEvent,
+    openAddDialog,
+    openEditDialog,
+    closeAddDialog,
+    closeEditDialog,
+  } = useEventDialog();
 
   const handleSelect = (date: Date | undefined) => {
     if (!date) return;
     
-    const normalizedDate = new Date(Date.UTC(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate()
-    ));
-    
+    const normalizedDate = normalizeDate(date);
     const event = findEvent(normalizedDate);
+    
     if (event) {
-      setSelectedEvent(event);
-      setIsEditDialogOpen(true);
+      openEditDialog(event);
     } else {
-      setSelectedDate(normalizedDate);
-      setIsAddDialogOpen(true);
+      openAddDialog(normalizedDate);
     }
   };
 
@@ -56,8 +57,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
     try {
       console.log('Submitting event:', { eventName, eventType, selectedDate });
       await addEvent(selectedDate, eventName, eventType);
-      setIsAddDialogOpen(false);
-      setSelectedDate(undefined);
+      closeAddDialog();
     } catch (error) {
       console.error('Error submitting event:', error);
       toast({
@@ -71,8 +71,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   const handleEventUpdate = async (updatedEvent: CalendarEvent) => {
     try {
       await updateEvent(updatedEvent);
-      setIsEditDialogOpen(false);
-      setSelectedEvent(undefined);
+      closeEditDialog();
     } catch (error) {
       console.error('Error updating event:', error);
       toast({
@@ -114,13 +113,13 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
       />
       <AddEventDialog
         isOpen={isAddDialogOpen}
-        onOpenChange={setIsAddDialogOpen}
+        onOpenChange={closeAddDialog}
         onSubmit={handleEventSubmit}
         date={selectedDate}
       />
       <EditEventDialog
         isOpen={isEditDialogOpen}
-        onOpenChange={setIsEditDialogOpen}
+        onOpenChange={closeEditDialog}
         event={selectedEvent}
         onSave={handleEventUpdate}
       />
