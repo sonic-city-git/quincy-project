@@ -9,11 +9,7 @@ import { useEventDialog } from "@/hooks/useEventDialog";
 import { useCalendarDate } from "@/hooks/useCalendarDate";
 import { EventsProvider } from "@/contexts/EventsContext";
 
-interface ProjectCalendarProps {
-  className?: string;
-}
-
-export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
+export const ProjectCalendar = () => {
   const { projectId } = useParams();
   const { normalizeDate } = useCalendarDate();
   const {
@@ -40,7 +36,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
             const normalizedDate = normalizeDate(date);
             openAddDialog(normalizedDate);
           }}
-          className={`w-full rounded-md border ${className}`}
+          className="w-full rounded-md border"
           modifiers={{ today: undefined }}
           modifiersClassNames={{
             selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
