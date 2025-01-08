@@ -14,6 +14,8 @@ interface RoleFormFieldsProps {
   onHourlyRateChange: (value: string) => void;
 }
 
+const roleOrder = ["FOH", "MON", "PLAYBACK", "BACKLINE"];
+
 export function RoleFormFields({
   roles,
   selectedRole,
@@ -26,6 +28,26 @@ export function RoleFormFields({
   onHourlyRateChange,
 }: RoleFormFieldsProps) {
   const selectedRoleData = roles?.find(role => role.id === selectedRole);
+
+  const sortedRoles = [...(roles || [])].sort((a, b) => {
+    const roleA = a.name.toUpperCase();
+    const roleB = b.name.toUpperCase();
+    
+    const indexA = roleOrder.indexOf(roleA);
+    const indexB = roleOrder.indexOf(roleB);
+    
+    // If both roles are in our predefined order, sort by that
+    if (indexA !== -1 && indexB !== -1) {
+      return indexA - indexB;
+    }
+    
+    // If only one role is in our predefined order, prioritize it
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+    
+    // For roles not in our predefined order, sort alphabetically
+    return roleA.localeCompare(roleB);
+  });
 
   return (
     <div className="space-y-4 py-4">
@@ -43,7 +65,7 @@ export function RoleFormFields({
             onChange={(e) => onRoleChange(e.target.value)}
           >
             <option value="">Select a role</option>
-            {roles?.map((role) => (
+            {sortedRoles?.map((role) => (
               <option key={role.id} value={role.id}>
                 {role.name}
               </option>
