@@ -17,6 +17,7 @@ interface AddRoleDialogProps {
     roleId: string;
     dailyRate: number;
     hourlyRate: number;
+    quantity?: number;
   }) => void;
   loading?: boolean;
   editMode?: boolean;
@@ -24,6 +25,7 @@ interface AddRoleDialogProps {
     roleId: string;
     dailyRate: number;
     hourlyRate: number;
+    quantity?: number;
   };
 }
 
@@ -69,6 +71,7 @@ export function AddRoleDialog({
           roleId: selectedRole,
           dailyRate: parseFloat(dailyRate),
           hourlyRate: parseFloat(hourlyRate),
+          quantity: 1, // Add default quantity
         });
         toast({
           title: editMode ? "Role Updated" : "Role Added",
