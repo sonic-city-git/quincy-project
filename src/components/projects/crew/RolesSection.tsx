@@ -5,6 +5,16 @@ import { useToast } from "@/hooks/use-toast";
 import { RoleItem } from "./RoleItem";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 interface RolesSectionProps {
   projectId: string;
@@ -16,6 +26,9 @@ const ROLE_ORDER = ['FOH', 'MON', 'Playback', 'Backline'];
 export function RolesSection({ projectId }: RolesSectionProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [quantity, setQuantity] = useState("1");
+  const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   const { data: roles } = useQuery({
     queryKey: ['crew-roles'],
@@ -67,20 +80,33 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     },
   });
 
-  const handleAddRole = async (roleId: string) => {
+  const handleAddRole = async () => {
+    if (!selectedRole) {
+      toast({
+        title: "Error",
+        description: "Please select a role",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const { error } = await supabase
         .from('project_roles')
         .insert({
           project_id: projectId,
-          role_id: roleId,
-          quantity: 1
+          role_id: selectedRole,
+          quantity: parseInt(quantity)
         });
 
       if (error) throw error;
       
       await refetchProjectRoles();
+      setOpen(false);
+      setSelectedRole(null);
+      setQuantity("1");
+      
       toast({
         title: "Success",
         description: "Role added to project",
@@ -138,10 +164,58 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Roles</h2>
-        <Button size="sm" variant="outline" className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add role
-        </Button>
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger asChild>
+            <Button size="sm" className="gap-2">
+              <Plus className="h-4 w-4" />
+              Add role
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add Role</DialogTitle>
+              <DialogDescription>
+                Select a role and specify the quantity needed for this project.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <select
+                  id="role"
+                  className="w-full p-2 rounded-md border border-zinc-800 bg-zinc-950"
+                  value={selectedRole || ""}
+                  onChange={(e) => setSelectedRole(e.target.value)}
+                >
+                  <option value="">Select a role</option>
+                  {roles?.map((role) => (
+                    <option key={role.id} value={role.id}>
+                      {role.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quantity">Quantity</Label>
+                <Input
+                  id="quantity"
+                  type="number"
+                  min="1"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleAddRole} disabled={loading}>
+                {loading ? "Adding..." : "Add Role"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
