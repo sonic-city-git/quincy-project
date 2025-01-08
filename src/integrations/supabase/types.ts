@@ -282,6 +282,7 @@ export type Database = {
           daily_rate: number | null
           hourly_rate: number | null
           id: string
+          preferred_status: string | null
           project_id: string
           quantity: number
           role_id: string
@@ -291,6 +292,7 @@ export type Database = {
           daily_rate?: number | null
           hourly_rate?: number | null
           id?: string
+          preferred_status?: string | null
           project_id: string
           quantity?: number
           role_id: string
@@ -300,6 +302,7 @@ export type Database = {
           daily_rate?: number | null
           hourly_rate?: number | null
           id?: string
+          preferred_status?: string | null
           project_id?: string
           quantity?: number
           role_id?: string
