@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CrewMember, NewCrewMember } from "@/types/crew";
 import { useCrewSelection } from "./useCrewSelection";
 import { useCrewRoles } from "./useCrewRoles";
@@ -15,11 +15,7 @@ export function useCrewManagement() {
   const { selectedItems, handleItemSelect, getSelectedCrew, clearSelection } = useCrewSelection();
   const { selectedRoles, handleRoleSelect } = useCrewRoles();
 
-  useEffect(() => {
-    fetchCrewMembers();
-  }, []);
-
-  const fetchCrewMembers = async () => {
+  const fetchCrewMembers = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('crew_members')
@@ -38,9 +34,13 @@ export function useCrewManagement() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
-  const handleAddCrewMember = async (newMember: NewCrewMember) => {
+  useEffect(() => {
+    fetchCrewMembers();
+  }, [fetchCrewMembers]);
+
+  const handleAddCrewMember = useCallback(async (newMember: NewCrewMember) => {
     try {
       const crewMember = {
         name: `${newMember.firstName} ${newMember.lastName}`,
@@ -71,9 +71,9 @@ export function useCrewManagement() {
         variant: "destructive",
       });
     }
-  };
+  }, [toast]);
 
-  const handleEditCrewMember = async (editedMember: CrewMember) => {
+  const handleEditCrewMember = useCallback(async (editedMember: CrewMember) => {
     try {
       const { error } = await supabase
         .from('crew_members')
@@ -98,9 +98,9 @@ export function useCrewManagement() {
         variant: "destructive",
       });
     }
-  };
+  }, [clearSelection, toast]);
 
-  const handleDeleteCrewMembers = async () => {
+  const handleDeleteCrewMembers = useCallback(async () => {
     try {
       const { error } = await supabase
         .from('crew_members')
@@ -125,7 +125,7 @@ export function useCrewManagement() {
         variant: "destructive",
       });
     }
-  };
+  }, [selectedItems, clearSelection, toast]);
 
   const allRoles = getAllUniqueRoles(crewMembers);
   const filteredCrewMembers = sortCrewMembers(filterCrewByRoles(crewMembers, selectedRoles));
