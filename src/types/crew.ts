@@ -16,6 +16,12 @@ export interface NewCrewMember {
   tags: string[];
 }
 
+export interface CrewRole {
+  id: string;
+  name: string;
+  color: string;
+}
+
 export const TAG_COLORS: { [key: string]: string } = {
   FOH: "bg-[#8B5CF6] text-white",
   MON: "bg-[#D946EF] text-white",
