@@ -11,7 +11,7 @@ export function useEquipmentMutations() {
       const { data: equipmentData, error: equipmentError } = await supabase
         .from('equipment')
         .insert([{
-          id: newEquipment.id,
+          // Remove the id field to let Supabase generate it
           Code: newEquipment.code,
           Name: newEquipment.name,
           Price: parseFloat(newEquipment.price),
@@ -34,9 +34,9 @@ export function useEquipmentMutations() {
           .from('equipment_serial_numbers')
           .insert(
             newEquipment.serialNumbers.map(sn => ({
-              equipment_id: equipmentData.id,
+              equipment_id: equipmentData.id, // Use the generated UUID
               serial_number: sn.number,
-              status: sn.status,
+              status: 'Available', // Default status
               notes: sn.notes
             }))
           );
@@ -98,7 +98,7 @@ export function useEquipmentMutations() {
             editedEquipment.serialNumbers.map(sn => ({
               equipment_id: editedEquipment.id,
               serial_number: sn.number,
-              status: sn.status,
+              status: 'Available',
               notes: sn.notes
             }))
           );
