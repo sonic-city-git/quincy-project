@@ -138,32 +138,32 @@ export function RolesSection({ projectId }: RolesSectionProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-lg font-semibold">Roles</h2>
-        <div className="flex items-center gap-2">
-          <RoleSelectionActions
-            selectedItems={selectedItems}
-            onEdit={handleEditRole}
-            onDelete={handleDeleteRole}
-          />
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" className="gap-2">
-                <Plus className="h-4 w-4" />
-                Add role
-              </Button>
-            </DialogTrigger>
-            <AddRoleDialog
-              roles={roles}
-              onClose={() => setOpen(false)}
-              onSubmit={handleAddRole}
-              loading={loading}
-            />
-          </Dialog>
-        </div>
-      </div>
-
       <div className="bg-zinc-900/50 rounded-lg p-3">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-semibold">Roles</h2>
+          <div className="flex items-center gap-2">
+            <RoleSelectionActions
+              selectedItems={selectedItems}
+              onEdit={handleEditRole}
+              onDelete={handleDeleteRole}
+            />
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add role
+                </Button>
+              </DialogTrigger>
+              <AddRoleDialog
+                roles={roles}
+                onClose={() => setOpen(false)}
+                onSubmit={handleAddRole}
+                loading={loading}
+              />
+            </Dialog>
+          </div>
+        </div>
+
         <div className="grid gap-1.5">
           <RatesHeader />
           {projectRoles?.map((projectRole) => (
