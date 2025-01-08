@@ -38,7 +38,7 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
           />
         </TableHead>
         <TableHead className="w-[240px] pl-0">Name</TableHead>
-        <TableHead className="w-[400px] pl-0">Role</TableHead>
+        <TableHead className="w-[400px] pl-4">Role</TableHead>
         <TableHead className="w-[250px]">Email</TableHead>
         <TableHead className="w-[150px]">Phone</TableHead>
         <TableHead>Folder</TableHead>
@@ -57,7 +57,7 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
             />
           </TableCell>
           <TableCell className="w-[240px] truncate pl-2">{crew.name}</TableCell>
-          <TableCell className="w-[400px] pl-0">
+          <TableCell className="w-[400px] pl-4">
             <RoleTags role={crew.role} />
           </TableCell>
           <TableCell className="w-[250px] truncate">{crew.email}</TableCell>
