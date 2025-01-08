@@ -31,7 +31,10 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
     closeEditDialog,
   } = useEventDialog();
 
-  console.log('ProjectCalendar - projectId:', projectId); // Debug log
+  console.log('ProjectCalendar - Route params:', useParams()); // Debug log
+  console.log('ProjectCalendar - projectId from params:', projectId); // Debug log
+  console.log('ProjectCalendar - isAddDialogOpen:', isAddDialogOpen); // Debug log
+  console.log('ProjectCalendar - selectedDate:', selectedDate); // Debug log
 
   const handleSelect = (date: Date | undefined) => {
     if (!date) return;
@@ -52,6 +55,16 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
       toast({
         title: "Error",
         description: "No date selected",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!projectId) {
+      console.error('Missing projectId:', projectId);
+      toast({
+        title: "Error",
+        description: "Project ID is missing",
         variant: "destructive",
       });
       return;
