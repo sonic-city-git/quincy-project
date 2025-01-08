@@ -26,11 +26,8 @@ export const EditEventDialog = ({
   onSave,
 }: EditEventDialogProps) => {
   const { data: eventTypes } = useEventTypes();
-  
-  if (!event) return null;
-
-  const [name, setName] = useState(event.name);
-  const [selectedEventTypeId, setSelectedEventTypeId] = useState(event.type.id);
+  const [name, setName] = useState("");
+  const [selectedEventTypeId, setSelectedEventTypeId] = useState("");
 
   useEffect(() => {
     if (event) {
@@ -38,6 +35,8 @@ export const EditEventDialog = ({
       setSelectedEventTypeId(event.type.id);
     }
   }, [event]);
+
+  if (!event) return null;
 
   const selectedEventType = eventTypes?.find(et => et.id === selectedEventTypeId);
 
