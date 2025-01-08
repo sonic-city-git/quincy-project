@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { AddRoleDialog } from "./AddRoleDialog";
-import { Card } from "@/components/ui/card";
+import { ProjectRoleCard } from "./ProjectRoleCard";
 
 interface RolesSectionProps {
   projectId: string;
@@ -118,39 +118,6 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     }
   };
 
-  const handleUpdateQuantity = async (roleId: string, currentQuantity: number, increment: boolean) => {
-    const newQuantity = increment ? currentQuantity + 1 : Math.max(0, currentQuantity - 1);
-    
-    try {
-      if (newQuantity === 0) {
-        const { error } = await supabase
-          .from('project_roles')
-          .delete()
-          .eq('project_id', projectId)
-          .eq('role_id', roleId);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('project_roles')
-          .update({ quantity: newQuantity })
-          .eq('project_id', projectId)
-          .eq('role_id', roleId);
-
-        if (error) throw error;
-      }
-      
-      await refetchProjectRoles();
-    } catch (error) {
-      console.error('Error updating quantity:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update quantity",
-        variant: "destructive",
-      });
-    }
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -175,45 +142,14 @@ export function RolesSection({ projectId }: RolesSectionProps) {
       <div className="bg-zinc-900/50 rounded-lg p-4">
         <div className="grid gap-2">
           {projectRoles?.map((projectRole) => (
-            <Card key={projectRole.id} className="p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-2.5 h-2.5 rounded-full"
-                    style={{ backgroundColor: projectRole.crew_roles.color }}
-                  />
-                  <div>
-                    <h3 className="text-sm font-medium">{projectRole.crew_roles.name}</h3>
-                    <div className="text-xs text-muted-foreground space-y-0.5">
-                      {projectRole.daily_rate && (
-                        <p>Daily rate: ${projectRole.daily_rate}</p>
-                      )}
-                      {projectRole.hourly_rate && (
-                        <p>Hourly rate: ${projectRole.hourly_rate}</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7"
-                    onClick={() => handleUpdateQuantity(projectRole.role_id, projectRole.quantity, false)}
-                  >
-                    -
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 w-7"
-                    onClick={() => handleUpdateQuantity(projectRole.role_id, projectRole.quantity, true)}
-                  >
-                    +
-                  </Button>
-                </div>
-              </div>
-            </Card>
+            <ProjectRoleCard
+              key={projectRole.id}
+              name={projectRole.crew_roles.name}
+              color={projectRole.crew_roles.color}
+              quantity={projectRole.quantity}
+              dailyRate={projectRole.daily_rate}
+              hourlyRate={projectRole.hourly_rate}
+            />
           ))}
           {projectRoles?.length === 0 && (
             <div className="text-center py-6 text-sm text-muted-foreground">
