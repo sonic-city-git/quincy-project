@@ -37,7 +37,7 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
             onCheckedChange={handleSelectAll}
           />
         </TableHead>
-        <TableHead className="w-[200px]">Name</TableHead>
+        <TableHead className="w-[240px] pl-2">Name</TableHead>
         <TableHead className="w-[400px]">Role</TableHead>
         <TableHead className="w-[250px]">Email</TableHead>
         <TableHead className="w-[150px]">Phone</TableHead>
@@ -56,7 +56,7 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
               onCheckedChange={() => onItemSelect(crew.id)}
             />
           </TableCell>
-          <TableCell className="w-[200px] truncate">{crew.name}</TableCell>
+          <TableCell className="w-[240px] truncate pl-2">{crew.name}</TableCell>
           <TableCell className="w-[400px]">
             <RoleTags role={crew.role} />
           </TableCell>
