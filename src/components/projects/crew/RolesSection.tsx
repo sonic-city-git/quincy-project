@@ -172,7 +172,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
           open={open}
           onOpenChange={setOpen}
           onClose={handleDialogClose}
-          onSubmit={handleAddRole}
+          onSubmit={(data) => handleAddRole(data)}
           loading={loading}
           editMode={editMode}
           editValues={editValues}
