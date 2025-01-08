@@ -45,7 +45,15 @@ export const EQUIPMENT_FOLDERS: EquipmentFolder[] = [
       { id: "schuko", name: "Schuko" },
     ],
   },
-  { id: "wl", name: "WL" },
+  { 
+    id: "wl", 
+    name: "WL",
+    subfolders: [
+      { id: "wl-mic", name: "MIC" },
+      { id: "wl-iem", name: "IEM" },
+      { id: "wl-antenna", name: "Antenna" },
+    ],
+  },
   { id: "outboard", name: "Outboard" },
   { id: "stands", name: "Stands/Clamps" },
   { id: "misc", name: "Misc" },
