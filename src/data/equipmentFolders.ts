@@ -3,7 +3,7 @@ import { EquipmentFolder } from "@/types/equipment";
 export const EQUIPMENT_FOLDERS: EquipmentFolder[] = [
   {
     id: "mixers",
-    name: "Mixers",
+    name: "a.Mixers",
     subfolders: [
       { id: "mixrack", name: "Mixrack" },
       { id: "surface", name: "Surface" },
@@ -13,7 +13,7 @@ export const EQUIPMENT_FOLDERS: EquipmentFolder[] = [
   },
   {
     id: "microphones",
-    name: "Microphones",
+    name: "b.Microphones",
     subfolders: [
       { id: "dynamic", name: "Dynamic" },
       { id: "condenser", name: "Condenser" },
@@ -25,7 +25,7 @@ export const EQUIPMENT_FOLDERS: EquipmentFolder[] = [
   },
   {
     id: "di-boxes",
-    name: "DI-boxes",
+    name: "c.DI-boxes",
     subfolders: [
       { id: "active", name: "Active" },
       { id: "passive", name: "Passive" },
@@ -34,7 +34,7 @@ export const EQUIPMENT_FOLDERS: EquipmentFolder[] = [
   },
   {
     id: "cables",
-    name: "Cables/Split",
+    name: "d.Cables/Split",
     subfolders: [
       { id: "cat", name: "CAT" },
       { id: "xlr", name: "XLR" },
@@ -47,18 +47,18 @@ export const EQUIPMENT_FOLDERS: EquipmentFolder[] = [
   },
   { 
     id: "wl", 
-    name: "WL",
+    name: "e.WL",
     subfolders: [
-      { id: "wl-mic", name: "MIC" },
-      { id: "wl-iem", name: "IEM" },
-      { id: "wl-antenna", name: "Antenna" },
+      { id: "wl-mic", name: "a.MIC" },
+      { id: "wl-iem", name: "b.IEM" },
+      { id: "wl-antenna", name: "c.Antenna" },
     ],
   },
-  { id: "outboard", name: "Outboard" },
-  { id: "stands", name: "Stands/Clamps" },
-  { id: "misc", name: "Misc" },
-  { id: "flightcases", name: "Flightcases" },
-  { id: "consumables", name: "Consumables" },
+  { id: "outboard", name: "f.Outboard" },
+  { id: "stands", name: "g.Stands/Clamps" },
+  { id: "misc", name: "h.Misc" },
+  { id: "flightcases", name: "i.Flightcases" },
+  { id: "consumables", name: "j.Consumables" },
 ];
 
 export const flattenFolders = (folders: EquipmentFolder[]): EquipmentFolder[] => {
