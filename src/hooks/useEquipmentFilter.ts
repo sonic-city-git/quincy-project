@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Equipment } from "@/types/equipment";
 import { supabase } from "@/integrations/supabase/client";
 import { Folder } from "@/types/folders";
@@ -47,29 +47,31 @@ export function useEquipmentFilter() {
     return folder.parent_id ? isFolderChild(folder.parent_id, parentId) : false;
   }, [folders]);
 
-  const filterFunction = useCallback((items: Equipment[]) => {
-    if (!items || !Array.isArray(items)) {
-      return [];
-    }
+  const filterFunction = useMemo(() => {
+    return (items: Equipment[]) => {
+      if (!items || !Array.isArray(items)) {
+        return [];
+      }
 
-    let filtered = items;
+      let filtered = items;
 
-    if (selectedFolder && selectedFolder !== "all") {
-      filtered = filtered.filter(item => {
-        const itemFolderId = item.folder_id || item.Folder;
-        return itemFolderId === selectedFolder || isFolderChild(itemFolderId, selectedFolder);
-      });
-    }
+      if (selectedFolder && selectedFolder !== "all") {
+        filtered = filtered.filter(item => {
+          const itemFolderId = item.folder_id || item.Folder;
+          return itemFolderId === selectedFolder || isFolderChild(itemFolderId, selectedFolder);
+        });
+      }
 
-    if (searchTerm) {
-      const searchLower = searchTerm.toLowerCase();
-      filtered = filtered.filter(item =>
-        (item.name?.toLowerCase().includes(searchLower) || 
-         item.code?.toLowerCase().includes(searchLower))
-      );
-    }
+      if (searchTerm) {
+        const searchLower = searchTerm.toLowerCase();
+        filtered = filtered.filter(item =>
+          (item.name?.toLowerCase().includes(searchLower) || 
+           item.code?.toLowerCase().includes(searchLower))
+        );
+      }
 
-    return sortByFolderStructure(filtered);
+      return sortByFolderStructure(filtered);
+    };
   }, [selectedFolder, searchTerm, isFolderChild, sortByFolderStructure]);
 
   const filterEquipment = useCallback((newEquipment: Equipment[]) => {
