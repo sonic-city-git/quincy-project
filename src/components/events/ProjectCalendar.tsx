@@ -46,6 +46,7 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
 
   const handleEventSubmit = async (eventName: string, eventType: EventType) => {
     if (!selectedDate || !projectId) {
+      console.error('Missing required data:', { selectedDate, projectId });
       toast({
         title: "Error",
         description: "Missing required data to add event",

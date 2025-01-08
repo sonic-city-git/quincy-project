@@ -10,9 +10,13 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
   useEffect(() => {
     const loadEvents = async () => {
-      if (!projectId) return;
+      if (!projectId) {
+        console.error('No project ID provided for loading events');
+        return;
+      }
 
       try {
+        console.log('Loading events for project:', projectId);
         const { data, error } = await supabase
           .from('project_events')
           .select('*')
@@ -20,6 +24,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
         if (error) throw error;
 
+        console.log('Fetched events:', data);
         const fetchedEvents = data.map(event => ({
           date: new Date(event.date),
           name: event.name,
@@ -42,6 +47,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
   const addEvent = async (date: Date, eventName: string, eventType: EventType) => {
     if (!projectId) {
+      console.error('No project ID provided for adding event');
       throw new Error('Project ID is missing');
     }
 
@@ -65,8 +71,12 @@ export const useCalendarEvents = (projectId: string | undefined) => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error when adding event:', error);
+        throw error;
+      }
 
+      console.log('Successfully added event:', data);
       const newEvent: CalendarEvent = {
         date: new Date(data.date),
         name: data.name,
