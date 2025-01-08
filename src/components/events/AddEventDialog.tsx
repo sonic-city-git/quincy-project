@@ -24,7 +24,7 @@ interface AddEventDialogProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (eventName: string, eventType: EventType) => void;
   date: Date | undefined;
-  projectId: string;
+  projectId: string | undefined;
 }
 
 export const AddEventDialog = ({
@@ -109,7 +109,7 @@ export const AddEventDialog = ({
           <div className="flex justify-end">
             <Button 
               type="submit" 
-              disabled={isSubmitting}
+              disabled={isSubmitting || !projectId}
             >
               {isSubmitting ? "Adding..." : "Add Event"}
             </Button>
