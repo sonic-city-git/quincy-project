@@ -82,6 +82,7 @@ export type Database = {
           "Created on": string | null
           "External remark": string | null
           Folder: string | null
+          folder_id: string | null
           id: string
           "Internal remark": string | null
           Name: string | null
@@ -99,6 +100,7 @@ export type Database = {
           "Created on"?: string | null
           "External remark"?: string | null
           Folder?: string | null
+          folder_id?: string | null
           id?: string
           "Internal remark"?: string | null
           Name?: string | null
@@ -116,6 +118,7 @@ export type Database = {
           "Created on"?: string | null
           "External remark"?: string | null
           Folder?: string | null
+          folder_id?: string | null
           id?: string
           "Internal remark"?: string | null
           Name?: string | null
