@@ -34,14 +34,21 @@ export function ProjectCrewTab({ projectId }: ProjectCrewTabProps) {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Roles Section */}
-      <RolesSection projectId={projectId} />
+    <div className="space-y-6">
+      <div className="flex gap-6">
+        {/* Roles Section */}
+        <RolesSection projectId={projectId} />
+        
+        {/* Right side placeholder */}
+        <div className="w-1/2 h-[200px] bg-zinc-900/50 rounded-md flex items-center justify-center">
+          <span className="text-sm text-muted-foreground">Additional content coming soon...</span>
+        </div>
+      </div>
 
       {/* Crew Members Section */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Project Crew</h2>
+          <h2 className="text-lg font-semibold">Project Crew</h2>
           <Button size="sm" className="gap-2">
             <UserPlus className="h-4 w-4" />
             Add crew member

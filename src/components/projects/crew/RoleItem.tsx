@@ -21,33 +21,35 @@ export function RoleItem({
   if (quantity !== undefined) {
     return (
       <div
-        className="flex items-center justify-between p-3 rounded-md w-full"
+        className="flex items-center justify-between py-1.5 px-2 rounded-md w-full"
         style={{ backgroundColor: color + '20' }}
       >
         <div className="flex items-center space-x-2">
           <div
-            className="h-3 w-3 rounded-full"
+            className="h-2 w-2 rounded-full"
             style={{ backgroundColor: color }}
           />
-          <span className="text-sm font-medium">{name}</span>
+          <span className="text-sm">{name}</span>
         </div>
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1">
           <Button 
             variant="ghost" 
             size="sm"
+            className="h-6 w-6 p-0"
             onClick={() => onUpdateQuantity?.(false)}
             disabled={loading}
           >
-            <Minus className="h-4 w-4" />
+            <Minus className="h-3 w-3" />
           </Button>
-          <span className="text-sm font-medium min-w-[20px] text-center">{quantity}</span>
+          <span className="text-sm min-w-[20px] text-center">{quantity}</span>
           <Button 
             variant="ghost" 
             size="sm"
+            className="h-6 w-6 p-0"
             onClick={() => onUpdateQuantity?.(true)}
             disabled={loading}
           >
-            <Plus className="h-4 w-4" />
+            <Plus className="h-3 w-3" />
           </Button>
         </div>
       </div>
@@ -57,12 +59,12 @@ export function RoleItem({
   return (
     <Button
       variant="outline"
-      className="flex items-center justify-between p-3 h-auto w-full"
+      className="flex items-center justify-between py-1.5 px-2 h-8 w-full"
       onClick={onAdd}
       disabled={loading}
     >
-      <span className="text-sm font-medium">{name}</span>
-      <Plus className="h-4 w-4 ml-2" />
+      <span className="text-sm">{name}</span>
+      <Plus className="h-3 w-3 ml-2" />
     </Button>
   );
 }

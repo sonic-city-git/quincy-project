@@ -113,29 +113,28 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Roles</h2>
-      </div>
-
-      <div className="bg-zinc-900 rounded-md p-4">
-        <div className="flex flex-col space-y-2">
-          {roles?.map((role) => {
-            const projectRole = getProjectRole(role.id);
-            return (
-              <RoleItem
-                key={role.id}
-                name={role.name}
-                color={role.color}
-                quantity={projectRole?.quantity}
-                onAdd={() => handleAddRole(role.id)}
-                onUpdateQuantity={(increment) => 
-                  handleUpdateQuantity(role.id, projectRole?.quantity || 0, increment)
-                }
-                loading={loading}
-              />
-            );
-          })}
+    <div className="w-1/2">
+      <div className="space-y-2">
+        <h2 className="text-lg font-semibold">Roles</h2>
+        <div className="bg-zinc-900 rounded-md p-2 space-y-1">
+          <div className="flex flex-col gap-1">
+            {roles?.map((role) => {
+              const projectRole = getProjectRole(role.id);
+              return (
+                <RoleItem
+                  key={role.id}
+                  name={role.name}
+                  color={role.color}
+                  quantity={projectRole?.quantity}
+                  onAdd={() => handleAddRole(role.id)}
+                  onUpdateQuantity={(increment) => 
+                    handleUpdateQuantity(role.id, projectRole?.quantity || 0, increment)
+                  }
+                  loading={loading}
+                />
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
