@@ -1,5 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProjectGeneralTab } from "@/components/projects/ProjectGeneralTab";
+import { ProjectCrewTab } from "@/components/projects/crew/ProjectCrewTab";
 import { ProjectData } from "@/types/projectDetails";
 
 interface ProjectTabsProps {
@@ -34,9 +35,7 @@ export function ProjectTabs({ projectId, project }: ProjectTabsProps) {
       </TabsContent>
 
       <TabsContent value="crew">
-        <div className="text-sm text-muted-foreground">
-          Crew content coming soon...
-        </div>
+        <ProjectCrewTab projectId={projectId} />
       </TabsContent>
 
       <TabsContent value="financial">
