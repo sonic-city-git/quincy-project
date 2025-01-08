@@ -42,6 +42,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   const addEvent = async (date: Date, eventName: string, eventType: EventType) => {
     if (!projectId) return;
 
+    console.log('Adding event:', { date, eventName, eventType, projectId });
+
     const { error } = await supabase
       .from('project_events')
       .insert({
