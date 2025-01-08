@@ -32,22 +32,29 @@ export function useEquipmentFilter() {
     // Apply folder filter if a folder is selected
     if (selectedFolder && selectedFolder !== "all") {
       filtered = filtered.filter(item => {
-        // Check if the item's folder matches the selected folder
-        // or if it's in a subfolder of the selected folder
-        const allFolders = flattenFolders(EQUIPMENT_FOLDERS);
-        const selectedFolderObj = allFolders.find(f => f.id === selectedFolder);
-        const itemFolderObj = allFolders.find(f => f.id === item.folderId);
+        // First check if the item has a Folder field (from database) or folderId
+        const itemFolderId = item.folderId || item.Folder;
         
-        if (!selectedFolderObj || !itemFolderObj) return false;
+        // Direct match
+        if (itemFolderId === selectedFolder) return true;
 
-        // If the folders match directly
-        if (item.folderId === selectedFolder) return true;
-
-        // Check if the item's folder is a subfolder of the selected folder
-        const parentFolder = EQUIPMENT_FOLDERS.find(f => 
-          f.subfolders?.some(sub => sub.id === item.folderId)
+        // Check parent-child relationship
+        const selectedFolderParent = EQUIPMENT_FOLDERS.find(folder => 
+          folder.subfolders?.some(sub => sub.id === selectedFolder)
         );
-        return parentFolder?.id === selectedFolder;
+
+        // If selected folder is a subfolder, only show items in that specific subfolder
+        if (selectedFolderParent) {
+          return itemFolderId === selectedFolder;
+        }
+
+        // If selected folder is a parent folder, show all items in its subfolders
+        const selectedParentFolder = EQUIPMENT_FOLDERS.find(f => f.id === selectedFolder);
+        if (selectedParentFolder?.subfolders) {
+          return selectedParentFolder.subfolders.some(sub => sub.id === itemFolderId);
+        }
+
+        return false;
       });
     }
 
