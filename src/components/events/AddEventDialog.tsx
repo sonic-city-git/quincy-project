@@ -37,7 +37,7 @@ export const AddEventDialog = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
+    if (isSubmitting || !date) return;
 
     setIsSubmitting(true);
     try {

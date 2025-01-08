@@ -46,8 +46,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       throw new Error('Project ID is missing');
     }
 
-    const normalizedDate = normalizeDate(date);
-    const formattedDate = normalizedDate.toISOString().split('T')[0];
+    // Format date to YYYY-MM-DD for PostgreSQL date column
+    const formattedDate = date.toISOString().split('T')[0];
     
     console.log('Adding event:', {
       project_id: projectId,
@@ -119,7 +119,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
     setEvents(prev => 
       prev.map(event => 
-        event.date.toDateString() === updatedEvent.date.toDateString() 
+        normalizeDate(event.date).toDateString() === normalizeDate(updatedEvent.date).toDateString()
           ? { ...updatedEvent, name: updatedEvent.name.trim() || updatedEvent.type }
           : event
       )
