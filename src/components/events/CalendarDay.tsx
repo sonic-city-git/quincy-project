@@ -1,5 +1,5 @@
 import { DayProps } from "react-day-picker";
-import { EventType } from "@/types/events";
+import { CalendarEvent, EventType } from "@/types/events";
 import {
   Tooltip,
   TooltipContent,
@@ -8,11 +8,10 @@ import {
 } from "@/components/ui/tooltip";
 import { useCalendarDate } from "@/hooks/useCalendarDate";
 import { format } from "date-fns";
-import { useEvents } from "@/contexts/EventsContext";
-import { CalendarDayContent } from "./CalendarDayContent";
 
 interface CalendarDayProps extends Omit<DayProps, 'date'> {
   date: Date;
+  event?: CalendarEvent;
   eventColors: Record<EventType, string>;
   onSelect: (date: Date) => void;
   className?: string;
@@ -20,14 +19,13 @@ interface CalendarDayProps extends Omit<DayProps, 'date'> {
 
 export const CalendarDay = ({ 
   date: dayDate,
+  event,
   eventColors,
   onSelect,
   className,
   ...props 
 }: CalendarDayProps) => {
   const { normalizeDate } = useCalendarDate();
-  const { findEvent } = useEvents();
-  const event = findEvent(dayDate);
   
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -51,7 +49,7 @@ export const CalendarDay = ({
             `}
             onClick={handleClick}
           >
-            <CalendarDayContent date={dayDate} event={event} />
+            {dayDate.getDate()}
           </button>
         </TooltipTrigger>
         {event && (

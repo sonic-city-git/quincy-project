@@ -10,24 +10,24 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
-import { useEvents } from "@/contexts/EventsContext"
 
 interface EditEventDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   event?: CalendarEvent;
+  onSave: (event: CalendarEvent) => void;
 }
 
 export const EditEventDialog = ({
   isOpen,
   onOpenChange,
   event,
+  onSave,
 }: EditEventDialogProps) => {
   if (!event) return null;
 
   const [name, setName] = useState(event.name);
   const [type, setType] = useState<EventType>(event.type);
-  const { updateEvent } = useEvents();
 
   useEffect(() => {
     if (event) {
@@ -36,17 +36,12 @@ export const EditEventDialog = ({
     }
   }, [event]);
 
-  const handleSave = async () => {
-    try {
-      await updateEvent({
-        ...event,
-        name: name.trim() || type,
-        type,
-      });
-      onOpenChange(false);
-    } catch (error) {
-      console.error('Error updating event:', error);
-    }
+  const handleSave = () => {
+    onSave({
+      ...event,
+      name: name.trim() || type,
+      type,
+    });
   };
 
   return (

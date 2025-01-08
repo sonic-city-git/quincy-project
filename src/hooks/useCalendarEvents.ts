@@ -28,7 +28,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     loadEvents();
   }, [projectId, toast]);
 
-  const addEvent = async (date: Date, eventName: string, eventType: EventType): Promise<void> => {
+  const addEvent = async (date: Date, eventName: string, eventType: EventType) => {
     if (!projectId) {
       throw new Error('Project ID is missing');
     }
@@ -48,6 +48,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
         title: "Success",
         description: "Event added successfully",
       });
+
+      return newEvent;
     } catch (error) {
       console.error('Error adding event:', error);
       toast({
@@ -59,7 +61,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     }
   };
 
-  const updateEvent = async (updatedEvent: CalendarEvent): Promise<void> => {
+  const updateEvent = async (updatedEvent: CalendarEvent) => {
     if (!projectId) throw new Error('Project ID is missing');
 
     try {
