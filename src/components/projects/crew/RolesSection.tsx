@@ -58,25 +58,54 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   }) => {
     setLoading(true);
     try {
-      const { error } = await supabase
+      // First check if the role already exists
+      const { data: existingRole } = await supabase
         .from('project_roles')
-        .insert({
-          project_id: projectId,
-          role_id: data.roleId,
-          quantity: data.quantity,
-          daily_rate: data.dailyRate,
-          hourly_rate: data.hourlyRate,
-        });
+        .select('*')
+        .eq('project_id', projectId)
+        .eq('role_id', data.roleId)
+        .single();
 
-      if (error) throw error;
+      if (existingRole) {
+        // Update existing role
+        const { error: updateError } = await supabase
+          .from('project_roles')
+          .update({
+            quantity: data.quantity,
+            daily_rate: data.dailyRate,
+            hourly_rate: data.hourlyRate,
+          })
+          .eq('project_id', projectId)
+          .eq('role_id', data.roleId);
+
+        if (updateError) throw updateError;
+        
+        toast({
+          title: "Success",
+          description: "Role updated in project",
+        });
+      } else {
+        // Insert new role
+        const { error: insertError } = await supabase
+          .from('project_roles')
+          .insert({
+            project_id: projectId,
+            role_id: data.roleId,
+            quantity: data.quantity,
+            daily_rate: data.dailyRate,
+            hourly_rate: data.hourlyRate,
+          });
+
+        if (insertError) throw insertError;
+        
+        toast({
+          title: "Success",
+          description: "Role added to project",
+        });
+      }
       
       await refetchProjectRoles();
       setOpen(false);
-      
-      toast({
-        title: "Success",
-        description: "Role added to project",
-      });
     } catch (error) {
       console.error('Error adding role:', error);
       toast({
