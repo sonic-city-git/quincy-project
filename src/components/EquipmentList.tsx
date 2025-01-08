@@ -3,37 +3,38 @@ import { addDays, subDays } from "date-fns";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
 import { EquipmentHeader } from "./equipment/EquipmentHeader";
 import { EquipmentContent } from "./equipment/EquipmentContent";
-import { useEquipmentData } from "@/hooks/useEquipmentData";
-import { useEquipmentFilter } from "@/hooks/useEquipmentFilter";
-import { useEquipmentSelection } from "@/hooks/useEquipmentSelection";
+import { Equipment } from "@/types/equipment";
 
-export function EquipmentList() {
+interface EquipmentListProps {
+  equipment: Equipment[];
+  selectedItems: string[];
+  selectedFolder: string | null;
+  searchTerm: string;
+  onSearchChange: (value: string) => void;
+  onFolderSelect: (folderId: string | null) => void;
+  onAddEquipment: (equipment: Equipment) => void;
+  onEditEquipment: (equipment: Equipment) => void;
+  onDeleteEquipment: (ids: string[]) => void;
+  onItemSelect: (id: string) => void;
+  onSelectAll: () => void;
+}
+
+export function EquipmentList({
+  equipment,
+  selectedItems,
+  selectedFolder,
+  searchTerm,
+  onSearchChange,
+  onFolderSelect,
+  onAddEquipment,
+  onEditEquipment,
+  onDeleteEquipment,
+  onItemSelect,
+  onSelectAll,
+}: EquipmentListProps) {
   const [startDate, setStartDate] = useState(new Date());
   const containerRef = useRef<HTMLDivElement>(null);
   const daysToShow = 14;
-
-  const { 
-    equipment, 
-    isLoading, 
-    handleAddEquipment, 
-    handleEditEquipment, 
-    handleDeleteEquipment,
-  } = useEquipmentData();
-
-  const {
-    selectedFolder,
-    setSelectedFolder,
-    searchTerm,
-    setSearchTerm,
-    filterEquipment,
-  } = useEquipmentFilter();
-
-  const {
-    selectedItems,
-    handleItemSelect,
-    handleSelectAll,
-    clearSelection,
-  } = useEquipmentSelection();
 
   const handleResize = useCallback(() => {
     // This empty callback is enough to trigger the debounced resize handling
@@ -41,20 +42,13 @@ export function EquipmentList() {
 
   const { observe, unobserve } = useDebounceResize(handleResize);
 
-  const handleFolderSelect = (folderId: string | null) => {
-    setSelectedFolder(folderId);
-    clearSelection();
-  };
-
-  const handlePreviousPeriod = () => {
+  const handlePreviousPeriod = useCallback(() => {
     setStartDate(prev => subDays(prev, daysToShow));
-  };
+  }, [daysToShow]);
 
-  const handleNextPeriod = () => {
+  const handleNextPeriod = useCallback(() => {
     setStartDate(prev => addDays(prev, daysToShow));
-  };
-
-  const filteredEquipment = filterEquipment(equipment);
+  }, [daysToShow]);
 
   const selectedEquipment = equipment
     .filter(item => selectedItems.includes(item.id))
@@ -63,35 +57,30 @@ export function EquipmentList() {
       name: item.name
     }));
 
-  if (isLoading) {
-    return <div className="flex justify-center items-center h-[400px]">Loading equipment...</div>;
-  }
-
   return (
     <div className="flex flex-col h-[calc(100vh-theme(spacing.16))]" ref={containerRef}>
       <EquipmentHeader
         selectedFolder={selectedFolder}
-        onFolderSelect={handleFolderSelect}
-        onAddEquipment={handleAddEquipment}
-        onEditEquipment={handleEditEquipment}
+        onFolderSelect={onFolderSelect}
+        onAddEquipment={onAddEquipment}
+        onEditEquipment={onEditEquipment}
         onDeleteEquipment={() => {
-          handleDeleteEquipment(selectedItems);
-          clearSelection();
+          onDeleteEquipment(selectedItems);
         }}
         searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
+        onSearchChange={onSearchChange}
         selectedItems={selectedItems}
         equipment={equipment}
       />
 
       <EquipmentContent
-        filteredEquipment={filteredEquipment}
+        filteredEquipment={equipment}
         selectedItems={selectedItems}
         selectedEquipment={selectedEquipment}
         startDate={startDate}
         daysToShow={daysToShow}
-        onSelectAll={() => handleSelectAll(filteredEquipment)}
-        onItemSelect={handleItemSelect}
+        onSelectAll={onSelectAll}
+        onItemSelect={onItemSelect}
         onPreviousPeriod={handlePreviousPeriod}
         onNextPeriod={handleNextPeriod}
         observe={observe}
