@@ -5,6 +5,10 @@ interface RoleTagsProps {
 }
 
 export function RoleTags({ role }: RoleTagsProps) {
+  if (!role) {
+    return null;
+  }
+  
   const tags = role.split(", ");
   
   return (
