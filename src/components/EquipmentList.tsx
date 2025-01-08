@@ -122,7 +122,7 @@ export function EquipmentList() {
 
   return (
     <div className="space-y-4" ref={containerRef}>
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-4">
         <EquipmentHeader
           selectedFolder={selectedFolder}
           onFolderSelect={handleFolderSelect}
@@ -132,12 +132,14 @@ export function EquipmentList() {
           <Button 
             variant="secondary"
             onClick={handleMigrateFolders}
+            className="whitespace-nowrap"
           >
             Migrate Folders
           </Button>
           <Button 
             variant="destructive"
             onClick={handleDeleteSalesEquipment}
+            className="whitespace-nowrap"
           >
             Delete Sales Equipment
           </Button>
