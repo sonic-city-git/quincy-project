@@ -64,7 +64,6 @@ export function EquipmentList({
           onSearchChange={onSearchChange}
           onEditEquipment={onEditEquipment}
           onDeleteEquipment={onDeleteEquipment}
-          onAddEquipment={onAddEquipment}
         />
 
         <EquipmentTable

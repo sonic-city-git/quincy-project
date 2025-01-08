@@ -6,7 +6,6 @@ import { Pencil, Trash } from "lucide-react";
 interface EquipmentActionsProps {
   selectedItems: string[];
   equipment: Equipment[];
-  onAddEquipment: (equipment: Equipment) => void;
   onEditEquipment: (equipment: Equipment) => void;
   onDeleteEquipment: () => void;
 }
@@ -14,7 +13,6 @@ interface EquipmentActionsProps {
 export function EquipmentActions({
   selectedItems,
   equipment,
-  onAddEquipment,
   onEditEquipment,
   onDeleteEquipment,
 }: EquipmentActionsProps) {
@@ -24,7 +22,6 @@ export function EquipmentActions({
 
   return (
     <div className="flex items-center gap-2">
-      <AddEquipmentDialog onAddEquipment={onAddEquipment} />
       {canEdit && selectedEquipment && (
         <Button
           variant="outline"
