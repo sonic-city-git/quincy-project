@@ -1,6 +1,4 @@
-import { EventType } from "@/types/events";
-
-export const EVENT_COLORS: Record<EventType, string> = {
+export const EVENT_COLORS: Record<string, string> = {
   "Show": "bg-green-600",
   "Travel": "bg-blue-600",
   "Preprod": "bg-yellow-500",

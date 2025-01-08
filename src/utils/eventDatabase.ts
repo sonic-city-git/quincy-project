@@ -5,7 +5,14 @@ import { formatDatabaseDate } from "./dateFormatters";
 export const fetchProjectEvents = async (projectId: string) => {
   const { data, error } = await supabase
     .from('project_events')
-    .select('*')
+    .select(`
+      *,
+      event_types (
+        id,
+        name,
+        color
+      )
+    `)
     .eq('project_id', projectId);
 
   if (error) {
@@ -16,7 +23,7 @@ export const fetchProjectEvents = async (projectId: string) => {
   return data?.map(event => ({
     date: new Date(event.date),
     name: event.name,
-    type: event.type as EventType
+    type: event.event_types as EventType
   })) || [];
 };
 
@@ -32,7 +39,7 @@ export const insertEvent = async (
     project_id: projectId,
     date: formattedDate,
     name: eventName,
-    type: eventType
+    event_type_id: eventType.id
   });
 
   const { data, error } = await supabase
@@ -40,10 +47,17 @@ export const insertEvent = async (
     .insert({
       project_id: projectId,
       date: formattedDate,
-      name: eventName.trim() || eventType,
-      type: eventType
+      name: eventName.trim() || eventType.name,
+      event_type_id: eventType.id
     })
-    .select()
+    .select(`
+      *,
+      event_types (
+        id,
+        name,
+        color
+      )
+    `)
     .single();
 
   if (error) {
@@ -64,8 +78,8 @@ export const updateEventInDb = async (
   const { error } = await supabase
     .from('project_events')
     .update({
-      name: updatedEvent.name.trim() || updatedEvent.type,
-      type: updatedEvent.type
+      name: updatedEvent.name.trim() || updatedEvent.type.name,
+      event_type_id: updatedEvent.type.id
     })
     .eq('project_id', projectId)
     .eq('date', formattedDate);
