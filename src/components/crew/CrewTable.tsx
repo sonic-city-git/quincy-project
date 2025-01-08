@@ -31,14 +31,14 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
   const tableHeader = (
     <TableHeader>
       <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
-        <TableHead className="w-[48px] pl-4">
+        <TableHead className="w-[48px]">
           <Checkbox 
             checked={selectedItems.length === crewMembers.length && crewMembers.length > 0}
             onCheckedChange={handleSelectAll}
           />
         </TableHead>
-        <TableHead className="w-[240px] pl-0">Name</TableHead>
-        <TableHead className="w-[400px] pl-4">Role</TableHead>
+        <TableHead className="w-[240px]">Name</TableHead>
+        <TableHead className="w-[400px]">Role</TableHead>
         <TableHead className="w-[250px]">Email</TableHead>
         <TableHead className="w-[150px]">Phone</TableHead>
         <TableHead>Folder</TableHead>
@@ -50,14 +50,14 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
     <TableBody>
       {crewMembers.map((crew) => (
         <TableRow key={crew.id} className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
-          <TableCell className="w-[48px] pl-4">
+          <TableCell className="w-[48px]">
             <Checkbox 
               checked={selectedItems.includes(crew.id)}
               onCheckedChange={() => onItemSelect(crew.id)}
             />
           </TableCell>
-          <TableCell className="w-[240px] truncate pl-0">{crew.name}</TableCell>
-          <TableCell className="w-[400px] pl-4">
+          <TableCell className="w-[240px] truncate">{crew.name}</TableCell>
+          <TableCell className="w-[400px]">
             <RoleTags role={crew.role} />
           </TableCell>
           <TableCell className="w-[250px] truncate">{crew.email}</TableCell>
