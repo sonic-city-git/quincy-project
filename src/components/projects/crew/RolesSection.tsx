@@ -5,30 +5,17 @@ import { useToast } from "@/hooks/use-toast";
 import { RoleItem } from "./RoleItem";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { AddRoleDialog } from "./AddRoleDialog";
 
 interface RolesSectionProps {
   projectId: string;
 }
 
-// Define the custom sort order with exact case matching
-const ROLE_ORDER = ['FOH', 'MON', 'Playback', 'Backline'];
-
 export function RolesSection({ projectId }: RolesSectionProps) {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
-  const [quantity, setQuantity] = useState("1");
-  const [selectedRole, setSelectedRole] = useState<string | null>(null);
 
   const { data: roles } = useQuery({
     queryKey: ['crew-roles'],
@@ -39,24 +26,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
         .order('name');
       
       if (error) throw error;
-
-      // Sort the roles according to the custom order
-      return data.sort((a, b) => {
-        const indexA = ROLE_ORDER.indexOf(a.name);
-        const indexB = ROLE_ORDER.indexOf(b.name);
-        
-        // If both roles are in the custom order list
-        if (indexA !== -1 && indexB !== -1) {
-          return indexA - indexB;
-        }
-        
-        // If only one role is in the list, prioritize it
-        if (indexA !== -1) return -1;
-        if (indexB !== -1) return 1;
-        
-        // For roles not in the list, maintain alphabetical order
-        return a.name.localeCompare(b.name);
-      });
+      return data;
     },
   });
 
@@ -80,32 +50,28 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     },
   });
 
-  const handleAddRole = async () => {
-    if (!selectedRole) {
-      toast({
-        title: "Error",
-        description: "Please select a role",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleAddRole = async (data: {
+    roleId: string;
+    quantity: number;
+    dailyRate?: number;
+    hourlyRate?: number;
+  }) => {
     setLoading(true);
     try {
       const { error } = await supabase
         .from('project_roles')
         .insert({
           project_id: projectId,
-          role_id: selectedRole,
-          quantity: parseInt(quantity)
+          role_id: data.roleId,
+          quantity: data.quantity,
+          daily_rate: data.dailyRate,
+          hourly_rate: data.hourlyRate,
         });
 
       if (error) throw error;
       
       await refetchProjectRoles();
       setOpen(false);
-      setSelectedRole(null);
-      setQuantity("1");
       
       toast({
         title: "Success",
@@ -171,50 +137,12 @@ export function RolesSection({ projectId }: RolesSectionProps) {
               Add role
             </Button>
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Role</DialogTitle>
-              <DialogDescription>
-                Select a role and specify the quantity needed for this project.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="role">Role</Label>
-                <select
-                  id="role"
-                  className="w-full p-2 rounded-md border border-zinc-800 bg-zinc-950"
-                  value={selectedRole || ""}
-                  onChange={(e) => setSelectedRole(e.target.value)}
-                >
-                  <option value="">Select a role</option>
-                  {roles?.map((role) => (
-                    <option key={role.id} value={role.id}>
-                      {role.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="quantity">Quantity</Label>
-                <Input
-                  id="quantity"
-                  type="number"
-                  min="1"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleAddRole} disabled={loading}>
-                {loading ? "Adding..." : "Add Role"}
-              </Button>
-            </div>
-          </DialogContent>
+          <AddRoleDialog
+            roles={roles}
+            onClose={() => setOpen(false)}
+            onSubmit={handleAddRole}
+            loading={loading}
+          />
         </Dialog>
       </div>
     </div>
