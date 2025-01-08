@@ -20,13 +20,27 @@ interface AddRoleDialogProps {
     hourlyRate: number;
   }) => void;
   loading?: boolean;
+  editMode?: boolean;
+  initialValues?: {
+    roleId: string;
+    quantity: number;
+    dailyRate: number;
+    hourlyRate: number;
+  };
 }
 
-export function AddRoleDialog({ roles, onClose, onSubmit, loading }: AddRoleDialogProps) {
-  const [selectedRole, setSelectedRole] = useState<string>("");
-  const [quantity, setQuantity] = useState("1");
-  const [dailyRate, setDailyRate] = useState("");
-  const [hourlyRate, setHourlyRate] = useState("");
+export function AddRoleDialog({ 
+  roles, 
+  onClose, 
+  onSubmit, 
+  loading,
+  editMode = false,
+  initialValues 
+}: AddRoleDialogProps) {
+  const [selectedRole, setSelectedRole] = useState<string>(initialValues?.roleId || "");
+  const [quantity, setQuantity] = useState(initialValues?.quantity?.toString() || "1");
+  const [dailyRate, setDailyRate] = useState(initialValues?.dailyRate?.toString() || "");
+  const [hourlyRate, setHourlyRate] = useState(initialValues?.hourlyRate?.toString() || "");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const validateForm = () => {
@@ -60,9 +74,12 @@ export function AddRoleDialog({ roles, onClose, onSubmit, loading }: AddRoleDial
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>Add Role</DialogTitle>
+        <DialogTitle>{editMode ? "Edit Role" : "Add Role"}</DialogTitle>
         <DialogDescription>
-          Select a role and specify the quantity needed for this project.
+          {editMode 
+            ? "Update the role details for this project."
+            : "Select a role and specify the quantity needed for this project."
+          }
         </DialogDescription>
       </DialogHeader>
       <div className="space-y-4 py-4">
@@ -73,6 +90,7 @@ export function AddRoleDialog({ roles, onClose, onSubmit, loading }: AddRoleDial
             className="w-full p-2 rounded-md border border-zinc-800 bg-zinc-950"
             value={selectedRole}
             onChange={(e) => setSelectedRole(e.target.value)}
+            disabled={editMode}
           >
             <option value="">Select a role</option>
             {roles?.map((role) => (
@@ -125,7 +143,7 @@ export function AddRoleDialog({ roles, onClose, onSubmit, loading }: AddRoleDial
           Cancel
         </Button>
         <Button onClick={handleSubmit} disabled={loading}>
-          {loading ? "Adding..." : "Add Role"}
+          {loading ? (editMode ? "Updating..." : "Adding...") : (editMode ? "Update Role" : "Add Role")}
         </Button>
       </div>
     </DialogContent>
