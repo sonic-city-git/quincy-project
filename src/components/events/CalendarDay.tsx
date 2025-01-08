@@ -28,7 +28,7 @@ export const CalendarDay = ({
   
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    onSelect(normalizeDate(dayDate));
+    onSelect(dayDate);
   };
 
   return (

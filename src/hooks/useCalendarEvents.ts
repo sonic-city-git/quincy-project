@@ -13,6 +13,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     const fetchEvents = async () => {
       if (!projectId) return;
 
+      console.log('Fetching events for project:', projectId);
+
       const { data, error } = await supabase
         .from('project_events')
         .select('*')
@@ -29,6 +31,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       }
 
       if (data) {
+        console.log('Fetched events:', data);
         const parsedEvents = data.map(event => ({
           date: new Date(event.date),
           name: event.name,
@@ -46,8 +49,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       throw new Error('Project ID is missing');
     }
 
-    // Format date to YYYY-MM-DD for PostgreSQL date column
-    const formattedDate = normalizeDate(date).toISOString().split('T')[0];
+    const formattedDate = date.toISOString().split('T')[0];
     
     console.log('Adding event:', {
       project_id: projectId,
@@ -58,12 +60,12 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
     const { data, error } = await supabase
       .from('project_events')
-      .insert({
+      .insert([{
         project_id: projectId,
         date: formattedDate,
         name: eventName.trim() || eventType,
         type: eventType
-      })
+      }])
       .select()
       .single();
 
@@ -76,6 +78,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       });
       throw error;
     }
+
+    console.log('Event added successfully:', data);
 
     const newEvent: CalendarEvent = {
       date: new Date(data.date),
@@ -96,7 +100,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   const updateEvent = async (updatedEvent: CalendarEvent) => {
     if (!projectId) throw new Error('Project ID is missing');
 
-    const formattedDate = normalizeDate(updatedEvent.date).toISOString().split('T')[0];
+    const formattedDate = updatedEvent.date.toISOString().split('T')[0];
 
     const { error } = await supabase
       .from('project_events')
@@ -119,7 +123,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
     setEvents(prev => 
       prev.map(event => 
-        normalizeDate(event.date).toDateString() === normalizeDate(updatedEvent.date).toDateString()
+        event.date.toISOString().split('T')[0] === formattedDate
           ? { ...updatedEvent, name: updatedEvent.name.trim() || updatedEvent.type }
           : event
       )
@@ -132,9 +136,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   };
 
   const findEvent = (date: Date) => {
-    const normalizedSearchDate = normalizeDate(date);
     return events.find(event => 
-      normalizeDate(event.date).toDateString() === normalizedSearchDate.toDateString()
+      event.date.toISOString().split('T')[0] === date.toISOString().split('T')[0]
     );
   };
 
