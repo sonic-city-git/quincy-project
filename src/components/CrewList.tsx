@@ -72,7 +72,7 @@ export function CrewList() {
 
       <div className="bg-zinc-900 rounded-md flex flex-col">
         <div className="h-[48px] border-b border-zinc-800/50">
-          <div className="h-full flex items-center justify-between px-4">
+          <div className="flex items-center px-4">
             <div className={`flex items-center gap-2 transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
               <span className="text-sm text-zinc-400">{selectedItems.length} items selected</span>
               {selectedItems.length === 1 && (
