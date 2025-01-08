@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import { addDays, subDays } from "date-fns";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
 import { EquipmentHeader } from "./equipment/EquipmentHeader";
@@ -54,12 +54,14 @@ export function EquipmentList({
     onDeleteEquipment(selectedItems);
   }, [onDeleteEquipment, selectedItems]);
 
-  const selectedEquipment = equipment
-    .filter(item => selectedItems.includes(item.id))
-    .map(item => ({
-      id: item.id,
-      name: item.name
-    }));
+  const selectedEquipment = useMemo(() => {
+    return equipment
+      .filter(item => selectedItems.includes(item.id))
+      .map(item => ({
+        id: item.id,
+        name: item.name
+      }));
+  }, [equipment, selectedItems]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-theme(spacing.16))]" ref={containerRef}>
