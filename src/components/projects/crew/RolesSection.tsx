@@ -1,15 +1,10 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { AddRoleDialog } from "./AddRoleDialog";
-import { ProjectRoleCard } from "./ProjectRoleCard";
 import { supabase } from "@/integrations/supabase/client";
-import { Checkbox } from "@/components/ui/checkbox";
-import { RoleSelectionActions } from "./RoleSelectionActions";
 import { RatesHeader } from "./RatesHeader";
+import { RolesHeader } from "./RolesHeader";
+import { RolesList } from "./RolesList";
 
 interface RolesSectionProps {
   projectId: string;
@@ -171,60 +166,27 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   return (
     <div className="space-y-4">
       <div className="bg-zinc-900/50 rounded-lg p-3">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">Roles</h2>
-          <div className="flex items-center gap-2">
-            <RoleSelectionActions
-              selectedItems={selectedItems}
-              onEdit={handleEditRole}
-              onDelete={handleDeleteRole}
-            />
-            <Dialog open={open} onOpenChange={handleDialogClose}>
-              <DialogTrigger asChild>
-                <Button size="sm" className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Add role
-                </Button>
-              </DialogTrigger>
-              <AddRoleDialog
-                roles={roles}
-                onClose={handleDialogClose}
-                onSubmit={handleAddRole}
-                loading={loading}
-                editMode={editMode}
-                initialValues={editValues || undefined}
-              />
-            </Dialog>
-          </div>
-        </div>
-
+        <RolesHeader
+          selectedItems={selectedItems}
+          onEdit={handleEditRole}
+          onDelete={handleDeleteRole}
+          open={open}
+          onOpenChange={setOpen}
+          onClose={handleDialogClose}
+          onSubmit={handleAddRole}
+          loading={loading}
+          editMode={editMode}
+          editValues={editValues}
+          roles={roles || []}
+        />
         <div className="grid gap-1.5">
           <RatesHeader />
-          {projectRoles?.map((projectRole) => (
-            <div key={projectRole.id} className="flex items-center gap-2">
-              <Checkbox
-                checked={selectedItems.includes(projectRole.role_id)}
-                onCheckedChange={() => handleItemSelect(projectRole.role_id)}
-              />
-              <div className="flex-grow">
-                <ProjectRoleCard
-                  id={projectRole.role_id}
-                  projectId={projectId}
-                  name={projectRole.crew_roles.name}
-                  color={projectRole.crew_roles.color}
-                  quantity={projectRole.quantity}
-                  dailyRate={projectRole.daily_rate}
-                  hourlyRate={projectRole.hourly_rate}
-                  onUpdate={refetchProjectRoles}
-                />
-              </div>
-            </div>
-          ))}
-          {projectRoles?.length === 0 && (
-            <div className="text-center py-4 text-sm text-muted-foreground">
-              No roles added to this project yet
-            </div>
-          )}
+          <RolesList
+            projectRoles={projectRoles || []}
+            selectedItems={selectedItems}
+            onItemSelect={handleItemSelect}
+            onUpdate={refetchProjectRoles}
+          />
         </div>
       </div>
     </div>
