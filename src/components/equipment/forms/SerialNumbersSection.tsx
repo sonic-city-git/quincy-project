@@ -51,9 +51,7 @@ export function SerialNumbersSection({
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Edit serial number</p>
-                    </Toolt
-
-ipContent>
+                    </TooltipContent>
                   </Tooltip>
 
                   <Tooltip>
