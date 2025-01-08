@@ -33,17 +33,17 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
   const tableHeader = (
     <TableHeader>
       <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
-        <TableHead className="w-12">
+        <TableHead className="w-[48px]">
           <Checkbox 
             checked={selectedItems.length === crewMembers.length && crewMembers.length > 0}
             onCheckedChange={handleSelectAll}
           />
         </TableHead>
-        <TableHead className="whitespace-nowrap">Name</TableHead>
-        <TableHead className="whitespace-nowrap">Role</TableHead>
-        <TableHead className="whitespace-nowrap">Email</TableHead>
-        <TableHead className="whitespace-nowrap">Phone</TableHead>
-        <TableHead className="whitespace-nowrap">Folder</TableHead>
+        <TableHead className="w-[200px]">Name</TableHead>
+        <TableHead className="w-[200px]">Role</TableHead>
+        <TableHead className="w-[250px]">Email</TableHead>
+        <TableHead className="w-[150px]">Phone</TableHead>
+        <TableHead className="min-w-[200px]">Folder</TableHead>
       </TableRow>
     </TableHeader>
   );
@@ -52,19 +52,19 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
     <TableBody>
       {crewMembers.map((crew) => (
         <TableRow key={crew.id} className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
-          <TableCell className="w-12">
+          <TableCell className="w-[48px]">
             <Checkbox 
               checked={selectedItems.includes(crew.id)}
               onCheckedChange={() => onItemSelect(crew.id)}
             />
           </TableCell>
-          <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">{crew.name}</TableCell>
-          <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">
+          <TableCell className="w-[200px] truncate">{crew.name}</TableCell>
+          <TableCell className="w-[200px] truncate">
             <RoleTags role={crew.role} />
           </TableCell>
-          <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">{crew.email}</TableCell>
-          <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">{crew.phone}</TableCell>
-          <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis max-w-[200px]">{crew.folder}</TableCell>
+          <TableCell className="w-[250px] truncate">{crew.email}</TableCell>
+          <TableCell className="w-[150px] truncate">{crew.phone}</TableCell>
+          <TableCell className="min-w-[200px] truncate">{crew.folder}</TableCell>
         </TableRow>
       ))}
     </TableBody>
