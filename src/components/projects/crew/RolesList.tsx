@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface RolesListProps {
   projectRoles: any[];
@@ -21,6 +22,7 @@ interface RolesListProps {
 const roleOrder = ["FOH", "MON", "PLAYBACK", "BACKLINE"];
 
 export function RolesList({ projectRoles, selectedItems, onItemSelect, onUpdate }: RolesListProps) {
+  const { toast } = useToast();
   const { data: crewMembers } = useQuery({
     queryKey: ['crew-members'],
     queryFn: async () => {
@@ -35,6 +37,31 @@ export function RolesList({ projectRoles, selectedItems, onItemSelect, onUpdate 
     },
   });
 
+  const handlePreferredCrewSelect = async (projectRoleId: string, crewMemberId: string) => {
+    try {
+      const { error } = await supabase
+        .from('project_roles')
+        .update({ preferred_status: crewMemberId })
+        .eq('id', projectRoleId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Preferred crew member updated",
+      });
+
+      onUpdate();
+    } catch (error) {
+      console.error('Error updating preferred crew:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update preferred crew member",
+        variant: "destructive",
+      });
+    }
+  };
+
   const sortedRoles = [...projectRoles].sort((a, b) => {
     const roleA = a.crew_roles.name.toUpperCase();
     const roleB = b.crew_roles.name.toUpperCase();
@@ -42,16 +69,13 @@ export function RolesList({ projectRoles, selectedItems, onItemSelect, onUpdate 
     const indexA = roleOrder.indexOf(roleA);
     const indexB = roleOrder.indexOf(roleB);
     
-    // If both roles are in our predefined order, sort by that
     if (indexA !== -1 && indexB !== -1) {
       return indexA - indexB;
     }
     
-    // If only one role is in our predefined order, prioritize it
     if (indexA !== -1) return -1;
     if (indexB !== -1) return 1;
     
-    // For roles not in our predefined order, sort alphabetically
     return roleA.localeCompare(roleB);
   });
 
@@ -60,18 +84,22 @@ export function RolesList({ projectRoles, selectedItems, onItemSelect, onUpdate 
     return crewMembers
       .filter(crew => crew.role?.includes(roleName))
       .sort((a, b) => {
-        // Sort by folder (Sonic City first)
         if (a.folder === "Sonic City" && b.folder !== "Sonic City") return -1;
         if (a.folder !== "Sonic City" && b.folder === "Sonic City") return 1;
-        // Then by name
         return a.name.localeCompare(b.name);
       });
+  };
+
+  const getSelectedCrewMember = (projectRole: any) => {
+    if (!crewMembers) return null;
+    return crewMembers.find(crew => crew.id === projectRole.preferred_status);
   };
 
   return (
     <div className="grid gap-1.5">
       {sortedRoles?.map((projectRole) => {
         const availableCrew = getCrewMembersForRole(projectRole.crew_roles.name);
+        const selectedCrew = getSelectedCrewMember(projectRole);
         
         return (
           <div key={projectRole.id} className="flex items-center gap-2">
@@ -97,13 +125,23 @@ export function RolesList({ projectRoles, selectedItems, onItemSelect, onUpdate 
                   size="sm"
                   className="w-[200px] justify-between"
                 >
-                  Select crew member
+                  {selectedCrew ? (
+                    <span>
+                      {selectedCrew.name} 
+                      {selectedCrew.folder === "Sonic City" && "⭐"}
+                    </span>
+                  ) : (
+                    "Select crew member"
+                  )}
                   <ChevronDown className="h-4 w-4 opacity-50" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[200px]">
                 {availableCrew.map((crew) => (
-                  <DropdownMenuItem key={crew.id}>
+                  <DropdownMenuItem 
+                    key={crew.id}
+                    onClick={() => handlePreferredCrewSelect(projectRole.id, crew.id)}
+                  >
                     {crew.name} {crew.folder === "Sonic City" && "⭐"}
                   </DropdownMenuItem>
                 ))}
