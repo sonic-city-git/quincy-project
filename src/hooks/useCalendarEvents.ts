@@ -16,7 +16,6 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       }
 
       try {
-        console.log('Loading events for project:', projectId);
         const { data, error } = await supabase
           .from('project_events')
           .select('*')
@@ -24,7 +23,6 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
         if (error) throw error;
 
-        console.log('Fetched events:', data);
         const fetchedEvents = data.map(event => ({
           date: new Date(event.date),
           name: event.name,
@@ -55,12 +53,6 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
     try {
       const formattedDate = formatDatabaseDate(date);
-      console.log('Adding event to database:', {
-        projectId,
-        date: formattedDate,
-        name: eventName,
-        type: eventType
-      });
       
       const { data, error } = await supabase
         .from('project_events')
@@ -78,7 +70,6 @@ export const useCalendarEvents = (projectId: string | undefined) => {
         throw error;
       }
 
-      console.log('Successfully added event:', data);
       const newEvent: CalendarEvent = {
         date: new Date(data.date),
         name: data.name,

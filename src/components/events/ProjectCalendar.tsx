@@ -45,8 +45,6 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
   };
 
   const handleEventSubmit = async (eventName: string, eventType: EventType) => {
-    console.log('Handling event submit with:', { selectedDate, projectId, eventName, eventType });
-    
     if (!selectedDate) {
       console.error('Missing selectedDate:', selectedDate);
       toast({
@@ -66,9 +64,8 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
       });
       return;
     }
-    
+
     try {
-      console.log('Adding event with data:', { selectedDate, eventName, eventType, projectId });
       await addEvent(selectedDate, eventName, eventType);
       closeAddDialog();
       toast({
