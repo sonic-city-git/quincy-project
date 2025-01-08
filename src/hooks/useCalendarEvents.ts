@@ -19,7 +19,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
         const { data, error } = await supabase
           .from('project_events')
           .select('*')
-          .eq('project_id', projectId);
+          .eq('project_id', projectId);  // Using snake_case for database column
 
         if (error) throw error;
 
@@ -57,7 +57,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       const { data, error } = await supabase
         .from('project_events')
         .insert({
-          project_id: projectId,
+          project_id: projectId,  // Using snake_case for database column
           date: formattedDate,
           name: eventName.trim() || eventType,
           type: eventType
@@ -97,7 +97,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
           name: updatedEvent.name.trim() || updatedEvent.type,
           type: updatedEvent.type
         })
-        .eq('project_id', projectId)
+        .eq('project_id', projectId)  // Using snake_case for database column
         .eq('date', formattedDate);
 
       if (error) throw error;
