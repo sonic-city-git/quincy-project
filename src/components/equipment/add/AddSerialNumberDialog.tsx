@@ -23,6 +23,7 @@ export function AddSerialNumberDialog({ onAddSerialNumber }: AddSerialNumberDial
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent event from bubbling up to parent form
     if (serialNumber.trim()) {
       onAddSerialNumber(serialNumber.trim(), notes.trim());
       setSerialNumber("");
