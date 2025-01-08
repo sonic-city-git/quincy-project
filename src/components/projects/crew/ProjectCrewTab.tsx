@@ -63,52 +63,56 @@ export function ProjectCrewTab({ projectId }: ProjectCrewTabProps) {
         <RolesSection projectId={projectId} />
         
         {/* Rates Section */}
-        <div className="w-1/2 bg-zinc-900 rounded-md p-4">
-          <h2 className="text-lg font-semibold mb-4">Role Rates</h2>
-          {activeRoles.length > 0 ? (
-            <div className="space-y-3">
-              {activeRoles.map((role) => (
-                <div 
-                  key={role.id}
-                  className="flex items-center justify-between p-2 rounded-md"
-                  style={{ backgroundColor: role.crew_roles.color + '20' }}
-                >
-                  <div className="flex items-center space-x-2">
-                    <div
-                      className="h-2 w-2 rounded-full"
-                      style={{ backgroundColor: role.crew_roles.color }}
-                    />
-                    <span className="text-sm">{role.crew_roles.name}</span>
-                    <span className="text-sm text-muted-foreground">
-                      ({role.quantity} {role.quantity === 1 ? 'person' : 'people'})
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      type="number"
-                      placeholder="Daily rate"
-                      className="h-7 w-24"
-                      value={role.daily_rate || ''}
-                      onChange={() => {}}
-                      disabled
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Hourly rate"
-                      className="h-7 w-24"
-                      value={role.hourly_rate || ''}
-                      onChange={() => {}}
-                      disabled
-                    />
-                  </div>
+        <div className="w-1/2">
+          <div className="space-y-2">
+            <h2 className="text-lg font-semibold">Role Rates</h2>
+            <div className="bg-zinc-900 rounded-md p-2 space-y-1">
+              {activeRoles.length > 0 ? (
+                <div className="flex flex-col gap-1">
+                  {activeRoles.map((role) => (
+                    <div 
+                      key={role.id}
+                      className="flex items-center justify-between py-1.5 px-2 rounded-md"
+                      style={{ backgroundColor: role.crew_roles.color + '20' }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="h-2 w-2 rounded-full"
+                          style={{ backgroundColor: role.crew_roles.color }}
+                        />
+                        <span className="text-sm">{role.crew_roles.name}</span>
+                        <span className="text-sm text-muted-foreground">
+                          ({role.quantity} {role.quantity === 1 ? 'person' : 'people'})
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          placeholder="Daily rate"
+                          className="h-7 w-24 bg-black/20 border-0"
+                          value={role.daily_rate || ''}
+                          onChange={() => {}}
+                          disabled
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Hourly rate"
+                          className="h-7 w-24 bg-black/20 border-0"
+                          value={role.hourly_rate || ''}
+                          onChange={() => {}}
+                          disabled
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              ) : (
+                <div className="text-sm text-muted-foreground text-center py-8">
+                  Add roles to see their rates here
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="text-sm text-muted-foreground text-center py-8">
-              Add roles to see their rates here
-            </div>
-          )}
+          </div>
         </div>
       </div>
 
