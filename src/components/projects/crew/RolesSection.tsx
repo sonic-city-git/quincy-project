@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { RoleItem } from "./RoleItem";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface RolesSectionProps {
   projectId: string;
@@ -133,29 +135,13 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   };
 
   return (
-    <div className="w-1/2">
-      <div className="space-y-2">
+    <div>
+      <div className="flex justify-between items-center mb-4">
         <h2 className="text-lg font-semibold">Roles</h2>
-        <div className="bg-zinc-900 rounded-md p-2 space-y-1">
-          <div className="flex flex-col gap-1">
-            {roles?.map((role) => {
-              const projectRole = getProjectRole(role.id);
-              return (
-                <RoleItem
-                  key={role.id}
-                  name={role.name}
-                  color={role.color}
-                  quantity={projectRole?.quantity}
-                  onAdd={() => handleAddRole(role.id)}
-                  onUpdateQuantity={(increment) => 
-                    handleUpdateQuantity(role.id, projectRole?.quantity || 0, increment)
-                  }
-                  loading={loading}
-                />
-              );
-            })}
-          </div>
-        </div>
+        <Button size="sm" variant="outline" className="gap-2">
+          <Plus className="h-4 w-4" />
+          Add role
+        </Button>
       </div>
     </div>
   );
