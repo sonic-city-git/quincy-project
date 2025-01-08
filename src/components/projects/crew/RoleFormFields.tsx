@@ -33,20 +33,25 @@ export function RoleFormFields({
     <div className="space-y-4 py-4">
       <div className="space-y-2">
         <Label htmlFor="role" className="after:content-['*'] after:ml-0.5 after:text-red-500">Role</Label>
-        <select
-          id="role"
-          className="w-full p-2 rounded-md border border-zinc-800 bg-zinc-950"
-          value={selectedRole}
-          onChange={(e) => onRoleChange(e.target.value)}
-          disabled={editMode}
-        >
-          <option value="">Select a role</option>
-          {roles?.map((role) => (
-            <option key={role.id} value={role.id}>
-              {role.name}
-            </option>
-          ))}
-        </select>
+        {editMode ? (
+          <div className="w-full p-2 rounded-md border border-zinc-800 bg-zinc-900 text-muted-foreground">
+            {roles?.find(role => role.id === selectedRole)?.name || 'Unknown Role'}
+          </div>
+        ) : (
+          <select
+            id="role"
+            className="w-full p-2 rounded-md border border-zinc-800 bg-zinc-950"
+            value={selectedRole}
+            onChange={(e) => onRoleChange(e.target.value)}
+          >
+            <option value="">Select a role</option>
+            {roles?.map((role) => (
+              <option key={role.id} value={role.id}>
+                {role.name}
+              </option>
+            ))}
+          </select>
+        )}
         {errors.role && <p className="text-sm text-red-500">{errors.role}</p>}
       </div>
       <div className="space-y-2">
