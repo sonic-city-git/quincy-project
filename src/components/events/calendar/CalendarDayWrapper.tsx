@@ -17,11 +17,12 @@ export const CalendarDayWrapper = ({
   return (
     <button 
       className={`
-        relative h-9 w-9 p-0 font-normal 
-        flex items-center justify-center text-sm 
-        cursor-pointer hover:bg-accent 
+        relative min-h-[60px] w-full p-2
+        flex flex-col items-center justify-start gap-1
+        text-sm cursor-pointer 
+        hover:bg-accent/50
         transition-colors duration-200
-        rounded-md shadow-sm
+        rounded-md
         ${className || ''} 
         ${eventType ? `${EVENT_COLORS[eventType]} text-white font-medium` : ''}
       `}
