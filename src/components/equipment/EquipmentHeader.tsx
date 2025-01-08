@@ -2,6 +2,7 @@ import { Equipment } from "@/types/equipment";
 import { AddEquipmentDialog } from "./AddEquipmentDialog";
 import { EquipmentFolderSelect } from "./EquipmentFolderSelect";
 import { FolderAnalysis } from "./FolderAnalysis";
+import { FolderNormalizer } from "./FolderNormalizer";
 
 interface EquipmentHeaderProps {
   selectedFolder: string | null;
@@ -25,7 +26,10 @@ export function EquipmentHeader({
         </div>
         <AddEquipmentDialog onAddEquipment={onAddEquipment} />
       </div>
-      <FolderAnalysis />
+      <div className="flex gap-4">
+        <FolderAnalysis />
+        <FolderNormalizer />
+      </div>
     </div>
   );
 }
