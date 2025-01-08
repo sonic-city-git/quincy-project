@@ -49,6 +49,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       throw new Error('Project ID is missing');
     }
 
+    // Format date as YYYY-MM-DD for database
     const formattedDate = date.toISOString().split('T')[0];
     
     console.log('Adding event:', {
@@ -136,8 +137,9 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   };
 
   const findEvent = (date: Date) => {
+    const searchDate = date.toISOString().split('T')[0];
     return events.find(event => 
-      event.date.toISOString().split('T')[0] === date.toISOString().split('T')[0]
+      event.date.toISOString().split('T')[0] === searchDate
     );
   };
 
