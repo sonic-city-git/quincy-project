@@ -6,6 +6,7 @@ import { EditCrewMemberDialog } from "./crew/EditCrewMemberDialog";
 import { useCrewManagement } from "@/hooks/useCrewManagement";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState } from "react";
+import { CrewSearch } from "./crew/search/CrewSearch";
 
 export function CrewList() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -64,15 +65,13 @@ export function CrewList() {
           selectedRoles={selectedRoles}
           allRoles={allRoles}
           onRoleSelect={handleRoleSelect}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
         />
       </div>
 
       <div className="bg-zinc-900 rounded-md flex flex-col">
         <div className="h-[48px] border-b border-zinc-800/50">
-          <div className={`h-full flex items-center justify-between px-2 transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-            <div className="flex items-center gap-2">
+          <div className="h-full flex items-center justify-between px-4">
+            <div className={`flex items-center gap-2 transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
               <span className="text-sm text-zinc-400">{selectedItems.length} items selected</span>
               {selectedItems.length === 1 && (
                 <EditCrewMemberDialog 
@@ -82,6 +81,10 @@ export function CrewList() {
                 />
               )}
             </div>
+            <CrewSearch 
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+            />
           </div>
         </div>
 

@@ -1,6 +1,5 @@
 import { AddCrewMemberDialog } from "./AddCrewMemberDialog";
 import { FilterButton } from "./filter/FilterButton";
-import { CrewSearch } from "./search/CrewSearch";
 import { NewCrewMember } from "@/types/crew";
 
 interface CrewHeaderProps {
@@ -9,17 +8,13 @@ interface CrewHeaderProps {
   selectedRoles: string[];
   allRoles: string[];
   onRoleSelect: (role: string, checked: boolean) => void;
-  searchTerm: string;
-  onSearchChange: (value: string) => void;
 }
 
 export function CrewHeader({ 
   onAddCrewMember,
   selectedRoles,
   allRoles,
-  onRoleSelect,
-  searchTerm,
-  onSearchChange
+  onRoleSelect
 }: CrewHeaderProps) {
   return (
     <div className="flex justify-between items-center w-full">
@@ -28,10 +23,6 @@ export function CrewHeader({
           selectedRoles={selectedRoles}
           allRoles={allRoles}
           onRoleSelect={onRoleSelect}
-        />
-        <CrewSearch 
-          searchTerm={searchTerm}
-          onSearchChange={onSearchChange}
         />
       </div>
       <AddCrewMemberDialog onAddCrewMember={onAddCrewMember} />
