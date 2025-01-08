@@ -132,10 +132,10 @@ export function EditEquipmentForm({
       </div>
 
       <div className="flex justify-between items-center mt-6">
-        <Button type="submit">Save changes</Button>
         <Button type="button" variant="destructive" onClick={onDelete}>
           Delete
         </Button>
+        <Button type="submit">Save changes</Button>
       </div>
     </form>
   );
