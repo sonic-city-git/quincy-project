@@ -8,7 +8,12 @@ interface DatabaseEvent {
   project_id: string;
   date: string;
   name: string;
-  type: EventType;
+  event_type_id: string;
+  event_types: {
+    id: string;
+    name: string;
+    color: string;
+  };
 }
 
 export const useCalendarEvents = (projectId: string | undefined) => {
@@ -25,7 +30,14 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       try {
         const { data, error } = await supabase
           .from('project_events')
-          .select('*')
+          .select(`
+            *,
+            event_types (
+              id,
+              name,
+              color
+            )
+          `)
           .eq('project_id', projectId);
 
         if (error) throw error;
@@ -33,7 +45,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
         const fetchedEvents = (data as DatabaseEvent[]).map(event => ({
           date: new Date(event.date),
           name: event.name,
-          type: event.type as EventType
+          type: event.event_types
         }));
 
         setEvents(fetchedEvents);
@@ -66,10 +78,17 @@ export const useCalendarEvents = (projectId: string | undefined) => {
         .insert({
           project_id: projectId,
           date: formattedDate,
-          name: eventName.trim() || eventType,
-          type: eventType
+          name: eventName.trim() || eventType.name,
+          event_type_id: eventType.id
         })
-        .select()
+        .select(`
+          *,
+          event_types (
+            id,
+            name,
+            color
+          )
+        `)
         .single();
 
       if (error) {
@@ -80,7 +99,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       const newEvent: CalendarEvent = {
         date: new Date(data.date),
         name: data.name,
-        type: data.type as EventType
+        type: data.event_types
       };
 
       setEvents(prev => [...prev, newEvent]);
@@ -101,8 +120,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       const { error } = await supabase
         .from('project_events')
         .update({
-          name: updatedEvent.name.trim() || updatedEvent.type,
-          type: updatedEvent.type
+          name: updatedEvent.name.trim() || updatedEvent.type.name,
+          event_type_id: updatedEvent.type.id
         })
         .eq('project_id', projectId)
         .eq('date', formattedDate);
@@ -116,18 +135,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
             : event
         )
       );
-
-      toast({
-        title: "Success",
-        description: "Event updated successfully",
-      });
     } catch (error) {
       console.error('Error updating event:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update event",
-        variant: "destructive",
-      });
       throw error;
     }
   };

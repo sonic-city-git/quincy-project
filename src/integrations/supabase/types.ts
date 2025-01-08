@@ -129,6 +129,27 @@ export type Database = {
         }
         Relationships: []
       }
+      event_types: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       folders: {
         Row: {
           created_at: string
@@ -162,28 +183,35 @@ export type Database = {
         Row: {
           created_at: string
           date: string
+          event_type_id: string
           id: string
           name: string
           project_id: string
-          type: string
         }
         Insert: {
           created_at?: string
           date: string
+          event_type_id: string
           id?: string
           name: string
           project_id: string
-          type: string
         }
         Update: {
           created_at?: string
           date?: string
+          event_type_id?: string
           id?: string
           name?: string
           project_id?: string
-          type?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "project_events_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "project_events_project_id_fkey"
             columns: ["project_id"]

@@ -1,4 +1,4 @@
-import { CalendarEvent, EventType } from "@/types/events";
+import { CalendarEvent } from "@/types/events";
 import { format } from "date-fns";
 import {
   Tooltip,
@@ -10,7 +10,6 @@ import {
 interface CalendarDayContentProps {
   date: Date;
   event?: CalendarEvent;
-  eventColors: Record<EventType, string>;
   onClick: (e: React.MouseEvent) => void;
   className?: string;
 }
@@ -18,7 +17,6 @@ interface CalendarDayContentProps {
 export const CalendarDayContent = ({
   date,
   event,
-  eventColors,
   onClick,
   className = "",
 }: CalendarDayContentProps) => {
@@ -34,7 +32,7 @@ export const CalendarDayContent = ({
               cursor-pointer transition-colors duration-200
               rounded-md
               ${className}
-              ${event ? `${eventColors[event.type]} text-white font-medium hover:opacity-90` : 'hover:bg-accent'}
+              ${event ? `${event.type.color} text-white font-medium hover:opacity-90` : 'hover:bg-accent'}
             `}
           >
             {date.getDate()}

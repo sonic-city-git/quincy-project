@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { EventType } from "@/types/events";
 import { format } from "date-fns";
+import { useEventTypes } from "@/hooks/useEventTypes";
 
 interface AddEventDialogProps {
   isOpen: boolean;
@@ -34,11 +35,12 @@ export const AddEventDialog = ({
   date,
   projectId,
 }: AddEventDialogProps) => {
+  const { data: eventTypes, isLoading: loadingEventTypes } = useEventTypes();
   const [eventName, setEventName] = useState("");
-  const [eventType, setEventType] = useState<EventType>("Show");
+  const [selectedEventTypeId, setSelectedEventTypeId] = useState<string>();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  console.log('AddEventDialog - projectId:', projectId); // Debug log
+  const selectedEventType = eventTypes?.find(et => et.id === selectedEventTypeId);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,14 +54,19 @@ export const AddEventDialog = ({
       return;
     }
 
+    if (!selectedEventType) {
+      console.error('No event type selected');
+      return;
+    }
+
     if (isSubmitting) return;
 
     setIsSubmitting(true);
     try {
-      const finalEventName = eventName.trim() || eventType;
-      await onSubmit(finalEventName, eventType);
+      const finalEventName = eventName.trim() || selectedEventType.name;
+      await onSubmit(finalEventName, selectedEventType);
       setEventName("");
-      setEventType("Show");
+      setSelectedEventTypeId(undefined);
       onOpenChange(false);
     } catch (error) {
       console.error('Error submitting event:', error);
@@ -90,26 +97,26 @@ export const AddEventDialog = ({
           <div className="space-y-2">
             <Label htmlFor="eventType">Type</Label>
             <Select 
-              value={eventType} 
-              onValueChange={(value) => setEventType(value as EventType)}
+              value={selectedEventTypeId} 
+              onValueChange={setSelectedEventTypeId}
               required
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select event type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Show">Show</SelectItem>
-                <SelectItem value="Travel">Travel</SelectItem>
-                <SelectItem value="Preprod">Preprod</SelectItem>
-                <SelectItem value="INT Storage">INT Storage</SelectItem>
-                <SelectItem value="EXT Storage">EXT Storage</SelectItem>
+                {eventTypes?.map(eventType => (
+                  <SelectItem key={eventType.id} value={eventType.id}>
+                    {eventType.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
           <div className="flex justify-end">
             <Button 
               type="submit" 
-              disabled={isSubmitting || !projectId}
+              disabled={isSubmitting || !projectId || !selectedEventType || loadingEventTypes}
             >
               {isSubmitting ? "Adding..." : "Add Event"}
             </Button>

@@ -5,7 +5,6 @@ import { CalendarEvent, EventType } from "@/types/events";
 import { DayProps } from "react-day-picker";
 import { useParams } from "react-router-dom";
 import { CalendarDay } from "./CalendarDay";
-import { EVENT_COLORS } from "@/constants/eventColors";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useToast } from "@/hooks/use-toast";
 import { useEventDialog } from "@/hooks/useEventDialog";
@@ -123,7 +122,6 @@ export const ProjectCalendar = ({ className }: ProjectCalendarProps) => {
             <CalendarDay
               date={date}
               event={findEvent(date)}
-              eventColors={EVENT_COLORS}
               onSelect={handleSelect}
               {...props}
             />

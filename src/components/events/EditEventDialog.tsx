@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
+import { useEventTypes } from "@/hooks/useEventTypes"
 
 interface EditEventDialogProps {
   isOpen: boolean;
@@ -24,23 +25,29 @@ export const EditEventDialog = ({
   event,
   onSave,
 }: EditEventDialogProps) => {
+  const { data: eventTypes } = useEventTypes();
+  
   if (!event) return null;
 
   const [name, setName] = useState(event.name);
-  const [type, setType] = useState<EventType>(event.type);
+  const [selectedEventTypeId, setSelectedEventTypeId] = useState(event.type.id);
 
   useEffect(() => {
     if (event) {
       setName(event.name);
-      setType(event.type);
+      setSelectedEventTypeId(event.type.id);
     }
   }, [event]);
 
+  const selectedEventType = eventTypes?.find(et => et.id === selectedEventTypeId);
+
   const handleSave = () => {
+    if (!selectedEventType) return;
+    
     onSave({
       ...event,
-      name: name.trim() || type,
-      type,
+      name: name.trim() || selectedEventType.name,
+      type: selectedEventType,
     });
   };
 
@@ -61,16 +68,16 @@ export const EditEventDialog = ({
           </div>
           <div className="space-y-2">
             <span className="font-semibold">Event Type:</span>
-            <Select value={type} onValueChange={(value) => setType(value as EventType)}>
+            <Select value={selectedEventTypeId} onValueChange={setSelectedEventTypeId}>
               <SelectTrigger>
                 <SelectValue placeholder="Select event type" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Show">Show</SelectItem>
-                <SelectItem value="Preprod">Preprod</SelectItem>
-                <SelectItem value="Travel">Travel</SelectItem>
-                <SelectItem value="INT Storage">INT Storage</SelectItem>
-                <SelectItem value="EXT Storage">EXT Storage</SelectItem>
+                {eventTypes?.map(eventType => (
+                  <SelectItem key={eventType.id} value={eventType.id}>
+                    {eventType.name}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -79,7 +86,7 @@ export const EditEventDialog = ({
           </div>
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button onClick={handleSave}>Save Changes</Button>
+            <Button onClick={handleSave} disabled={!selectedEventType}>Save Changes</Button>
           </div>
         </div>
       </DialogContent>

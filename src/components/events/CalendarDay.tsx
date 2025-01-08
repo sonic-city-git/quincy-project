@@ -1,12 +1,11 @@
 import { DayProps } from "react-day-picker";
-import { CalendarEvent, EventType } from "@/types/events";
+import { CalendarEvent } from "@/types/events";
 import { useCalendarDate } from "@/hooks/useCalendarDate";
 import { CalendarDayContent } from "./CalendarDayContent";
 
 interface CalendarDayProps extends Omit<DayProps, 'date'> {
   date: Date;
   event?: CalendarEvent;
-  eventColors: Record<EventType, string>;
   onSelect: (date: Date) => void;
   className?: string;
 }
@@ -14,7 +13,6 @@ interface CalendarDayProps extends Omit<DayProps, 'date'> {
 export const CalendarDay = ({ 
   date: dayDate,
   event,
-  eventColors,
   onSelect,
   className,
   ...props 
@@ -30,7 +28,6 @@ export const CalendarDay = ({
     <CalendarDayContent
       date={dayDate}
       event={event}
-      eventColors={eventColors}
       onClick={handleClick}
       className={className}
     />

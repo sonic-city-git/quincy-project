@@ -1,4 +1,8 @@
-export type EventType = "Show" | "Travel" | "Preprod" | "INT Storage" | "EXT Storage";
+export interface EventType {
+  id: string;
+  name: string;
+  color: string;
+}
 
 export interface CalendarEvent {
   date: Date;
