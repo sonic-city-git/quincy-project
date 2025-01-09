@@ -1,5 +1,4 @@
 import { Button } from "@/components/ui/button";
-import { NewCrewMember } from "@/types/crew";
 import { BasicInfoFields } from "./BasicInfoFields";
 import { RoleSelector } from "../shared/RoleSelector";
 
@@ -7,12 +6,22 @@ interface AddCrewMemberFormProps {
   selectedRoleIds: string[];
   onRolesChange: (roleIds: string[]) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  folders: Array<{
+    id: string;
+    name: string;
+    created_at: string;
+  }>;
 }
 
-export function AddCrewMemberForm({ selectedRoleIds, onRolesChange, onSubmit }: AddCrewMemberFormProps) {
+export function AddCrewMemberForm({ 
+  selectedRoleIds, 
+  onRolesChange, 
+  onSubmit,
+  folders 
+}: AddCrewMemberFormProps) {
   return (
     <form onSubmit={onSubmit} className="grid gap-4 py-4">
-      <BasicInfoFields />
+      <BasicInfoFields folders={folders} />
       <RoleSelector 
         selectedRoleIds={selectedRoleIds}
         onRolesChange={onRolesChange}

@@ -10,6 +10,11 @@ interface EditCrewMemberFormProps {
   onRolesChange: (roleIds: string[]) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onDelete: () => void;
+  folders: Array<{
+    id: string;
+    name: string;
+    created_at: string;
+  }>;
 }
 
 export function EditCrewMemberForm({
@@ -18,6 +23,7 @@ export function EditCrewMemberForm({
   onRolesChange,
   onSubmit,
   onDelete,
+  folders,
 }: EditCrewMemberFormProps) {
   return (
     <form onSubmit={onSubmit} className="grid gap-4 py-4">
@@ -28,6 +34,7 @@ export function EditCrewMemberForm({
           phone: crewMember.phone,
           crew_folder: crewMember.crew_folder,
         }}
+        folders={folders}
       />
       <RoleSelector 
         selectedRoleIds={selectedRoleIds}

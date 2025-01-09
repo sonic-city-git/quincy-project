@@ -19,11 +19,11 @@ interface BasicInfoFieldsProps {
       created_at: string;
     } | null;
   };
-  folders: {
+  folders: Array<{
     id: string;
     name: string;
     created_at: string;
-  }[];
+  }>;
 }
 
 const getFolderPriority = (folderName: string): number => {
@@ -34,7 +34,7 @@ const getFolderPriority = (folderName: string): number => {
   return 4;
 };
 
-export function BasicInfoFields({ defaultValues, folders }: BasicInfoFieldsProps) {
+export function BasicInfoFields({ defaultValues, folders = [] }: BasicInfoFieldsProps) {
   const sortedFolders = [...folders].sort((a, b) => {
     const priorityA = getFolderPriority(a.name);
     const priorityB = getFolderPriority(b.name);
@@ -84,7 +84,7 @@ export function BasicInfoFields({ defaultValues, folders }: BasicInfoFieldsProps
         <Label htmlFor="crew_folder">Folder</Label>
         <Select 
           name="crew_folder" 
-          defaultValue={defaultValues?.crew_folder?.id ? JSON.stringify({
+          defaultValue={defaultValues?.crew_folder ? JSON.stringify({
             id: defaultValues.crew_folder.id,
             name: defaultValues.crew_folder.name,
             created_at: defaultValues.crew_folder.created_at
