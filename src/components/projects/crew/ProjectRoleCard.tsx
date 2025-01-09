@@ -3,7 +3,7 @@ import { RoleInfo } from "./RoleInfo";
 import { EntitySelect } from "@/components/shared/EntitySelect";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CrewMember } from "@/types/crew";
+import { CrewMember, CrewRole } from "@/types/crew";
 
 interface ProjectRoleCardProps {
   id: string;
@@ -32,10 +32,11 @@ export function ProjectRoleCard({
     queryFn: async () => {
       console.log('Fetching crew members for role:', { id, name });
       
+      // Query crew members where roles array contains an object with matching id
       const { data, error } = await supabase
         .from('crew_members')
         .select('*, crew_folder')
-        .contains('roles', [{ id, name }]);
+        .contains('roles', [{ id }]);
       
       if (error) {
         console.error('Error fetching crew members:', error);
@@ -45,17 +46,36 @@ export function ProjectRoleCard({
       console.log('Received crew data:', data);
 
       // Transform and sort crew members
-      const transformedData = (data || []).map(member => ({
-        ...member,
-        crew_folder: member.crew_folder && typeof member.crew_folder === 'object' 
+      const transformedData = (data || []).map(member => {
+        // Transform roles from Json to CrewRole[]
+        const roles = Array.isArray(member.roles) 
+          ? member.roles.map((role: any) => ({
+              id: role.id || '',
+              name: role.name || '',
+              color: role.color || '',
+              created_at: role.created_at
+            }))
+          : [];
+
+        // Transform crew_folder from Json to the expected type
+        const crewFolder = member.crew_folder && typeof member.crew_folder === 'object'
           ? {
               id: (member.crew_folder as any).id || '',
               name: (member.crew_folder as any).name || '',
               created_at: (member.crew_folder as any).created_at || ''
             }
-          : null,
-        roles: Array.isArray(member.roles) ? member.roles : []
-      })) as CrewMember[];
+          : null;
+
+        return {
+          id: member.id,
+          name: member.name,
+          email: member.email,
+          phone: member.phone,
+          created_at: member.created_at,
+          crew_folder: crewFolder,
+          roles: roles
+        } as CrewMember;
+      });
 
       // Sort crew members with Sonic City first
       return transformedData.sort((a, b) => {
