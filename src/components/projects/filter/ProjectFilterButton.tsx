@@ -23,7 +23,7 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
 
   const fetchSonicCityCrewMembers = async () => {
     try {
-      console.log('Fetching crew members...');
+      console.log('Fetching crew members...', { timestamp: new Date().toISOString() });
       setLoading(true);
       const { data, error } = await supabase
         .from('crew_members')
@@ -36,7 +36,11 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
         return;
       }
 
-      console.log('Fetched crew members:', data);
+      console.log('Fetched crew members:', {
+        count: data?.length,
+        members: data?.map(m => ({ id: m.id, name: m.name })),
+        timestamp: new Date().toISOString()
+      });
       setCrewMembers(data || []);
     } catch (error) {
       console.error('Error:', error);
@@ -50,7 +54,12 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
   }, []);
 
   const selectedMemberName = crewMembers.find(member => member.id === selectedOwner)?.name;
-  console.log('Current selection:', { selectedOwner, selectedMemberName });
+  console.log('Current filter state:', { 
+    selectedOwner, 
+    selectedMemberName,
+    availableMembers: crewMembers.map(m => ({ id: m.id, name: m.name })),
+    timestamp: new Date().toISOString()
+  });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -76,7 +85,13 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
               <CommandItem
                 key={member.id}
                 onSelect={() => {
-                  console.log('Member selected:', { id: member.id, name: member.name });
+                  console.log('Member selection event:', { 
+                    memberId: member.id, 
+                    memberName: member.name,
+                    currentlySelected: selectedOwner === member.id,
+                    willSelect: selectedOwner !== member.id,
+                    timestamp: new Date().toISOString()
+                  });
                   onOwnerSelect(selectedOwner === member.id ? null : member.id);
                   setOpen(false);
                 }}

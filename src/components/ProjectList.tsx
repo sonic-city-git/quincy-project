@@ -17,10 +17,14 @@ export function ProjectList() {
     setSelectedItem(null);
   };
 
-  console.log('Current state:', { 
+  console.log('ProjectList render:', { 
     totalProjects: projects.length,
     selectedOwner,
-    projectOwners: projects.map(p => ({ id: p.id, owner_id: p.owner_id }))
+    projectOwners: projects.map(p => ({ 
+      id: p.id, 
+      name: p.name,
+      owner_id: p.owner_id 
+    }))
   });
 
   // Filter projects based on the selected owner's ID
@@ -32,7 +36,8 @@ export function ProjectList() {
           projectName: project.name,
           projectOwnerId: project.owner_id,
           selectedOwner,
-          matches
+          matches,
+          comparison: `${project.owner_id} === ${selectedOwner}`
         });
         return matches;
       })
@@ -41,7 +46,8 @@ export function ProjectList() {
   console.log('Filtered results:', {
     totalProjects: projects.length,
     filteredProjects: filteredProjects.length,
-    selectedOwner
+    selectedOwner,
+    filteredProjectNames: filteredProjects.map(p => p.name)
   });
 
   if (loading) {
@@ -56,7 +62,8 @@ export function ProjectList() {
           onOwnerSelect={(ownerId) => {
             console.log('Owner selection changed:', { 
               previous: selectedOwner, 
-              new: ownerId 
+              new: ownerId,
+              timestamp: new Date().toISOString()
             });
             setSelectedOwner(ownerId);
           }}
