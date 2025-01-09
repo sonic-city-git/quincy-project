@@ -13,8 +13,8 @@ interface EquipmentContentProps {
   onItemSelect: (id: string) => void;
   onPreviousPeriod: () => void;
   onNextPeriod: () => void;
-  observe: (element: Element | null) => void;
-  unobserve: (element: Element | null) => void;
+  observe?: (element: Element | null) => void;
+  unobserve?: (element: Element | null) => void;
   onAddEquipment: (equipment: Equipment) => void;
   onEditEquipment: (equipment: Equipment) => void;
   onDeleteEquipment: () => void;
