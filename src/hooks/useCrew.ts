@@ -10,12 +10,12 @@ export function useCrew() {
         .from('crew_members')
         .select(`
           *,
-          folder:crew_folders!crew_members_folder_id_fkey (
+          folder:crew_folders (
             id,
             name
           ),
-          crew_member_roles!crew_member_roles_crew_member_id_fkey (
-            role:crew_roles (
+          crew_member_roles (
+            crew_roles (
               id,
               name,
               color
@@ -32,7 +32,7 @@ export function useCrew() {
         email: member.email,
         phone: member.phone,
         folder: member.folder,
-        role: member.crew_member_roles[0]?.role || null,
+        role: member.crew_member_roles[0]?.crew_roles || null,
         created_at: member.created_at,
         updated_at: member.updated_at
       })) as CrewMember[];

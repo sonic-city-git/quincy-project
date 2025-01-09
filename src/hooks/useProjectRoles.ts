@@ -12,12 +12,12 @@ export function useProjectRoles(projectId: string) {
         .from('project_roles')
         .select(`
           *,
-          role:crew_roles!project_roles_role_id_fkey (
+          role:crew_roles (
             id,
             name,
             color
           ),
-          preferred:crew_members!project_roles_preferred_id_fkey (
+          preferred:crew_members (
             id,
             name
           )
