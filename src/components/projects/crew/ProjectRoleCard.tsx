@@ -36,7 +36,7 @@ export function ProjectRoleCard({
       const { data, error } = await supabase
         .from('crew_members')
         .select('*')
-        .filter('roles', 'cs', `[{"id": "${id}"}]`);
+        .filter('roles', 'cs', `[{"id":"${id}"}]`);
       
       if (error) {
         console.error('Error fetching crew members:', error);
