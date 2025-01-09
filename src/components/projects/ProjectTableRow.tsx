@@ -14,7 +14,6 @@ export function ProjectTableRow({ project, colorStyle, isSelected, onSelect }: P
   const navigate = useNavigate();
 
   const handleClick = (e: React.MouseEvent) => {
-    // Prevent navigation when clicking the checkbox
     if ((e.target as HTMLElement).closest('[role="checkbox"]')) {
       return;
     }
@@ -23,7 +22,9 @@ export function ProjectTableRow({ project, colorStyle, isSelected, onSelect }: P
 
   return (
     <TableRow 
-      className="hover:bg-zinc-800/50 whitespace-nowrap cursor-pointer"
+      className={`group hover:bg-zinc-800/50 cursor-pointer transition-colors ${
+        isSelected ? 'bg-zinc-800/75' : ''
+      }`}
       onClick={handleClick}
     >
       <TableCell className="w-12">
@@ -32,22 +33,27 @@ export function ProjectTableRow({ project, colorStyle, isSelected, onSelect }: P
           onCheckedChange={onSelect}
         />
       </TableCell>
-      <TableCell className="pl-4">
-        <div 
-          className="inline-block px-3 py-1 rounded"
-          {...colorStyle}
-        >
-          <span className="text-white font-medium">
+      <TableCell>
+        <div className="flex items-center gap-2">
+          <div 
+            className={`px-2 py-1 rounded-md text-sm font-medium ${colorStyle.className}`}
+          >
             {project.name}
-          </span>
+          </div>
         </div>
       </TableCell>
-      <TableCell className="text-zinc-300">
+      <TableCell className="text-sm text-muted-foreground">
         {project.owner}
       </TableCell>
-      <TableCell className="text-zinc-300">{project.lastInvoiced}</TableCell>
-      <TableCell className="text-zinc-300">{project.gigPrice}</TableCell>
-      <TableCell className="text-zinc-300">{project.yearlyRevenue}</TableCell>
+      <TableCell className="text-sm text-muted-foreground">
+        {project.lastInvoiced || '-'}
+      </TableCell>
+      <TableCell className="text-sm text-muted-foreground">
+        {project.gigPrice || '-'}
+      </TableCell>
+      <TableCell className="text-sm text-muted-foreground">
+        {project.yearlyRevenue || '-'}
+      </TableCell>
     </TableRow>
   );
 }

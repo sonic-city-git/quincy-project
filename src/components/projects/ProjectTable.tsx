@@ -9,35 +9,31 @@ interface ProjectTableProps {
 }
 
 export function ProjectTable({ projects, selectedItem, onItemSelect }: ProjectTableProps) {
-  const getColorStyle = (color: string) => ({
-    className: color
-  });
-
   return (
-    <div className="rounded-md border">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-12"></TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Owner</TableHead>
-            <TableHead>Last Invoiced</TableHead>
-            <TableHead>Gig Price</TableHead>
-            <TableHead>Yearly Revenue</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {projects.map((project) => (
-            <ProjectTableRow
-              key={project.id}
-              project={project}
-              colorStyle={getColorStyle(project.color)}
-              isSelected={selectedItem === project.id}
-              onSelect={() => onItemSelect(project.id)}
-            />
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <Table>
+      <TableHeader className="bg-zinc-900/50 border-b border-zinc-800">
+        <TableRow>
+          <TableHead className="w-12"></TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Owner</TableHead>
+          <TableHead>Last Invoiced</TableHead>
+          <TableHead>Gig Price</TableHead>
+          <TableHead>Yearly Revenue</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {projects.map((project) => (
+          <ProjectTableRow
+            key={project.id}
+            project={project}
+            colorStyle={{
+              className: `bg-${project.color}-500/10 text-${project.color}-500`
+            }}
+            isSelected={selectedItem === project.id}
+            onSelect={() => onItemSelect(project.id)}
+          />
+        ))}
+      </TableBody>
+    </Table>
   );
 }

@@ -4,7 +4,8 @@ import { useState } from "react";
 import { ProjectActions } from "./projects/ProjectActions";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
-import { Filter, Loader2 } from "lucide-react";
+import { Filter, Loader2, Plus } from "lucide-react";
+import { Separator } from "./ui/separator";
 
 export function ProjectList() {
   const { projects, loading } = useProjects();
@@ -23,31 +24,40 @@ export function ProjectList() {
   }
 
   return (
-    <div className="space-y-8 px-1">
+    <div className="space-y-8 px-6 py-6 max-w-[1400px] mx-auto">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Projects</h1>
-        <p className="text-sm text-muted-foreground">
-          Manage your active projects and their details
-        </p>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
+          <p className="text-sm text-muted-foreground">
+            Manage your active projects and their details
+          </p>
+        </div>
+        <Button className="gap-2">
+          <Plus className="h-4 w-4" />
+          Add Project
+        </Button>
       </div>
       
       <Card className="border-0 shadow-md bg-zinc-900/50">
         <CardContent className="p-6">
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Filter className="h-4 w-4" />
-                Filter
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Filter className="h-4 w-4" />
+                  Filter
+                </Button>
+              </div>
               <ProjectActions 
                 selectedItems={selectedItem ? [selectedItem] : []} 
                 onProjectDeleted={() => setSelectedItem(null)}
               />
             </div>
+            <Separator className="bg-zinc-800" />
             <div className="rounded-lg overflow-hidden border border-zinc-800">
               <ProjectTable 
                 projects={projects} 
