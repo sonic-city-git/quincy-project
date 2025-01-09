@@ -25,6 +25,28 @@ interface CrewMemberSelectProps {
   roleName: string;
 }
 
+// Type guard for crew folder JSON data
+const isValidCrewFolder = (value: any): value is { id: string; name: string; created_at: string } => {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof value.id === 'string' &&
+    typeof value.name === 'string' &&
+    typeof value.created_at === 'string'
+  );
+};
+
+// Type guard for crew role JSON data
+const isValidRole = (value: any): value is CrewRole => {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof value.id === 'string' &&
+    typeof value.name === 'string' &&
+    typeof value.color === 'string'
+  );
+};
+
 const getFolderPriority = (folderName: string | null) => {
   if (!folderName) return 4;
   const name = folderName.toLowerCase();
@@ -71,14 +93,9 @@ export function CrewMemberSelect({
         phone: member.phone,
         created_at: member.created_at,
         roles: Array.isArray(member.roles) 
-          ? member.roles.map((role: any) => ({
-              id: role.id || '',
-              name: role.name || '',
-              color: role.color || '',
-              created_at: role.created_at || new Date().toISOString()
-            }))
+          ? member.roles.filter(isValidRole)
           : [],
-        crew_folder: member.crew_folder 
+        crew_folder: member.crew_folder && isValidCrewFolder(member.crew_folder)
           ? {
               id: member.crew_folder.id,
               name: member.crew_folder.name,
