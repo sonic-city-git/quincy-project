@@ -25,10 +25,10 @@ export function EntitySelect({
 }: EntitySelectProps) {
   return (
     <Select value={value} onValueChange={onValueChange} required={required}>
-      <SelectTrigger className="w-full">
+      <SelectTrigger className="w-[240px]">
         <SelectValue placeholder={isLoading ? `Loading ${placeholder}...` : `Select ${placeholder}`} />
       </SelectTrigger>
-      <SelectContent className="overflow-y-auto">
+      <SelectContent className="overflow-y-auto w-[240px]">
         <ScrollArea className="h-[200px] w-full" type="hover">
           <div className="p-1">
             {entities.map((entity) => (
