@@ -1,22 +1,8 @@
 import { useState, useEffect } from "react";
 import { CalendarEvent, EventType } from "@/types/events";
 import { useToast } from "@/hooks/use-toast";
-import { formatDatabaseDate } from "@/utils/dateFormatters";
-import { supabase } from "@/integrations/supabase/client";
-
-interface DatabaseEvent {
-  project_id: string;
-  date: string;
-  name: string;
-  event_type_id: string;
-  event_types: {
-    id: string;
-    name: string;
-    color: string;
-    needs_crew: boolean;
-    rate_multiplier: number;
-  };
-}
+import { fetchEvents, createEvent, updateEvent } from "@/utils/eventQueries";
+import { createRoleAssignments } from "@/utils/roleAssignments";
 
 export const useCalendarEvents = (projectId: string | undefined) => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
@@ -30,28 +16,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       }
 
       try {
-        const { data, error } = await supabase
-          .from('project_events')
-          .select(`
-            *,
-            event_types (
-              id,
-              name,
-              color,
-              needs_crew,
-              rate_multiplier
-            )
-          `)
-          .eq('project_id', projectId);
-
-        if (error) throw error;
-
-        const fetchedEvents = (data as DatabaseEvent[]).map(event => ({
-          date: new Date(event.date),
-          name: event.name,
-          type: event.event_types
-        }));
-
+        const fetchedEvents = await fetchEvents(projectId);
         setEvents(fetchedEvents);
       } catch (error) {
         console.error('Error loading events:', error);
@@ -75,87 +40,10 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     }
 
     try {
-      const formattedDate = formatDatabaseDate(date);
-      console.log('Adding event:', {
-        project_id: projectId,
-        date: formattedDate,
-        name: eventName,
-        event_type_id: eventType.id
-      });
+      const eventData = await createEvent(projectId, date, eventName, eventType);
       
-      // First, insert the event
-      const { data: eventData, error: eventError } = await supabase
-        .from('project_events')
-        .insert({
-          project_id: projectId,
-          date: formattedDate,
-          name: eventName.trim() || eventType.name,
-          event_type_id: eventType.id
-        })
-        .select(`
-          *,
-          event_types (
-            id,
-            name,
-            color,
-            needs_crew,
-            rate_multiplier
-          )
-        `)
-        .single();
-
-      if (eventError) throw eventError;
-
-      // If this event type needs crew, create role assignments
       if (eventType.needs_crew) {
-        console.log('Event needs crew, fetching project roles...');
-        
-        // First, get all project roles
-        const { data: projectRoles, error: rolesError } = await supabase
-          .from('project_roles')
-          .select(`
-            *,
-            crew_roles (
-              id,
-              name,
-              color
-            )
-          `)
-          .eq('project_id', projectId);
-
-        if (rolesError) {
-          console.error('Error fetching project roles:', rolesError);
-          throw rolesError;
-        }
-
-        console.log('Found project roles:', projectRoles);
-
-        if (projectRoles && projectRoles.length > 0) {
-          // Create role assignments for each project role
-          const roleAssignments = projectRoles.map(role => ({
-            project_id: projectId,
-            event_id: eventData.id,
-            role_id: role.role_id,
-            daily_rate: role.daily_rate,
-            hourly_rate: role.hourly_rate,
-            crew_member_id: role.preferred_id // Include preferred crew member if set
-          }));
-
-          console.log('Creating role assignments:', roleAssignments);
-
-          const { error: assignError } = await supabase
-            .from('project_event_roles')
-            .insert(roleAssignments);
-
-          if (assignError) {
-            console.error('Error creating role assignments:', assignError);
-            throw assignError;
-          }
-
-          console.log('Successfully created role assignments');
-        } else {
-          console.log('No project roles found to create assignments for');
-        }
+        await createRoleAssignments(projectId, eventData.id);
       }
 
       const newEvent: CalendarEvent = {
@@ -165,7 +53,6 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       };
 
       setEvents(prev => [...prev, newEvent]);
-      
       return newEvent;
     } catch (error) {
       console.error('Error adding event:', error);
@@ -173,26 +60,14 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     }
   };
 
-  const updateEvent = async (updatedEvent: CalendarEvent) => {
+  const updateEventHandler = async (updatedEvent: CalendarEvent) => {
     if (!projectId) throw new Error('Project ID is missing');
 
     try {
-      const formattedDate = formatDatabaseDate(updatedEvent.date);
-
-      const { error } = await supabase
-        .from('project_events')
-        .update({
-          name: updatedEvent.name.trim() || updatedEvent.type.name,
-          event_type_id: updatedEvent.type.id
-        })
-        .eq('project_id', projectId)
-        .eq('date', formattedDate);
-
-      if (error) throw error;
-
+      await updateEvent(projectId, updatedEvent);
       setEvents(prev => 
         prev.map(event => 
-          formatDatabaseDate(event.date) === formatDatabaseDate(updatedEvent.date)
+          event.date.getTime() === updatedEvent.date.getTime()
             ? updatedEvent
             : event
         )
@@ -205,14 +80,14 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
   const findEvent = (date: Date) => {
     return events.find(event => 
-      formatDatabaseDate(event.date) === formatDatabaseDate(date)
+      event.date.getTime() === date.getTime()
     );
   };
 
   return {
     events,
     addEvent,
-    updateEvent,
+    updateEvent: updateEventHandler,
     findEvent
   };
 };
