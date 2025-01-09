@@ -665,6 +665,7 @@ export type Database = {
         Row: {
           "#": number | null
           created_at: string
+          crew_member_id: string | null
           customer_id: string | null
           id: string
           name: string
@@ -676,6 +677,7 @@ export type Database = {
         Insert: {
           "#"?: number | null
           created_at?: string
+          crew_member_id?: string | null
           customer_id?: string | null
           id?: string
           name: string
@@ -687,6 +689,7 @@ export type Database = {
         Update: {
           "#"?: number | null
           created_at?: string
+          crew_member_id?: string | null
           customer_id?: string | null
           id?: string
           name?: string
@@ -696,6 +699,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "projects_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "projects_customer_id_fkey"
             columns: ["customer_id"]

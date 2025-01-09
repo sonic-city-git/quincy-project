@@ -22,7 +22,7 @@ export function ProjectList() {
 
   const filteredProjects = projects.filter(project => 
     project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    project.owner.toLowerCase().includes(searchQuery.toLowerCase())
+    (project.owner && project.owner.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   if (loading) {
