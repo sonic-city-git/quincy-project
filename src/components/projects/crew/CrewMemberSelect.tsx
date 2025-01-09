@@ -44,7 +44,7 @@ export function CrewMemberSelect({
 }: CrewMemberSelectProps) {
   const [open, setOpen] = useState(false);
 
-  const { data: crewMembers = [], isLoading } = useQuery({
+  const { data: crewMembers, isLoading } = useQuery({
     queryKey: ['crew-members', roleName],
     queryFn: async () => {
       console.log('Fetching crew members for role:', roleName);
@@ -101,6 +101,9 @@ export function CrewMemberSelect({
     },
   });
 
+  // Ensure we have a valid array to work with
+  const members = crewMembers || [];
+
   if (isLoading) {
     return (
       <Button variant="outline" className="w-[200px] justify-between" disabled>
@@ -108,9 +111,6 @@ export function CrewMemberSelect({
       </Button>
     );
   }
-
-  // Ensure we have a valid array to work with
-  const members = Array.isArray(crewMembers) ? crewMembers : [];
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
