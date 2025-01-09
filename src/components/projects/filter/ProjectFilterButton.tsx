@@ -27,7 +27,6 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
       const { data, error } = await supabase
         .from('crew_members')
         .select('id, name')
-        .filter('crew_folder->name', 'eq', 'Sonic City')
         .order('name');
 
       if (error) {
@@ -66,8 +65,8 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command>
-          <CommandInput placeholder="Search members..." />
-          <CommandEmpty>No member found.</CommandEmpty>
+          <CommandInput placeholder="Search owners..." />
+          <CommandEmpty>No owner found.</CommandEmpty>
           <CommandGroup>
             {crewMembers.map((member) => (
               <CommandItem

@@ -12,6 +12,7 @@ export function useProjects() {
       .select(`
         *,
         crew_members (
+          id,
           name
         )
       `)
