@@ -5,13 +5,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { CrewRole } from "@/types/crew";
-import { useState, useEffect } from "react";
-import { RoleFormFields } from "./RoleFormFields";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Trash2 } from "lucide-react";
+import { Plus } from "lucide-react";
+import { RoleFormFields } from "./form-fields/RoleFormFields";
+import { CrewRole } from "@/types/crew";
+import { useState } from "react";
 
 interface AddRoleDialogProps {
   roles?: CrewRole[];
@@ -20,156 +18,67 @@ interface AddRoleDialogProps {
     roleId: string;
     dailyRate: number;
     hourlyRate: number;
-    quantity?: number;
+    quantity: number;
   }) => void;
-  onDelete?: () => void;
   loading?: boolean;
-  editMode?: boolean;
-  initialValues?: {
-    roleId: string;
-    dailyRate: number;
-    hourlyRate: number;
-    quantity?: number;
-  };
-  projectId?: string;
-  roleId?: string;
 }
 
 export function AddRoleDialog({ 
   roles, 
   onClose, 
   onSubmit,
-  onDelete,
   loading,
-  editMode = false,
-  initialValues,
-  projectId,
-  roleId
 }: AddRoleDialogProps) {
-  const [selectedRole, setSelectedRole] = useState<string>(initialValues?.roleId || "");
-  const [dailyRate, setDailyRate] = useState(initialValues?.dailyRate?.toString() || "");
-  const [hourlyRate, setHourlyRate] = useState(initialValues?.hourlyRate?.toString() || "");
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [selectedRole, setSelectedRole] = useState<string>("");
+  const [dailyRate, setDailyRate] = useState("");
+  const [hourlyRate, setHourlyRate] = useState("");
   const { toast } = useToast();
 
-  // Fetch role data if in edit mode
-  const { data: roleData } = useQuery({
-    queryKey: ['project-role', projectId, roleId],
-    queryFn: async () => {
-      if (!editMode || !projectId || !roleId) return null;
-      
-      const { data, error } = await supabase
-        .from('project_roles')
-        .select(`
-          *,
-          crew_roles (
-            id,
-            name,
-            color
-          )
-        `)
-        .eq('project_id', projectId)
-        .eq('role_id', roleId)
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    enabled: editMode && !!projectId && !!roleId
-  });
-
-  // Update form when role data is fetched
-  useEffect(() => {
-    if (roleData) {
-      setSelectedRole(roleData.role_id);
-      setDailyRate(roleData.daily_rate?.toString() || "");
-      setHourlyRate(roleData.hourly_rate?.toString() || "");
-    }
-  }, [roleData]);
-
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!selectedRole) {
-      newErrors.role = "Role is required";
-    }
-    if (!dailyRate) {
-      newErrors.dailyRate = "Daily rate is required";
-    } else if (isNaN(parseFloat(dailyRate)) || parseFloat(dailyRate) < 0) {
-      newErrors.dailyRate = "Daily rate must be a valid positive number";
-    }
-    if (!hourlyRate) {
-      newErrors.hourlyRate = "Hourly rate is required";
-    } else if (isNaN(parseFloat(hourlyRate)) || parseFloat(hourlyRate) < 0) {
-      newErrors.hourlyRate = "Hourly rate must be a valid positive number";
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = () => {
-    if (validateForm()) {
-      try {
-        onSubmit({
-          roleId: selectedRole,
-          dailyRate: parseFloat(dailyRate),
-          hourlyRate: parseFloat(hourlyRate),
-          quantity: 1,
-        });
-        toast({
-          title: editMode ? "Role Updated" : "Role Added",
-          description: editMode ? "The role has been updated successfully." : "The role has been added successfully.",
-        });
-        onClose();
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "There was an error processing your request.",
-          variant: "destructive",
-        });
-      }
+    try {
+      onSubmit({
+        roleId: selectedRole,
+        dailyRate: parseFloat(dailyRate),
+        hourlyRate: parseFloat(hourlyRate),
+        quantity: 1,
+      });
+      toast({
+        title: "Role Added",
+        description: "The role has been added successfully.",
+      });
+      onClose();
+    } catch (error) {
+      console.error('Error adding role:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add role",
+        variant: "destructive",
+      });
     }
   };
 
   return (
     <DialogContent>
       <DialogHeader>
-        <DialogTitle>{editMode ? "Edit Role" : "Add Role"}</DialogTitle>
+        <DialogTitle>Add Role</DialogTitle>
         <DialogDescription>
-          {editMode 
-            ? "Update the role details for this project."
-            : "Select a role and specify the rates for this project."
-          }
+          Add a new role to this project.
         </DialogDescription>
       </DialogHeader>
       <RoleFormFields
-        roles={roles}
         selectedRole={selectedRole}
         dailyRate={dailyRate}
         hourlyRate={hourlyRate}
-        errors={errors}
-        editMode={editMode}
+        editMode={false}
         onRoleChange={setSelectedRole}
         onDailyRateChange={setDailyRate}
         onHourlyRateChange={setHourlyRate}
       />
-      <div className="flex justify-between gap-2">
-        {editMode && onDelete && (
-          <Button 
-            variant="destructive" 
-            onClick={onDelete}
-            className="gap-2"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </Button>
-        )}
-        <div className="flex-1 flex justify-end">
-          <Button onClick={handleSubmit} disabled={loading}>
-            {loading ? (editMode ? "Updating..." : "Adding...") : (editMode ? "Update Role" : "Add Role")}
-          </Button>
-        </div>
+      <div className="flex justify-end">
+        <Button onClick={handleSubmit} disabled={loading} className="gap-2">
+          <Plus className="h-4 w-4" />
+          {loading ? "Adding..." : "Add Role"}
+        </Button>
       </div>
     </DialogContent>
   );
