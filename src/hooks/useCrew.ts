@@ -17,7 +17,7 @@ export function useCrew() {
             id,
             name
           ),
-          role:crew_member_roles!inner (
+          role:crew_member_roles (
             crew_roles (
               id,
               name,
