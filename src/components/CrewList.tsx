@@ -5,7 +5,7 @@ import { addDays, subDays } from "date-fns";
 import { EditCrewMemberDialog } from "./crew/EditCrewMemberDialog";
 import { useCrewManagement } from "@/hooks/useCrewManagement";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CrewSearch } from "./crew/search/CrewSearch";
 
 export function CrewList() {
@@ -36,16 +36,22 @@ export function CrewList() {
     setStartDate(prev => addDays(prev, daysToShow));
   };
 
-  const filteredBySearch = filteredCrewMembers.filter(crew => {
-    if (!searchTerm) return true;
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      crew.name.toLowerCase().includes(searchLower) ||
-      crew.email.toLowerCase().includes(searchLower) ||
-      crew.phone.toLowerCase().includes(searchLower) ||
-      (crew.crew_folder?.name || '').toLowerCase().includes(searchLower)
-    );
-  });
+  const [filteredBySearch, setFilteredBySearch] = useState(filteredCrewMembers);
+
+  useEffect(() => {
+    const filtered = filteredCrewMembers.filter(crew => {
+      if (!searchTerm) return true;
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        crew.name.toLowerCase().includes(searchLower) ||
+        crew.email.toLowerCase().includes(searchLower) ||
+        crew.phone.toLowerCase().includes(searchLower) ||
+        (crew.crew_folder?.name || '').toLowerCase().includes(searchLower)
+      );
+    });
+    setFilteredBySearch(filtered);
+    console.log('Filtered crew members:', filtered);
+  }, [searchTerm, filteredCrewMembers]);
 
   if (isLoading) {
     return (
@@ -54,8 +60,6 @@ export function CrewList() {
       </div>
     );
   }
-
-  console.log('Filtered crew members:', filteredBySearch); // Debug log
 
   return (
     <div className="space-y-4">
