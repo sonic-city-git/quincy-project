@@ -49,6 +49,15 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
 
   const selectedMemberName = crewMembers.find(member => member.id === selectedOwner)?.name;
 
+  if (loading) {
+    return (
+      <Button variant="outline" className="w-[200px] justify-between">
+        Loading...
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+    );
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -58,9 +67,7 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
           aria-expanded={open}
           className="w-[200px] justify-between"
         >
-          {loading ? (
-            "Loading..."
-          ) : selectedMemberName || "Select member..."}
+          {selectedMemberName || "Select member..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -72,7 +79,6 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
             {crewMembers.map((member) => (
               <CommandItem
                 key={member.id}
-                value={member.name}
                 onSelect={() => {
                   onOwnerSelect(selectedOwner === member.id ? null : member.id);
                   setOpen(false);
