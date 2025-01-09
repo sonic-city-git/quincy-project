@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { CrewMember, NewCrewMember } from "@/types/crew";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
+import { Json } from "@/integrations/supabase/types";
 
 export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
   const { toast } = useToast();
@@ -10,14 +11,22 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
     try {
       console.log('Adding crew member with roles:', newMember.roles);
       
+      // Convert CrewRole[] to a plain object array that matches Json type
+      const rolesForJson = newMember.roles.map(role => ({
+        id: role.id,
+        name: role.name,
+        color: role.color,
+        created_at: role.created_at
+      })) as Json;
+
       const { data: crewMember, error: crewError } = await supabase
         .from('crew_members')
         .insert({
           name: newMember.name,
           email: newMember.email,
           phone: newMember.phone,
-          crew_folder: newMember.crew_folder,
-          roles: newMember.roles // Supabase will handle JSON serialization
+          crew_folder: newMember.crew_folder as Json,
+          roles: rolesForJson
         })
         .select()
         .single();
@@ -45,14 +54,22 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
     try {
       console.log('Updating crew member with roles:', editedMember.roles);
       
+      // Convert CrewRole[] to a plain object array that matches Json type
+      const rolesForJson = editedMember.roles.map(role => ({
+        id: role.id,
+        name: role.name,
+        color: role.color,
+        created_at: role.created_at
+      })) as Json;
+
       const { error: updateError } = await supabase
         .from('crew_members')
         .update({
           name: editedMember.name,
           email: editedMember.email,
           phone: editedMember.phone,
-          crew_folder: editedMember.crew_folder,
-          roles: editedMember.roles // Supabase will handle JSON serialization
+          crew_folder: editedMember.crew_folder as Json,
+          roles: rolesForJson
         })
         .eq('id', editedMember.id);
 
