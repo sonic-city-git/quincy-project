@@ -10,7 +10,7 @@ export function useCrew() {
         .from('crew_members')
         .select(`
           *,
-          role:crew_member_roles (
+          crew_member_roles (
             crew_roles (
               id,
               name,
@@ -24,7 +24,7 @@ export function useCrew() {
       // Transform the data to match CrewMember type
       return data.map(member => ({
         ...member,
-        role: member.role?.[0]?.crew_roles || null
+        role: member.crew_member_roles?.[0]?.crew_roles || null
       })) as CrewMember[];
     },
   });

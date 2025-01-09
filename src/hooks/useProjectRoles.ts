@@ -1,14 +1,12 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useProjectRoles(projectId: string) {
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
-  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const { data: projectRoles, refetch: refetchRoles } = useQuery({
-    queryKey: ['project-roles', projectId],
+  const { data: projectRoles, isLoading: loading } = useQuery({
+    queryKey: ['project_roles', projectId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('project_roles')
@@ -18,81 +16,59 @@ export function useProjectRoles(projectId: string) {
             id,
             name,
             color
+          ),
+          preferred:preferred_id (
+            id,
+            name,
+            email
           )
         `)
         .eq('project_id', projectId);
-      
+
       if (error) throw error;
       return data;
     },
+    enabled: !!projectId,
   });
 
-  const handleItemSelect = (projectRoleId: string) => {
-    setSelectedItems((prev) => {
-      if (prev.includes(projectRoleId)) {
-        return [];
-      }
-      return [projectRoleId];
-    });
-  };
-
-  const handleAddRole = async (data: { roleId: string; dailyRate: string; hourlyRate: string }) => {
+  const deleteRole = async (roleId: string) => {
     try {
-      const { error } = await supabase
+      await supabase
         .from('project_roles')
-        .insert({
-          project_id: projectId,
-          role_id: data.roleId,
-          daily_rate: data.dailyRate ? parseFloat(data.dailyRate) : null,
-          hourly_rate: data.hourlyRate ? parseFloat(data.hourlyRate) : null,
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Role added successfully",
-      });
-
-      refetchRoles();
+        .delete()
+        .eq('id', roleId);
+      toast.success("Role deleted successfully");
+      queryClient.invalidateQueries(['project_roles', projectId]);
     } catch (error) {
-      console.error('Error adding role:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add role",
-        variant: "destructive",
-      });
+      console.error('Error deleting role:', error);
+      toast.error("Failed to delete role");
     }
   };
 
-  const handleEditRole = async (data: { dailyRate: string; hourlyRate: string }) => {
-    if (!selectedItems[0]) return;
-
+  const updateRole = async (roleId: string, updates: any) => {
     try {
-      const { error } = await supabase
+      await supabase
         .from('project_roles')
-        .update({
-          daily_rate: data.dailyRate ? parseFloat(data.dailyRate) : null,
-          hourly_rate: data.hourlyRate ? parseFloat(data.hourlyRate) : null,
-        })
-        .eq('id', selectedItems[0]);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Role updated successfully",
-      });
-
-      refetchRoles();
-      setSelectedItems([]);
+        .update(updates)
+        .eq('id', roleId);
+      toast.success("Role updated successfully");
+      queryClient.invalidateQueries(['project_roles', projectId]);
     } catch (error) {
       console.error('Error updating role:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update role",
-        variant: "destructive",
-      });
+      toast.error("Failed to update role");
+    }
+  };
+
+  const addRole = async (newRole: any) => {
+    try {
+      await supabase
+        .from('project_roles')
+        .insert(newRole);
+      toast.success("Role added successfully");
+      queryClient.invalidateQueries(['project_roles', projectId]);
+    } catch (error) {
+      console.error('Error adding role:', error);
+      toast.error("Failed to add role");
     }
   };
 
@@ -102,15 +78,14 @@ export function useProjectRoles(projectId: string) {
         dailyRate: projectRoles.find(role => role.id === selectedItems[0])?.daily_rate,
         hourlyRate: projectRoles.find(role => role.id === selectedItems[0])?.hourly_rate,
       }
-    : undefined;
+    : null;
 
   return {
     projectRoles,
-    selectedItems,
+    loading,
     selectedRole,
-    handleItemSelect,
-    handleAddRole,
-    handleEditRole,
-    refetchRoles
+    deleteRole,
+    updateRole,
+    addRole,
   };
 }
