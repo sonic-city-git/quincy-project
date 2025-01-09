@@ -2,10 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CrewMember } from "@/types/crew";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Plus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { RolesSection } from "./RolesSection";
+import { RoleTags } from "@/components/crew/RoleTags";
 
 interface ProjectCrewTabProps {
   projectId: string;
@@ -17,7 +18,17 @@ export function ProjectCrewTab({ projectId }: ProjectCrewTabProps) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('crew_members')
-        .select('*')
+        .select(`
+          *,
+          crew_member_roles (
+            role_id,
+            crew_roles (
+              id,
+              name,
+              color
+            )
+          )
+        `)
         .order('name');
       
       if (error) throw error;
@@ -35,10 +46,8 @@ export function ProjectCrewTab({ projectId }: ProjectCrewTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* Roles Section */}
       <RolesSection projectId={projectId} />
 
-      {/* Crew Members Section */}
       <div className="space-y-4">
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">Project Crew</h2>
@@ -63,7 +72,9 @@ export function ProjectCrewTab({ projectId }: ProjectCrewTabProps) {
                 {crewMembers?.map((crew) => (
                   <TableRow key={crew.id} className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
                     <TableCell className="w-[240px] truncate">{crew.name}</TableCell>
-                    <TableCell className="w-[320px]">{crew.role}</TableCell>
+                    <TableCell className="w-[320px]">
+                      <RoleTags crewMemberId={crew.id} />
+                    </TableCell>
                     <TableCell className="w-[280px] truncate">{crew.email}</TableCell>
                     <TableCell className="truncate">{crew.phone}</TableCell>
                   </TableRow>

@@ -74,19 +74,19 @@ export type Database = {
       }
       crew_roles: {
         Row: {
-          color: string
+          color: string | null
           created_at: string
           id: string
           name: string
         }
         Insert: {
-          color: string
+          color?: string | null
           created_at?: string
           id?: string
           name: string
         }
         Update: {
-          color?: string
+          color?: string | null
           created_at?: string
           id?: string
           name?: string
