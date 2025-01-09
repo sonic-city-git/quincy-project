@@ -8,5 +8,7 @@ export interface CrewMember {
     name: string;
     color: string;
   } | null;
-  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  role_id: string | null;
 }

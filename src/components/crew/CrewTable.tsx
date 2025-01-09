@@ -19,7 +19,6 @@ export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) 
           <TableHead>Role</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Phone</TableHead>
-          <TableHead>Status</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

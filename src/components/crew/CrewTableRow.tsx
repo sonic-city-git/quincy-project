@@ -41,9 +41,6 @@ export function CrewTableRow({ member, index, isSelected, onSelect }: CrewTableR
       <TableCell className="text-sm text-muted-foreground">
         {member.phone || '-'}
       </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
-        {member.status || 'Active'}
-      </TableCell>
     </TableRow>
   );
 }
