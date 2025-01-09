@@ -61,7 +61,7 @@ export function useCrewManagement() {
           name: `${newMember.firstName} ${newMember.lastName}`,
           email: newMember.email,
           phone: newMember.phone,
-          folder: newMember.folder,
+          folder_id: newMember.folder_id,
         })
         .select()
         .single();
@@ -106,7 +106,7 @@ export function useCrewManagement() {
           name: editedMember.name,
           email: editedMember.email,
           phone: editedMember.phone,
-          folder: editedMember.folder,
+          folder_id: editedMember.folder_id,
         })
         .eq('id', editedMember.id);
 

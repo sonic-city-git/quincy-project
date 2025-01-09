@@ -29,7 +29,7 @@ export function EditCrewMemberForm({
           lastName,
           email: crewMember.email,
           phone: crewMember.phone,
-          folder: crewMember.folder,
+          folder_id: crewMember.folder_id,
         }}
       />
       <RoleSelector 

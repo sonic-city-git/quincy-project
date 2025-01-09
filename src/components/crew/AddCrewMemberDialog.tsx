@@ -28,7 +28,7 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
       lastName: formData.get("lastName") as string,
       phone: formData.get("phone") as string,
       email: formData.get("email") as string,
-      folder: formData.get("folder") as string,
+      folder_id: formData.get("folder_id") as string,
       roleIds: selectedRoleIds,
     };
 
