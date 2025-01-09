@@ -33,14 +33,14 @@ export function CrewMemberSelect({
 }: CrewMemberSelectProps) {
   const [open, setOpen] = useState(false);
 
-  const { data: crewMembers = [], isLoading, error } = useQuery({
+  const { data: crewMembers = [], isLoading } = useQuery({
     queryKey: ['crew-members', roleName],
     queryFn: async () => {
       console.log('Fetching crew members for role:', roleName);
       
       const { data, error } = await supabase
         .from('crew_members')
-        .select('id, name, email, phone, roles, crew_folder, created_at');
+        .select('*');
       
       if (error) {
         console.error('Error fetching crew members:', error);
@@ -89,11 +89,10 @@ export function CrewMemberSelect({
     initialData: [], // Ensure we always have an array to work with
   });
 
-  if (error) {
-    console.error('Error in CrewMemberSelect:', error);
+  if (isLoading) {
     return (
       <Button variant="outline" className="w-[200px] justify-between" disabled>
-        Error loading crew members
+        Loading...
       </Button>
     );
   }
@@ -106,7 +105,6 @@ export function CrewMemberSelect({
           role="combobox"
           aria-expanded={open}
           className="w-[200px] justify-between"
-          disabled={isLoading}
         >
           {selectedCrewMember ? selectedCrewMember.name : "Select crew member..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -117,9 +115,7 @@ export function CrewMemberSelect({
           <CommandInput placeholder="Search crew member..." />
           <CommandEmpty>No crew member found.</CommandEmpty>
           <CommandGroup>
-            {isLoading ? (
-              <CommandItem disabled>Loading...</CommandItem>
-            ) : crewMembers.length === 0 ? (
+            {crewMembers.length === 0 ? (
               <CommandItem disabled>No crew members available</CommandItem>
             ) : (
               crewMembers.map((crew) => (
