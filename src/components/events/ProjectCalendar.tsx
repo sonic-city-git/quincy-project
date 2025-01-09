@@ -14,7 +14,24 @@ interface ProjectCalendarProps {
 export const ProjectCalendar = ({ projectId }: ProjectCalendarProps) => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const { currentDate, nextMonth, previousMonth } = useCalendarDate();
-  const { days, isLoading } = useCalendarEvents(projectId, currentDate);
+  const { events, isLoading } = useCalendarEvents(projectId);
+
+  // Generate array of dates for the current month
+  const getDaysInMonth = () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const days = [];
+
+    for (let d = 1; d <= lastDay.getDate(); d++) {
+      days.push(new Date(year, month, d));
+    }
+
+    return days;
+  };
+
+  const days = getDaysInMonth();
 
   return (
     <div className="space-y-4">
@@ -31,13 +48,12 @@ export const ProjectCalendar = ({ projectId }: ProjectCalendarProps) => {
       </div>
 
       <div className="grid grid-cols-7 gap-px bg-muted">
-        {days.map((day, index) => (
+        {days.map((date, index) => (
           <CalendarDay
             key={index}
-            day={day}
-            isLoading={isLoading}
-            selectedDate={selectedDate}
-            onSelectDate={setSelectedDate}
+            date={date}
+            onSelect={setSelectedDate}
+            className=""
           />
         ))}
       </div>

@@ -6,6 +6,7 @@ import { createRoleAssignments } from "@/utils/roleAssignments";
 
 export const useCalendarEvents = (projectId: string | undefined) => {
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -15,6 +16,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
         return;
       }
 
+      setIsLoading(true);
       try {
         console.log('Loading events for project:', projectId);
         const fetchedEvents = await fetchEvents(projectId);
@@ -26,6 +28,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
           description: "Failed to load calendar events",
           variant: "destructive",
         });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -89,6 +93,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
   return {
     events,
+    isLoading,
     addEvent,
     updateEvent: updateEventHandler,
     findEvent
