@@ -45,11 +45,24 @@ export function CrewMemberSelect({
         throw error;
       }
 
-      // Ensure data is an array and properly typed
-      const validMembers = (data || []).map(member => ({
-        ...member,
-        roles: Array.isArray(member.roles) ? member.roles as CrewRole[] : []
-      })) as CrewMember[];
+      if (!data) return [];
+
+      // Safely transform the data with proper type checking
+      const validMembers = data.map(member => {
+        const roles = member.roles && Array.isArray(member.roles)
+          ? (member.roles as any[]).map(role => ({
+              id: role.id || '',
+              name: role.name || '',
+              color: role.color || '',
+              created_at: role.created_at
+            }))
+          : [];
+
+        return {
+          ...member,
+          roles
+        } as CrewMember;
+      });
 
       // Filter members by role
       return validMembers.filter(member => 
