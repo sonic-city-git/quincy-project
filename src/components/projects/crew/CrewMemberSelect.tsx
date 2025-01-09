@@ -119,7 +119,7 @@ export function CrewMemberSelect({
     },
   });
 
-  // Ensure we have a valid array to work with
+  // Initialize members array before the loading check
   const members = crewMembers || [];
 
   if (isLoading) {
