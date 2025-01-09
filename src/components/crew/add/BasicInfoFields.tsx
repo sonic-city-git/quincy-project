@@ -20,6 +20,14 @@ interface BasicInfoFieldsProps {
   };
 }
 
+const getFolderPriority = (folderName: string): number => {
+  const name = folderName.toLowerCase();
+  if (name === 'sonic city') return 1;
+  if (name === 'associates') return 2;
+  if (name === 'freelance') return 3;
+  return 4;
+};
+
 export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
   const { data: folders } = useQuery({
     queryKey: ['crew-folders'],
@@ -30,7 +38,18 @@ export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
         .order('name');
       
       if (error) throw error;
-      return data;
+
+      // Sort folders with custom priority
+      return data.sort((a, b) => {
+        const priorityA = getFolderPriority(a.name);
+        const priorityB = getFolderPriority(b.name);
+        
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
+        }
+        
+        return a.name.localeCompare(b.name);
+      });
     },
   });
 
