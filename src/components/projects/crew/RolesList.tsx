@@ -15,13 +15,13 @@ import { useToast } from "@/hooks/use-toast";
 interface RolesListProps {
   projectRoles: any[];
   selectedItems: string[];
-  onItemSelect: (roleId: string) => void;
   onUpdate: () => void;
+  onItemSelect: (roleId: string) => void;
 }
 
 const roleOrder = ["FOH", "MON", "PLAYBACK", "BACKLINE"];
 
-export function RolesList({ projectRoles, selectedItems, onItemSelect, onUpdate }: RolesListProps) {
+export function RolesList({ projectRoles, selectedItems, onUpdate, onItemSelect }: RolesListProps) {
   const { toast } = useToast();
   const { data: crewMembers } = useQuery({
     queryKey: ['crew-members'],
