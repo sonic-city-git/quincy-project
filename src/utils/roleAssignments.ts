@@ -1,18 +1,17 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const createRoleAssignments = async (projectId: string, eventId: string) => {
-  console.log('Event needs crew, fetching project roles...');
-  
-  // First, get all project roles
+  console.log('Creating role assignments for:', { projectId, eventId });
+
+  // First, fetch all project roles
   const { data: projectRoles, error: rolesError } = await supabase
     .from('project_roles')
     .select(`
       *,
-      crew_roles (
-        id,
-        name,
-        color
-      )
+      role_id,
+      preferred_id,
+      daily_rate,
+      hourly_rate
     `)
     .eq('project_id', projectId);
 
@@ -23,30 +22,25 @@ export const createRoleAssignments = async (projectId: string, eventId: string) 
 
   console.log('Found project roles:', projectRoles);
 
-  if (!projectRoles?.length) {
-    console.log('No project roles found to create assignments for');
-    return;
-  }
-
-  // Create role assignments for each project role
+  // Create event role assignments for each project role
   const roleAssignments = projectRoles.map(role => ({
     project_id: projectId,
     event_id: eventId,
     role_id: role.role_id,
+    crew_member_id: role.preferred_id || null,
     daily_rate: role.daily_rate,
-    hourly_rate: role.hourly_rate,
-    crew_member_id: role.preferred_id // Include preferred crew member if set
+    hourly_rate: role.hourly_rate
   }));
 
   console.log('Creating role assignments:', roleAssignments);
 
-  const { error: assignError } = await supabase
+  const { error: insertError } = await supabase
     .from('project_event_roles')
     .insert(roleAssignments);
 
-  if (assignError) {
-    console.error('Error creating role assignments:', assignError);
-    throw assignError;
+  if (insertError) {
+    console.error('Error creating role assignments:', insertError);
+    throw insertError;
   }
 
   console.log('Successfully created role assignments');

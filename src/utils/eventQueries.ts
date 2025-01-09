@@ -3,6 +3,8 @@ import { CalendarEvent, EventType } from "@/types/events";
 import { formatDatabaseDate } from "./dateFormatters";
 
 export const fetchEvents = async (projectId: string) => {
+  console.log('Fetching events for project:', projectId);
+  
   const { data, error } = await supabase
     .from('project_events')
     .select(`
@@ -12,13 +14,17 @@ export const fetchEvents = async (projectId: string) => {
         name,
         color,
         needs_crew,
-        rate_multiplier
+        crew_rate_multiplier
       )
     `)
     .eq('project_id', projectId);
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error fetching events:', error);
+    throw error;
+  }
 
+  console.log('Fetched events:', data);
   return (data || []).map(event => ({
     date: new Date(event.date),
     name: event.name,
@@ -55,12 +61,17 @@ export const createEvent = async (
         name,
         color,
         needs_crew,
-        rate_multiplier
+        crew_rate_multiplier
       )
     `)
     .single();
 
-  if (eventError) throw eventError;
+  if (eventError) {
+    console.error('Error creating event:', eventError);
+    throw eventError;
+  }
+
+  console.log('Created event:', eventData);
   return eventData;
 };
 
@@ -79,5 +90,8 @@ export const updateEvent = async (
     .eq('project_id', projectId)
     .eq('date', formattedDate);
 
-  if (error) throw error;
+  if (error) {
+    console.error('Error updating event:', error);
+    throw error;
+  }
 };

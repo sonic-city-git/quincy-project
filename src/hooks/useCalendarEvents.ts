@@ -16,6 +16,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       }
 
       try {
+        console.log('Loading events for project:', projectId);
         const fetchedEvents = await fetchEvents(projectId);
         setEvents(fetchedEvents);
       } catch (error) {
@@ -40,9 +41,11 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     }
 
     try {
+      console.log('Adding event:', { projectId, date, eventName, eventType });
       const eventData = await createEvent(projectId, date, eventName, eventType);
       
       if (eventType.needs_crew) {
+        console.log('Event needs crew, creating role assignments');
         await createRoleAssignments(projectId, eventData.id);
       }
 

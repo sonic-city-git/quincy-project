@@ -209,26 +209,29 @@ export type Database = {
         Row: {
           color: string
           created_at: string
+          crew_rate_multiplier: number | null
+          equipment_rate_multiplier: number | null
           id: string
           name: string
           needs_crew: boolean | null
-          rate_multiplier: number | null
         }
         Insert: {
           color: string
           created_at?: string
+          crew_rate_multiplier?: number | null
+          equipment_rate_multiplier?: number | null
           id?: string
           name: string
           needs_crew?: boolean | null
-          rate_multiplier?: number | null
         }
         Update: {
           color?: string
           created_at?: string
+          crew_rate_multiplier?: number | null
+          equipment_rate_multiplier?: number | null
           id?: string
           name?: string
           needs_crew?: boolean | null
-          rate_multiplier?: number | null
         }
         Relationships: []
       }
