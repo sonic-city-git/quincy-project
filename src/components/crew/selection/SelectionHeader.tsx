@@ -13,6 +13,11 @@ export function SelectionHeader({
   onEditCrewMember,
   onDeleteCrewMembers
 }: SelectionHeaderProps) {
+  const handleDelete = () => {
+    const selectedIds = selectedCrew.map(crew => crew.id);
+    onDeleteCrewMembers(selectedIds);
+  };
+
   return (
     <div className="h-[48px] border-b border-zinc-800/50">
       <div className="flex items-center px-4">
@@ -22,7 +27,7 @@ export function SelectionHeader({
             <EditCrewMemberDialog 
               selectedCrew={selectedCrew}
               onEditCrewMember={onEditCrewMember}
-              onDeleteCrewMember={onDeleteCrewMembers}
+              onDeleteCrewMember={handleDelete}
             />
           )}
         </div>
