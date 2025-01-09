@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CrewMember } from "@/types/crew";
+import { toast } from "sonner";
 
 export function useCrew() {
   const { data: crew = [], isLoading: loading } = useQuery({
@@ -29,6 +30,7 @@ export function useCrew() {
 
       if (error) {
         console.error('Error fetching crew:', error);
+        toast.error("Failed to fetch crew members");
         throw error;
       }
 
