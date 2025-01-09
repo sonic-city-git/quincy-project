@@ -95,6 +95,13 @@ export const CrewTable = memo(({
     enabled: isScrollContainerReady,
   });
 
+  console.log('CrewTable rendering with:', { 
+    crewMembersLength: crewMembers.length, 
+    headerOnly, 
+    bodyOnly,
+    isScrollContainerReady 
+  });
+
   const tableHeader = (
     <TableHeader>
       <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
@@ -115,31 +122,14 @@ export const CrewTable = memo(({
 
   const tableBody = (
     <TableBody>
-      {isScrollContainerReady && (
-        <tr style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
-          <td colSpan={6}>
-            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%' }}>
-              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-                const crew = crewMembers[virtualRow.index];
-                return (
-                  <CrewTableRow
-                    key={crew.id}
-                    crew={crew}
-                    isSelected={selectedItems.includes(crew.id)}
-                    onSelect={onItemSelect}
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      transform: `translateY(${virtualRow.start}px)`,
-                      width: '100%',
-                    }}
-                  />
-                );
-              })}
-            </div>
-          </td>
-        </tr>
-      )}
+      {crewMembers.map((crew) => (
+        <CrewTableRow
+          key={crew.id}
+          crew={crew}
+          isSelected={selectedItems.includes(crew.id)}
+          onSelect={onItemSelect}
+        />
+      ))}
     </TableBody>
   );
 
