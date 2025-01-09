@@ -4,26 +4,28 @@ import { CrewRole } from "@/types/crew";
 import { sortRoles } from "@/utils/roleUtils";
 
 export function useCrewRoles() {
-  const { data: roles = [], isLoading } = useQuery({
+  const { data: roles = [], isLoading, error } = useQuery({
     queryKey: ['crew-roles'],
     queryFn: async () => {
+      console.log('Fetching crew roles...');
       const { data, error } = await supabase
         .from('crew_roles')
         .select('*')
         .order('name');
       
-      if (error) throw error;
-      console.log('Fetched crew roles:', data); // Add logging to debug
-      const sortedRoles = sortRoles(data as CrewRole[]);
-      return sortedRoles;
+      if (error) {
+        console.error('Error fetching crew roles:', error);
+        throw error;
+      }
+      
+      console.log('Fetched crew roles:', data);
+      return data as CrewRole[];
     },
-    // Reduce stale time to ensure more frequent updates
-    staleTime: 1000, // 1 second
-    refetchOnWindowFocus: true,
   });
 
   return {
     roles,
     isLoading,
+    error
   };
 }
