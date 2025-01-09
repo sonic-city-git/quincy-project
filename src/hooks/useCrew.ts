@@ -8,6 +8,7 @@ export function useCrew() {
     queryKey: ['crew'],
     queryFn: async () => {
       try {
+        console.log('Fetching crew members...');
         const { data, error } = await supabase
           .from('crew_members')
           .select(`
@@ -41,15 +42,14 @@ export function useCrew() {
           return [];
         }
 
+        // Map the response to match the CrewMember type
         return data.map((member): CrewMember => ({
           id: member.id,
           name: member.name,
           email: member.email || null,
           phone: member.phone || null,
-          folder: member.folder && !('error' in member.folder) ? member.folder : null,
-          role: member.role?.[0]?.crew_roles && !('error' in member.role?.[0]?.crew_roles) 
-            ? member.role[0].crew_roles 
-            : null,
+          folder: member.folder || null,
+          role: member.role?.[0]?.crew_roles || null,
           created_at: member.created_at,
           updated_at: member.updated_at
         }));
@@ -59,7 +59,7 @@ export function useCrew() {
         throw error;
       }
     },
-    retry: false
+    retry: 1
   });
 
   return { crew, loading };
