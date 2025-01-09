@@ -56,6 +56,7 @@ export function PreferredCrewSelect({ roleId, preferredId, onUpdate }: Preferred
         } as CrewMember;
       });
 
+      // Sort crew members: Sonic City first, then alphabetically
       return transformedData.sort((a, b) => {
         const aIsSonicCity = a.crew_folder?.name === 'Sonic City';
         const bIsSonicCity = b.crew_folder?.name === 'Sonic City';
@@ -64,7 +65,8 @@ export function PreferredCrewSelect({ roleId, preferredId, onUpdate }: Preferred
         if (!aIsSonicCity && bIsSonicCity) return 1;
         return a.name.localeCompare(b.name);
       });
-    }
+    },
+    enabled: !!roleId
   });
 
   return (
