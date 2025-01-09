@@ -26,6 +26,15 @@ export function CrewList() {
     handleRoleSelect,
   } = useCrewManagement();
 
+  // Map crew member roles to the latest role data from crew_roles table
+  const mappedCrewMembers = filteredCrewMembers.map(crew => ({
+    ...crew,
+    roles: crew.roles?.map(role => {
+      const latestRole = roles?.find(r => r.id === role.id);
+      return latestRole || role;
+    }) || []
+  }));
+
   const daysToShow = 14;
 
   const handlePreviousPeriod = () => {
@@ -36,10 +45,10 @@ export function CrewList() {
     setStartDate(prev => addDays(prev, daysToShow));
   };
 
-  const [filteredBySearch, setFilteredBySearch] = useState(filteredCrewMembers);
+  const [filteredBySearch, setFilteredBySearch] = useState(mappedCrewMembers);
 
   useEffect(() => {
-    const filtered = filteredCrewMembers.filter(crew => {
+    const filtered = mappedCrewMembers.filter(crew => {
       if (!searchTerm) return true;
       const searchLower = searchTerm.toLowerCase();
       
@@ -53,7 +62,7 @@ export function CrewList() {
       );
     });
     setFilteredBySearch(filtered);
-  }, [searchTerm, filteredCrewMembers]);
+  }, [searchTerm, mappedCrewMembers]);
 
   if (isLoading || isRolesLoading) {
     return (

@@ -13,9 +13,13 @@ export function useCrewRoles() {
         .order('name');
       
       if (error) throw error;
+      console.log('Fetched crew roles:', data); // Add logging to debug
       const sortedRoles = sortRoles(data as CrewRole[]);
       return sortedRoles;
     },
+    // Reduce stale time to ensure more frequent updates
+    staleTime: 1000, // 1 second
+    refetchOnWindowFocus: true,
   });
 
   return {
