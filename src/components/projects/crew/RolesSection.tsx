@@ -33,20 +33,20 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     },
   });
 
-  const selectedRole = projectRoles?.find(role => role.role_id === selectedItems[0])
+  const selectedRole = projectRoles?.find(role => role.id === selectedItems[0])
     ? {
-        name: projectRoles.find(role => role.role_id === selectedItems[0])?.crew_roles.name || '',
-        dailyRate: projectRoles.find(role => role.role_id === selectedItems[0])?.daily_rate,
-        hourlyRate: projectRoles.find(role => role.role_id === selectedItems[0])?.hourly_rate,
+        name: projectRoles.find(role => role.id === selectedItems[0])?.crew_roles.name || '',
+        dailyRate: projectRoles.find(role => role.id === selectedItems[0])?.daily_rate,
+        hourlyRate: projectRoles.find(role => role.id === selectedItems[0])?.hourly_rate,
       }
     : undefined;
 
-  const handleItemSelect = (roleId: string) => {
+  const handleItemSelect = (projectRoleId: string) => {
     setSelectedItems((prev) => {
-      if (prev.includes(roleId)) {
+      if (prev.includes(projectRoleId)) {
         return [];
       }
-      return [roleId];
+      return [projectRoleId];
     });
   };
 
@@ -83,16 +83,13 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     if (!selectedItems[0]) return;
 
     try {
-      const selectedProjectRole = projectRoles?.find(role => role.role_id === selectedItems[0]);
-      if (!selectedProjectRole) return;
-
       const { error } = await supabase
         .from('project_roles')
         .update({
           daily_rate: data.dailyRate ? parseFloat(data.dailyRate) : null,
           hourly_rate: data.hourlyRate ? parseFloat(data.hourlyRate) : null,
         })
-        .eq('id', selectedProjectRole.id);
+        .eq('id', selectedItems[0]);
 
       if (error) throw error;
 

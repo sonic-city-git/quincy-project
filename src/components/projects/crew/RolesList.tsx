@@ -5,7 +5,7 @@ interface RolesListProps {
   projectRoles: any[];
   selectedItems: string[];
   onUpdate: () => void;
-  onItemSelect: (roleId: string) => void;
+  onItemSelect: (projectRoleId: string) => void;
 }
 
 const roleOrder = ["FOH", "MON", "PLAYBACK", "BACKLINE"];
@@ -35,8 +35,8 @@ export function RolesList({
       {sortedRoles?.map((projectRole) => (
         <div key={projectRole.id} className="flex items-center gap-2">
           <Checkbox
-            checked={selectedItems.includes(projectRole.role_id)}
-            onCheckedChange={() => onItemSelect(projectRole.role_id)}
+            checked={selectedItems.includes(projectRole.id)}
+            onCheckedChange={() => onItemSelect(projectRole.id)}
           />
           <div className="flex-grow">
             <ProjectRoleCard
