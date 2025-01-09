@@ -23,8 +23,10 @@ export function ProjectList() {
     projectOwners: projects.map(p => ({ 
       id: p.id, 
       name: p.name,
-      owner_id: p.owner_id 
-    }))
+      owner_id: p.owner_id,
+      owner: p.owner
+    })),
+    timestamp: new Date().toISOString()
   });
 
   // Filter projects based on the selected owner's ID
@@ -35,9 +37,11 @@ export function ProjectList() {
           projectId: project.id,
           projectName: project.name,
           projectOwnerId: project.owner_id,
+          projectOwner: project.owner,
           selectedOwner,
           matches,
-          comparison: `${project.owner_id} === ${selectedOwner}`
+          comparison: `${project.owner_id} === ${selectedOwner}`,
+          timestamp: new Date().toISOString()
         });
         return matches;
       })
@@ -47,7 +51,12 @@ export function ProjectList() {
     totalProjects: projects.length,
     filteredProjects: filteredProjects.length,
     selectedOwner,
-    filteredProjectNames: filteredProjects.map(p => p.name)
+    filteredProjectNames: filteredProjects.map(p => ({
+      name: p.name,
+      owner: p.owner,
+      owner_id: p.owner_id
+    })),
+    timestamp: new Date().toISOString()
   });
 
   if (loading) {

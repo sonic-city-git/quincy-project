@@ -23,7 +23,10 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
 
   const fetchSonicCityCrewMembers = async () => {
     try {
-      console.log('Fetching crew members...', { timestamp: new Date().toISOString() });
+      console.log('Fetching crew members...', { 
+        timestamp: new Date().toISOString(),
+        currentSelection: selectedOwner 
+      });
       setLoading(true);
       const { data, error } = await supabase
         .from('crew_members')
@@ -38,7 +41,11 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
 
       console.log('Fetched crew members:', {
         count: data?.length,
-        members: data?.map(m => ({ id: m.id, name: m.name })),
+        members: data?.map(m => ({ 
+          id: m.id, 
+          name: m.name,
+          isCurrentlySelected: m.id === selectedOwner
+        })),
         timestamp: new Date().toISOString()
       });
       setCrewMembers(data || []);
@@ -57,7 +64,11 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
   console.log('Current filter state:', { 
     selectedOwner, 
     selectedMemberName,
-    availableMembers: crewMembers.map(m => ({ id: m.id, name: m.name })),
+    availableMembers: crewMembers.map(m => ({ 
+      id: m.id, 
+      name: m.name,
+      isCurrentlySelected: m.id === selectedOwner 
+    })),
     timestamp: new Date().toISOString()
   });
 
@@ -90,6 +101,7 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
                     memberName: member.name,
                     currentlySelected: selectedOwner === member.id,
                     willSelect: selectedOwner !== member.id,
+                    willClear: selectedOwner === member.id,
                     timestamp: new Date().toISOString()
                   });
                   onOwnerSelect(selectedOwner === member.id ? null : member.id);
