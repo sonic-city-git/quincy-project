@@ -8,6 +8,14 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
 
   const handleAddCrewMember = useCallback(async (newMember: NewCrewMember) => {
     try {
+      // Ensure roles is an array and has all required properties
+      const sanitizedRoles = newMember.roles?.map(role => ({
+        id: role.id,
+        name: role.name,
+        color: role.color,
+        created_at: role.created_at || new Date().toISOString()
+      })) || [];
+
       const { data: crewMember, error: crewError } = await supabase
         .from('crew_members')
         .insert({
@@ -15,7 +23,7 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
           email: newMember.email,
           phone: newMember.phone,
           crew_folder: newMember.crew_folder,
-          roles: JSON.stringify(newMember.roles),
+          roles: sanitizedRoles
         })
         .select()
         .single();
@@ -39,6 +47,14 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
 
   const handleEditCrewMember = useCallback(async (editedMember: CrewMember) => {
     try {
+      // Ensure roles is an array and has all required properties
+      const sanitizedRoles = editedMember.roles?.map(role => ({
+        id: role.id,
+        name: role.name,
+        color: role.color,
+        created_at: role.created_at || new Date().toISOString()
+      })) || [];
+
       const { error: updateError } = await supabase
         .from('crew_members')
         .update({
@@ -46,7 +62,7 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
           email: editedMember.email,
           phone: editedMember.phone,
           crew_folder: editedMember.crew_folder,
-          roles: JSON.stringify(editedMember.roles),
+          roles: sanitizedRoles
         })
         .eq('id', editedMember.id);
 

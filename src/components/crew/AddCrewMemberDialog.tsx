@@ -36,6 +36,7 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
+    // Get the selected roles with full role objects
     const selectedRoles = roles?.filter(role => selectedRoleIds.includes(role.id)) || [];
     const crewFolderStr = formData.get("crew_folder") as string;
     const crewFolder = crewFolderStr ? JSON.parse(crewFolderStr) : null;
