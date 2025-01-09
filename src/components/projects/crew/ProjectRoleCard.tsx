@@ -113,7 +113,7 @@ export function ProjectRoleCard({
         <div className="grid grid-cols-[200px,200px,1fr] gap-6">
           <span className="text-sm pl-1 flex items-center">{dailyRate || '-'}</span>
           <span className="text-sm pl-1 flex items-center">{hourlyRate || '-'}</span>
-          <div className="-ml-10">
+          <div className="-ml-[50px]">
             <EntitySelect
               entities={crewMembers.map(crew => ({
                 id: crew.id,
