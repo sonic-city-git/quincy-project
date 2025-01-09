@@ -1,9 +1,8 @@
 export interface Project {
-  id: string;
+  id: string; // UUID string
   name: string;
   lastInvoiced: string;
   owner: string;
-  owner_id: string;
   color: string;
   gigPrice: string;
   yearlyRevenue: string;
