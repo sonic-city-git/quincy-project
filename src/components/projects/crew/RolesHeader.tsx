@@ -18,13 +18,6 @@ interface RolesHeaderProps {
     hourlyRate: number;
   }) => void;
   loading: boolean;
-  editMode: boolean;
-  editValues: {
-    roleId: string;
-    quantity: number;
-    dailyRate: number;
-    hourlyRate: number;
-  } | null;
   roles: any[];
 }
 
@@ -37,8 +30,6 @@ export function RolesHeader({
   onClose,
   onSubmit,
   loading,
-  editMode,
-  editValues,
   roles,
 }: RolesHeaderProps) {
   return (
@@ -62,8 +53,6 @@ export function RolesHeader({
             onClose={onClose}
             onSubmit={onSubmit}
             loading={loading}
-            editMode={editMode}
-            initialValues={editValues || undefined}
           />
         </Dialog>
       </div>
