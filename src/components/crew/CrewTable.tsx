@@ -2,8 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { CrewMember } from "@/types/crew";
 import { RoleTags } from "./RoleTags";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { useVirtualizer } from "@tanstack/react-virtual";
+import { memo, useCallback } from "react";
 
 interface CrewTableProps {
   crewMembers: CrewMember[];
@@ -17,18 +16,13 @@ interface CrewTableProps {
 const CrewTableRow = memo(({ 
   crew, 
   isSelected, 
-  onSelect,
-  style 
+  onSelect 
 }: { 
   crew: CrewMember; 
   isSelected: boolean;
   onSelect: (id: string) => void;
-  style?: React.CSSProperties;
 }) => (
-  <TableRow 
-    className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50"
-    style={style}
-  >
+  <TableRow className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
     <TableCell className="w-[48px]">
       <Checkbox 
         checked={isSelected}
@@ -74,32 +68,10 @@ export const CrewTable = memo(({
     }
   }, [crewMembers, selectedItems, onItemSelect]);
 
-  // Create a ref for the scroll container
-  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const [isScrollContainerReady, setIsScrollContainerReady] = useState(false);
-
-  // Effect to find and set the scroll container reference
-  useEffect(() => {
-    const container = document.querySelector('.scroll-area-viewport');
-    if (container) {
-      scrollContainerRef.current = container as HTMLDivElement;
-      setIsScrollContainerReady(true);
-    }
-  }, []);
-
-  const rowVirtualizer = useVirtualizer({
-    count: crewMembers.length,
-    getScrollElement: () => scrollContainerRef.current,
-    estimateSize: () => 32,
-    overscan: 5,
-    enabled: isScrollContainerReady,
-  });
-
   console.log('CrewTable rendering with:', { 
     crewMembersLength: crewMembers.length, 
     headerOnly, 
-    bodyOnly,
-    isScrollContainerReady 
+    bodyOnly
   });
 
   const tableHeader = (
