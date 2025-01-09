@@ -32,9 +32,6 @@ const CrewTableRow = memo(({
     <TableCell className="w-[240px] p-2">
       <div className="flex items-center gap-1 truncate">
         <span className="truncate">{crew.name}</span>
-        {crew.crew_folder?.name === 'Sonic City' && (
-          <span className="flex-shrink-0">⭐</span>
-        )}
       </div>
     </TableCell>
     <TableCell className="w-[320px] p-2">
