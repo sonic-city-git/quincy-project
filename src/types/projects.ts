@@ -9,14 +9,10 @@ export interface Project {
   lastInvoiced?: string | null;
   gigPrice?: string | null;
   yearlyRevenue?: string | null;
-  customer?: {
-    id: string;
-    name: string;
-  } | null;
 }
 
 export interface ProjectData extends Project {
-  customer: {
+  customer?: {
     id: string;
     name: string;
   } | null;

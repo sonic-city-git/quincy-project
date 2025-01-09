@@ -1,11 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { 
-  LayoutDashboard, 
-  Users, 
-  CalendarDays,
-  Building2
-} from "lucide-react";
+import { LayoutDashboard, CalendarDays } from "lucide-react";
 
 export function Sidebar() {
   const location = useLocation();
@@ -26,12 +21,6 @@ export function Sidebar() {
       label: "Projects", 
       icon: CalendarDays,
       isActive: isActive("/projects")
-    },
-    { 
-      href: "/customers", 
-      label: "Customers", 
-      icon: Building2,
-      isActive: isActive("/customers")
     }
   ];
 
