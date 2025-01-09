@@ -3,13 +3,12 @@ import { useProjects } from "@/hooks/useProjects";
 import { useState } from "react";
 import { ProjectActions } from "./projects/ProjectActions";
 import { Card, CardContent } from "./ui/card";
-import { Button } from "./ui/button";
-import { Filter, Grid, List, Loader2, Plus } from "lucide-react";
+import { Filter, Loader2 } from "lucide-react";
 import { Separator } from "./ui/separator";
 import { ProjectCard } from "./ProjectCard";
 import { ViewToggle } from "./projects/ViewToggle";
 import { Input } from "./ui/input";
-import { cn } from "@/lib/utils";
+import { Button } from "./ui/button";
 
 export function ProjectList() {
   const { projects, loading } = useProjects();
@@ -36,19 +35,6 @@ export function ProjectList() {
 
   return (
     <div className="space-y-8 px-6 py-6 max-w-[1400px] mx-auto">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Projects</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your active projects and their details
-          </p>
-        </div>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Project
-        </Button>
-      </div>
-      
       <Card className="border-0 shadow-md bg-zinc-900/50">
         <CardContent className="p-6">
           <div className="space-y-6">
