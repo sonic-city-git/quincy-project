@@ -1,24 +1,21 @@
 import { Button } from "@/components/ui/button";
-import { Filter } from "lucide-react";
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { Filter } from "lucide-react";
 
 interface ProjectFilterButtonProps {
   selectedOwner: string | null;
-  onOwnerSelect: (owner: string | null) => void;
+  onOwnerSelect: (ownerId: string | null) => void;
 }
 
-export function ProjectFilterButton({ 
-  selectedOwner,
-  onOwnerSelect 
-}: ProjectFilterButtonProps) {
-  const [sonicCityCrewMembers, setSonicCityCrewMembers] = useState<Array<{ id: string; name: string }>>([]);
+export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFilterButtonProps) {
+  const [sonicCityCrewMembers, setSonicCityCrewMembers] = useState<{ id: string; name: string; }[]>([]);
 
   useEffect(() => {
     const fetchSonicCityCrewMembers = async () => {
@@ -33,9 +30,11 @@ export function ProjectFilterButton({
         return;
       }
 
-      // Ensure data is an array and has valid members
+      // Ensure data is an array and has valid members, then sort alphabetically
       const validMembers = Array.isArray(data) 
-        ? data.filter(member => member && member.id && member.name)
+        ? data
+            .filter(member => member && member.id && member.name)
+            .sort((a, b) => a.name.localeCompare(b.name))
         : [];
 
       console.log('Fetched crew members:', validMembers);
@@ -45,25 +44,27 @@ export function ProjectFilterButton({
     fetchSonicCityCrewMembers();
   }, []);
 
+  const selectedMember = sonicCityCrewMembers.find(member => member.id === selectedOwner);
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant={selectedOwner ? "default" : "outline"} 
-          size="icon"
-        >
+        <Button variant="outline" className="gap-2">
           <Filter className="h-4 w-4" />
+          {selectedMember ? selectedMember.name : "All owners"}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[200px]">
-        {sonicCityCrewMembers.map((crew) => (
-          <DropdownMenuCheckboxItem
-            key={crew.id}
-            checked={selectedOwner === crew.name}
-            onCheckedChange={(checked) => onOwnerSelect(checked ? crew.name : null)}
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => onOwnerSelect(null)}>
+          All owners
+        </DropdownMenuItem>
+        {sonicCityCrewMembers.map((member) => (
+          <DropdownMenuItem
+            key={member.id}
+            onClick={() => onOwnerSelect(member.id)}
           >
-            {crew.name}
-          </DropdownMenuCheckboxItem>
+            {member.name}
+          </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
