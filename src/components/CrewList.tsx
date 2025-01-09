@@ -79,8 +79,6 @@ export function CrewList() {
                     name={member.name}
                     email={member.email || ''}
                     phone={member.phone || ''}
-                    role={member.role?.name || 'No role assigned'}
-                    folder={member.folder?.name}
                   />
                 ))}
               </div>

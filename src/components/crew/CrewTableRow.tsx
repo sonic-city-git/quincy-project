@@ -33,12 +33,6 @@ export function CrewTableRow({ member, index, isSelected, onSelect }: CrewTableR
         </div>
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
-        {member.role?.name || 'No role'}
-      </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
-        {member.folder?.name || 'No folder'}
-      </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
         {member.email || '-'}
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">

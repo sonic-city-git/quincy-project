@@ -4,24 +4,6 @@ import { CrewMember } from "@/types/crew";
 import { toast } from "sonner";
 import { useEffect } from "react";
 
-interface CrewMemberResponse {
-  id: string;
-  name: string;
-  email: string | null;
-  phone: string | null;
-  created_at: string;
-  updated_at: string;
-  folder: {
-    id: string;
-    name: string;
-  }[] | null;
-  role: {
-    id: string;
-    name: string;
-    color: string;
-  }[] | null;
-}
-
 export function useCrew() {
   const queryClient = useQueryClient();
 
@@ -33,7 +15,7 @@ export function useCrew() {
         {
           event: '*',
           schema: 'public',
-          table: 'crew_folders'
+          table: 'crew_members'
         },
         () => {
           queryClient.invalidateQueries({ queryKey: ['crew'] });
@@ -59,9 +41,7 @@ export function useCrew() {
             email,
             phone,
             created_at,
-            updated_at,
-            folder:crew_folders(id, name),
-            role:crew_roles(id, name, color)
+            updated_at
           `)
           .order('name');
 
@@ -75,20 +55,11 @@ export function useCrew() {
           return [];
         }
 
-        return (data as CrewMemberResponse[]).map((member): CrewMember => ({
+        return data.map((member): CrewMember => ({
           id: member.id,
           name: member.name,
           email: member.email || null,
           phone: member.phone || null,
-          folder: member.folder?.[0] ? {
-            id: member.folder[0].id,
-            name: member.folder[0].name
-          } : null,
-          role: member.role?.[0] ? {
-            id: member.role[0].id,
-            name: member.role[0].name,
-            color: member.role[0].color
-          } : null,
           created_at: member.created_at,
           updated_at: member.updated_at
         }));
