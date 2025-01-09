@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { Sidebar } from "@/components/Sidebar";
 import ProjectList from "@/pages/ProjectList";
+import CrewList from "@/pages/CrewList";
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
         <Routes>
           <Route path="/" element={<ProjectList />} />
           <Route path="/projects" element={<ProjectList />} />
+          <Route path="/crew" element={<CrewList />} />
         </Routes>
       </div>
     </div>
