@@ -52,8 +52,6 @@ export function RolesSection({ projectId }: RolesSectionProps) {
           onClose={handleDialogClose}
           onSubmit={handleAddRole}
           loading={loading}
-          editMode={editMode}
-          editValues={editValues}
           roles={roles || []}
         />
         <div className="grid gap-1.5">

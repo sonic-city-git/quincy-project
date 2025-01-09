@@ -6,6 +6,7 @@ interface RateInputProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  error?: string;
 }
 
 export function RateInput({
@@ -13,6 +14,7 @@ export function RateInput({
   label,
   value,
   onChange,
+  error
 }: RateInputProps) {
   return (
     <div className="space-y-2">
@@ -22,10 +24,13 @@ export function RateInput({
       <Input
         id={id}
         type="number"
+        min="0"
+        step="0.01"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full"
+        placeholder={`Enter ${label.toLowerCase()}`}
       />
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );
 }
