@@ -1,9 +1,34 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CrewMember } from "@/types/crew";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 export function useCrew() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'crew_folders'
+        },
+        () => {
+          // Invalidate and refetch crew data when folders change
+          queryClient.invalidateQueries({ queryKey: ['crew'] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [queryClient]);
+
   const { data: crew = [], isLoading: loading } = useQuery({
     queryKey: ['crew'],
     queryFn: async () => {
