@@ -76,6 +76,12 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
     try {
       const formattedDate = formatDatabaseDate(date);
+      console.log('Adding event:', {
+        project_id: projectId,
+        date: formattedDate,
+        name: eventName,
+        event_type_id: eventType.id
+      });
       
       // First, insert the event
       const { data: eventData, error: eventError } = await supabase
@@ -102,6 +108,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
       // If this event type needs crew, create role assignments
       if (eventType.needs_crew) {
+        console.log('Event needs crew, fetching project roles...');
+        
         // First, get all project roles
         const { data: projectRoles, error: rolesError } = await supabase
           .from('project_roles')
@@ -115,7 +123,12 @@ export const useCalendarEvents = (projectId: string | undefined) => {
           `)
           .eq('project_id', projectId);
 
-        if (rolesError) throw rolesError;
+        if (rolesError) {
+          console.error('Error fetching project roles:', rolesError);
+          throw rolesError;
+        }
+
+        console.log('Found project roles:', projectRoles);
 
         if (projectRoles && projectRoles.length > 0) {
           // Create role assignments for each project role
@@ -128,6 +141,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
             crew_member_id: role.preferred_id // Include preferred crew member if set
           }));
 
+          console.log('Creating role assignments:', roleAssignments);
+
           const { error: assignError } = await supabase
             .from('project_event_roles')
             .insert(roleAssignments);
@@ -136,6 +151,10 @@ export const useCalendarEvents = (projectId: string | undefined) => {
             console.error('Error creating role assignments:', assignError);
             throw assignError;
           }
+
+          console.log('Successfully created role assignments');
+        } else {
+          console.log('No project roles found to create assignments for');
         }
       }
 
