@@ -17,7 +17,7 @@ export function EquipmentTable({
   onItemSelect,
 }: EquipmentTableProps) {
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border border-zinc-800/50">
       <Table>
         <EquipmentTableHeader
           equipment={equipment}

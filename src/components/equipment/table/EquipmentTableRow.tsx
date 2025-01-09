@@ -24,25 +24,25 @@ export function EquipmentTableRow({
 
   return (
     <TableRow className="hover:bg-zinc-800/50 border-b border-zinc-800/50">
-      <TableCell className="w-12 py-2">
+      <TableCell className="w-12 py-3">
         <Checkbox 
           checked={isSelected}
           onCheckedChange={() => onItemSelect(item.id)}
         />
       </TableCell>
-      <TableCell className="font-mono font-inter whitespace-nowrap overflow-hidden text-ellipsis py-2">
+      <TableCell className="font-mono font-medium whitespace-nowrap overflow-hidden text-ellipsis py-3">
         {item.code}
       </TableCell>
-      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-2">
+      <TableCell className="font-medium whitespace-nowrap overflow-hidden text-ellipsis py-3">
         {item.name}
       </TableCell>
-      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-2">
+      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-3">
         {item.stock}
       </TableCell>
-      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-2">
+      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-3">
         {formatValue(item.price)}
       </TableCell>
-      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-2">
+      <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-3">
         {item.weight} kg
       </TableCell>
     </TableRow>

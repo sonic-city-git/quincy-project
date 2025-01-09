@@ -19,7 +19,7 @@ export function EquipmentTableGroup({
   return (
     <React.Fragment>
       <TableRow className="bg-zinc-900/50">
-        <TableCell colSpan={7} className="py-2">
+        <TableCell colSpan={7} className="py-2 px-4">
           <h3 className="text-sm font-semibold text-zinc-200">{folderName}</h3>
         </TableCell>
       </TableRow>

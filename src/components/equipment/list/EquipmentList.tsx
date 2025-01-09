@@ -43,13 +43,13 @@ export function EquipmentList({
   const daysToShow = 14;
 
   const handleResize = useCallback(() => {
-    // This empty callback is enough to trigger the debounced resize handling
+    // Empty callback is enough to trigger the debounced resize handling
   }, []);
 
   const { observe, unobserve } = useDebounceResize(handleResize);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-theme(spacing.16))]" ref={containerRef}>
+    <div className="flex flex-col h-[calc(100vh-theme(spacing.16))] px-8 py-6" ref={containerRef}>
       <EquipmentHeader
         selectedFolder={selectedFolder}
         onFolderSelect={onFolderSelect}

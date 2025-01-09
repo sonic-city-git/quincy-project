@@ -16,17 +16,17 @@ export function EquipmentTableHeader({
   return (
     <TableHeader>
       <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
-        <TableHead className="w-12 py-2">
+        <TableHead className="w-12 py-3">
           <Checkbox 
             checked={selectedItems.length === equipment.length && equipment.length > 0}
             onCheckedChange={onSelectAll}
           />
         </TableHead>
-        <TableHead className="py-2">Code</TableHead>
-        <TableHead className="py-2">Name</TableHead>
-        <TableHead className="py-2">Stock</TableHead>
-        <TableHead className="py-2">Price</TableHead>
-        <TableHead className="py-2">Weight (kg)</TableHead>
+        <TableHead className="py-3 font-medium">Code</TableHead>
+        <TableHead className="py-3 font-medium">Name</TableHead>
+        <TableHead className="py-3 font-medium">Stock</TableHead>
+        <TableHead className="py-3 font-medium">Price</TableHead>
+        <TableHead className="py-3 font-medium">Weight (kg)</TableHead>
       </TableRow>
     </TableHeader>
   );

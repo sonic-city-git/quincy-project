@@ -30,8 +30,8 @@ export function EquipmentContent({
   unobserve,
 }: EquipmentContentProps) {
   return (
-    <div className="flex-1 flex flex-col bg-zinc-900 rounded-md mt-4 overflow-hidden">
-      <div className="flex-1 overflow-auto">
+    <div className="flex-1 flex flex-col bg-zinc-900 rounded-md mt-6 overflow-hidden">
+      <div className="flex-1 overflow-auto p-4">
         <EquipmentTable
           equipment={filteredEquipment}
           selectedItems={selectedItems}
