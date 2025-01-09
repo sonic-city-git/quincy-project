@@ -1,26 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
-
 interface RoleSelectionActionsProps {
   selectedItems: string[];
-  onEdit: (roleId: string) => void;
-  onDelete: (roleId: string) => void;
 }
 
-export function RoleSelectionActions({ selectedItems, onEdit, onDelete }: RoleSelectionActionsProps) {
+export function RoleSelectionActions({ selectedItems }: RoleSelectionActionsProps) {
   if (selectedItems.length === 0) return null;
-
-  return (
-    <div className="flex items-center gap-2">
-      {selectedItems.length === 1 && (
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => onEdit(selectedItems[0])}
-        >
-          <Pencil className="h-4 w-4" />
-        </Button>
-      )}
-    </div>
-  );
+  return null;
 }
