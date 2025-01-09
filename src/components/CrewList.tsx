@@ -43,8 +43,8 @@ export function CrewList() {
       if (!searchTerm) return true;
       const searchLower = searchTerm.toLowerCase();
       
-      // Parse the crew folder from JSON if it exists
-      const folderName = crew.crew_folder ? crew.crew_folder.name : '';
+      // Safely access the crew folder name from the JSON structure
+      const folderName = crew.crew_folder?.name || '';
       
       return (
         crew.name.toLowerCase().includes(searchLower) ||
