@@ -25,12 +25,6 @@ interface CrewMemberSelectProps {
   roleName: string;
 }
 
-interface CrewMemberResponse {
-  id: string;
-  name: string;
-  roles: CrewRole[];
-}
-
 export function CrewMemberSelect({ 
   projectRoleId,
   selectedCrewMember,
@@ -44,7 +38,7 @@ export function CrewMemberSelect({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('crew_members')
-        .select('id, name, roles');
+        .select('id, name, roles, crew_folder');
       
       if (error) {
         console.error('Error fetching crew members:', error);
@@ -52,12 +46,15 @@ export function CrewMemberSelect({
       }
 
       // Ensure data is an array and properly typed
-      const validMembers = (Array.isArray(data) ? data : []) as CrewMemberResponse[];
-      return validMembers.filter(member => {
-        // Ensure roles is an array and properly typed
-        const roles = Array.isArray(member.roles) ? member.roles as CrewRole[] : [];
-        return roles.some(role => role.name === roleName);
-      });
+      const validMembers = (data || []).map(member => ({
+        ...member,
+        roles: Array.isArray(member.roles) ? member.roles as CrewRole[] : []
+      })) as CrewMember[];
+
+      // Filter members by role
+      return validMembers.filter(member => 
+        member.roles.some(role => role.name === roleName)
+      );
     },
   });
 
