@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarEvent, EventType } from "@/types/events";
 import { formatDatabaseDate } from "./dateFormatters";
+import { createRoleAssignments } from "./roleAssignments";
 
 export const fetchEvents = async (projectId: string) => {
   console.log('Fetching events for project:', projectId);
@@ -46,33 +47,46 @@ export const createEvent = async (
     event_type_id: eventType.id
   });
 
-  const { data: eventData, error: eventError } = await supabase
-    .from('project_events')
-    .insert({
-      project_id: projectId,
-      date: formattedDate,
-      name: eventName.trim() || eventType.name,
-      event_type_id: eventType.id
-    })
-    .select(`
-      *,
-      event_types (
-        id,
-        name,
-        color,
-        needs_crew,
-        crew_rate_multiplier
-      )
-    `)
-    .single();
+  try {
+    // First create the event
+    const { data: eventData, error: eventError } = await supabase
+      .from('project_events')
+      .insert({
+        project_id: projectId,
+        date: formattedDate,
+        name: eventName.trim() || eventType.name,
+        event_type_id: eventType.id
+      })
+      .select(`
+        *,
+        event_types (
+          id,
+          name,
+          color,
+          needs_crew,
+          crew_rate_multiplier
+        )
+      `)
+      .single();
 
-  if (eventError) {
-    console.error('Error creating event:', eventError);
-    throw eventError;
+    if (eventError) {
+      console.error('Error creating event:', eventError);
+      throw eventError;
+    }
+
+    console.log('Created event:', eventData);
+
+    // If the event type needs crew, create role assignments
+    if (eventType.needs_crew) {
+      console.log('Event needs crew, creating role assignments');
+      await createRoleAssignments(projectId, eventData.id);
+    }
+
+    return eventData;
+  } catch (error) {
+    console.error('Error in createEvent:', error);
+    throw error;
   }
-
-  console.log('Created event:', eventData);
-  return eventData;
 };
 
 export const updateEvent = async (
