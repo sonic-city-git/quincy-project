@@ -26,7 +26,6 @@ export function ProjectRoleCard({
   preferredId,
   onUpdate
 }: ProjectRoleCardProps) {
-  // Fetch crew members with this role
   const { data: crewMembers = [] } = useQuery({
     queryKey: ['crew-members', id],
     queryFn: async () => {
@@ -109,15 +108,11 @@ export function ProjectRoleCard({
 
   return (
     <Card className="p-2">
-      <div className="flex items-center justify-between gap-6">
-        <div className="flex items-center gap-6">
-          <RoleInfo color={color} name={name} />
-          <div className="flex items-center gap-6">
-            <span className="w-24 text-sm">{dailyRate || '-'}</span>
-            <span className="w-24 text-sm">{hourlyRate || '-'}</span>
-          </div>
-        </div>
-        <div className="w-[200px]">
+      <div className="flex items-center gap-6">
+        <RoleInfo color={color} name={name} />
+        <div className="grid grid-cols-[200px,200px,1fr] gap-6 flex-grow">
+          <span className="text-sm">{dailyRate || '-'}</span>
+          <span className="text-sm">{hourlyRate || '-'}</span>
           <EntitySelect
             entities={crewMembers.map(crew => ({
               id: crew.id,
