@@ -4,6 +4,24 @@ import { CrewMember } from "@/types/crew";
 import { toast } from "sonner";
 import { useEffect } from "react";
 
+interface CrewMemberResponse {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  created_at: string;
+  updated_at: string;
+  folder: {
+    id: string;
+    name: string;
+  }[] | null;
+  role: {
+    id: string;
+    name: string;
+    color: string;
+  }[] | null;
+}
+
 export function useCrew() {
   const queryClient = useQueryClient();
 
@@ -57,7 +75,7 @@ export function useCrew() {
           return [];
         }
 
-        return data.map((member): CrewMember => ({
+        return (data as CrewMemberResponse[]).map((member): CrewMember => ({
           id: member.id,
           name: member.name,
           email: member.email || null,
