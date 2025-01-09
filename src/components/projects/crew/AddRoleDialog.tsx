@@ -17,7 +17,7 @@ interface AddRoleFormData {
 interface AddRoleDialogProps {
   projectId: string;
   onSubmit: (data: AddRoleFormData) => void;
-  trigger?: React.ReactNode;
+  trigger: React.ReactNode;
 }
 
 export function AddRoleDialog({ projectId, onSubmit, trigger }: AddRoleDialogProps) {

@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { AddRoleDialog } from "./AddRoleDialog";
 
 interface RolesSectionProps {
   projectId: string;
@@ -84,13 +83,8 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     <div className="space-y-4">
       <div className="bg-zinc-900/50 rounded-lg p-3">
         <RolesHeader 
-          onAddClick={() => {}} 
-          trigger={
-            <AddRoleDialog
-              projectId={projectId}
-              onSubmit={handleAddRole}
-            />
-          }
+          projectId={projectId}
+          onAddRole={handleAddRole}
         />
         <RoleSelectionActions 
           selectedItems={selectedItems}
