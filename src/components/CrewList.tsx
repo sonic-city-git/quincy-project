@@ -43,7 +43,7 @@ export function CrewList() {
       crew.name.toLowerCase().includes(searchLower) ||
       crew.email.toLowerCase().includes(searchLower) ||
       crew.phone.toLowerCase().includes(searchLower) ||
-      crew.folder.toLowerCase().includes(searchLower)
+      (crew.crew_folder?.name || '').toLowerCase().includes(searchLower)
     );
   });
 
@@ -54,6 +54,8 @@ export function CrewList() {
       </div>
     );
   }
+
+  console.log('Filtered crew members:', filteredBySearch); // Debug log
 
   return (
     <div className="space-y-4">
