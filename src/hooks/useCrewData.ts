@@ -18,7 +18,7 @@ export function useCrewData() {
 
       const typedData = data.map(member => ({
         ...member,
-        roles: member.roles as CrewRole[]
+        roles: Array.isArray(member.roles) ? member.roles as CrewRole[] : []
       }));
 
       setCrewMembers(typedData);

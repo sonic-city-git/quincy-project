@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CrewMember } from "@/types/crew";
+import { CrewMember, CrewRole } from "@/types/crew";
 
 interface CrewMemberSelectProps {
   projectRoleId: string;
@@ -28,11 +28,16 @@ export function CrewMemberSelect({
     queryFn: async () => {
       const { data: members, error: membersError } = await supabase
         .from('crew_members')
-        .select('*')
-        .eq('roles->name', roleName);
+        .select('*');
       
       if (membersError) throw membersError;
-      return members as CrewMember[];
+      
+      return members.map(member => ({
+        ...member,
+        roles: Array.isArray(member.roles) ? member.roles as CrewRole[] : []
+      })).filter(member => 
+        member.roles.some(role => role.name === roleName)
+      ) as CrewMember[];
     },
   });
 

@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ProjectRoleCard } from "./ProjectRoleCard";
 import { CrewMemberSelect } from "./CrewMemberSelect";
 import { useQuery } from "@tanstack/react-query";
+import { CrewMember, CrewRole } from "@/types/crew";
 
 interface RolesListProps {
   projectRoles: any[];
@@ -55,7 +56,11 @@ export function RolesList({
         .select('*');
       
       if (error) throw error;
-      return data || [];
+      
+      return data.map(member => ({
+        ...member,
+        roles: Array.isArray(member.roles) ? member.roles as CrewRole[] : []
+      })) as CrewMember[];
     },
   });
 
