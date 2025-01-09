@@ -18,7 +18,6 @@ export function useCrew() {
           table: 'crew_folders'
         },
         () => {
-          // Invalidate and refetch crew data when folders change
           queryClient.invalidateQueries({ queryKey: ['crew'] });
         }
       )
@@ -43,17 +42,8 @@ export function useCrew() {
             phone,
             created_at,
             updated_at,
-            folder:crew_folders (
-              id,
-              name
-            ),
-            role:crew_member_roles!crew_member_id (
-              crew_roles (
-                id,
-                name,
-                color
-              )
-            )
+            folder:crew_folders(id, name),
+            role:crew_member_roles(crew_roles(id, name, color))
           `)
           .order('name');
 
@@ -69,25 +59,24 @@ export function useCrew() {
 
         return data.map((member): CrewMember => {
           let folder = null;
-          if (member.folder && typeof member.folder === 'object') {
-            const folderObj = member.folder as { id?: string; name?: string };
-            if (folderObj.id && folderObj.name) {
+          if (member.folder && Array.isArray(member.folder) && member.folder[0]) {
+            const folderData = member.folder[0];
+            if (folderData.id && folderData.name) {
               folder = {
-                id: folderObj.id,
-                name: folderObj.name
+                id: folderData.id,
+                name: folderData.name
               };
             }
           }
 
           let role = null;
-          const roleData = member.role?.[0]?.crew_roles;
-          if (roleData && typeof roleData === 'object') {
-            const roleObj = roleData as { id?: string; name?: string; color?: string };
-            if (roleObj.id && roleObj.name && roleObj.color) {
+          if (member.role && Array.isArray(member.role) && member.role[0]?.crew_roles) {
+            const roleData = member.role[0].crew_roles;
+            if (roleData.id && roleData.name && roleData.color) {
               role = {
-                id: roleObj.id,
-                name: roleObj.name,
-                color: roleObj.color
+                id: roleData.id,
+                name: roleData.name,
+                color: roleData.color
               };
             }
           }
