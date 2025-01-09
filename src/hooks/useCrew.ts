@@ -10,7 +10,7 @@ export function useCrew() {
         .from('crew_members')
         .select(`
           *,
-          folder:folder_id (
+          folder:crew_folders!crew_members_folder_id_fkey (
             id,
             name
           ),

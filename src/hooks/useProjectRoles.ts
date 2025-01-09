@@ -12,18 +12,55 @@ export function useProjectRoles(projectId: string) {
         .from('project_roles')
         .select(`
           *,
-          role:crew_roles (
+          role:crew_roles!project_roles_role_id_fkey (
             id,
             name,
             color
+          ),
+          preferred:crew_members!project_roles_preferred_id_fkey (
+            id,
+            name
           )
         `)
         .eq('project_id', projectId);
 
       if (error) throw error;
       return data;
-    },
+    }
   });
+
+  const addRole = async (roleData: any) => {
+    try {
+      const { error } = await supabase
+        .from('project_roles')
+        .insert([{ ...roleData, project_id: projectId }]);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['project_roles', projectId] });
+      toast.success('Role added successfully');
+    } catch (error) {
+      console.error('Error adding role:', error);
+      toast.error('Failed to add role');
+    }
+  };
+
+  const updateRole = async (roleId: string, roleData: any) => {
+    try {
+      const { error } = await supabase
+        .from('project_roles')
+        .update(roleData)
+        .eq('id', roleId);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ queryKey: ['project_roles', projectId] });
+      toast.success('Role updated successfully');
+    } catch (error) {
+      console.error('Error updating role:', error);
+      toast.error('Failed to update role');
+    }
+  };
 
   const deleteRole = async (roleId: string) => {
     try {
@@ -31,47 +68,14 @@ export function useProjectRoles(projectId: string) {
         .from('project_roles')
         .delete()
         .eq('id', roleId);
-      
+
       if (error) throw error;
-      
-      toast.success("Role deleted successfully");
-      queryClient.invalidateQueries({ queryKey: ['project_roles', projectId] });
+
+      await queryClient.invalidateQueries({ queryKey: ['project_roles', projectId] });
+      toast.success('Role deleted successfully');
     } catch (error) {
       console.error('Error deleting role:', error);
-      toast.error("Failed to delete role");
-    }
-  };
-
-  const updateRole = async (roleId: string, updates: any) => {
-    try {
-      const { error } = await supabase
-        .from('project_roles')
-        .update(updates)
-        .eq('id', roleId);
-      
-      if (error) throw error;
-      
-      toast.success("Role updated successfully");
-      queryClient.invalidateQueries({ queryKey: ['project_roles', projectId] });
-    } catch (error) {
-      console.error('Error updating role:', error);
-      toast.error("Failed to update role");
-    }
-  };
-
-  const addRole = async (newRole: any) => {
-    try {
-      const { error } = await supabase
-        .from('project_roles')
-        .insert(newRole);
-      
-      if (error) throw error;
-      
-      toast.success("Role added successfully");
-      queryClient.invalidateQueries({ queryKey: ['project_roles', projectId] });
-    } catch (error) {
-      console.error('Error adding role:', error);
-      toast.error("Failed to add role");
+      toast.error('Failed to delete role');
     }
   };
 
