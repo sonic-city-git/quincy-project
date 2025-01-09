@@ -12,16 +12,19 @@ export type Database = {
       crew_folders: {
         Row: {
           created_at: string
+          data: Json | null
           id: string
           name: string
         }
         Insert: {
           created_at?: string
+          data?: Json | null
           id?: string
           name: string
         }
         Update: {
           created_at?: string
+          data?: Json | null
           id?: string
           name?: string
         }

@@ -25,6 +25,9 @@ export interface CrewRole {
 
 export interface CrewFolder {
   id: string;
-  name: string;
+  data: {
+    name: string;
+    created_at: string;
+  };
   created_at: string;
 }

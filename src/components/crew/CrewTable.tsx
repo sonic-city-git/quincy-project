@@ -68,7 +68,7 @@ export const CrewTable = memo(({
       const { data, error } = await supabase
         .from('crew_folders')
         .select('*')
-        .order('name');
+        .order('data->name');
       
       if (error) throw error;
       return data;
@@ -78,7 +78,8 @@ export const CrewTable = memo(({
   });
 
   const getFolderName = useCallback((folderId: string) => {
-    return folders?.find(f => f.id === folderId)?.name || '';
+    const folder = folders?.find(f => f.id === folderId);
+    return folder?.data?.name || '';
   }, [folders]);
 
   const handleSelectAll = useCallback(() => {

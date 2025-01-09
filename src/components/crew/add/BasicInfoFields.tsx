@@ -39,14 +39,14 @@ export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
 
       // Sort folders with custom priority
       return data.sort((a, b) => {
-        const priorityA = getFolderPriority(a.name);
-        const priorityB = getFolderPriority(b.name);
+        const priorityA = getFolderPriority(a.data.name);
+        const priorityB = getFolderPriority(b.data.name);
         
         if (priorityA !== priorityB) {
           return priorityA - priorityB;
         }
         
-        return a.name.localeCompare(b.name);
+        return a.data.name.localeCompare(b.data.name);
       });
     },
   });
@@ -94,7 +94,7 @@ export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
           <SelectContent>
             {folders?.map((folder) => (
               <SelectItem key={folder.id} value={folder.id}>
-                {folder.name}
+                {folder.data.name}
               </SelectItem>
             ))}
           </SelectContent>
