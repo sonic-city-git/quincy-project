@@ -28,12 +28,12 @@ export function AddMemberDialog() {
   const form = useForm<AddMemberFormData>({
     resolver: zodResolver(addMemberSchema),
     defaultValues: {
-      name: '',
-      email: '',
-      phone: '',
+      name: "",
+      email: "",
+      phone: "",
       role_ids: [],
-      folder_id: ''
-    } as AddMemberFormData
+      folder_id: "",
+    }
   });
 
   const { data: roles = [], isLoading: rolesLoading } = useQuery({
