@@ -33,6 +33,14 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     },
   });
 
+  const selectedRole = projectRoles?.find(role => role.role_id === selectedItems[0])
+    ? {
+        name: projectRoles.find(role => role.role_id === selectedItems[0])?.crew_roles.name || '',
+        dailyRate: projectRoles.find(role => role.role_id === selectedItems[0])?.daily_rate,
+        hourlyRate: projectRoles.find(role => role.role_id === selectedItems[0])?.hourly_rate,
+      }
+    : undefined;
+
   const handleItemSelect = (roleId: string) => {
     setSelectedItems((prev) => {
       if (prev.includes(roleId)) {
@@ -71,11 +79,38 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     }
   };
 
-  const handleEdit = () => {
-    toast({
-      title: "Edit role",
-      description: "Edit role functionality coming soon",
-    });
+  const handleEditRole = async (data: { dailyRate: string; hourlyRate: string }) => {
+    if (!selectedItems[0]) return;
+
+    try {
+      const selectedProjectRole = projectRoles?.find(role => role.role_id === selectedItems[0]);
+      if (!selectedProjectRole) return;
+
+      const { error } = await supabase
+        .from('project_roles')
+        .update({
+          daily_rate: data.dailyRate ? parseFloat(data.dailyRate) : null,
+          hourly_rate: data.hourlyRate ? parseFloat(data.hourlyRate) : null,
+        })
+        .eq('id', selectedProjectRole.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Role updated successfully",
+      });
+
+      refetchRoles();
+      setSelectedItems([]);
+    } catch (error) {
+      console.error('Error updating role:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update role",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -84,8 +119,9 @@ export function RolesSection({ projectId }: RolesSectionProps) {
         <RolesHeader 
           projectId={projectId}
           onAddRole={handleAddRole}
+          onEditRole={handleEditRole}
           selectedItems={selectedItems}
-          onEdit={handleEdit}
+          selectedRole={selectedRole}
         />
         <div className="grid gap-1.5">
           <RatesList
