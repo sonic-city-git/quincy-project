@@ -16,7 +16,7 @@ export function useAddMember() {
   const addMember = async (data: AddMemberFormData) => {
     try {
       // First, insert the crew member
-      const { data: crewMember, error: crewError } = await supabase
+      const { data: insertedMember, error: insertError } = await supabase
         .from('crew_members')
         .insert({
           name: data.name,
@@ -24,16 +24,20 @@ export function useAddMember() {
           phone: data.phone || null,
           folder_id: data.folder_id || null,
         })
-        .select()
+        .select('*')
         .single();
 
-      if (crewError) {
-        console.error('Error inserting crew member:', crewError);
-        toast.error(crewError.message || "Failed to add crew member");
+      if (insertError) {
+        console.error('Error inserting crew member:', insertError);
+        if (insertError.code === '401') {
+          toast.error("Authentication error. Please sign in again.");
+        } else {
+          toast.error(insertError.message || "Failed to add crew member");
+        }
         return false;
       }
 
-      if (!crewMember) {
+      if (!insertedMember) {
         toast.error("Failed to add crew member - no data returned");
         return false;
       }
@@ -41,7 +45,7 @@ export function useAddMember() {
       // Then, if there are roles to assign, insert them
       if (data.role_ids.length > 0) {
         const roleInserts = data.role_ids.map(roleId => ({
-          crew_member_id: crewMember.id,
+          crew_member_id: insertedMember.id,
           role_id: roleId
         }));
 
