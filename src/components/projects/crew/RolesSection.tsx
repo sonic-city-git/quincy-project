@@ -35,29 +35,15 @@ export function RolesSection({ projectId }: RolesSectionProps) {
 
   const handleItemSelect = (roleId: string) => {
     setSelectedItems((prev) => {
-      // If the clicked item is already selected, unselect it
       if (prev.includes(roleId)) {
         return [];
       }
-      // Otherwise, select only this item
       return [roleId];
     });
   };
 
   const handleAddRole = async (data: { roleId: string; dailyRate: string; hourlyRate: string }) => {
     try {
-      // Check if role already exists in project
-      const existingRole = projectRoles?.find(role => role.role_id === data.roleId);
-      
-      if (existingRole) {
-        toast({
-          title: "Error",
-          description: "This role has already been added to the project",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const { error } = await supabase
         .from('project_roles')
         .insert({
