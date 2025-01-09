@@ -156,5 +156,6 @@ export function useRoleManagement(projectId: string) {
     handleAddRole,
     handleEditRole,
     handleDeleteRole,
+    refetchProjectRoles,
   };
 }
