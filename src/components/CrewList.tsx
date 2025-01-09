@@ -6,7 +6,6 @@ import { EditCrewMemberDialog } from "./crew/EditCrewMemberDialog";
 import { useCrewManagement } from "@/hooks/useCrewManagement";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
-import { CrewSearch } from "./crew/search/CrewSearch";
 
 export function CrewList() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -54,7 +53,6 @@ export function CrewList() {
       );
     });
     setFilteredBySearch(filtered);
-    console.log('Filtered crew members:', filtered);
   }, [searchTerm, filteredCrewMembers]);
 
   if (isLoading) {

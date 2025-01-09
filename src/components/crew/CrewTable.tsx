@@ -36,11 +36,13 @@ const CrewTableRow = memo(({
       )}
     </TableCell>
     <TableCell className="w-[320px]">
-      <RoleTags roles={Array.isArray(crew.roles) ? crew.roles : []} />
+      <RoleTags roles={crew.roles || []} />
     </TableCell>
     <TableCell className="w-[280px] truncate">{crew.email}</TableCell>
     <TableCell className="w-[180px] truncate">{crew.phone}</TableCell>
-    <TableCell className="truncate">{crew.crew_folder?.name || ''}</TableCell>
+    <TableCell className="truncate">
+      {crew.crew_folder?.name || ''}
+    </TableCell>
   </TableRow>
 ));
 CrewTableRow.displayName = 'CrewTableRow';
@@ -67,12 +69,6 @@ export const CrewTable = memo(({
       });
     }
   }, [crewMembers, selectedItems, onItemSelect]);
-
-  console.log('CrewTable rendering with:', { 
-    crewMembersLength: crewMembers.length, 
-    headerOnly, 
-    bodyOnly
-  });
 
   const tableHeader = (
     <TableHeader>
