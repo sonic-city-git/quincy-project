@@ -40,7 +40,7 @@ export function CrewMemberSelect({
               name: role.name,
               color: role.color,
               created_at: role.created_at
-            })) 
+            } as CrewRole)) 
           : []
       })).filter(member => 
         member.roles.some(role => role.name === roleName)

@@ -13,6 +13,8 @@ interface RolesListProps {
   onItemSelect: (roleId: string) => void;
 }
 
+const roleOrder = ["FOH", "MON", "PLAYBACK", "BACKLINE"];
+
 export function RolesList({ 
   projectRoles, 
   selectedItems, 
@@ -63,7 +65,7 @@ export function RolesList({
               name: role.name,
               color: role.color,
               created_at: role.created_at
-            })) 
+            } as CrewRole)) 
           : []
       })) as CrewMember[];
     },

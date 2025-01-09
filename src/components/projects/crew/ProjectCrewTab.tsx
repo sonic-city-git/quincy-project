@@ -24,7 +24,14 @@ export function ProjectCrewTab({ projectId }: ProjectCrewTabProps) {
       if (error) throw error;
       return data.map(member => ({
         ...member,
-        roles: member.roles as CrewRole[]
+        roles: Array.isArray(member.roles) 
+          ? (member.roles as any[]).map(role => ({
+              id: role.id,
+              name: role.name,
+              color: role.color,
+              created_at: role.created_at
+            } as CrewRole)) 
+          : []
       })) as CrewMember[];
     },
   });

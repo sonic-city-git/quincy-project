@@ -24,7 +24,7 @@ export function useCrewData() {
               name: role.name,
               color: role.color,
               created_at: role.created_at
-            })) 
+            } as CrewRole)) 
           : []
       }));
 
