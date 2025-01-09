@@ -3,7 +3,7 @@ export interface CrewMember {
   name: string;
   email: string;
   phone: string;
-  folder_id: string;
+  folder_id: string | null;
   crew_folder: {
     id: string;
     name: string;
