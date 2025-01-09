@@ -20,11 +20,10 @@ export const RoleTags = memo(({ roles }: RoleTagsProps) => {
       {sortedRoles.map((role) => (
         <Badge
           key={`${role.id}-${role.color}`}
-          variant="secondary"
           className="text-white border-0 whitespace-nowrap"
           style={{ 
             backgroundColor: role.color || '#666', // Fallback to gray if no color is set
-            opacity: 0.8
+            opacity: 0.9
           }}
         >
           {role.name}
