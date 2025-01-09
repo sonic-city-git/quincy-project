@@ -2,7 +2,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ProjectRoleCard } from "./ProjectRoleCard";
-import { CrewMemberSelect } from "./CrewMemberSelect";
+import { CrewMemberSelect } from "./select/CrewMemberSelect";
 import { useQuery } from "@tanstack/react-query";
 import { CrewMember, CrewRole } from "@/types/crew";
 
