@@ -46,7 +46,24 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   const handleEdit = (roleId: string) => {
     setEditMode(true);
     setOpen(true);
-    handleEditRole(roleId);
+    const role = projectRoles?.find(r => r.role_id === roleId);
+    if (role) {
+      setEditValues({
+        roleId: role.role_id,
+        dailyRate: Number(role.daily_rate),
+        hourlyRate: Number(role.hourly_rate),
+        quantity: role.quantity || 1,
+      });
+    }
+  };
+
+  const handleEditSubmit = (data: {
+    roleId: string;
+    dailyRate: number;
+    hourlyRate: number;
+    quantity: number;
+  }) => {
+    handleEditRole(data);
   };
 
   return (
@@ -69,7 +86,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
               projectId={projectId}
               roleId={selectedItems[0]}
               onClose={handleDialogClose}
-              onSubmit={handleEditRole}
+              onSubmit={handleEditSubmit}
               onDelete={() => handleDeleteRole(selectedItems[0])}
               loading={loading}
             />
