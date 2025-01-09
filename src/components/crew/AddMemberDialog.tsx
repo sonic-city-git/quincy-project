@@ -5,7 +5,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { EntitySelect } from "@/components/shared/EntitySelect";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
@@ -20,6 +20,8 @@ interface AddMemberFormData {
 
 export function AddMemberDialog() {
   const [open, setOpen] = useState(false);
+  const queryClient = useQueryClient();
+  
   const form = useForm<AddMemberFormData>({
     defaultValues: {
       name: '',
@@ -68,34 +70,24 @@ export function AddMemberDialog() {
 
   const onSubmit = async (data: AddMemberFormData) => {
     try {
-      // First create the crew member
-      const { data: crewMember, error: crewError } = await supabase
+      const { error: crewError } = await supabase
         .from('crew_members')
         .insert([{
           name: data.name,
           email: data.email,
           phone: data.phone,
           folder_id: data.folder_id,
-        }])
-        .select()
-        .single();
+        }]);
 
-      if (crewError) throw crewError;
-
-      // Then create the role associations
-      if (data.role_ids.length > 0) {
-        const roleAssignments = data.role_ids.map(role_id => ({
-          crew_member_id: crewMember.id,
-          role_id: role_id
-        }));
-
-        const { error: rolesError } = await supabase
-          .from('crew_member_roles')
-          .insert(roleAssignments);
-
-        if (rolesError) throw rolesError;
+      if (crewError) {
+        console.error('Error inserting crew member:', crewError);
+        toast.error("Failed to add crew member");
+        return;
       }
 
+      // Refresh the crew query
+      await queryClient.invalidateQueries({ queryKey: ['crew'] });
+      
       toast.success("Crew member added successfully");
       setOpen(false);
       form.reset();
