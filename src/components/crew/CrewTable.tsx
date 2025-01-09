@@ -2,9 +2,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { CrewMember } from "@/types/crew";
 import { RoleTags } from "./RoleTags";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { memo } from "react";
+import { memo, useCallback } from "react";
 
 interface CrewTableProps {
   crewMembers: CrewMember[];
@@ -26,7 +26,7 @@ const CrewTableRow = memo(({
   isSelected: boolean;
   onSelect: (id: string) => void;
 }) => (
-  <TableRow key={crew.id} className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
+  <TableRow className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
     <TableCell className="w-[48px]">
       <Checkbox 
         checked={isSelected}
@@ -49,13 +49,15 @@ const CrewTableRow = memo(({
 ));
 CrewTableRow.displayName = 'CrewTableRow';
 
-export function CrewTable({ 
+export const CrewTable = memo(({ 
   crewMembers, 
   selectedItems, 
   onItemSelect, 
   headerOnly, 
   bodyOnly 
-}: CrewTableProps) {
+}: CrewTableProps) => {
+  const queryClient = useQueryClient();
+
   // Use react-query for caching folder data
   const { data: folders } = useQuery({
     queryKey: ['crew-folders'],
@@ -68,14 +70,15 @@ export function CrewTable({
       if (error) throw error;
       return data;
     },
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    staleTime: 10 * 60 * 1000, // Cache for 10 minutes
+    cacheTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
   });
 
-  const getFolderName = (folderId: string) => {
+  const getFolderName = useCallback((folderId: string) => {
     return folders?.find(f => f.id === folderId)?.name || '';
-  };
+  }, [folders]);
 
-  const handleSelectAll = () => {
+  const handleSelectAll = useCallback(() => {
     if (selectedItems.length === crewMembers.length) {
       crewMembers.forEach((crew) => {
         if (selectedItems.includes(crew.id)) {
@@ -89,7 +92,7 @@ export function CrewTable({
         }
       });
     }
-  };
+  }, [crewMembers, selectedItems, onItemSelect]);
 
   const tableHeader = (
     <TableHeader>
@@ -129,4 +132,6 @@ export function CrewTable({
       {!headerOnly && tableBody}
     </Table>
   );
-}
+});
+
+CrewTable.displayName = 'CrewTable';

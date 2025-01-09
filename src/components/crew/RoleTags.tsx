@@ -1,13 +1,15 @@
 import { useCrewRoles } from "@/hooks/useCrewRoles";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { memo } from "react";
 
 interface RoleTagsProps {
   crewMemberId: string;
 }
 
-export function RoleTags({ crewMemberId }: RoleTagsProps) {
+export const RoleTags = memo(({ crewMemberId }: RoleTagsProps) => {
   const { roles } = useCrewRoles();
+  const queryClient = useQueryClient();
   
   const { data: memberRoles } = useQuery({
     queryKey: ['crew-member-roles', crewMemberId],
@@ -23,6 +25,8 @@ export function RoleTags({ crewMemberId }: RoleTagsProps) {
       return data;
     },
     enabled: !!crewMemberId,
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    cacheTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
   
   if (!memberRoles?.length) {
@@ -47,4 +51,6 @@ export function RoleTags({ crewMemberId }: RoleTagsProps) {
       })}
     </div>
   );
-}
+});
+
+RoleTags.displayName = 'RoleTags';
