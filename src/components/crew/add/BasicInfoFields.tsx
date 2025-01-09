@@ -21,9 +21,9 @@ interface BasicInfoFieldsProps {
 
 interface FolderData {
   id: string;
-  data: {
-    name: string;
-  };
+  data: Json;
+  name: string;
+  created_at: string;
 }
 
 const getFolderPriority = (folderName: string): number => {
@@ -46,14 +46,14 @@ export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
 
       // Sort folders with custom priority
       return (data as FolderData[]).sort((a, b) => {
-        const priorityA = getFolderPriority(a.data.name);
-        const priorityB = getFolderPriority(b.data.name);
+        const priorityA = getFolderPriority((a.data as { name: string }).name);
+        const priorityB = getFolderPriority((b.data as { name: string }).name);
         
         if (priorityA !== priorityB) {
           return priorityA - priorityB;
         }
         
-        return a.data.name.localeCompare(b.data.name);
+        return (a.data as { name: string }).name.localeCompare((b.data as { name: string }).name);
       });
     },
   });
@@ -101,7 +101,7 @@ export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
           <SelectContent>
             {folders?.map((folder) => (
               <SelectItem key={folder.id} value={folder.id}>
-                {folder.data.name}
+                {(folder.data as { name: string }).name}
               </SelectItem>
             ))}
           </SelectContent>
