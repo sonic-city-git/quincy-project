@@ -71,34 +71,37 @@ export function useCrew() {
         return data.map((member): CrewMember => {
           // Safely handle folder data with type assertion after validation
           const folderData = member.folder;
-          const folder = folderData && 
-            typeof folderData === 'object' && 
-            'id' in folderData && 
-            typeof folderData.id === 'string' &&
-            'name' in folderData && 
-            typeof folderData.name === 'string'
-            ? {
+          let folder = null;
+          
+          if (folderData && typeof folderData === 'object') {
+            const hasValidId = 'id' in folderData && typeof folderData.id === 'string';
+            const hasValidName = 'name' in folderData && typeof folderData.name === 'string';
+            
+            if (hasValidId && hasValidName) {
+              folder = {
                 id: folderData.id,
                 name: folderData.name
-              }
-            : null;
+              };
+            }
+          }
 
           // Safely handle role data with type assertion after validation
           const roleData = member.role?.[0]?.crew_roles;
-          const role = roleData &&
-            typeof roleData === 'object' &&
-            'id' in roleData &&
-            typeof roleData.id === 'string' &&
-            'name' in roleData &&
-            typeof roleData.name === 'string' &&
-            'color' in roleData &&
-            typeof roleData.color === 'string'
-            ? {
+          let role = null;
+
+          if (roleData && typeof roleData === 'object') {
+            const hasValidId = 'id' in roleData && typeof roleData.id === 'string';
+            const hasValidName = 'name' in roleData && typeof roleData.name === 'string';
+            const hasValidColor = 'color' in roleData && typeof roleData.color === 'string';
+
+            if (hasValidId && hasValidName && hasValidColor) {
+              role = {
                 id: roleData.id,
                 name: roleData.name,
                 color: roleData.color
-              }
-            : null;
+              };
+            }
+          }
 
           return {
             id: member.id,
