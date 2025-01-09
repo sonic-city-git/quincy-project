@@ -1,6 +1,8 @@
 import { ProjectTable } from "./projects/ProjectTable";
 import { useProjects } from "@/hooks/useProjects";
 import { useState } from "react";
+import { ProjectActions } from "./projects/ProjectActions";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 export function ProjectList() {
   const { projects, loading } = useProjects();
@@ -16,11 +18,24 @@ export function ProjectList() {
 
   return (
     <div className="space-y-6">
-      <ProjectTable 
-        projects={projects} 
-        selectedItem={selectedItem}
-        onItemSelect={handleItemSelect}
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Projects</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <ProjectActions 
+              selectedItems={selectedItem ? [selectedItem] : []} 
+              onProjectDeleted={() => setSelectedItem(null)}
+            />
+            <ProjectTable 
+              projects={projects} 
+              selectedItem={selectedItem}
+              onItemSelect={handleItemSelect}
+            />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
