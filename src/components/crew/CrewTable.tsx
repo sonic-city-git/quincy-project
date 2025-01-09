@@ -19,7 +19,8 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
     queryFn: async () => {
       const { data, error } = await supabase
         .from('crew_folders')
-        .select('*');
+        .select('*')
+        .order('name');
       
       if (error) throw error;
       return data;
@@ -74,7 +75,12 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
               onCheckedChange={() => onItemSelect(crew.id)}
             />
           </TableCell>
-          <TableCell className="w-[240px] truncate">{crew.name}</TableCell>
+          <TableCell className="w-[240px] truncate">
+            {crew.name}
+            {getFolderName(crew.folder_id) === 'Sonic City' && (
+              <span className="ml-1">⭐</span>
+            )}
+          </TableCell>
           <TableCell className="w-[320px]">
             <RoleTags crewMemberId={crew.id} />
           </TableCell>

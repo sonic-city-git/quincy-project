@@ -22,9 +22,27 @@ export const filterCrewByRoles = (crewMembers: CrewMember[], selectedRoles: stri
   );
 };
 
+const getFolderPriority = (folderId: string | null) => {
+  // These IDs will be populated from the database query
+  const sonicCityPriority = 1;
+  const associatePriority = 2;
+  return folderId ? 
+    (folderId === 'sonic_city_folder_id' ? sonicCityPriority : 
+     folderId === 'associate_folder_id' ? associatePriority : 3) 
+    : 4;
+};
+
 export const sortCrewMembers = (crewMembers: CrewMember[]) => {
   return [...crewMembers].sort((a, b) => {
-    // We'll sort by name since folder is now an ID
+    // First, sort by folder priority
+    const aPriority = getFolderPriority(a.folder_id);
+    const bPriority = getFolderPriority(b.folder_id);
+    
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+    
+    // If same priority, sort alphabetically by name
     return a.name.localeCompare(b.name);
   });
 };
