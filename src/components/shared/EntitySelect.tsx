@@ -50,19 +50,22 @@ export function EntitySelect({
     return selectedEntity?.name || (isLoading ? 'Loading...' : placeholder);
   };
 
+  // Sort entities alphabetically by name
+  const sortedEntities = [...entities].sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <Select 
       value={Array.isArray(value) ? value[0] || '' : value} 
       onValueChange={handleSelect}
       required={required}
     >
-      <SelectTrigger className="w-[280px]">
+      <SelectTrigger className="w-full">
         <SelectValue placeholder={getDisplayValue()} />
       </SelectTrigger>
       <SelectContent>
-        <ScrollArea className="h-[200px]" type="hover">
+        <ScrollArea className="h-[150px]" type="hover">
           <div className="p-1">
-            {entities.map((entity) => (
+            {sortedEntities.map((entity) => (
               <SelectItem 
                 key={entity.id} 
                 value={entity.id}
