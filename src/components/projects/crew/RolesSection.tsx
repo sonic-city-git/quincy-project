@@ -12,19 +12,32 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     open,
     setOpen,
     selectedItems,
+    setSelectedItems,
     editMode,
+    setEditMode,
     editValues,
+    setEditValues,
     roles,
     projectRoles,
     handleAddRole,
     handleEditRole,
     handleDeleteRole,
+    refetchProjectRoles
   } = useRoleManagement(projectId);
 
   const handleDialogClose = () => {
     setOpen(false);
-    editMode && setEditMode(false);
-    editValues && setEditValues(null);
+    setEditMode(false);
+    setEditValues(null);
+  };
+
+  const handleItemSelect = (roleId: string) => {
+    setSelectedItems((prev) => {
+      if (prev.includes(roleId)) {
+        return prev.filter((id) => id !== roleId);
+      }
+      return [...prev, roleId];
+    });
   };
 
   return (
@@ -48,6 +61,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
             projectRoles={projectRoles || []}
             selectedItems={selectedItems}
             onUpdate={refetchProjectRoles}
+            onItemSelect={handleItemSelect}
           />
         </div>
       </div>
