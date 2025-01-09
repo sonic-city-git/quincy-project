@@ -15,11 +15,11 @@ export function useCrew() {
             name,
             email,
             phone,
-            folder:crew_folders!crew_members_folder_id_fkey (
+            folder:crew_folders (
               id,
               name
             ),
-            role:crew_member_roles (
+            role:crew_member_roles!crew_member_id (
               crew_roles (
                 id,
                 name,
@@ -35,7 +35,11 @@ export function useCrew() {
           throw error;
         }
 
-        return data.map((member: any): CrewMember => ({
+        if (!data) {
+          return [];
+        }
+
+        return data.map((member): CrewMember => ({
           id: member.id,
           name: member.name,
           email: member.email,
