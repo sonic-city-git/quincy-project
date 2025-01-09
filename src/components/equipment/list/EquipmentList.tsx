@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from "react";
+import { addDays, subDays } from "date-fns";
 import { Equipment } from "@/types/equipment";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
 import { Button } from "@/components/ui/button";
@@ -15,22 +16,28 @@ import { EquipmentContent } from "./EquipmentContent";
 interface EquipmentListProps {
   equipment: Equipment[];
   selectedItems: string[];
+  selectedEquipment: { id: string; name: string; }[];
   selectedFolder: string | null;
   searchTerm: string;
+  startDate: Date;
   onSearchChange: (value: string) => void;
   onFolderSelect: (folderId: string | null) => void;
   onAddEquipment: (equipment: Equipment) => void;
   onEditEquipment: (equipment: Equipment) => void;
-  onDeleteEquipment: (ids: string[]) => void;
+  onDeleteEquipment: () => void;
   onItemSelect: (id: string) => void;
   onSelectAll: () => void;
+  onPreviousPeriod: () => void;
+  onNextPeriod: () => void;
 }
 
 export function EquipmentList({
   equipment,
   selectedItems,
+  selectedEquipment,
   selectedFolder,
   searchTerm,
+  startDate,
   onSearchChange,
   onFolderSelect,
   onAddEquipment,
@@ -38,8 +45,9 @@ export function EquipmentList({
   onDeleteEquipment,
   onItemSelect,
   onSelectAll,
+  onPreviousPeriod,
+  onNextPeriod,
 }: EquipmentListProps) {
-  const [startDate, setStartDate] = useState(new Date());
   const containerRef = useRef<HTMLDivElement>(null);
   const daysToShow = 14;
 
@@ -48,18 +56,6 @@ export function EquipmentList({
   }, []);
 
   const { observe, unobserve } = useDebounceResize(handleResize);
-
-  const handlePreviousPeriod = useCallback(() => {
-    setStartDate(prev => subDays(prev, daysToShow));
-  }, [daysToShow]);
-
-  const handleNextPeriod = useCallback(() => {
-    setStartDate(prev => addDays(prev, daysToShow));
-  }, [daysToShow]);
-
-  const handleDeleteEquipment = useCallback(() => {
-    onDeleteEquipment(selectedItems);
-  }, [onDeleteEquipment, selectedItems]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-theme(spacing.16))]" ref={containerRef}>
@@ -98,23 +94,18 @@ export function EquipmentList({
       <EquipmentContent
         filteredEquipment={equipment}
         selectedItems={selectedItems}
-        selectedEquipment={equipment
-          .filter(item => selectedItems.includes(item.id))
-          .map(item => ({
-            id: item.id,
-            name: item.name
-          }))}
+        selectedEquipment={selectedEquipment}
         startDate={startDate}
         daysToShow={daysToShow}
         onSelectAll={onSelectAll}
         onItemSelect={onItemSelect}
-        onPreviousPeriod={handlePreviousPeriod}
-        onNextPeriod={handleNextPeriod}
+        onPreviousPeriod={onPreviousPeriod}
+        onNextPeriod={onNextPeriod}
         observe={observe}
         unobserve={unobserve}
         onAddEquipment={onAddEquipment}
         onEditEquipment={onEditEquipment}
-        onDeleteEquipment={handleDeleteEquipment}
+        onDeleteEquipment={onDeleteEquipment}
       />
     </div>
   );
