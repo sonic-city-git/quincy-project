@@ -7,20 +7,21 @@ export function useEquipmentMutations() {
 
   const handleAddEquipment = async (newEquipment: Equipment) => {
     try {
-      // First, insert the equipment
       const { data: equipmentData, error: equipmentError } = await supabase
         .from('equipment')
         .insert([{
-          // Remove the id field to let Supabase generate it
-          Code: newEquipment.code,
-          Name: newEquipment.name,
-          Price: parseFloat(newEquipment.price),
-          "Book Value": parseFloat(newEquipment.value),
-          Weight: parseFloat(newEquipment.weight),
-          Stock: newEquipment.stock,
-          "Stock calculation method": newEquipment.stockCalculationMethod,
+          code: newEquipment.code,
+          name: newEquipment.name,
+          daily_rate: parseFloat(newEquipment.price),
+          manual_stock: newEquipment.stock,
+          stock_type: newEquipment.stockCalculationMethod,
           folder_id: newEquipment.folder_id,
-          Notes: newEquipment.notes,
+          metadata: {
+            price: newEquipment.price,
+            value: newEquipment.value,
+            weight: newEquipment.weight,
+            notes: newEquipment.notes
+          }
         }])
         .select()
         .single();
@@ -68,15 +69,18 @@ export function useEquipmentMutations() {
       const { error: equipmentError } = await supabase
         .from('equipment')
         .update({
-          Code: editedEquipment.code,
-          Name: editedEquipment.name,
-          Price: parseFloat(editedEquipment.price),
-          "Book Value": parseFloat(editedEquipment.value),
-          Weight: parseFloat(editedEquipment.weight),
-          Stock: editedEquipment.stock,
-          "Stock calculation method": editedEquipment.stockCalculationMethod,
+          code: editedEquipment.code,
+          name: editedEquipment.name,
+          daily_rate: parseFloat(editedEquipment.price),
+          manual_stock: editedEquipment.stock,
+          stock_type: editedEquipment.stockCalculationMethod,
           folder_id: editedEquipment.folder_id,
-          Notes: editedEquipment.notes,
+          metadata: {
+            price: editedEquipment.price,
+            value: editedEquipment.value,
+            weight: editedEquipment.weight,
+            notes: editedEquipment.notes
+          }
         })
         .eq('id', editedEquipment.id);
 

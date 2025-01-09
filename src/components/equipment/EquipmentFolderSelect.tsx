@@ -32,7 +32,7 @@ export function EquipmentFolderSelect({
         {
           event: '*',
           schema: 'public',
-          table: 'folders'
+          table: 'equipment_folders'
         },
         () => {
           fetchFolders();
@@ -47,7 +47,7 @@ export function EquipmentFolderSelect({
 
   const fetchFolders = async () => {
     const { data, error } = await supabase
-      .from('folders')
+      .from('equipment_folders')
       .select('*')
       .order('name');
 
@@ -56,7 +56,7 @@ export function EquipmentFolderSelect({
       return;
     }
 
-    setFolders(data);
+    setFolders(data as Folder[]);
   };
 
   const getFolderPath = (folderId: string | null): string => {

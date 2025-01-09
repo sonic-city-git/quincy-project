@@ -31,14 +31,5 @@ export interface CrewRole {
   id: string;
   name: string;
   color: string;
-  sort_order?: number;
-  created_at?: string;
-}
-
-export interface CrewFolder {
-  id: string;
-  name: string;
-  type: string;
-  parent_id: string | null;
   created_at: string;
 }

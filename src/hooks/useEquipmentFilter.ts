@@ -25,7 +25,7 @@ export function useEquipmentFilter() {
 
   const fetchFolders = useCallback(async () => {
     const { data, error } = await supabase
-      .from('folders')
+      .from('equipment_folders')
       .select('*');
 
     if (error) {
@@ -33,7 +33,7 @@ export function useEquipmentFilter() {
       return;
     }
 
-    setFolders(data);
+    setFolders(data as Folder[]);
   }, []);
 
   const isFolderChild = useCallback((childId: string | null, parentId: string | null): boolean => {
