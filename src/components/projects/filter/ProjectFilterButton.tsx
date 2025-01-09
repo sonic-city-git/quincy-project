@@ -23,6 +23,7 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
 
   const fetchSonicCityCrewMembers = async () => {
     try {
+      console.log('Fetching crew members...');
       setLoading(true);
       const { data, error } = await supabase
         .from('crew_members')
@@ -35,6 +36,7 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
         return;
       }
 
+      console.log('Fetched crew members:', data);
       setCrewMembers(data || []);
     } catch (error) {
       console.error('Error:', error);
@@ -48,6 +50,7 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
   }, []);
 
   const selectedMemberName = crewMembers.find(member => member.id === selectedOwner)?.name;
+  console.log('Current selection:', { selectedOwner, selectedMemberName });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -73,6 +76,7 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
               <CommandItem
                 key={member.id}
                 onSelect={() => {
+                  console.log('Member selected:', { id: member.id, name: member.name });
                   onOwnerSelect(selectedOwner === member.id ? null : member.id);
                   setOpen(false);
                 }}
