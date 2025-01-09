@@ -30,7 +30,7 @@ export function CrewTimeline({
   });
 
   return (
-    <div className="h-[280px] border-t border-zinc-800/50">
+    <div className="h-[320px] border-t border-zinc-800/50">
       <TimelineHeader 
         startDate={startDate}
         endDate={endDate}
