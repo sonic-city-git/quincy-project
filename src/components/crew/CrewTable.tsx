@@ -2,9 +2,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { CrewMember } from "@/types/crew";
 import { RoleTags } from "./RoleTags";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { memo, useCallback } from "react";
+import { memo, useCallback, useMemo } from "react";
+import { useVirtualizer } from "@tanstack/react-virtual";
 
 interface CrewTableProps {
   crewMembers: CrewMember[];
@@ -19,14 +20,19 @@ const CrewTableRow = memo(({
   crew, 
   folderName, 
   isSelected, 
-  onSelect 
+  onSelect,
+  style 
 }: { 
   crew: CrewMember; 
   folderName: string; 
   isSelected: boolean;
   onSelect: (id: string) => void;
+  style?: React.CSSProperties;
 }) => (
-  <TableRow className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
+  <TableRow 
+    className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50"
+    style={style}
+  >
     <TableCell className="w-[48px]">
       <Checkbox 
         checked={isSelected}
@@ -56,9 +62,6 @@ export const CrewTable = memo(({
   headerOnly, 
   bodyOnly 
 }: CrewTableProps) => {
-  const queryClient = useQueryClient();
-
-  // Use react-query for caching folder data
   const { data: folders } = useQuery({
     queryKey: ['crew-folders'],
     queryFn: async () => {
@@ -94,6 +97,19 @@ export const CrewTable = memo(({
     }
   }, [crewMembers, selectedItems, onItemSelect]);
 
+  const parentRef = useMemo(() => {
+    return {
+      current: document.querySelector('.scroll-area-viewport')
+    };
+  }, []);
+
+  const rowVirtualizer = useVirtualizer({
+    count: crewMembers.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 32, // height of each row
+    overscan: 5,
+  });
+
   const tableHeader = (
     <TableHeader>
       <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
@@ -112,19 +128,40 @@ export const CrewTable = memo(({
     </TableHeader>
   );
 
-  const tableBody = (
+  const tableBody = useMemo(() => (
     <TableBody>
-      {crewMembers.map((crew) => (
-        <CrewTableRow
-          key={crew.id}
-          crew={crew}
-          folderName={getFolderName(crew.folder_id)}
-          isSelected={selectedItems.includes(crew.id)}
-          onSelect={onItemSelect}
-        />
-      ))}
+      <tr style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
+        <td>
+          <div
+            style={{
+              position: 'relative',
+              height: '100%',
+            }}
+          >
+            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const crew = crewMembers[virtualRow.index];
+              return (
+                <CrewTableRow
+                  key={crew.id}
+                  crew={crew}
+                  folderName={getFolderName(crew.folder_id)}
+                  isSelected={selectedItems.includes(crew.id)}
+                  onSelect={onItemSelect}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtualRow.start}px)`,
+                  }}
+                />
+              );
+            })}
+          </div>
+        </td>
+      </tr>
     </TableBody>
-  );
+  ), [crewMembers, selectedItems, getFolderName, onItemSelect, rowVirtualizer]);
 
   return (
     <Table>
