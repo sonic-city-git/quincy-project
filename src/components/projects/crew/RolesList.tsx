@@ -46,6 +46,7 @@ export function RolesList({
               color={projectRole.crew_roles.color}
               dailyRate={projectRole.daily_rate}
               hourlyRate={projectRole.hourly_rate}
+              preferredId={projectRole.preferred_id}
               onUpdate={onUpdate}
             />
           </div>
