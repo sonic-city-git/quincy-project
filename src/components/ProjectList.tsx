@@ -1,4 +1,3 @@
-import { ProjectActions } from "./projects/ProjectActions";
 import { ProjectTable } from "./projects/ProjectTable";
 import { useProjects } from "@/hooks/useProjects";
 import { useState } from "react";
@@ -21,12 +20,6 @@ export function ProjectList() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-end">
-        <ProjectActions 
-          selectedItems={selectedItem ? [selectedItem] : []} 
-          onProjectDeleted={handleProjectDeleted}
-        />
-      </div>
       <ProjectTable 
         projects={projects} 
         selectedItem={selectedItem}
