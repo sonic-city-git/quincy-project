@@ -9,6 +9,24 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      crew_folders: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       crew_member_roles: {
         Row: {
           created_at: string
@@ -49,7 +67,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string
-          folder: string
+          folder_id: string | null
           id: string
           name: string
           phone: string
@@ -57,7 +75,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email: string
-          folder: string
+          folder_id?: string | null
           id?: string
           name: string
           phone: string
@@ -65,12 +83,20 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string
-          folder?: string
+          folder_id?: string | null
           id?: string
           name?: string
           phone?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crew_members_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "crew_folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crew_roles: {
         Row: {
