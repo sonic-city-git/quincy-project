@@ -50,8 +50,23 @@ export function EntitySelect({
     return selectedEntity?.name || (isLoading ? 'Loading...' : placeholder);
   };
 
-  // Sort entities alphabetically by name
-  const sortedEntities = [...entities].sort((a, b) => a.name.localeCompare(b.name));
+  // Custom sort function to prioritize specific names
+  const sortedEntities = [...entities].sort((a, b) => {
+    const order = ['Sonic City', 'Associate', 'Freelance'];
+    const aIndex = order.indexOf(a.name);
+    const bIndex = order.indexOf(b.name);
+    
+    // If both items are in the priority list, sort by their order
+    if (aIndex !== -1 && bIndex !== -1) {
+      return aIndex - bIndex;
+    }
+    // If only a is in the priority list, it comes first
+    if (aIndex !== -1) return -1;
+    // If only b is in the priority list, it comes first
+    if (bIndex !== -1) return 1;
+    // For all other items, sort alphabetically
+    return a.name.localeCompare(b.name);
+  });
 
   return (
     <Select 
