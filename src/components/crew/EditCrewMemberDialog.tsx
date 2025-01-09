@@ -12,6 +12,8 @@ import { useState, useEffect } from "react";
 import { CrewMember } from "@/types/crew";
 import { useToast } from "@/hooks/use-toast";
 import { EditCrewMemberForm } from "./edit/EditCrewMemberForm";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EditCrewMemberDialogProps {
   selectedCrew: CrewMember[];
@@ -34,6 +36,18 @@ export function EditCrewMemberDialog({
     crewMember.roles?.map(role => role.id) || []
   );
 
+  // Fetch all available roles
+  const { data: allRoles } = useQuery({
+    queryKey: ['crew-roles'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('crew_roles')
+        .select('*');
+      if (error) throw error;
+      return data;
+    },
+  });
+
   useEffect(() => {
     setSelectedRoleIds(crewMember.roles?.map(role => role.id) || []);
   }, [crewMember]);
@@ -42,13 +56,18 @@ export function EditCrewMemberDialog({
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
+    // Get the complete role objects for selected role IDs
+    const updatedRoles = allRoles?.filter(role => selectedRoleIds.includes(role.id)) || [];
+    
+    console.log('Updating crew member with roles:', updatedRoles);
+    
     const editedMember = {
       ...crewMember,
       name: formData.get("name") as string,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
-      folder_id: formData.get("folder_id") as string,
-      roles: crewMember.roles.filter(role => selectedRoleIds.includes(role.id)),
+      crew_folder: crewMember.crew_folder,
+      roles: updatedRoles,
     };
 
     onEditCrewMember(editedMember);
