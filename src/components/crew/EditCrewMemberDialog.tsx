@@ -61,7 +61,7 @@ export function EditCrewMemberDialog({
       name: `${formData.get("firstName")} ${formData.get("lastName")}`,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
-      folder: formData.get("folder") as string,
+      folder_id: formData.get("folder_id") as string,
       roleIds: selectedRoleIds,
     };
 
