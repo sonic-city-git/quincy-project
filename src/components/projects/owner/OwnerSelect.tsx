@@ -21,13 +21,21 @@ export function OwnerSelect({ selectedOwnerId, onOwnerSelect }: OwnerSelectProps
   useEffect(() => {
     const fetchSonicCityCrewMembers = async () => {
       try {
+        console.log('Fetching Sonic City crew members...');
         const { data, error } = await supabase
           .from('crew_members')
-          .select('id, name')
-          .filter('crew_folder->data->name', 'eq', 'Sonic City');
+          .select('id, name, crew_folder')
+          .eq('crew_folder->data->name', 'Sonic City');
 
         if (error) throw error;
-        setSonicCityCrewMembers(data || []);
+
+        // Filter out any null results and map to the required format
+        const validMembers = (data || [])
+          .filter(member => member && member.id && member.name)
+          .map(({ id, name }) => ({ id, name }));
+
+        console.log('Fetched crew members:', validMembers);
+        setSonicCityCrewMembers(validMembers);
       } catch (error) {
         console.error('Error fetching Sonic City crew members:', error);
         toast({
