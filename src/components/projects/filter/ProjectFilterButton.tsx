@@ -1,15 +1,22 @@
-import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
-import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-
-interface CrewMember {
-  id: string;
-  name: string;
-}
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { sortCrewMembers } from "@/utils/crewUtils";
 
 interface ProjectFilterButtonProps {
   selectedOwner: string | null;
@@ -18,38 +25,32 @@ interface ProjectFilterButtonProps {
 
 export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFilterButtonProps) {
   const [open, setOpen] = useState(false);
-  const [crewMembers, setCrewMembers] = useState<CrewMember[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const fetchSonicCityCrewMembers = async () => {
-    try {
-      setLoading(true);
+  const { data: crewMembers = [], isLoading } = useQuery({
+    queryKey: ['crew-members-filter'],
+    queryFn: async () => {
+      console.log('Fetching crew members for filter');
       const { data, error } = await supabase
         .from('crew_members')
-        .select('id, name')
-        .filter('crew_folder->name', 'eq', 'Sonic City')
-        .order('name');
+        .select('*');
 
       if (error) {
         console.error('Error fetching crew members:', error);
-        return;
+        throw error;
       }
 
-      setCrewMembers(data || []);
-    } catch (error) {
-      console.error('Error:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+      const members = data.map(member => ({
+        id: member.id,
+        name: member.name,
+        crew_folder: member.crew_folder
+      }));
 
-  useEffect(() => {
-    fetchSonicCityCrewMembers();
-  }, []);
+      // Sort members with Sonic City first
+      return sortCrewMembers(members);
+    },
+  });
 
-  const selectedMemberName = crewMembers.find(member => member.id === selectedOwner)?.name;
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Button variant="outline" className="w-[200px] justify-between">
         Loading...
@@ -57,6 +58,8 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
       </Button>
     );
   }
+
+  const selectedMemberName = crewMembers.find(member => member.id === selectedOwner)?.name;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
