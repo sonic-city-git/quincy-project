@@ -69,11 +69,13 @@ export function CrewMemberSelect({
               created_at: role.created_at || new Date().toISOString()
             }))
           : [],
-        crew_folder: member.crew_folder ? {
-          id: typeof member.crew_folder === 'object' ? (member.crew_folder as any).id || '' : '',
-          name: typeof member.crew_folder === 'object' ? (member.crew_folder as any).name || '' : '',
-          created_at: typeof member.crew_folder === 'object' ? (member.crew_folder as any).created_at || new Date().toISOString() : new Date().toISOString()
-        } : null
+        crew_folder: member.crew_folder 
+          ? {
+              id: typeof member.crew_folder === 'object' ? member.crew_folder.id || '' : '',
+              name: typeof member.crew_folder === 'object' ? member.crew_folder.name || '' : '',
+              created_at: typeof member.crew_folder === 'object' ? member.crew_folder.created_at || new Date().toISOString() : new Date().toISOString()
+            }
+          : null
       })) as CrewMember[];
 
       console.log('Processed crew members:', validMembers);
@@ -86,7 +88,6 @@ export function CrewMemberSelect({
       console.log('Filtered crew members by role:', filteredMembers);
       return filteredMembers;
     },
-    initialData: [], // Ensure we always have an array to work with
   });
 
   if (isLoading) {
@@ -96,6 +97,9 @@ export function CrewMemberSelect({
       </Button>
     );
   }
+
+  // Ensure we have a valid array to work with
+  const members = Array.isArray(crewMembers) ? crewMembers : [];
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -115,10 +119,10 @@ export function CrewMemberSelect({
           <CommandInput placeholder="Search crew member..." />
           <CommandEmpty>No crew member found.</CommandEmpty>
           <CommandGroup>
-            {crewMembers.length === 0 ? (
+            {members.length === 0 ? (
               <CommandItem disabled>No crew members available</CommandItem>
             ) : (
-              crewMembers.map((crew) => (
+              members.map((crew) => (
                 <CommandItem
                   key={crew.id}
                   value={crew.name}
