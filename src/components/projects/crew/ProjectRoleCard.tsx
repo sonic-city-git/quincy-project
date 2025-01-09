@@ -8,6 +8,7 @@ import { CrewMember, CrewRole } from "@/types/crew";
 interface ProjectRoleCardProps {
   id: string;
   projectId: string;
+  roleId: string;
   name: string;
   color: string;
   dailyRate?: number | null;
@@ -19,6 +20,7 @@ interface ProjectRoleCardProps {
 export function ProjectRoleCard({ 
   id,
   projectId,
+  roleId,
   name, 
   color, 
   dailyRate,
@@ -27,15 +29,15 @@ export function ProjectRoleCard({
   onUpdate
 }: ProjectRoleCardProps) {
   const { data: crewMembers = [] } = useQuery({
-    queryKey: ['crew-members', id],
+    queryKey: ['crew-members', roleId],
     queryFn: async () => {
-      console.log('Fetching crew members for role:', { id, name });
+      console.log('Fetching crew members for role:', { roleId, name });
       
       // Query crew members where roles array contains the role id
       const { data, error } = await supabase
         .from('crew_members')
         .select('*')
-        .filter('roles', 'cs', `[{"id":"${id}"}]`);
+        .filter('roles', 'cs', `[{"id":"${roleId}"}]`);
       
       if (error) {
         console.error('Error fetching crew members:', error);
@@ -93,8 +95,7 @@ export function ProjectRoleCard({
     const { error } = await supabase
       .from('project_roles')
       .update({ preferred_id: crewId })
-      .eq('project_id', projectId)
-      .eq('role_id', id);
+      .eq('id', id);  // Use the project_role id instead of role_id
 
     if (error) {
       console.error('Error updating preferred crew member:', error);

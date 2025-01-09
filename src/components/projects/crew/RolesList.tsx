@@ -40,8 +40,9 @@ export function RolesList({
           />
           <div className="flex-grow">
             <ProjectRoleCard
-              id={projectRole.role_id}
+              id={projectRole.id}
               projectId={projectRole.project_id}
+              roleId={projectRole.role_id}
               name={projectRole.crew_roles.name}
               color={projectRole.crew_roles.color}
               dailyRate={projectRole.daily_rate}
