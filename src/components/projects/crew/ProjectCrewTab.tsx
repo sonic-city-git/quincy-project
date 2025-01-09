@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CrewMember } from "@/types/crew";
+import { CrewMember, CrewRole } from "@/types/crew";
 import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";

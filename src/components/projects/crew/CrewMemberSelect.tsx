@@ -34,7 +34,14 @@ export function CrewMemberSelect({
       
       return members.map(member => ({
         ...member,
-        roles: Array.isArray(member.roles) ? member.roles as CrewRole[] : []
+        roles: Array.isArray(member.roles) 
+          ? (member.roles as any[]).map(role => ({
+              id: role.id,
+              name: role.name,
+              color: role.color,
+              created_at: role.created_at
+            })) 
+          : []
       })).filter(member => 
         member.roles.some(role => role.name === roleName)
       ) as CrewMember[];
