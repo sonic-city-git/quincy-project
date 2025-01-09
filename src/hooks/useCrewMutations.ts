@@ -11,7 +11,7 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
       const { data: crewMember, error: crewError } = await supabase
         .from('crew_members')
         .insert({
-          name: `${newMember.firstName} ${newMember.lastName}`,
+          name: newMember.name,
           email: newMember.email,
           phone: newMember.phone,
           folder_id: newMember.folder_id,
