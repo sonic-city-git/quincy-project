@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { AddRoleDialog } from "./AddRoleDialog";
 
 interface RolesSectionProps {
   projectId: string;
@@ -43,11 +44,33 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     });
   };
 
-  const handleAddClick = () => {
-    toast({
-      title: "Add role",
-      description: "Add role functionality coming soon",
-    });
+  const handleAddRole = async (data: { roleId: string; dailyRate: string; hourlyRate: string }) => {
+    try {
+      const { error } = await supabase
+        .from('project_roles')
+        .insert({
+          project_id: projectId,
+          role_id: data.roleId,
+          daily_rate: data.dailyRate ? parseFloat(data.dailyRate) : null,
+          hourly_rate: data.hourlyRate ? parseFloat(data.hourlyRate) : null,
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Role added successfully",
+      });
+
+      refetchRoles();
+    } catch (error) {
+      console.error('Error adding role:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add role",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEdit = () => {
@@ -60,7 +83,15 @@ export function RolesSection({ projectId }: RolesSectionProps) {
   return (
     <div className="space-y-4">
       <div className="bg-zinc-900/50 rounded-lg p-3">
-        <RolesHeader onAddClick={handleAddClick} />
+        <RolesHeader 
+          onAddClick={() => {}} 
+          trigger={
+            <AddRoleDialog
+              projectId={projectId}
+              onSubmit={handleAddRole}
+            />
+          }
+        />
         <RoleSelectionActions 
           selectedItems={selectedItems}
           onEdit={handleEdit}
