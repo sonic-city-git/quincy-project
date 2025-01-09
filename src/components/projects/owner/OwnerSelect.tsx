@@ -24,8 +24,8 @@ export function OwnerSelect({ selectedOwnerId, onOwnerSelect }: OwnerSelectProps
         console.log('Fetching Sonic City crew members...');
         const { data, error } = await supabase
           .from('crew_members')
-          .select('id, name, crew_folder')
-          .filter('crew_folder->name', 'eq', 'Sonic City');
+          .select('id, name')
+          .eq('crew_folder->name', 'Sonic City');
 
         if (error) {
           console.error('Supabase error:', error);
@@ -40,7 +40,6 @@ export function OwnerSelect({ selectedOwnerId, onOwnerSelect }: OwnerSelectProps
         // Ensure data is an array and has valid members
         const validMembers = Array.isArray(data) 
           ? data.filter(member => member && member.id && member.name)
-              .map(({ id, name }) => ({ id, name }))
           : [];
 
         console.log('Fetched crew members:', validMembers);
