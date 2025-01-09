@@ -1,10 +1,8 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { ProjectCalendar } from "@/components/events/ProjectCalendar";
-import { OwnerSelect } from "./owner/OwnerSelect";
 import { CustomerSelect } from "./customer/CustomerSelect";
 import { FinancialInfo } from "./financial/FinancialInfo";
-import { useState } from "react";
 
 interface ProjectGeneralTabProps {
   projectId: string;
@@ -16,13 +14,10 @@ interface ProjectGeneralTabProps {
 
 export const ProjectGeneralTab = ({ 
   projectId, 
-  initialOwner, 
   initialCustomer, 
   gigPrice, 
   yearlyRevenue 
 }: ProjectGeneralTabProps) => {
-  const [selectedOwnerId, setSelectedOwnerId] = useState(initialOwner);
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div className="lg:col-span-1">
@@ -36,20 +31,10 @@ export const ProjectGeneralTab = ({
       <div className="lg:col-span-2 space-y-4">
         <Card>
           <CardContent className="p-6 space-y-6">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">Owner</p>
-                <OwnerSelect 
-                  selectedOwnerId={selectedOwnerId}
-                  onOwnerSelect={setSelectedOwnerId}
-                />
-              </div>
-              <Separator className="my-4" />
-              <CustomerSelect 
-                projectId={projectId}
-                initialCustomer={initialCustomer}
-              />
-            </div>
+            <CustomerSelect 
+              projectId={projectId}
+              initialCustomer={initialCustomer}
+            />
           </CardContent>
         </Card>
 

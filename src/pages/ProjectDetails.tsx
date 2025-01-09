@@ -9,10 +9,6 @@ const ProjectDetails = () => {
   const { project, loading } = useProjectDetails(id);
   const { toast } = useToast();
 
-  console.log('ProjectDetails - projectId:', id);
-  console.log('ProjectDetails - project:', project);
-  console.log('ProjectDetails - loading:', loading);
-
   if (loading) {
     return (
       <div className="p-6">
@@ -43,10 +39,12 @@ const ProjectDetails = () => {
 
   const projectData = {
     ...project,
-    owner: {
-      id: project.owner_id,
-      name: project.crew_members?.name || 'Unknown'
-    }
+    owner_id: project.customer_id,
+    customer: project.customer_id,
+    color: 'blue',
+    last_invoiced: null,
+    gig_price: null,
+    yearly_revenue: null
   };
 
   return (
