@@ -35,7 +35,10 @@ const getFolderPriority = (folderName: string): number => {
 };
 
 export function BasicInfoFields({ defaultValues, folders = [] }: BasicInfoFieldsProps) {
-  const sortedFolders = [...folders].sort((a, b) => {
+  // Ensure folders is an array before attempting to sort
+  const foldersArray = Array.isArray(folders) ? folders : [];
+  
+  const sortedFolders = [...foldersArray].sort((a, b) => {
     const priorityA = getFolderPriority(a.name);
     const priorityB = getFolderPriority(b.name);
     
