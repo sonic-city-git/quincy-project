@@ -14,7 +14,7 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
           name: newMember.name,
           email: newMember.email,
           phone: newMember.phone,
-          folder_id: newMember.folder_id,
+          crew_folder: newMember.crew_folder,
           roles: JSON.stringify(newMember.roles),
         })
         .select()
@@ -45,7 +45,7 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
           name: editedMember.name,
           email: editedMember.email,
           phone: editedMember.phone,
-          folder_id: editedMember.folder_id,
+          crew_folder: editedMember.crew_folder,
           roles: JSON.stringify(editedMember.roles),
         })
         .eq('id', editedMember.id);

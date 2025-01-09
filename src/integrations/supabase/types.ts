@@ -35,7 +35,6 @@ export type Database = {
           created_at: string
           crew_folder: Json | null
           email: string
-          folder_id: string | null
           id: string
           name: string
           phone: string
@@ -45,7 +44,6 @@ export type Database = {
           created_at?: string
           crew_folder?: Json | null
           email: string
-          folder_id?: string | null
           id?: string
           name: string
           phone: string
@@ -55,7 +53,6 @@ export type Database = {
           created_at?: string
           crew_folder?: Json | null
           email?: string
-          folder_id?: string | null
           id?: string
           name?: string
           phone?: string

@@ -23,18 +23,10 @@ export const filterCrewByRoles = (crewMembers: CrewMember[], selectedRoles: stri
   );
 };
 
-const getFolderPriority = async (folderId: string | null) => {
-  if (!folderId) return 4;
+const getFolderPriority = (folderName: string | null) => {
+  if (!folderName) return 4;
 
-  const { data: folder } = await supabase
-    .from('crew_folders')
-    .select('name')
-    .eq('id', folderId)
-    .single();
-
-  if (!folder) return 3;
-
-  switch (folder.name.toLowerCase()) {
+  switch (folderName.toLowerCase()) {
     case 'sonic city':
       return 1;
     case 'associate':
@@ -45,22 +37,9 @@ const getFolderPriority = async (folderId: string | null) => {
 };
 
 export const sortCrewMembers = async (crewMembers: CrewMember[]) => {
-  // Create a map to store folder priorities
-  const priorityMap = new Map<string, number>();
-
-  // Fetch all folder priorities at once
-  await Promise.all(
-    crewMembers.map(async (member) => {
-      const priority = await getFolderPriority(member.folder_id);
-      if (member.folder_id) {
-        priorityMap.set(member.folder_id, priority);
-      }
-    })
-  );
-
   return [...crewMembers].sort((a, b) => {
-    const aPriority = a.folder_id ? priorityMap.get(a.folder_id) ?? 4 : 4;
-    const bPriority = b.folder_id ? priorityMap.get(b.folder_id) ?? 4 : 4;
+    const aPriority = getFolderPriority(a.crew_folder?.name);
+    const bPriority = getFolderPriority(b.crew_folder?.name);
     
     if (aPriority !== bPriority) {
       return aPriority - bPriority;

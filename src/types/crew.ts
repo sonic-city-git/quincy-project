@@ -3,7 +3,6 @@ export interface CrewMember {
   name: string;
   email: string;
   phone: string;
-  folder_id: string | null;
   crew_folder: {
     id: string;
     name: string;
@@ -17,7 +16,11 @@ export interface NewCrewMember {
   name: string;
   phone: string;
   email: string;
-  folder_id: string;
+  crew_folder: {
+    id: string;
+    name: string;
+    created_at: string;
+  } | null;
   roles: CrewRole[];
 }
 

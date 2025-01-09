@@ -16,7 +16,11 @@ interface BasicInfoFieldsProps {
     name: string;
     email: string;
     phone: string;
-    folder_id: string;
+    crew_folder: {
+      id: string;
+      name: string;
+      created_at: string;
+    } | null;
   };
 }
 
@@ -45,7 +49,6 @@ export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
       
       if (error) throw error;
 
-      // Sort folders with custom priority
       return (data as FolderData[]).sort((a, b) => {
         const priorityA = getFolderPriority((a.data as { name: string }).name);
         const priorityB = getFolderPriority((b.data as { name: string }).name);
@@ -94,15 +97,26 @@ export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="folder_id">Folder</Label>
-        <Select name="folder_id" defaultValue={defaultValues?.folder_id} required>
+        <Label htmlFor="crew_folder">Folder</Label>
+        <Select 
+          name="crew_folder" 
+          defaultValue={defaultValues?.crew_folder?.id} 
+          required
+        >
           <SelectTrigger>
             <SelectValue placeholder="Select folder" />
           </SelectTrigger>
           <SelectContent>
             {folders?.map((folder) => (
-              <SelectItem key={folder.id} value={folder.id}>
-                {(folder.data as { name: string }).name}
+              <SelectItem 
+                key={folder.id} 
+                value={JSON.stringify({
+                  id: folder.id,
+                  name: folder.name,
+                  created_at: folder.created_at
+                })}
+              >
+                {folder.name}
               </SelectItem>
             ))}
           </SelectContent>

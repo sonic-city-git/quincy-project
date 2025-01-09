@@ -37,12 +37,14 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
     const formData = new FormData(e.currentTarget);
     
     const selectedRoles = roles?.filter(role => selectedRoleIds.includes(role.id)) || [];
+    const crewFolderStr = formData.get("crew_folder") as string;
+    const crewFolder = crewFolderStr ? JSON.parse(crewFolderStr) : null;
     
     const newCrewMember: NewCrewMember = {
       name: formData.get("name") as string,
       phone: formData.get("phone") as string,
       email: formData.get("email") as string,
-      folder_id: formData.get("folder_id") as string,
+      crew_folder: crewFolder,
       roles: selectedRoles,
     };
 
