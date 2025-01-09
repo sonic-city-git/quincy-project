@@ -24,8 +24,7 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
     const formData = new FormData(e.currentTarget);
     
     const newCrewMember: NewCrewMember = {
-      firstName: formData.get("firstName") as string,
-      lastName: formData.get("lastName") as string,
+      name: formData.get("name") as string,
       phone: formData.get("phone") as string,
       email: formData.get("email") as string,
       folder_id: formData.get("folder_id") as string,

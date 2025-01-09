@@ -19,14 +19,11 @@ export function EditCrewMemberForm({
   onSubmit,
   onDelete,
 }: EditCrewMemberFormProps) {
-  const [firstName, lastName] = crewMember.name.split(" ");
-
   return (
     <form onSubmit={onSubmit} className="grid gap-4 py-4">
       <BasicInfoFields 
         defaultValues={{
-          firstName,
-          lastName,
+          name: crewMember.name,
           email: crewMember.email,
           phone: crewMember.phone,
           folder_id: crewMember.folder_id,

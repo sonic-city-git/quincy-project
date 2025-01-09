@@ -58,7 +58,7 @@ export function EditCrewMemberDialog({
     
     const editedMember = {
       ...crewMember,
-      name: `${formData.get("firstName")} ${formData.get("lastName")}`,
+      name: formData.get("name") as string,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
       folder_id: formData.get("folder_id") as string,

@@ -12,8 +12,7 @@ export interface CrewMember {
 }
 
 export interface NewCrewMember {
-  firstName: string;
-  lastName: string;
+  name: string;
   phone: string;
   email: string;
   folder_id: string;

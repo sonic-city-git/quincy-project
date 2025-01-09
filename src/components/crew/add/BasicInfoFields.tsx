@@ -12,8 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface BasicInfoFieldsProps {
   defaultValues?: {
-    firstName: string;
-    lastName: string;
+    name: string;
     email: string;
     phone: string;
     folder_id: string;
@@ -54,27 +53,15 @@ export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="grid gap-2">
-          <Label htmlFor="firstName">First name</Label>
-          <Input
-            id="firstName"
-            name="firstName"
-            placeholder="John"
-            defaultValue={defaultValues?.firstName}
-            required
-          />
-        </div>
-        <div className="grid gap-2">
-          <Label htmlFor="lastName">Last name</Label>
-          <Input
-            id="lastName"
-            name="lastName"
-            placeholder="Doe"
-            defaultValue={defaultValues?.lastName}
-            required
-          />
-        </div>
+      <div className="grid gap-2">
+        <Label htmlFor="name">Name</Label>
+        <Input
+          id="name"
+          name="name"
+          placeholder="John Doe"
+          defaultValue={defaultValues?.name}
+          required
+        />
       </div>
       <div className="grid gap-2">
         <Label htmlFor="phone">Phone</Label>
