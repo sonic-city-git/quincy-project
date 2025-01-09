@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Wrench } from "lucide-react";
@@ -74,6 +75,9 @@ export function EditCrewMemberDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Crew Member</DialogTitle>
+          <DialogDescription>
+            Update the crew member's information and roles. All changes will be saved immediately.
+          </DialogDescription>
         </DialogHeader>
         <EditCrewMemberForm
           crewMember={crewMember}

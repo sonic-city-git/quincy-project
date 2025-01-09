@@ -4,6 +4,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { UserPlus } from "lucide-react";
@@ -36,7 +37,6 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    // Get the selected roles with full role objects
     const selectedRoles = roles?.filter(role => selectedRoleIds.includes(role.id)) || [];
     const crewFolderStr = formData.get("crew_folder") as string;
     const crewFolder = crewFolderStr ? JSON.parse(crewFolderStr) : null;
@@ -67,6 +67,9 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Add Crew Member</DialogTitle>
+          <DialogDescription>
+            Add a new crew member to your team. Fill in their basic information and assign their roles.
+          </DialogDescription>
         </DialogHeader>
         <AddCrewMemberForm 
           selectedRoleIds={selectedRoleIds}
