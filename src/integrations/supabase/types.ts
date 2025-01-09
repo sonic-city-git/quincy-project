@@ -307,6 +307,74 @@ export type Database = {
           },
         ]
       }
+      equipment_serial_numbers: {
+        Row: {
+          created_at: string
+          equipment_id: string | null
+          id: string
+          notes: string | null
+          serial_number: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          equipment_id?: string | null
+          id?: string
+          notes?: string | null
+          serial_number: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          equipment_id?: string | null
+          id?: string
+          notes?: string | null
+          serial_number?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_serial_numbers_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_types: {
+        Row: {
+          color: string
+          created_at: string
+          crew_rate_multiplier: number | null
+          id: string
+          name: string
+          needs_crew: boolean | null
+          updated_at: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          crew_rate_multiplier?: number | null
+          id?: string
+          name: string
+          needs_crew?: boolean | null
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          crew_rate_multiplier?: number | null
+          id?: string
+          name?: string
+          needs_crew?: boolean | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       project_crew: {
         Row: {
           created_at: string
@@ -397,6 +465,51 @@ export type Database = {
           },
           {
             foreignKeyName: "project_equipment_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_events: {
+        Row: {
+          created_at: string
+          date: string
+          event_type_id: string | null
+          id: string
+          name: string
+          project_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          event_type_id?: string | null
+          id?: string
+          name: string
+          project_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          event_type_id?: string | null
+          id?: string
+          name?: string
+          project_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_events_event_type_id_fkey"
+            columns: ["event_type_id"]
+            isOneToOne: false
+            referencedRelation: "event_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_events_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
