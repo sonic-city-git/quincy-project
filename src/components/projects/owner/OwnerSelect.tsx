@@ -24,12 +24,17 @@ export function OwnerSelect({ selectedOwnerId, onOwnerSelect }: OwnerSelectProps
         console.log('Fetching Sonic City crew members...');
         const { data, error } = await supabase
           .from('crew_members')
-          .select('id, name')
+          .select('id, name, crew_folder')
           .filter('crew_folder->name', 'eq', 'Sonic City');
 
         if (error) {
           console.error('Supabase error:', error);
-          throw error;
+          toast({
+            title: "Error",
+            description: "Failed to fetch crew members",
+            variant: "destructive",
+          });
+          return;
         }
 
         // Ensure data is an array and has valid members
