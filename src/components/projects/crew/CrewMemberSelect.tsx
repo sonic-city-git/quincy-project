@@ -16,13 +16,19 @@ import {
 } from "@/components/ui/popover";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CrewMember } from "@/types/crew";
+import { CrewMember, CrewRole } from "@/types/crew";
 
 interface CrewMemberSelectProps {
   projectRoleId: string;
   selectedCrewMember: CrewMember | null;
   onSelect: (projectRoleId: string, crewMemberId: string) => void;
   roleName: string;
+}
+
+interface CrewMemberResponse {
+  id: string;
+  name: string;
+  roles: CrewRole[];
 }
 
 export function CrewMemberSelect({ 
@@ -45,15 +51,17 @@ export function CrewMemberSelect({
         throw error;
       }
 
-      // Ensure data is an array and filter those with matching role
-      const validMembers = Array.isArray(data) ? data : [];
+      // Ensure data is an array and properly typed
+      const validMembers = (Array.isArray(data) ? data : []) as CrewMemberResponse[];
       return validMembers.filter(member => {
-        const roles = Array.isArray(member.roles) ? member.roles : [];
+        // Ensure roles is an array and properly typed
+        const roles = Array.isArray(member.roles) ? member.roles as CrewRole[] : [];
         return roles.some(role => role.name === roleName);
       });
     },
   });
 
+  // Ensure we always have an array to map over
   const filteredMembers = crewMembers || [];
 
   return (
