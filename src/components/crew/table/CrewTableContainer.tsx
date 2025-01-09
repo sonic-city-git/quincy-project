@@ -16,7 +16,7 @@ export function CrewTableContainer({
   roles
 }: CrewTableContainerProps) {
   return (
-    <div className="relative">
+    <div className="relative flex-1 min-h-0">
       <div className="sticky top-0 z-10 bg-zinc-900 border-b border-zinc-800/50">
         <CrewTable 
           crewMembers={crewMembers}
@@ -26,7 +26,7 @@ export function CrewTableContainer({
           roles={roles}
         />
       </div>
-      <ScrollArea className="h-[calc(100vh-26rem)]">
+      <ScrollArea className="h-[300px]">
         <CrewTable 
           crewMembers={crewMembers}
           selectedItems={selectedItems}

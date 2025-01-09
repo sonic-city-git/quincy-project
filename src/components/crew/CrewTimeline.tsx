@@ -30,7 +30,7 @@ export function CrewTimeline({
   });
 
   return (
-    <div className="border-t border-zinc-800/50">
+    <div className="flex-1 flex flex-col min-h-0 border-t border-zinc-800/50">
       <TimelineHeader 
         startDate={startDate}
         endDate={endDate}
@@ -38,7 +38,7 @@ export function CrewTimeline({
         onNextPeriod={onNextPeriod}
       />
 
-      <ScrollArea className="h-[calc(100vh-20rem)] relative">
+      <ScrollArea className="flex-1">
         <TimelineGrid days={days} selectedCrew={selectedCrew} />
       </ScrollArea>
     </div>
