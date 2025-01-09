@@ -10,6 +10,7 @@ import { useToast } from "./use-toast";
 export function useCrewManagement() {
   const [startDate, setStartDate] = useState(new Date());
   const [crewMembers, setCrewMembers] = useState<CrewMember[]>([]);
+  const [sortedCrewMembers, setSortedCrewMembers] = useState<CrewMember[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   
@@ -49,8 +50,14 @@ export function useCrewManagement() {
   }, [toast]);
 
   useEffect(() => {
-    fetchCrewMembers();
-  }, [fetchCrewMembers]);
+    const sortMembers = async () => {
+      const filtered = filterCrewByRoles(crewMembers, selectedRoles);
+      const sorted = await sortCrewMembers(filtered);
+      setSortedCrewMembers(sorted);
+    };
+
+    sortMembers();
+  }, [crewMembers, selectedRoles]);
 
   const handleAddCrewMember = useCallback(async (newMember: NewCrewMember) => {
     try {
@@ -176,8 +183,7 @@ export function useCrewManagement() {
   }, [selectedItems, fetchCrewMembers, clearSelection, toast]);
 
   const allRoles = getAllUniqueRoles(crewMembers);
-  const filteredCrewMembers = sortCrewMembers(filterCrewByRoles(crewMembers, selectedRoles));
-  const selectedCrew = getSelectedCrew(filteredCrewMembers);
+  const selectedCrew = getSelectedCrew(sortedCrewMembers);
 
   return {
     selectedItems,
@@ -185,7 +191,7 @@ export function useCrewManagement() {
     setStartDate,
     selectedRoles,
     allRoles,
-    filteredCrewMembers,
+    filteredCrewMembers: sortedCrewMembers,
     selectedCrew,
     isLoading,
     handleItemSelect,

@@ -1,4 +1,5 @@
 import { CrewMember } from "@/types/crew";
+import { supabase } from "@/integrations/supabase/client";
 
 export const getAllUniqueRoles = (crewMembers: CrewMember[]) => {
   const roles = new Set<string>();
@@ -22,10 +23,18 @@ export const filterCrewByRoles = (crewMembers: CrewMember[], selectedRoles: stri
   );
 };
 
-const getFolderPriority = (folderName: string | null) => {
-  if (!folderName) return 4;
-  
-  switch (folderName.toLowerCase()) {
+const getFolderPriority = async (folderId: string | null) => {
+  if (!folderId) return 4;
+
+  const { data: folder } = await supabase
+    .from('crew_folders')
+    .select('name')
+    .eq('id', folderId)
+    .single();
+
+  if (!folder) return 3;
+
+  switch (folder.name.toLowerCase()) {
     case 'sonic city':
       return 1;
     case 'associate':
@@ -35,13 +44,23 @@ const getFolderPriority = (folderName: string | null) => {
   }
 };
 
-export const sortCrewMembers = (crewMembers: CrewMember[]) => {
+export const sortCrewMembers = async (crewMembers: CrewMember[]) => {
+  // Create a map to store folder priorities
+  const priorityMap = new Map<string, number>();
+
+  // Fetch all folder priorities at once
+  await Promise.all(
+    crewMembers.map(async (member) => {
+      const priority = await getFolderPriority(member.folder_id);
+      if (member.folder_id) {
+        priorityMap.set(member.folder_id, priority);
+      }
+    })
+  );
+
   return [...crewMembers].sort((a, b) => {
-    // First, sort by folder priority
-    const aFolder = a.folder?.toLowerCase() || null;
-    const bFolder = b.folder?.toLowerCase() || null;
-    const aPriority = getFolderPriority(aFolder);
-    const bPriority = getFolderPriority(bFolder);
+    const aPriority = a.folder_id ? priorityMap.get(a.folder_id) ?? 4 : 4;
+    const bPriority = b.folder_id ? priorityMap.get(b.folder_id) ?? 4 : 4;
     
     if (aPriority !== bPriority) {
       return aPriority - bPriority;
