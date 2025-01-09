@@ -34,7 +34,7 @@ export function ProjectList() {
   }
 
   return (
-    <div className="space-y-8 px-6 py-6 max-w-[1400px] mx-auto">
+    <div className="space-y-8 px-6 py-6 max-w-[1600px] mx-auto">
       <Card className="border-0 shadow-md bg-zinc-900/50">
         <CardContent className="p-6">
           <div className="space-y-6">
