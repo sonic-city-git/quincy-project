@@ -9,7 +9,7 @@ interface CrewActionsProps {
 export function CrewActions({ selectedItems, onCrewMemberDeleted }: CrewActionsProps) {
   return (
     <div className="flex items-center gap-2">
-      <Button variant="outline" size="sm" className="gap-2">
+      <Button variant="primary" size="sm" className="gap-2">
         <UserPlus className="h-4 w-4" />
         Add Member
       </Button>
