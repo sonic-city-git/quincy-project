@@ -7,6 +7,11 @@ export interface CrewMember {
   metadata: Record<string, any>;
   created_at: string;
   roles?: CrewRole[];
+  crew_folder?: {
+    id: string;
+    name: string;
+    created_at: string;
+  };
 }
 
 export interface NewCrewMember {
@@ -15,6 +20,11 @@ export interface NewCrewMember {
   email: string;
   folder_id: string | null;
   roles: CrewRole[];
+  crew_folder?: {
+    id: string;
+    name: string;
+    created_at: string;
+  };
 }
 
 export interface CrewRole {

@@ -17,7 +17,7 @@ export function useFolderState(initialFolders: Folder[]) {
         {
           event: '*',
           schema: 'public',
-          table: 'folders'
+          table: 'equipment_folders'
         },
         () => {
           fetchFolders();
@@ -32,7 +32,7 @@ export function useFolderState(initialFolders: Folder[]) {
 
   const fetchFolders = async () => {
     const { data, error } = await supabase
-      .from('folders')
+      .from('equipment_folders')
       .select('*')
       .order('name');
 
@@ -41,7 +41,7 @@ export function useFolderState(initialFolders: Folder[]) {
       return;
     }
 
-    setFolders(sortFoldersByName(data));
+    setFolders(sortFoldersByName(data as Folder[]));
   };
 
   const toggleFolder = (folderId: string) => {

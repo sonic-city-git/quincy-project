@@ -20,6 +20,11 @@ export function useCrewData() {
             name,
             color,
             created_at
+          ),
+          equipment_folders (
+            id,
+            name,
+            created_at
           )
         `);
 
@@ -36,9 +41,10 @@ export function useCrewData() {
         email: member.email,
         phone: member.phone,
         folder_id: member.folder_id,
-        metadata: member.metadata,
+        metadata: member.metadata || {},
         created_at: member.created_at,
-        roles: member.crew_roles || []
+        roles: member.crew_roles || [],
+        crew_folder: member.equipment_folders
       }));
 
       console.log('Processed crew data:', typedData);
