@@ -49,6 +49,7 @@ export function CrewMemberSelect({
     },
     retry: 3,
     staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes (replaces cacheTime)
   });
 
   const { data: folders, isLoading: isLoadingFolders, error: foldersError } = useQuery({
@@ -63,7 +64,7 @@ export function CrewMemberSelect({
     },
     retry: 3,
     staleTime: 5 * 60 * 1000,
-    cacheTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
   const getFolderName = (folderId: string) => {

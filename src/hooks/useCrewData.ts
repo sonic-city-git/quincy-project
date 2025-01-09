@@ -25,8 +25,13 @@ export function useCrewData() {
               color: role.color,
               created_at: role.created_at
             } as CrewRole)) 
-          : []
-      }));
+          : [],
+        crew_folder: member.crew_folder ? {
+          id: (member.crew_folder as any).id,
+          name: (member.crew_folder as any).name,
+          created_at: (member.crew_folder as any).created_at
+        } : null
+      })) as CrewMember[];
 
       setCrewMembers(typedData);
     } catch (error) {

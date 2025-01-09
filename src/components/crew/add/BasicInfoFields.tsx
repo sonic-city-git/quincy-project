@@ -19,6 +19,13 @@ interface BasicInfoFieldsProps {
   };
 }
 
+interface FolderData {
+  id: string;
+  data: {
+    name: string;
+  };
+}
+
 const getFolderPriority = (folderName: string): number => {
   const name = folderName.toLowerCase();
   if (name === 'sonic city') return 1;
@@ -38,7 +45,7 @@ export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
       if (error) throw error;
 
       // Sort folders with custom priority
-      return data.sort((a, b) => {
+      return (data as FolderData[]).sort((a, b) => {
         const priorityA = getFolderPriority(a.data.name);
         const priorityB = getFolderPriority(b.data.name);
         
