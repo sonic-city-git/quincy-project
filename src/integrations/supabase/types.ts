@@ -9,53 +9,6 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      contacts: {
-        Row: {
-          created_at: string
-          customer_id: string | null
-          email: string | null
-          id: string
-          is_primary: boolean | null
-          name: string
-          notes: string | null
-          phone_number: string | null
-          position: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          customer_id?: string | null
-          email?: string | null
-          id?: string
-          is_primary?: boolean | null
-          name: string
-          notes?: string | null
-          phone_number?: string | null
-          position?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          customer_id?: string | null
-          email?: string | null
-          id?: string
-          is_primary?: boolean | null
-          name?: string
-          notes?: string | null
-          phone_number?: string | null
-          position?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contacts_customer_id_fkey"
-            columns: ["customer_id"]
-            isOneToOne: false
-            referencedRelation: "customers"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       crew_folders: {
         Row: {
           created_at: string
