@@ -57,15 +57,6 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     }
   };
 
-  const handleEditSubmit = (data: {
-    roleId: string;
-    dailyRate: number;
-    hourlyRate: number;
-    quantity: number;
-  }) => {
-    handleEditRole(data);
-  };
-
   return (
     <div className="space-y-4">
       <div className="bg-zinc-900/50 rounded-lg p-3">
@@ -86,7 +77,7 @@ export function RolesSection({ projectId }: RolesSectionProps) {
               projectId={projectId}
               roleId={selectedItems[0]}
               onClose={handleDialogClose}
-              onSubmit={handleEditSubmit}
+              onSubmit={handleEditRole}
               onDelete={() => handleDeleteRole(selectedItems[0])}
               loading={loading}
             />
