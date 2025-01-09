@@ -25,12 +25,12 @@ export function TimelineGrid({ days, selectedCrew }: TimelineGridProps) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="sticky top-0 z-10 bg-zinc-900 pb-4 flex-none">
+      <div className="sticky top-0 z-10 bg-zinc-950 pb-4 flex-none">
         <div className="grid grid-cols-14 gap-1 mb-1">
           {days.map((day) => (
             <div 
               key={`date-${day.toISOString()}`} 
-              className="text-xs text-zinc-400 text-center"
+              className="text-xs text-zinc-400 text-center py-1"
             >
               {format(day, 'dd')}
             </div>
@@ -50,11 +50,11 @@ export function TimelineGrid({ days, selectedCrew }: TimelineGridProps) {
       
       <div className="flex-1 overflow-y-auto px-4">
         {selectedCrew.length > 0 ? (
-          <div className="space-y-4 py-4">
+          <div className="space-y-6 py-4">
             {selectedCrew.map((crew) => (
               <div key={crew.id}>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-medium truncate">{crew.name}</span>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-semibold text-zinc-200">{crew.name}</span>
                 </div>
                 <div className="grid grid-cols-14 gap-1">
                   {days.map((day) => {
@@ -64,7 +64,7 @@ export function TimelineGrid({ days, selectedCrew }: TimelineGridProps) {
                     return (
                       <div 
                         key={day.toISOString()} 
-                        className="h-3 bg-zinc-800/50 rounded-sm relative group"
+                        className="h-4 bg-zinc-900 rounded-sm relative group"
                       >
                         {isAssigned && (
                           <div 
