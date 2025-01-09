@@ -1,13 +1,15 @@
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Filter } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+interface CrewMember {
+  id: string;
+  name: string;
+}
 
 interface ProjectFilterButtonProps {
   selectedOwner: string | null;
@@ -15,58 +17,79 @@ interface ProjectFilterButtonProps {
 }
 
 export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFilterButtonProps) {
-  const [sonicCityCrewMembers, setSonicCityCrewMembers] = useState<{ id: string; name: string; }[]>([]);
+  const [open, setOpen] = useState(false);
+  const [crewMembers, setCrewMembers] = useState<CrewMember[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchSonicCityCrewMembers = async () => {
-      console.log('Fetching Sonic City crew members...');
+  const fetchSonicCityCrewMembers = async () => {
+    try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('crew_members')
-        .select('id, name, crew_folder')
-        .eq('crew_folder->>name', 'Sonic City');
+        .select('id, name')
+        .filter('crew_folder->name', 'eq', 'Sonic City')
+        .order('name');
 
       if (error) {
         console.error('Error fetching crew members:', error);
         return;
       }
 
-      // Ensure data is an array and has valid members, then sort alphabetically
-      const validMembers = Array.isArray(data) 
-        ? data
-            .filter(member => member && member.id && member.name)
-            .sort((a, b) => a.name.localeCompare(b.name))
-        : [];
+      setCrewMembers(data || []);
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      console.log('Fetched crew members:', validMembers);
-      setSonicCityCrewMembers(validMembers);
-    };
-
+  useEffect(() => {
     fetchSonicCityCrewMembers();
   }, []);
 
-  const selectedMember = sonicCityCrewMembers.find(member => member.id === selectedOwner);
+  const selectedMemberName = crewMembers.find(member => member.id === selectedOwner)?.name;
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="gap-2">
-          <Filter className="h-4 w-4" />
-          {selectedMember ? selectedMember.name : "All owners"}
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-[200px] justify-between"
+        >
+          {loading ? (
+            "Loading..."
+          ) : selectedMemberName || "Select member..."}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => onOwnerSelect(null)}>
-          All owners
-        </DropdownMenuItem>
-        {sonicCityCrewMembers.map((member) => (
-          <DropdownMenuItem
-            key={member.id}
-            onClick={() => onOwnerSelect(member.id)}
-          >
-            {member.name}
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0">
+        <Command>
+          <CommandInput placeholder="Search members..." />
+          <CommandEmpty>No member found.</CommandEmpty>
+          <CommandGroup>
+            {crewMembers.map((member) => (
+              <CommandItem
+                key={member.id}
+                value={member.name}
+                onSelect={() => {
+                  onOwnerSelect(selectedOwner === member.id ? null : member.id);
+                  setOpen(false);
+                }}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    selectedOwner === member.id ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                {member.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
