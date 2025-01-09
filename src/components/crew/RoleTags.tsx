@@ -12,6 +12,8 @@ export function RoleTags({ crewMemberId }: RoleTagsProps) {
   const { data: memberRoles } = useQuery({
     queryKey: ['crew-member-roles', crewMemberId],
     queryFn: async () => {
+      if (!crewMemberId) return [];
+      
       const { data, error } = await supabase
         .from('crew_member_roles')
         .select('role_id')
@@ -20,6 +22,7 @@ export function RoleTags({ crewMemberId }: RoleTagsProps) {
       if (error) throw error;
       return data;
     },
+    enabled: !!crewMemberId,
   });
   
   if (!memberRoles?.length) {

@@ -23,26 +23,35 @@ export function CrewMemberSelect({
   roleName 
 }: CrewMemberSelectProps) {
   const { data: crewMembers } = useQuery({
-    queryKey: ['crew-members'],
+    queryKey: ['crew-members-by-role', roleName],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: members, error: membersError } = await supabase
         .from('crew_members')
-        .select('*')
-        .order('folder', { ascending: false })
-        .order('name');
+        .select(`
+          *,
+          crew_member_roles (
+            role_id,
+            crew_roles (
+              name
+            )
+          )
+        `);
       
-      if (error) throw error;
-      return data || [];
+      if (membersError) throw membersError;
+      
+      return members?.filter(member => 
+        member.crew_member_roles?.some(role => 
+          role.crew_roles?.name === roleName
+        )
+      ) || [];
     },
   });
 
-  const availableCrew = crewMembers
-    ?.filter(crew => crew.role?.includes(roleName))
-    .sort((a, b) => {
-      if (a.folder === "Sonic City" && b.folder !== "Sonic City") return -1;
-      if (a.folder !== "Sonic City" && b.folder === "Sonic City") return 1;
-      return a.name.localeCompare(b.name);
-    });
+  const availableCrew = crewMembers?.sort((a, b) => {
+    if (a.folder === "Sonic City" && b.folder !== "Sonic City") return -1;
+    if (a.folder !== "Sonic City" && b.folder === "Sonic City") return 1;
+    return a.name.localeCompare(b.name);
+  });
 
   return (
     <DropdownMenu>

@@ -7,14 +7,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Wrench } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CrewMember } from "@/types/crew";
 import { useToast } from "@/hooks/use-toast";
 import { EditCrewMemberForm } from "./edit/EditCrewMemberForm";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EditCrewMemberDialogProps {
   selectedCrew: CrewMember[];
-  onEditCrewMember: (editedMember: CrewMember) => void;
+  onEditCrewMember: (editedMember: CrewMember & { roleIds: string[] }) => void;
   onDeleteCrewMember: () => void;
 }
 
@@ -29,22 +31,38 @@ export function EditCrewMemberDialog({
 
   if (!crewMember) return null;
 
-  // Initialize selectedTags safely handling null roles
-  const [selectedTags, setSelectedTags] = useState<string[]>(
-    crewMember.role ? crewMember.role.split(", ").map(role => role.toLowerCase()) : []
-  );
+  const { data: memberRoles } = useQuery({
+    queryKey: ['crew-member-roles', crewMember.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('crew_member_roles')
+        .select('role_id')
+        .eq('crew_member_id', crewMember.id);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (memberRoles) {
+      setSelectedRoleIds(memberRoles.map(role => role.role_id));
+    }
+  }, [memberRoles]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    const editedMember: CrewMember = {
-      id: crewMember.id,
+    const editedMember = {
+      ...crewMember,
       name: `${formData.get("firstName")} ${formData.get("lastName")}`,
-      role: selectedTags.length > 0 ? selectedTags.map(tag => tag.toUpperCase()).join(", ") : null,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
       folder: formData.get("folder") as string,
+      roleIds: selectedRoleIds,
     };
 
     onEditCrewMember(editedMember);
@@ -74,8 +92,8 @@ export function EditCrewMemberDialog({
         </DialogHeader>
         <EditCrewMemberForm
           crewMember={crewMember}
-          selectedTags={selectedTags}
-          onTagsChange={setSelectedTags}
+          selectedRoleIds={selectedRoleIds}
+          onRolesChange={setSelectedRoleIds}
           onSubmit={handleSubmit}
           onDelete={handleDelete}
         />

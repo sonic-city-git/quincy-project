@@ -17,7 +17,7 @@ interface AddCrewMemberDialogProps {
 
 export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProps) {
   const [open, setOpen] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -29,12 +29,12 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
       phone: formData.get("phone") as string,
       email: formData.get("email") as string,
       folder: formData.get("folder") as string,
-      tags: selectedTags,
+      roleIds: selectedRoleIds,
     };
 
     onAddCrewMember(newCrewMember);
     setOpen(false);
-    setSelectedTags([]);
+    setSelectedRoleIds([]);
   };
 
   return (
@@ -50,8 +50,8 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
           <DialogTitle>Add Crew Member</DialogTitle>
         </DialogHeader>
         <AddCrewMemberForm 
-          selectedTags={selectedTags}
-          setSelectedTags={setSelectedTags}
+          selectedRoleIds={selectedRoleIds}
+          onRolesChange={setSelectedRoleIds}
           onSubmit={handleSubmit}
         />
       </DialogContent>
