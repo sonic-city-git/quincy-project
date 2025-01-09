@@ -23,24 +23,28 @@ const CrewTableRow = memo(({
   onSelect: (id: string) => void;
 }) => (
   <TableRow className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
-    <TableCell className="w-[48px]">
+    <TableCell className="w-[48px] p-2">
       <Checkbox 
         checked={isSelected}
         onCheckedChange={() => onSelect(crew.id)}
       />
     </TableCell>
-    <TableCell className="w-[240px] truncate">
-      {crew.name}
-      {crew.crew_folder?.name === 'Sonic City' && (
-        <span className="ml-1">⭐</span>
-      )}
+    <TableCell className="w-[240px] truncate p-2">
+      <div className="flex items-center space-x-1 truncate">
+        <span className="truncate">{crew.name}</span>
+        {crew.crew_folder?.name === 'Sonic City' && (
+          <span className="flex-shrink-0">⭐</span>
+        )}
+      </div>
     </TableCell>
-    <TableCell className="w-[320px]">
-      <RoleTags roles={crew.roles || []} />
+    <TableCell className="w-[320px] p-2">
+      <div className="truncate">
+        <RoleTags roles={crew.roles || []} />
+      </div>
     </TableCell>
-    <TableCell className="w-[280px] truncate">{crew.email}</TableCell>
-    <TableCell className="w-[180px] truncate">{crew.phone}</TableCell>
-    <TableCell className="truncate">
+    <TableCell className="w-[280px] truncate p-2">{crew.email}</TableCell>
+    <TableCell className="w-[180px] truncate p-2">{crew.phone}</TableCell>
+    <TableCell className="truncate p-2">
       {crew.crew_folder?.name || ''}
     </TableCell>
   </TableRow>
@@ -73,17 +77,17 @@ export const CrewTable = memo(({
   const tableHeader = (
     <TableHeader>
       <TableRow className="hover:bg-transparent border-b border-zinc-800/50">
-        <TableHead className="w-[48px]">
+        <TableHead className="w-[48px] p-2">
           <Checkbox 
             checked={selectedItems.length === crewMembers.length && crewMembers.length > 0}
             onCheckedChange={handleSelectAll}
           />
         </TableHead>
-        <TableHead className="w-[240px]">Name</TableHead>
-        <TableHead className="w-[320px]">Role</TableHead>
-        <TableHead className="w-[280px]">Email</TableHead>
-        <TableHead className="w-[180px]">Phone</TableHead>
-        <TableHead>Folder</TableHead>
+        <TableHead className="w-[240px] p-2">Name</TableHead>
+        <TableHead className="w-[320px] p-2">Role</TableHead>
+        <TableHead className="w-[280px] p-2">Email</TableHead>
+        <TableHead className="w-[180px] p-2">Phone</TableHead>
+        <TableHead className="p-2">Folder</TableHead>
       </TableRow>
     </TableHeader>
   );
