@@ -3,6 +3,7 @@ import { RoleInfo } from "./RoleInfo";
 import { EntitySelect } from "@/components/shared/EntitySelect";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { CrewMember } from "@/types/crew";
 
 interface ProjectRoleCardProps {
   id: string;
@@ -31,15 +32,22 @@ export function ProjectRoleCard({
     queryFn: async () => {
       const { data, error } = await supabase
         .from('crew_members')
-        .select('*')
+        .select('*, crew_folder')
         .contains('roles', [{ id, name }]);
       
       if (error) throw error;
 
       // Sort crew members with Sonic City first
-      return data.sort((a, b) => {
-        const aIsSonicCity = a.crew_folder?.name === 'Sonic City';
-        const bIsSonicCity = b.crew_folder?.name === 'Sonic City';
+      return (data as CrewMember[]).sort((a, b) => {
+        const aIsSonicCity = typeof a.crew_folder === 'object' && 
+          a.crew_folder !== null && 
+          'name' in a.crew_folder && 
+          a.crew_folder.name === 'Sonic City';
+        
+        const bIsSonicCity = typeof b.crew_folder === 'object' && 
+          b.crew_folder !== null && 
+          'name' in b.crew_folder && 
+          b.crew_folder.name === 'Sonic City';
         
         if (aIsSonicCity && !bIsSonicCity) return -1;
         if (!aIsSonicCity && bIsSonicCity) return 1;
