@@ -100,17 +100,41 @@ export function useRoleManagement(projectId: string) {
     }
   };
 
-  const handleEditRole = (roleId: string) => {
-    const role = projectRoles?.find(r => r.role_id === roleId);
-    if (role) {
-      setEditMode(true);
-      setEditValues({
-        roleId: role.role_id,
-        dailyRate: Number(role.daily_rate),
-        hourlyRate: Number(role.hourly_rate),
-        quantity: role.quantity || 1,
+  const handleEditRole = async (data: {
+    roleId: string;
+    dailyRate: number;
+    hourlyRate: number;
+    quantity: number;
+  }) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('project_roles')
+        .update({
+          daily_rate: data.dailyRate,
+          hourly_rate: data.hourlyRate,
+          quantity: data.quantity,
+        })
+        .eq('project_id', projectId)
+        .eq('role_id', data.roleId);
+
+      if (error) throw error;
+
+      await refetchProjectRoles();
+      setOpen(false);
+      toast({
+        title: "Success",
+        description: "Role updated successfully",
       });
-      setOpen(true);
+    } catch (error) {
+      console.error('Error updating role:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update role",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
