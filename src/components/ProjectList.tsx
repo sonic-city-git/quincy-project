@@ -17,6 +17,7 @@ export function ProjectList() {
     setSelectedItem(null);
   };
 
+  // Filter projects based on the selected owner's ID
   const filteredProjects = selectedOwner
     ? projects.filter(project => project.owner_id === selectedOwner)
     : projects;

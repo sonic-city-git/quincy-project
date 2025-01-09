@@ -72,7 +72,6 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
             {crewMembers.map((member) => (
               <CommandItem
                 key={member.id}
-                value={member.name}
                 onSelect={() => {
                   onOwnerSelect(selectedOwner === member.id ? null : member.id);
                   setOpen(false);
