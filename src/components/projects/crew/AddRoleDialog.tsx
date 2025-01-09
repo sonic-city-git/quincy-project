@@ -58,7 +58,7 @@ export function AddRoleDialog({
   };
 
   return (
-    <DialogContent>
+    <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader>
         <DialogTitle>Add Role</DialogTitle>
         <DialogDescription>
@@ -73,6 +73,7 @@ export function AddRoleDialog({
         onRoleChange={setSelectedRole}
         onDailyRateChange={setDailyRate}
         onHourlyRateChange={setHourlyRate}
+        errors={{}}
       />
       <div className="flex justify-end">
         <Button onClick={handleSubmit} disabled={loading} className="gap-2">
