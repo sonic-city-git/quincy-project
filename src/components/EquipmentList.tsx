@@ -4,7 +4,7 @@ import { useDebounceResize } from "@/hooks/useDebounceResize";
 import { Equipment } from "@/types/equipment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Filter, Trash2, Wrench } from "lucide-react";
+import { Search, Plus, Filter, Trash2, Pen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -126,11 +126,10 @@ export function EquipmentList({
           </div>
           <div className="flex items-center gap-2">
             {hasSelection && selectedItems.length === 1 && singleSelectedEquipment && (
-              <EditEquipmentDialog
-                equipment={singleSelectedEquipment}
-                onEditEquipment={onEditEquipment}
-                onDeleteEquipment={handleDeleteEquipment}
-              />
+              <Button variant="ghost" size="sm" className="gap-2 h-9" onClick={() => document.getElementById('edit-equipment-trigger')?.click()}>
+                <Pen className="h-4 w-4" />
+                EDIT
+              </Button>
             )}
             {hasSelection && (
               <AlertDialog>
@@ -163,6 +162,13 @@ export function EquipmentList({
               Add equipment
             </Button>
             <AddEquipmentDialog onAddEquipment={onAddEquipment} />
+            {selectedItems.length === 1 && singleSelectedEquipment && (
+              <EditEquipmentDialog
+                equipment={singleSelectedEquipment}
+                onEditEquipment={onEditEquipment}
+                onDeleteEquipment={handleDeleteEquipment}
+              />
+            )}
           </div>
         </div>
       </div>
