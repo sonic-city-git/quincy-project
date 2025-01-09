@@ -36,6 +36,11 @@ const isValidCrewFolder = (value: any): value is { id: string; name: string; cre
   );
 };
 
+const getFolderPriority = (folderName: string | null) => {
+  if (!folderName) return 3;
+  return folderName.toLowerCase() === 'sonic city' ? 1 : 2;
+};
+
 export function CrewMemberSelect({ 
   projectRoleId,
   selectedCrewMember,
@@ -96,8 +101,21 @@ export function CrewMemberSelect({
         member.roles?.some(role => role.name === roleName)
       );
 
-      console.log('Filtered crew members by role:', filteredMembers);
-      return filteredMembers;
+      // Sort members by folder priority (Sonic City first)
+      const sortedMembers = filteredMembers.sort((a, b) => {
+        const aPriority = getFolderPriority(a.crew_folder?.name);
+        const bPriority = getFolderPriority(b.crew_folder?.name);
+        
+        if (aPriority !== bPriority) {
+          return aPriority - bPriority;
+        }
+        
+        // If same priority, sort alphabetically by name
+        return a.name.localeCompare(b.name);
+      });
+
+      console.log('Filtered and sorted crew members:', sortedMembers);
+      return sortedMembers;
     },
   });
 
