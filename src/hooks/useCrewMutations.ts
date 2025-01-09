@@ -94,6 +94,23 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
 
   const handleDeleteCrewMembers = useCallback(async (selectedItems: string[]) => {
     try {
+      // First check if any of the selected crew members are project owners
+      const { data: projects, error: projectsError } = await supabase
+        .from('projects')
+        .select('owner_id')
+        .in('owner_id', selectedItems);
+
+      if (projectsError) throw projectsError;
+
+      if (projects && projects.length > 0) {
+        toast({
+          title: "Cannot Delete",
+          description: "One or more selected crew members are project owners. Please reassign their projects before deleting.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('crew_members')
         .delete()
