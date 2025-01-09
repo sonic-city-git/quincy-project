@@ -15,7 +15,14 @@ export function useAddMember() {
 
   const addMember = async (data: AddMemberFormData) => {
     try {
-      // First, insert the crew member
+      // First check if we're authenticated
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        toast.error("You must be signed in to add crew members");
+        return false;
+      }
+
+      // Then, insert the crew member
       const { data: insertedMember, error: insertError } = await supabase
         .from('crew_members')
         .insert({
@@ -29,7 +36,7 @@ export function useAddMember() {
 
       if (insertError) {
         console.error('Error inserting crew member:', insertError);
-        if (insertError.code === '401') {
+        if (insertError.code === '42501') {
           toast.error("Authentication error. Please sign in again.");
         } else {
           toast.error(insertError.message || "Failed to add crew member");
