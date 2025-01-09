@@ -1,11 +1,10 @@
 import { CrewHeader } from "./crew/CrewHeader";
 import { CrewTimeline } from "./crew/CrewTimeline";
-import { CrewTable } from "./crew/CrewTable";
 import { addDays, subDays } from "date-fns";
-import { EditCrewMemberDialog } from "./crew/EditCrewMemberDialog";
 import { useCrewManagement } from "@/hooks/useCrewManagement";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect } from "react";
+import { SelectionHeader } from "./crew/selection/SelectionHeader";
+import { CrewTableContainer } from "./crew/table/CrewTableContainer";
 
 export function CrewList() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -42,7 +41,6 @@ export function CrewList() {
       if (!searchTerm) return true;
       const searchLower = searchTerm.toLowerCase();
       
-      // Safely access the crew folder name from the JSON structure
       const folderName = crew.crew_folder?.name || '';
       
       return (
@@ -76,39 +74,18 @@ export function CrewList() {
       />
 
       <div className="bg-zinc-900 rounded-md flex flex-col">
-        <div className="h-[48px] border-b border-zinc-800/50">
-          <div className="flex items-center px-4">
-            <div className={`flex items-center gap-2 transition-opacity duration-200 ${selectedItems.length === 0 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-              <span className="text-sm text-zinc-400">{selectedItems.length} items selected</span>
-              {selectedItems.length === 1 && (
-                <EditCrewMemberDialog 
-                  selectedCrew={selectedCrew}
-                  onEditCrewMember={handleEditCrewMember}
-                  onDeleteCrewMember={handleDeleteCrewMembers}
-                />
-              )}
-            </div>
-          </div>
-        </div>
+        <SelectionHeader 
+          selectedCount={selectedItems.length}
+          selectedCrew={selectedCrew}
+          onEditCrewMember={handleEditCrewMember}
+          onDeleteCrewMembers={handleDeleteCrewMembers}
+        />
 
-        <div className="relative">
-          <div className="sticky top-0 z-10 bg-zinc-900 border-b border-zinc-800/50">
-            <CrewTable 
-              crewMembers={filteredBySearch}
-              selectedItems={selectedItems}
-              onItemSelect={handleItemSelect}
-              headerOnly
-            />
-          </div>
-          <ScrollArea className="h-[calc(100vh-26rem)]">
-            <CrewTable 
-              crewMembers={filteredBySearch}
-              selectedItems={selectedItems}
-              onItemSelect={handleItemSelect}
-              bodyOnly
-            />
-          </ScrollArea>
-        </div>
+        <CrewTableContainer 
+          crewMembers={filteredBySearch}
+          selectedItems={selectedItems}
+          onItemSelect={handleItemSelect}
+        />
 
         <div className="border-t border-zinc-800/50">
           <CrewTimeline 
