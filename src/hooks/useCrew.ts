@@ -43,16 +43,32 @@ export function useCrew() {
         }
 
         // Map the response to match the CrewMember type
-        return data.map((member): CrewMember => ({
-          id: member.id,
-          name: member.name,
-          email: member.email || null,
-          phone: member.phone || null,
-          folder: member.folder || null,
-          role: member.role?.[0]?.crew_roles || null,
-          created_at: member.created_at,
-          updated_at: member.updated_at
-        }));
+        return data.map((member): CrewMember => {
+          // Safely handle folder data
+          const folder = member.folder && typeof member.folder === 'object' && 'id' in member.folder && 'name' in member.folder
+            ? { id: member.folder.id, name: member.folder.name }
+            : null;
+
+          // Safely handle role data
+          const role = member.role?.[0]?.crew_roles && 
+            typeof member.role[0].crew_roles === 'object' && 
+            'id' in member.role[0].crew_roles && 
+            'name' in member.role[0].crew_roles &&
+            'color' in member.role[0].crew_roles
+            ? member.role[0].crew_roles
+            : null;
+
+          return {
+            id: member.id,
+            name: member.name,
+            email: member.email || null,
+            phone: member.phone || null,
+            folder,
+            role,
+            created_at: member.created_at,
+            updated_at: member.updated_at
+          };
+        });
       } catch (error) {
         console.error('Error in crew query:', error);
         toast.error("Failed to fetch crew members");
