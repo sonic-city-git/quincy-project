@@ -9,9 +9,6 @@ export function useEditCrewMember(fetchCrewMembers: () => Promise<void>) {
 
   return useCallback(async (editedMember: CrewMember) => {
     try {
-      console.log('Updating crew member with roles:', editedMember.roles);
-      
-      // Convert CrewRole[] to a plain object array that matches Json type
       const rolesForJson = editedMember.roles.map(role => ({
         id: role.id,
         name: role.name,
@@ -19,20 +16,24 @@ export function useEditCrewMember(fetchCrewMembers: () => Promise<void>) {
         created_at: role.created_at
       })) as Json;
 
+      const crewFolderJson = editedMember.crew_folder ? {
+        id: editedMember.crew_folder.id,
+        name: editedMember.crew_folder.name,
+        created_at: editedMember.crew_folder.created_at
+      } as Json : null;
+
       const { error: updateError } = await supabase
         .from('crew_members')
         .update({
           name: editedMember.name,
           email: editedMember.email,
           phone: editedMember.phone,
-          crew_folder: editedMember.crew_folder as Json,
+          crew_folder: crewFolderJson,
           roles: rolesForJson
         })
         .eq('id', editedMember.id);
 
       if (updateError) throw updateError;
-
-      console.log('Updated crew member successfully');
       
       await fetchCrewMembers();
       toast({

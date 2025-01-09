@@ -9,9 +9,6 @@ export function useAddCrewMember(fetchCrewMembers: () => Promise<void>) {
 
   return useCallback(async (newMember: NewCrewMember) => {
     try {
-      console.log('Adding crew member with roles:', newMember.roles);
-      
-      // Convert CrewRole[] to a plain object array that matches Json type
       const rolesForJson = newMember.roles.map(role => ({
         id: role.id,
         name: role.name,
@@ -19,21 +16,25 @@ export function useAddCrewMember(fetchCrewMembers: () => Promise<void>) {
         created_at: role.created_at
       })) as Json;
 
+      const crewFolderJson = newMember.crew_folder ? {
+        id: newMember.crew_folder.id,
+        name: newMember.crew_folder.name,
+        created_at: newMember.crew_folder.created_at
+      } as Json : null;
+
       const { data: crewMember, error: crewError } = await supabase
         .from('crew_members')
         .insert({
           name: newMember.name,
           email: newMember.email,
           phone: newMember.phone,
-          crew_folder: newMember.crew_folder as Json,
+          crew_folder: crewFolderJson,
           roles: rolesForJson
         })
         .select()
         .single();
 
       if (crewError) throw crewError;
-
-      console.log('Created crew member:', crewMember);
       
       await fetchCrewMembers();
       toast({
