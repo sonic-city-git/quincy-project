@@ -50,6 +50,7 @@ export function AddMemberDialog() {
   const { data: folders = [], isLoading: foldersLoading } = useQuery({
     queryKey: ['crew_folders'],
     queryFn: async () => {
+      console.log('Fetching folders...');
       const { data, error } = await supabase
         .from('crew_folders')
         .select('id, name')
@@ -60,6 +61,7 @@ export function AddMemberDialog() {
         toast.error("Failed to load folders");
         throw error;
       }
+      console.log('Folders fetched:', data);
       return data || [];
     },
   });
@@ -102,6 +104,8 @@ export function AddMemberDialog() {
       toast.error("Failed to add crew member");
     }
   };
+
+  console.log('Current folders state:', folders);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
