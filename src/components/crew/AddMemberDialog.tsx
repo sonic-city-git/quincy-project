@@ -14,7 +14,7 @@ interface AddMemberFormData {
   name: string;
   email: string;
   phone: string;
-  role_id: string;
+  role_ids: string[];
 }
 
 export function AddMemberDialog() {
@@ -35,11 +35,30 @@ export function AddMemberDialog() {
 
   const onSubmit = async (data: AddMemberFormData) => {
     try {
-      const { error } = await supabase
+      // First create the crew member
+      const { data: crewMember, error: crewError } = await supabase
         .from('crew_members')
-        .insert([data]);
+        .insert([{
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+        }])
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (crewError) throw crewError;
+
+      // Then create the role associations
+      const roleAssignments = data.role_ids.map(role_id => ({
+        crew_member_id: crewMember.id,
+        role_id: role_id
+      }));
+
+      const { error: rolesError } = await supabase
+        .from('crew_member_roles')
+        .insert(roleAssignments);
+
+      if (rolesError) throw rolesError;
 
       toast.success("Crew member added successfully");
       setOpen(false);
@@ -105,17 +124,18 @@ export function AddMemberDialog() {
             />
             <FormField
               control={form.control}
-              name="role_id"
+              name="role_ids"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
+                  <FormLabel>Roles</FormLabel>
                   <FormControl>
                     <EntitySelect
                       entities={roles}
-                      value={field.value}
+                      value={field.value || []}
                       onValueChange={field.onChange}
-                      placeholder="Role"
+                      placeholder="Select roles"
                       isLoading={rolesLoading}
+                      multiple={true}
                     />
                   </FormControl>
                   <FormMessage />
