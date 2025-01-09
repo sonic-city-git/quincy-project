@@ -82,6 +82,7 @@ export function CrewMemberSelect({
       console.log('Filtered crew members by role:', filteredMembers);
       return filteredMembers;
     },
+    initialData: [], // Ensure we always have an array to work with
   });
 
   if (error) {
