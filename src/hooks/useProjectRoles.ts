@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -12,15 +12,10 @@ export function useProjectRoles(projectId: string, selectedItems: string[] = [])
         .from('project_roles')
         .select(`
           *,
-          crew_roles:role_id (
+          crew_roles (
             id,
             name,
             color
-          ),
-          preferred:preferred_id (
-            id,
-            name,
-            email
           )
         `)
         .eq('project_id', projectId);
@@ -28,15 +23,17 @@ export function useProjectRoles(projectId: string, selectedItems: string[] = [])
       if (error) throw error;
       return data;
     },
-    enabled: !!projectId,
   });
 
   const deleteRole = async (roleId: string) => {
     try {
-      await supabase
+      const { error } = await supabase
         .from('project_roles')
         .delete()
         .eq('id', roleId);
+      
+      if (error) throw error;
+      
       toast.success("Role deleted successfully");
       queryClient.invalidateQueries({ queryKey: ['project_roles', projectId] });
     } catch (error) {
@@ -47,10 +44,13 @@ export function useProjectRoles(projectId: string, selectedItems: string[] = [])
 
   const updateRole = async (roleId: string, updates: any) => {
     try {
-      await supabase
+      const { error } = await supabase
         .from('project_roles')
         .update(updates)
         .eq('id', roleId);
+      
+      if (error) throw error;
+      
       toast.success("Role updated successfully");
       queryClient.invalidateQueries({ queryKey: ['project_roles', projectId] });
     } catch (error) {
@@ -61,9 +61,12 @@ export function useProjectRoles(projectId: string, selectedItems: string[] = [])
 
   const addRole = async (newRole: any) => {
     try {
-      await supabase
+      const { error } = await supabase
         .from('project_roles')
         .insert(newRole);
+      
+      if (error) throw error;
+      
       toast.success("Role added successfully");
       queryClient.invalidateQueries({ queryKey: ['project_roles', projectId] });
     } catch (error) {

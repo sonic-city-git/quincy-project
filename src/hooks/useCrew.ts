@@ -10,7 +10,7 @@ export function useCrew() {
         .from('crew_members')
         .select(`
           *,
-          crew_member_roles (
+          crew_member_roles!crew_member_roles_crew_member_id_fkey (
             crew_roles (
               id,
               name,
@@ -18,7 +18,7 @@ export function useCrew() {
             )
           )
         `);
-
+      
       if (error) throw error;
       
       // Transform the data to match CrewMember type
