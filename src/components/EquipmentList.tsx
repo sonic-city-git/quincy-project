@@ -4,7 +4,7 @@ import { useDebounceResize } from "@/hooks/useDebounceResize";
 import { Equipment } from "@/types/equipment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Filter, Trash2, Pen } from "lucide-react";
+import { Search, Plus, Filter, Pen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -15,17 +15,6 @@ import { EquipmentTable } from "./equipment/EquipmentTable";
 import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
 import { AddEquipmentDialog } from "./equipment/AddEquipmentDialog";
 import { EditEquipmentDialog } from "./equipment/EditEquipmentDialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 interface EquipmentListProps {
   equipment: Equipment[];
@@ -109,7 +98,6 @@ export function EquipmentList({
                 >
                   All folders
                 </DropdownMenuCheckboxItem>
-                {/* Add folder items here */}
               </DropdownMenuContent>
             </DropdownMenu>
             <div className="w-[300px]">
@@ -126,36 +114,14 @@ export function EquipmentList({
           </div>
           <div className="flex items-center gap-2">
             {hasSelection && selectedItems.length === 1 && singleSelectedEquipment && (
-              <Button variant="ghost" size="sm" className="gap-2 h-9" onClick={() => document.getElementById('edit-equipment-trigger')?.click()}>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-9 w-9" 
+                onClick={() => document.getElementById('edit-equipment-trigger')?.click()}
+              >
                 <Pen className="h-4 w-4" />
-                EDIT
               </Button>
-            )}
-            {hasSelection && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    className="gap-2 h-9"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    DELETE
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete {selectedItems.length} {selectedItems.length === 1 ? 'item' : 'items'}.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteEquipment}>Delete</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
             )}
             <Button size="sm" className="gap-2 h-9" onClick={() => document.getElementById('add-equipment-trigger')?.click()}>
               <Plus className="h-4 w-4" />
