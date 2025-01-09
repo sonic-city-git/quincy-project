@@ -97,13 +97,22 @@ export function EditCrewMemberDialog({
     setOpen(false);
   };
 
-  const handleDelete = () => {
-    onDeleteCrewMember();
-    setOpen(false);
-    toast({
-      title: "Crew members deleted",
-      description: `${selectedCrew.length} crew member(s) have been removed`,
-    });
+  const handleDelete = async () => {
+    try {
+      onDeleteCrewMember();
+      setOpen(false);
+      toast({
+        title: "Crew members deleted",
+        description: `${selectedCrew.length} crew member(s) have been removed`,
+      });
+    } catch (error) {
+      console.error('Error deleting crew members:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete crew members",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
