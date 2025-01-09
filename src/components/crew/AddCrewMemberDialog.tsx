@@ -41,6 +41,8 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
     const crewFolderStr = formData.get("crew_folder") as string;
     const crewFolder = crewFolderStr ? JSON.parse(crewFolderStr) : null;
     
+    console.log('Selected roles:', selectedRoles);
+    
     const newCrewMember: NewCrewMember = {
       name: formData.get("name") as string,
       phone: formData.get("phone") as string,

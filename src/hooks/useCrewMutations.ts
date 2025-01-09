@@ -8,14 +8,8 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
 
   const handleAddCrewMember = useCallback(async (newMember: NewCrewMember) => {
     try {
-      // Ensure roles is an array and has all required properties
-      const sanitizedRoles = newMember.roles?.map(role => ({
-        id: role.id,
-        name: role.name,
-        color: role.color,
-        created_at: role.created_at || new Date().toISOString()
-      })) || [];
-
+      console.log('Adding crew member with roles:', newMember.roles);
+      
       const { data: crewMember, error: crewError } = await supabase
         .from('crew_members')
         .insert({
@@ -23,13 +17,15 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
           email: newMember.email,
           phone: newMember.phone,
           crew_folder: newMember.crew_folder,
-          roles: sanitizedRoles
+          roles: newMember.roles // Supabase will handle JSON serialization
         })
         .select()
         .single();
 
       if (crewError) throw crewError;
 
+      console.log('Created crew member:', crewMember);
+      
       await fetchCrewMembers();
       toast({
         title: "Success",
@@ -47,14 +43,8 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
 
   const handleEditCrewMember = useCallback(async (editedMember: CrewMember) => {
     try {
-      // Ensure roles is an array and has all required properties
-      const sanitizedRoles = editedMember.roles?.map(role => ({
-        id: role.id,
-        name: role.name,
-        color: role.color,
-        created_at: role.created_at || new Date().toISOString()
-      })) || [];
-
+      console.log('Updating crew member with roles:', editedMember.roles);
+      
       const { error: updateError } = await supabase
         .from('crew_members')
         .update({
@@ -62,12 +52,14 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
           email: editedMember.email,
           phone: editedMember.phone,
           crew_folder: editedMember.crew_folder,
-          roles: sanitizedRoles
+          roles: editedMember.roles // Supabase will handle JSON serialization
         })
         .eq('id', editedMember.id);
 
       if (updateError) throw updateError;
 
+      console.log('Updated crew member successfully');
+      
       await fetchCrewMembers();
       toast({
         title: "Success",
