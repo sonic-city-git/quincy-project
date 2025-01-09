@@ -29,12 +29,12 @@ export function CrewHeader({
           allRoles={allRoles}
           onRoleSelect={onRoleSelect}
         />
-      </div>
-      <div className="flex items-center gap-4">
         <CrewSearch 
           searchTerm={searchTerm}
           onSearchChange={onSearchChange}
         />
+      </div>
+      <div className="flex items-center gap-4">
         <AddCrewMemberDialog onAddCrewMember={onAddCrewMember} />
       </div>
     </div>
