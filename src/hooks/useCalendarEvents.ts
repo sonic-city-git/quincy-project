@@ -102,27 +102,40 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
       // If this event type needs crew, create role assignments
       if (eventType.needs_crew) {
+        // First, get all project roles
         const { data: projectRoles, error: rolesError } = await supabase
           .from('project_roles')
-          .select('*')
+          .select(`
+            *,
+            crew_roles (
+              id,
+              name,
+              color
+            )
+          `)
           .eq('project_id', projectId);
 
         if (rolesError) throw rolesError;
 
         if (projectRoles && projectRoles.length > 0) {
+          // Create role assignments for each project role
           const roleAssignments = projectRoles.map(role => ({
             project_id: projectId,
             event_id: eventData.id,
             role_id: role.role_id,
             daily_rate: role.daily_rate,
-            hourly_rate: role.hourly_rate
+            hourly_rate: role.hourly_rate,
+            crew_member_id: role.preferred_id // Include preferred crew member if set
           }));
 
           const { error: assignError } = await supabase
             .from('project_event_roles')
             .insert(roleAssignments);
 
-          if (assignError) throw assignError;
+          if (assignError) {
+            console.error('Error creating role assignments:', assignError);
+            throw assignError;
+          }
         }
       }
 
