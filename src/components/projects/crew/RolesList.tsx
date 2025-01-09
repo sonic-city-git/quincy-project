@@ -1,16 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { ProjectRoleCard } from "./ProjectRoleCard";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ProjectRoleCard } from "./ProjectRoleCard";
+import { CrewMemberSelect } from "./CrewMemberSelect";
+import { useQuery } from "@tanstack/react-query";
 
 interface RolesListProps {
   projectRoles: any[];
@@ -21,29 +14,19 @@ interface RolesListProps {
 
 const roleOrder = ["FOH", "MON", "PLAYBACK", "BACKLINE"];
 
-export function RolesList({ projectRoles, selectedItems, onUpdate, onItemSelect }: RolesListProps) {
+export function RolesList({ 
+  projectRoles, 
+  selectedItems, 
+  onUpdate, 
+  onItemSelect 
+}: RolesListProps) {
   const { toast } = useToast();
-  const { data: crewMembers } = useQuery({
-    queryKey: ['crew-members'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('crew_members')
-        .select('*')
-        .order('folder', { ascending: false })
-        .order('name');
-      
-      if (error) throw error;
-      return data || [];
-    },
-  });
 
   const handlePreferredCrewSelect = async (projectRoleId: string, crewMemberId: string) => {
     try {
       const { error } = await supabase
         .from('project_roles')
-        .update({ 
-          preferred_id: crewMemberId
-        })
+        .update({ preferred_id: crewMemberId })
         .eq('id', projectRoleId);
 
       if (error) throw error;
@@ -64,6 +47,23 @@ export function RolesList({ projectRoles, selectedItems, onUpdate, onItemSelect 
     }
   };
 
+  const { data: crewMembers } = useQuery({
+    queryKey: ['crew-members'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('crew_members')
+        .select('*');
+      
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  const getSelectedCrewMember = (projectRole: any) => {
+    if (!crewMembers) return null;
+    return crewMembers.find(crew => crew.id === projectRole.preferred_id);
+  };
+
   const sortedRoles = [...projectRoles].sort((a, b) => {
     const roleA = a.crew_roles.name.toUpperCase();
     const roleB = b.crew_roles.name.toUpperCase();
@@ -71,36 +71,16 @@ export function RolesList({ projectRoles, selectedItems, onUpdate, onItemSelect 
     const indexA = roleOrder.indexOf(roleA);
     const indexB = roleOrder.indexOf(roleB);
     
-    if (indexA !== -1 && indexB !== -1) {
-      return indexA - indexB;
-    }
-    
+    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
     if (indexA !== -1) return -1;
     if (indexB !== -1) return 1;
     
     return roleA.localeCompare(roleB);
   });
 
-  const getCrewMembersForRole = (roleName: string) => {
-    if (!crewMembers) return [];
-    return crewMembers
-      .filter(crew => crew.role?.includes(roleName))
-      .sort((a, b) => {
-        if (a.folder === "Sonic City" && b.folder !== "Sonic City") return -1;
-        if (a.folder !== "Sonic City" && b.folder === "Sonic City") return 1;
-        return a.name.localeCompare(b.name);
-      });
-  };
-
-  const getSelectedCrewMember = (projectRole: any) => {
-    if (!crewMembers) return null;
-    return crewMembers.find(crew => crew.id === projectRole.preferred_id);
-  };
-
   return (
     <div className="grid gap-1.5">
       {sortedRoles?.map((projectRole) => {
-        const availableCrew = getCrewMembersForRole(projectRole.crew_roles.name);
         const selectedCrew = getSelectedCrewMember(projectRole);
         
         return (
@@ -120,40 +100,12 @@ export function RolesList({ projectRoles, selectedItems, onUpdate, onItemSelect 
                 onUpdate={onUpdate}
               />
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="w-[200px] justify-between"
-                >
-                  {selectedCrew ? (
-                    <span>
-                      {selectedCrew.name} 
-                      {selectedCrew.folder === "Sonic City" && "⭐"}
-                    </span>
-                  ) : (
-                    "Select crew member"
-                  )}
-                  <ChevronDown className="h-4 w-4 opacity-50" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[200px]">
-                {availableCrew.map((crew) => (
-                  <DropdownMenuItem 
-                    key={crew.id}
-                    onClick={() => handlePreferredCrewSelect(projectRole.id, crew.id)}
-                  >
-                    {crew.name} {crew.folder === "Sonic City" && "⭐"}
-                  </DropdownMenuItem>
-                ))}
-                {availableCrew.length === 0 && (
-                  <DropdownMenuItem disabled>
-                    No crew members available
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <CrewMemberSelect
+              projectRoleId={projectRole.id}
+              selectedCrewMember={selectedCrew}
+              onSelect={handlePreferredCrewSelect}
+              roleName={projectRole.crew_roles.name}
+            />
           </div>
         );
       })}
