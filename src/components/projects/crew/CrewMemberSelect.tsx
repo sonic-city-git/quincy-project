@@ -38,10 +38,9 @@ export function CrewMemberSelect({
     queryFn: async () => {
       console.log('Fetching crew members for role:', roleName);
       
-      // Query all crew members without filtering by folder in the query
       const { data, error } = await supabase
         .from('crew_members')
-        .select('id, name, roles, crew_folder');
+        .select('*');
       
       if (error) {
         console.error('Error fetching crew members:', error);
@@ -55,7 +54,7 @@ export function CrewMemberSelect({
 
       console.log('Raw crew members data:', data);
 
-      // Safely transform the data with proper type checking
+      // Transform and validate the data
       const validMembers = data.map(member => ({
         ...member,
         roles: Array.isArray(member.roles) 
