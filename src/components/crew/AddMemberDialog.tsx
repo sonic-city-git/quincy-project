@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
-import { EntitySelect } from "@/components/shared/EntitySelect";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { AddMemberFormFields } from "./AddMemberFormFields";
 
 interface AddMemberFormData {
   name: string;
@@ -52,7 +51,6 @@ export function AddMemberDialog() {
   const { data: folders = [], isLoading: foldersLoading } = useQuery({
     queryKey: ['crew_folders'],
     queryFn: async () => {
-      console.log('Fetching folders...');
       const { data, error } = await supabase
         .from('crew_folders')
         .select('id, name')
@@ -63,7 +61,6 @@ export function AddMemberDialog() {
         toast.error("Failed to load folders");
         throw error;
       }
-      console.log('Folders fetched:', data);
       return data || [];
     },
   });
@@ -85,7 +82,6 @@ export function AddMemberDialog() {
         return;
       }
 
-      // Refresh the crew query
       await queryClient.invalidateQueries({ queryKey: ['crew'] });
       
       toast.success("Crew member added successfully");
@@ -96,8 +92,6 @@ export function AddMemberDialog() {
       toast.error("Failed to add crew member");
     }
   };
-
-  console.log('Current folders state:', folders);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -116,83 +110,12 @@ export function AddMemberDialog() {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="Enter email" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter phone number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="folder_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Folder</FormLabel>
-                  <FormControl>
-                    <EntitySelect
-                      entities={folders}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      placeholder="Select folder"
-                      isLoading={foldersLoading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="role_ids"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Roles</FormLabel>
-                  <FormControl>
-                    <EntitySelect
-                      entities={roles}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      placeholder="Select roles"
-                      isLoading={rolesLoading}
-                      multiple={true}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+            <AddMemberFormFields
+              form={form}
+              folders={folders}
+              roles={roles}
+              foldersLoading={foldersLoading}
+              rolesLoading={rolesLoading}
             />
             <div className="flex justify-end pt-4">
               <Button type="submit">Add Member</Button>
