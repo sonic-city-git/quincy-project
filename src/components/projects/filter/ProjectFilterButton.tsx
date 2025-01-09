@@ -21,7 +21,7 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
   const [crewMembers, setCrewMembers] = useState<CrewMember[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchSonicCityCrewMembers = async () => {
+  const fetchCrewMembers = async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -43,7 +43,7 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
   };
 
   useEffect(() => {
-    fetchSonicCityCrewMembers();
+    fetchCrewMembers();
   }, []);
 
   const selectedMemberName = crewMembers.find(member => member.id === selectedOwner)?.name;
@@ -59,7 +59,7 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
         >
           {loading ? (
             "Loading..."
-          ) : selectedMemberName || "Filter by owner"}
+          ) : selectedMemberName || "All owners"}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -68,6 +68,20 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
           <CommandInput placeholder="Search owners..." />
           <CommandEmpty>No owner found.</CommandEmpty>
           <CommandGroup>
+            <CommandItem
+              onSelect={() => {
+                onOwnerSelect(null);
+                setOpen(false);
+              }}
+            >
+              <Check
+                className={cn(
+                  "mr-2 h-4 w-4",
+                  !selectedOwner ? "opacity-100" : "opacity-0"
+                )}
+              />
+              All owners
+            </CommandItem>
             {crewMembers.map((member) => (
               <CommandItem
                 key={member.id}
