@@ -4,8 +4,13 @@ import { useDebounceResize } from "@/hooks/useDebounceResize";
 import { Equipment } from "@/types/equipment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Wrench, Trash2 } from "lucide-react";
-import { EquipmentFolderSelect } from "./equipment/EquipmentFolderSelect";
+import { Search, Plus, Filter, Trash2, Wrench } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { EquipmentTable } from "./equipment/EquipmentTable";
 import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
 import { AddEquipmentDialog } from "./equipment/AddEquipmentDialog";
@@ -88,10 +93,25 @@ export function EquipmentList({
       <div className="space-y-4">
         <div className="flex justify-between items-center gap-4">
           <div className="flex items-center gap-4 flex-1">
-            <EquipmentFolderSelect
-              selectedFolder={selectedFolder}
-              onFolderSelect={onFolderSelect}
-            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant={selectedFolder ? "default" : "outline"} 
+                  size="icon"
+                >
+                  <Filter className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-[200px]">
+                <DropdownMenuCheckboxItem
+                  checked={!selectedFolder}
+                  onCheckedChange={() => onFolderSelect(null)}
+                >
+                  All folders
+                </DropdownMenuCheckboxItem>
+                {/* Add folder items here */}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <div className="w-[300px]">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
