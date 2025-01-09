@@ -1,7 +1,7 @@
 export interface CrewMember {
   id: string;
   name: string;
-  role: string;
+  role: string | null;
   email: string;
   phone: string;
   folder: string;
@@ -20,6 +20,7 @@ export interface CrewRole {
   id: string;
   name: string;
   color: string;
+  created_at?: string;
 }
 
 export const TAG_COLORS: { [key: string]: string } = {

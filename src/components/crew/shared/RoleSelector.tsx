@@ -35,7 +35,11 @@ export function RoleSelector({ selectedTags, onTagsChange }: RoleSelectorProps) 
                 handleTagChange(role.name, checked as boolean);
               }}
             />
-            <Label htmlFor={role.name.toLowerCase()} className="text-sm font-normal">
+            <Label 
+              htmlFor={role.name.toLowerCase()} 
+              className="text-sm font-normal"
+              style={{ color: role.color }}
+            >
               {role.name}
             </Label>
           </div>
