@@ -1,36 +1,29 @@
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 
 interface RoleTagsProps {
-  role: string;
+  role_id: string | null;
 }
 
-export function RoleTags({ role }: RoleTagsProps) {
+export function RoleTags({ role_id }: RoleTagsProps) {
   const { roles } = useCrewRoles();
   
-  if (!role) {
+  if (!role_id) {
     return null;
   }
   
-  const tags = role.split(", ");
-  
+  const role = roles.find(r => r.id === role_id);
+  if (!role) return null;
+        
   return (
     <div className="flex gap-1 whitespace-nowrap">
-      {tags.map((tag, index) => {
-        const upperTag = tag.toUpperCase();
-        const roleConfig = roles.find(r => r.name === upperTag);
-        
-        return (
-          <span
-            key={index}
-            className="px-2 py-0.5 rounded text-xs font-medium text-white"
-            style={{ 
-              backgroundColor: roleConfig?.color || '#666666',
-            }}
-          >
-            {upperTag}
-          </span>
-        );
-      })}
+      <span
+        className="px-2 py-0.5 rounded text-xs font-medium text-white"
+        style={{ 
+          backgroundColor: role.color || '#666666',
+        }}
+      >
+        {role.name.toUpperCase()}
+      </span>
     </div>
   );
 }

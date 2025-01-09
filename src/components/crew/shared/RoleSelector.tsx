@@ -3,20 +3,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 
 interface RoleSelectorProps {
-  selectedTags: string[];
-  onTagsChange: (tags: string[]) => void;
+  selectedRoleId: string | null;
+  onRoleChange: (roleId: string | null) => void;
 }
 
-export function RoleSelector({ selectedTags, onTagsChange }: RoleSelectorProps) {
+export function RoleSelector({ selectedRoleId, onRoleChange }: RoleSelectorProps) {
   const { roles, isLoading } = useCrewRoles();
-
-  const handleTagChange = (tag: string, checked: boolean) => {
-    if (checked) {
-      onTagsChange([...selectedTags, tag.toLowerCase()]);
-    } else {
-      onTagsChange(selectedTags.filter(t => t !== tag.toLowerCase()));
-    }
-  };
 
   if (isLoading) {
     return <div className="animate-pulse h-20 bg-zinc-100 dark:bg-zinc-800 rounded-md" />;
@@ -29,14 +21,14 @@ export function RoleSelector({ selectedTags, onTagsChange }: RoleSelectorProps) 
         {roles.map((role) => (
           <div key={role.id} className="flex items-center space-x-2">
             <Checkbox
-              id={role.name.toLowerCase()}
-              checked={selectedTags.includes(role.name.toLowerCase())}
+              id={role.id}
+              checked={selectedRoleId === role.id}
               onCheckedChange={(checked) => {
-                handleTagChange(role.name, checked as boolean);
+                onRoleChange(checked ? role.id : null);
               }}
             />
             <Label 
-              htmlFor={role.name.toLowerCase()} 
+              htmlFor={role.id} 
               className="text-sm font-normal"
               style={{ color: role.color }}
             >

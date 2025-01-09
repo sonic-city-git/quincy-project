@@ -17,7 +17,7 @@ export type Database = {
           id: string
           name: string
           phone: string
-          role: string | null
+          role_id: string | null
         }
         Insert: {
           created_at?: string
@@ -26,7 +26,7 @@ export type Database = {
           id?: string
           name: string
           phone: string
-          role?: string | null
+          role_id?: string | null
         }
         Update: {
           created_at?: string
@@ -35,9 +35,17 @@ export type Database = {
           id?: string
           name?: string
           phone?: string
-          role?: string | null
+          role_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crew_members_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "crew_roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crew_roles: {
         Row: {

@@ -5,9 +5,9 @@ export const getAllUniqueRoles = (crewMembers: CrewMember[]): string[] => {
   
   return Array.from(
     new Set(
-      crewMembers.flatMap((member) =>
-        member.role ? member.role.split(", ").map((role) => role.toUpperCase()) : []
-      )
+      crewMembers
+        .filter(member => member.role_id)
+        .map(member => member.role_id!)
     )
   ).sort();
 };
@@ -17,11 +17,7 @@ export const filterCrewByRoles = (crewMembers: CrewMember[], selectedRoles: stri
   if (!crewMembers || !Array.isArray(crewMembers)) return [];
   
   return crewMembers.filter((member) =>
-    member.role
-      ? member.role
-          .split(", ")
-          .some((role) => selectedRoles.includes(role.toUpperCase()))
-      : false
+    member.role_id ? selectedRoles.includes(member.role_id) : false
   );
 };
 

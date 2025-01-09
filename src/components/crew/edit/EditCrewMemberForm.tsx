@@ -11,26 +11,40 @@ import {
 import { CrewMember } from "@/types/crew";
 import { DeleteCrewMemberButton } from "./DeleteCrewMemberButton";
 import { RoleSelector } from "../shared/RoleSelector";
+import { useState } from "react";
 
 interface EditCrewMemberFormProps {
   crewMember: CrewMember;
-  selectedTags: string[];
-  onTagsChange: (tags: string[]) => void;
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   onDelete: () => void;
 }
 
 export function EditCrewMemberForm({
   crewMember,
-  selectedTags,
-  onTagsChange,
   onSubmit,
   onDelete,
 }: EditCrewMemberFormProps) {
   const [firstName, lastName] = crewMember.name.split(" ");
+  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(crewMember.role_id);
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    
+    const editedMember: CrewMember = {
+      id: crewMember.id,
+      name: `${formData.get("firstName")} ${formData.get("lastName")}`,
+      role_id: selectedRoleId,
+      email: formData.get("email") as string,
+      phone: formData.get("phone") as string,
+      folder: formData.get("folder") as string,
+    };
+
+    onSubmit(e);
+  };
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-4 py-4">
+    <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
           <Label htmlFor="firstName">First name</Label>
@@ -84,8 +98,8 @@ export function EditCrewMemberForm({
         </Select>
       </div>
       <RoleSelector 
-        selectedTags={selectedTags}
-        onTagsChange={onTagsChange}
+        selectedRoleId={selectedRoleId}
+        onRoleChange={setSelectedRoleId}
       />
       <div className="flex justify-between items-center">
         <Button type="submit">Save Changes</Button>

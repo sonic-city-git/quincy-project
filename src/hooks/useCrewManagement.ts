@@ -21,7 +21,7 @@ export function useCrewManagement() {
     try {
       const { data, error } = await supabase
         .from('crew_members')
-        .select('*');
+        .select('*, crew_roles(*)');
 
       if (error) throw error;
 
@@ -46,7 +46,7 @@ export function useCrewManagement() {
     try {
       const crewMember = {
         name: `${newMember.firstName} ${newMember.lastName}`,
-        role: newMember.tags.map(tag => tag.toUpperCase()).join(", "),
+        role_id: newMember.role_id,
         email: newMember.email,
         phone: newMember.phone,
         folder: newMember.folder,

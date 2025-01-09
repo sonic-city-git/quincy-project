@@ -5,7 +5,7 @@ export type CrewMember = {
   id: string;
   name: string;
   phone: string;
-  role: string | null;
+  role_id: string | null;
 };
 
 export type CrewMemberInsert = {
@@ -15,7 +15,7 @@ export type CrewMemberInsert = {
   id?: string;
   name: string;
   phone: string;
-  role?: string | null;
+  role_id?: string | null;
 };
 
 export type CrewMemberUpdate = {
@@ -25,5 +25,5 @@ export type CrewMemberUpdate = {
   id?: string;
   name?: string;
   phone?: string;
-  role?: string | null;
+  role_id?: string | null;
 };
