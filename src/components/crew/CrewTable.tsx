@@ -4,7 +4,7 @@ import { CrewMember } from "@/types/crew";
 import { RoleTags } from "./RoleTags";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { memo, useCallback, useMemo } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
 interface CrewTableProps {
@@ -73,8 +73,8 @@ export const CrewTable = memo(({
       if (error) throw error;
       return data;
     },
-    staleTime: 10 * 60 * 1000, // Cache for 10 minutes
-    gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
+    staleTime: 10 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
   });
 
   const getFolderName = useCallback((folderId: string) => {
@@ -97,17 +97,25 @@ export const CrewTable = memo(({
     }
   }, [crewMembers, selectedItems, onItemSelect]);
 
-  const parentRef = useMemo(() => {
-    return {
-      current: document.querySelector('.scroll-area-viewport')
-    };
+  // Create a ref for the scroll container
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+  const [isScrollContainerReady, setIsScrollContainerReady] = useState(false);
+
+  // Effect to find and set the scroll container reference
+  useEffect(() => {
+    const container = document.querySelector('.scroll-area-viewport');
+    if (container) {
+      scrollContainerRef.current = container as HTMLDivElement;
+      setIsScrollContainerReady(true);
+    }
   }, []);
 
   const rowVirtualizer = useVirtualizer({
     count: crewMembers.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 32, // height of each row
+    getScrollElement: () => scrollContainerRef.current,
+    estimateSize: () => 32,
     overscan: 5,
+    enabled: isScrollContainerReady,
   });
 
   const tableHeader = (
@@ -128,40 +136,36 @@ export const CrewTable = memo(({
     </TableHeader>
   );
 
-  const tableBody = useMemo(() => (
+  const tableBody = (
     <TableBody>
-      <tr style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-        <td>
-          <div
-            style={{
-              position: 'relative',
-              height: '100%',
-            }}
-          >
-            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-              const crew = crewMembers[virtualRow.index];
-              return (
-                <CrewTableRow
-                  key={crew.id}
-                  crew={crew}
-                  folderName={getFolderName(crew.folder_id)}
-                  isSelected={selectedItems.includes(crew.id)}
-                  onSelect={onItemSelect}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    transform: `translateY(${virtualRow.start}px)`,
-                  }}
-                />
-              );
-            })}
-          </div>
-        </td>
-      </tr>
+      {isScrollContainerReady && (
+        <tr style={{ height: `${rowVirtualizer.getTotalSize()}px`, position: 'relative' }}>
+          <td colSpan={6}>
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%' }}>
+              {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                const crew = crewMembers[virtualRow.index];
+                return (
+                  <CrewTableRow
+                    key={crew.id}
+                    crew={crew}
+                    folderName={getFolderName(crew.folder_id)}
+                    isSelected={selectedItems.includes(crew.id)}
+                    onSelect={onItemSelect}
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      transform: `translateY(${virtualRow.start}px)`,
+                      width: '100%',
+                    }}
+                  />
+                );
+              })}
+            </div>
+          </td>
+        </tr>
+      )}
     </TableBody>
-  ), [crewMembers, selectedItems, getFolderName, onItemSelect, rowVirtualizer]);
+  );
 
   return (
     <Table>
