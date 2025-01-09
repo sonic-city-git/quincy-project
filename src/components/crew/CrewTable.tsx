@@ -2,8 +2,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { CrewMember } from "@/types/crew";
 import { RoleTags } from "./RoleTags";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
@@ -18,13 +16,11 @@ interface CrewTableProps {
 // Memoized table row component to prevent unnecessary re-renders
 const CrewTableRow = memo(({ 
   crew, 
-  folderName, 
   isSelected, 
   onSelect,
   style 
 }: { 
   crew: CrewMember; 
-  folderName: string; 
   isSelected: boolean;
   onSelect: (id: string) => void;
   style?: React.CSSProperties;
@@ -41,7 +37,7 @@ const CrewTableRow = memo(({
     </TableCell>
     <TableCell className="w-[240px] truncate">
       {crew.name}
-      {folderName === 'Sonic City' && (
+      {crew.crew_folder?.name === 'Sonic City' && (
         <span className="ml-1">⭐</span>
       )}
     </TableCell>
@@ -50,7 +46,7 @@ const CrewTableRow = memo(({
     </TableCell>
     <TableCell className="w-[280px] truncate">{crew.email}</TableCell>
     <TableCell className="w-[180px] truncate">{crew.phone}</TableCell>
-    <TableCell className="truncate">{folderName}</TableCell>
+    <TableCell className="truncate">{crew.crew_folder?.name || ''}</TableCell>
   </TableRow>
 ));
 CrewTableRow.displayName = 'CrewTableRow';
@@ -62,26 +58,6 @@ export const CrewTable = memo(({
   headerOnly, 
   bodyOnly 
 }: CrewTableProps) => {
-  const { data: folders } = useQuery({
-    queryKey: ['crew-folders'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('crew_folders')
-        .select('*')
-        .order('data->name');
-      
-      if (error) throw error;
-      return data;
-    },
-    staleTime: 10 * 60 * 1000,
-    gcTime: 15 * 60 * 1000,
-  });
-
-  const getFolderName = useCallback((folderId: string) => {
-    const folder = folders?.find(f => f.id === folderId);
-    return folder?.data?.name || '';
-  }, [folders]);
-
   const handleSelectAll = useCallback(() => {
     if (selectedItems.length === crewMembers.length) {
       crewMembers.forEach((crew) => {
@@ -149,7 +125,6 @@ export const CrewTable = memo(({
                   <CrewTableRow
                     key={crew.id}
                     crew={crew}
-                    folderName={getFolderName(crew.folder_id)}
                     isSelected={selectedItems.includes(crew.id)}
                     onSelect={onItemSelect}
                     style={{

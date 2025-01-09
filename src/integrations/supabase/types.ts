@@ -33,6 +33,7 @@ export type Database = {
       crew_members: {
         Row: {
           created_at: string
+          crew_folder: Json | null
           email: string
           folder_id: string | null
           id: string
@@ -42,6 +43,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          crew_folder?: Json | null
           email: string
           folder_id?: string | null
           id?: string
@@ -51,6 +53,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          crew_folder?: Json | null
           email?: string
           folder_id?: string | null
           id?: string
@@ -58,15 +61,7 @@ export type Database = {
           phone?: string
           roles?: Json | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "crew_members_folder_id_fkey"
-            columns: ["folder_id"]
-            isOneToOne: false
-            referencedRelation: "crew_folders"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       crew_roles: {
         Row: {

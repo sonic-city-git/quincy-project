@@ -4,6 +4,11 @@ export interface CrewMember {
   email: string;
   phone: string;
   folder_id: string;
+  crew_folder: {
+    id: string;
+    name: string;
+    created_at: string;
+  } | null;
   roles: CrewRole[];
   created_at: string;
 }
