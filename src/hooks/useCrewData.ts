@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { CrewMember, Role } from "@/types/crew";
+import { CrewMember } from "@/types/crew";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 
@@ -15,13 +15,11 @@ export function useCrewData() {
         .from('crew_members')
         .select(`
           *,
-          crew_member_roles (
-            roles (
-              id,
-              name,
-              color,
-              created_at
-            )
+          crew_roles (
+            id,
+            name,
+            color,
+            created_at
           )
         `);
 
@@ -32,25 +30,16 @@ export function useCrewData() {
 
       console.log('Received crew data:', membersData);
 
-      const typedData = (membersData || []).map(member => {
-        const roles = member.crew_member_roles?.map(role => ({
-          id: role.roles.id,
-          name: role.roles.name,
-          color: role.roles.color,
-          created_at: role.roles.created_at
-        } as Role)) || [];
-
-        return {
-          id: member.id,
-          name: member.name,
-          email: member.email,
-          phone: member.phone,
-          folder_id: member.folder_id,
-          metadata: member.metadata,
-          created_at: member.created_at,
-          roles: roles
-        } as CrewMember;
-      });
+      const typedData = (membersData || []).map(member => ({
+        id: member.id,
+        name: member.name,
+        email: member.email,
+        phone: member.phone,
+        folder_id: member.folder_id,
+        metadata: member.metadata,
+        created_at: member.created_at,
+        roles: member.crew_roles || []
+      }));
 
       console.log('Processed crew data:', typedData);
       setCrewMembers(typedData);

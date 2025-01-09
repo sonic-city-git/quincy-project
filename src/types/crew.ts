@@ -6,7 +6,7 @@ export interface CrewMember {
   folder_id: string | null;
   metadata: Record<string, any>;
   created_at: string;
-  roles?: Role[];
+  roles?: CrewRole[];
 }
 
 export interface NewCrewMember {
@@ -14,10 +14,10 @@ export interface NewCrewMember {
   phone: string;
   email: string;
   folder_id: string | null;
-  roles: Role[];
+  roles: CrewRole[];
 }
 
-export interface Role {
+export interface CrewRole {
   id: string;
   name: string;
   color: string;
@@ -28,7 +28,7 @@ export interface Role {
 export interface CrewFolder {
   id: string;
   name: string;
-  type: 'crew' | 'equipment';
+  type: string;
   parent_id: string | null;
   created_at: string;
 }

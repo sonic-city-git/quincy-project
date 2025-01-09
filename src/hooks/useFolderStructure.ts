@@ -1,92 +1,31 @@
-import { useState, useEffect, useCallback } from "react";
-import { Equipment } from "@/types/equipment";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Folder } from "@/types/folders";
+import { CrewFolder } from "@/types/crew";
 
 export function useFolderStructure() {
-  const [folders, setFolders] = useState<Folder[]>([]);
+  const [folders, setFolders] = useState<CrewFolder[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    fetchFolders();
+    const fetchFolders = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('equipment_folders')
+          .select('*')
+          .order('name');
 
-    const channel = supabase
-      .channel('folders_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'folders'
-        },
-        () => {
-          fetchFolders();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
+        if (error) throw error;
+        setFolders(data as CrewFolder[]);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setIsLoading(false);
+      }
     };
+
+    fetchFolders();
   }, []);
 
-  const fetchFolders = async () => {
-    const { data, error } = await supabase
-      .from('folders')
-      .select('*')
-      .eq('type', 'equipment')
-      .order('name');
-
-    if (error) {
-      console.error('Error fetching folders:', error);
-      return;
-    }
-
-    setFolders(data || []);
-  };
-
-  const getFolderName = useCallback((folderId: string | undefined): string => {
-    if (!folderId) return 'Uncategorized';
-
-    const folder = folders.find(f => f.id === folderId);
-    if (!folder) return 'Uncategorized';
-
-    if (folder.parent_id) {
-      const parent = folders.find(f => f.id === folder.parent_id);
-      return parent ? `${parent.name} / ${folder.name}` : folder.name;
-    }
-
-    return folder.name;
-  }, [folders]);
-
-  const getFolderSortOrder = useCallback((folderId: string | undefined): string => {
-    if (!folderId) return 'zzz_uncategorized';
-
-    const folder = folders.find(f => f.id === folderId);
-    if (!folder) return 'zzz_uncategorized';
-
-    if (folder.parent_id) {
-      const parent = folders.find(f => f.id === folder.parent_id);
-      return parent ? `${parent.name}_${folder.name}` : folder.name;
-    }
-
-    return folder.name;
-  }, [folders]);
-
-  const groupEquipmentByFolder = useCallback((equipment: Equipment[]) => {
-    return equipment.reduce((acc, item) => {
-      const folderName = getFolderName(item.folder_id);
-      if (!acc[folderName]) {
-        acc[folderName] = [];
-      }
-      acc[folderName].push(item);
-      return acc;
-    }, {} as Record<string, Equipment[]>);
-  }, [getFolderName]);
-
-  return {
-    folders,
-    getFolderName,
-    getFolderSortOrder,
-    groupEquipmentByFolder,
-  };
+  return { folders, isLoading, error };
 }
