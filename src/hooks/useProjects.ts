@@ -7,11 +7,12 @@ export function useProjects() {
   const { toast } = useToast();
 
   const fetchProjects = async () => {
+    console.log('Fetching projects...');
     const { data: projectsData, error } = await supabase
       .from('projects')
       .select(`
         *,
-        crew_members (
+        customer:customers(
           id,
           name
         )
@@ -28,15 +29,17 @@ export function useProjects() {
       throw error;
     }
 
+    console.log('Projects data:', projectsData);
+
     return projectsData.map(project => ({
       id: project.id,
       name: project.name,
       lastInvoiced: project.last_invoiced || '',
-      owner: project.crew_members?.name || 'Unknown Owner',
-      owner_id: project.owner_id,
-      color: project.color,
-      gigPrice: project.gig_price || '',
-      yearlyRevenue: project.yearly_revenue || ''
+      owner: project.customer?.name || 'No Customer',
+      owner_id: project.customer_id,
+      color: 'blue', // Default color for now
+      gigPrice: project.invoice_reference || '',
+      yearlyRevenue: project.cost_center || ''
     }));
   };
 
