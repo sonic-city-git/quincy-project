@@ -9,160 +9,221 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      crew_folders: {
+      crew_member_roles: {
         Row: {
-          created_at: string
-          data: Json | null
-          id: string
-          name: string
+          crew_member_id: string
+          role_id: string
         }
         Insert: {
-          created_at?: string
-          data?: Json | null
-          id?: string
-          name: string
+          crew_member_id: string
+          role_id: string
         }
         Update: {
-          created_at?: string
-          data?: Json | null
-          id?: string
-          name?: string
+          crew_member_id?: string
+          role_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crew_member_roles_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crew_member_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crew_members: {
         Row: {
           created_at: string
-          crew_folder: Json | null
           email: string
+          folder_id: string | null
           id: string
+          metadata: Json | null
           name: string
           phone: string
-          roles: Json | null
         }
         Insert: {
           created_at?: string
-          crew_folder?: Json | null
           email: string
+          folder_id?: string | null
           id?: string
+          metadata?: Json | null
           name: string
           phone: string
-          roles?: Json | null
         }
         Update: {
           created_at?: string
-          crew_folder?: Json | null
           email?: string
+          folder_id?: string | null
           id?: string
+          metadata?: Json | null
           name?: string
           phone?: string
-          roles?: Json | null
         }
-        Relationships: []
-      }
-      crew_roles: {
-        Row: {
-          color: string | null
-          created_at: string
-          id: string
-          name: string
-        }
-        Insert: {
-          color?: string | null
-          created_at?: string
-          id?: string
-          name: string
-        }
-        Update: {
-          color?: string | null
-          created_at?: string
-          id?: string
-          name?: string
-        }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crew_members_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       customers: {
         Row: {
           created_at: string
-          customer_number: string | null
           email: string | null
           id: string
+          metadata: Json | null
           name: string
           organization_number: string | null
-          phone_number: string | null
-          tripletex_id: number
-          updated_at: string
+          phone: string | null
+          tripletex_id: number | null
         }
         Insert: {
           created_at?: string
-          customer_number?: string | null
           email?: string | null
           id?: string
+          metadata?: Json | null
           name: string
           organization_number?: string | null
-          phone_number?: string | null
-          tripletex_id: number
-          updated_at?: string
+          phone?: string | null
+          tripletex_id?: number | null
         }
         Update: {
           created_at?: string
-          customer_number?: string | null
           email?: string | null
           id?: string
+          metadata?: Json | null
           name?: string
           organization_number?: string | null
-          phone_number?: string | null
-          tripletex_id?: number
-          updated_at?: string
+          phone?: string | null
+          tripletex_id?: number | null
         }
         Relationships: []
       }
       equipment: {
         Row: {
-          "Book Value": number | null
-          Code: string | null
-          Folder: string | null
+          category_id: string | null
+          code: string | null
+          created_at: string
+          daily_rate: number | null
           folder_id: string | null
           id: string
-          Name: string | null
-          Notes: string | null
-          Price: number | null
-          Stock: number | null
-          "Stock calculation method": string | null
-          Weight: number | null
+          manual_stock: number | null
+          metadata: Json | null
+          name: string
+          stock_type: string | null
         }
         Insert: {
-          "Book Value"?: number | null
-          Code?: string | null
-          Folder?: string | null
+          category_id?: string | null
+          code?: string | null
+          created_at?: string
+          daily_rate?: number | null
           folder_id?: string | null
           id?: string
-          Name?: string | null
-          Notes?: string | null
-          Price?: number | null
-          Stock?: number | null
-          "Stock calculation method"?: string | null
-          Weight?: number | null
+          manual_stock?: number | null
+          metadata?: Json | null
+          name: string
+          stock_type?: string | null
         }
         Update: {
-          "Book Value"?: number | null
-          Code?: string | null
-          Folder?: string | null
+          category_id?: string | null
+          code?: string | null
+          created_at?: string
+          daily_rate?: number | null
           folder_id?: string | null
           id?: string
-          Name?: string | null
-          Notes?: string | null
-          Price?: number | null
-          Stock?: number | null
-          "Stock calculation method"?: string | null
-          Weight?: number | null
+          manual_stock?: number | null
+          metadata?: Json | null
+          name?: string
+          stock_type?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "equipment_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_categories"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "equipment_folder_id_fkey"
             columns: ["folder_id"]
             isOneToOne: false
-            referencedRelation: "folders"
+            referencedRelation: "equipment_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_categories: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          parent_id: string | null
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          parent_id?: string | null
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          parent_id?: string | null
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_categories_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_folders: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          parent_id: string | null
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          parent_id?: string | null
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          parent_id?: string | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_folders"
             referencedColumns: ["id"]
           },
         ]
@@ -170,30 +231,27 @@ export type Database = {
       equipment_serial_numbers: {
         Row: {
           created_at: string
-          equipment_id: string
+          equipment_id: string | null
           id: string
-          notes: string | null
+          metadata: Json | null
           serial_number: string
           status: string | null
-          updated_at: string
         }
         Insert: {
           created_at?: string
-          equipment_id: string
+          equipment_id?: string | null
           id?: string
-          notes?: string | null
+          metadata?: Json | null
           serial_number: string
           status?: string | null
-          updated_at?: string
         }
         Update: {
           created_at?: string
-          equipment_id?: string
+          equipment_id?: string | null
           id?: string
-          notes?: string | null
+          metadata?: Json | null
           serial_number?: string
           status?: string | null
-          updated_at?: string
         }
         Relationships: [
           {
@@ -207,6 +265,7 @@ export type Database = {
       }
       event_types: {
         Row: {
+          allows_discount: boolean | null
           color: string
           created_at: string
           crew_rate_multiplier: number | null
@@ -214,8 +273,10 @@ export type Database = {
           id: string
           name: string
           needs_crew: boolean | null
+          needs_equipment: boolean | null
         }
         Insert: {
+          allows_discount?: boolean | null
           color: string
           created_at?: string
           crew_rate_multiplier?: number | null
@@ -223,8 +284,10 @@ export type Database = {
           id?: string
           name: string
           needs_crew?: boolean | null
+          needs_equipment?: boolean | null
         }
         Update: {
+          allows_discount?: boolean | null
           color?: string
           created_at?: string
           crew_rate_multiplier?: number | null
@@ -232,34 +295,206 @@ export type Database = {
           id?: string
           name?: string
           needs_crew?: boolean | null
+          needs_equipment?: boolean | null
         }
         Relationships: []
       }
-      folders: {
+      maintenance_tickets: {
+        Row: {
+          affects_availability: boolean | null
+          created_at: string
+          description: string
+          end_date: string | null
+          equipment_id: string | null
+          id: string
+          metadata: Json | null
+          reported_by_id: string | null
+          start_date: string
+          status: string | null
+        }
+        Insert: {
+          affects_availability?: boolean | null
+          created_at?: string
+          description: string
+          end_date?: string | null
+          equipment_id?: string | null
+          id?: string
+          metadata?: Json | null
+          reported_by_id?: string | null
+          start_date: string
+          status?: string | null
+        }
+        Update: {
+          affects_availability?: boolean | null
+          created_at?: string
+          description?: string
+          end_date?: string | null
+          equipment_id?: string | null
+          id?: string
+          metadata?: Json | null
+          reported_by_id?: string | null
+          start_date?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_tickets_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_tickets_reported_by_id_fkey"
+            columns: ["reported_by_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_equipment: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          daily_rate: number | null
+          equipment_id: string | null
+          id: string
+          project_id: string | null
+          quantity: number | null
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          daily_rate?: number | null
+          equipment_id?: string | null
+          id?: string
+          project_id?: string | null
+          quantity?: number | null
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          daily_rate?: number | null
+          equipment_id?: string | null
+          id?: string
+          project_id?: string | null
+          quantity?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_equipment_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_equipment_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_equipment_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_event_equipment: {
         Row: {
           created_at: string
           id: string
-          name: string
-          parent_id: string | null
+          project_equipment_id: string | null
+          project_event_id: string | null
+          quantity: number | null
+          rate_override: number | null
         }
         Insert: {
           created_at?: string
           id?: string
-          name: string
-          parent_id?: string | null
+          project_equipment_id?: string | null
+          project_event_id?: string | null
+          quantity?: number | null
+          rate_override?: number | null
         }
         Update: {
           created_at?: string
           id?: string
-          name?: string
-          parent_id?: string | null
+          project_equipment_id?: string | null
+          project_event_id?: string | null
+          quantity?: number | null
+          rate_override?: number | null
         }
         Relationships: [
           {
-            foreignKeyName: "folders_parent_id_fkey"
-            columns: ["parent_id"]
+            foreignKeyName: "project_event_equipment_project_equipment_id_fkey"
+            columns: ["project_equipment_id"]
             isOneToOne: false
-            referencedRelation: "folders"
+            referencedRelation: "project_equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_event_equipment_project_event_id_fkey"
+            columns: ["project_event_id"]
+            isOneToOne: false
+            referencedRelation: "project_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_event_roles: {
+        Row: {
+          assigned_crew_id: string | null
+          created_at: string
+          hours_worked: number | null
+          id: string
+          project_event_id: string | null
+          project_role_id: string | null
+          rate_override: number | null
+        }
+        Insert: {
+          assigned_crew_id?: string | null
+          created_at?: string
+          hours_worked?: number | null
+          id?: string
+          project_event_id?: string | null
+          project_role_id?: string | null
+          rate_override?: number | null
+        }
+        Update: {
+          assigned_crew_id?: string | null
+          created_at?: string
+          hours_worked?: number | null
+          id?: string
+          project_event_id?: string | null
+          project_role_id?: string | null
+          rate_override?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_event_roles_assigned_crew_id_fkey"
+            columns: ["assigned_crew_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_event_roles_project_event_id_fkey"
+            columns: ["project_event_id"]
+            isOneToOne: false
+            referencedRelation: "project_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_event_roles_project_role_id_fkey"
+            columns: ["project_role_id"]
+            isOneToOne: false
+            referencedRelation: "project_roles"
             referencedColumns: ["id"]
           },
         ]
@@ -268,26 +503,32 @@ export type Database = {
         Row: {
           created_at: string
           date: string
-          event_type_id: string
+          event_type_id: string | null
           id: string
+          metadata: Json | null
           name: string
-          project_id: string
+          project_id: string | null
+          status: string | null
         }
         Insert: {
           created_at?: string
           date: string
-          event_type_id: string
+          event_type_id?: string | null
           id?: string
+          metadata?: Json | null
           name: string
-          project_id: string
+          project_id?: string | null
+          status?: string | null
         }
         Update: {
           created_at?: string
           date?: string
-          event_type_id?: string
+          event_type_id?: string | null
           id?: string
+          metadata?: Json | null
           name?: string
-          project_id?: string
+          project_id?: string | null
+          status?: string | null
         }
         Relationships: [
           {
@@ -306,59 +547,38 @@ export type Database = {
           },
         ]
       }
-      project_events_data: {
-        Row: {
-          created_at: string
-          event_data: Json
-          id: string
-        }
-        Insert: {
-          created_at?: string
-          event_data: Json
-          id?: string
-        }
-        Update: {
-          created_at?: string
-          event_data?: Json
-          id?: string
-        }
-        Relationships: []
-      }
       project_roles: {
         Row: {
           created_at: string
-          daily_rate: number | null
+          daily_rate: number
           hourly_rate: number | null
           id: string
-          preferred_id: string | null
-          project_id: string
-          quantity: number
-          role_id: string
+          preferred_crew_id: string | null
+          project_id: string | null
+          role_id: string | null
         }
         Insert: {
           created_at?: string
-          daily_rate?: number | null
+          daily_rate: number
           hourly_rate?: number | null
           id?: string
-          preferred_id?: string | null
-          project_id: string
-          quantity?: number
-          role_id: string
+          preferred_crew_id?: string | null
+          project_id?: string | null
+          role_id?: string | null
         }
         Update: {
           created_at?: string
-          daily_rate?: number | null
+          daily_rate?: number
           hourly_rate?: number | null
           id?: string
-          preferred_id?: string | null
-          project_id?: string
-          quantity?: number
-          role_id?: string
+          preferred_crew_id?: string | null
+          project_id?: string | null
+          role_id?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "project_roles_preferred_id_fkey"
-            columns: ["preferred_id"]
+            foreignKeyName: "project_roles_preferred_crew_id_fkey"
+            columns: ["preferred_crew_id"]
             isOneToOne: false
             referencedRelation: "crew_members"
             referencedColumns: ["id"]
@@ -374,7 +594,7 @@ export type Database = {
             foreignKeyName: "project_roles_role_id_fkey"
             columns: ["role_id"]
             isOneToOne: false
-            referencedRelation: "crew_roles"
+            referencedRelation: "roles"
             referencedColumns: ["id"]
           },
         ]
@@ -383,42 +603,105 @@ export type Database = {
         Row: {
           color: string
           created_at: string
-          customer: string | null
-          gig_price: string | null
+          customer_id: string | null
           id: string
-          last_invoiced: string | null
+          metadata: Json | null
           name: string
           owner_id: string
-          yearly_revenue: string | null
+          status: string | null
         }
         Insert: {
           color: string
           created_at?: string
-          customer?: string | null
-          gig_price?: string | null
+          customer_id?: string | null
           id?: string
-          last_invoiced?: string | null
+          metadata?: Json | null
           name: string
           owner_id: string
-          yearly_revenue?: string | null
+          status?: string | null
         }
         Update: {
           color?: string
           created_at?: string
-          customer?: string | null
-          gig_price?: string | null
+          customer_id?: string | null
           id?: string
-          last_invoiced?: string | null
+          metadata?: Json | null
           name?: string
           owner_id?: string
-          yearly_revenue?: string | null
+          status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "projects_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "projects_owner_id_fkey"
             columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      roles: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      salary_rules: {
+        Row: {
+          created_at: string
+          crew_profit_deduction: number
+          folder_id: string | null
+          id: string
+          project_profit_deduction: number | null
+          social_costs_rate: number
+        }
+        Insert: {
+          created_at?: string
+          crew_profit_deduction: number
+          folder_id?: string | null
+          id?: string
+          project_profit_deduction?: number | null
+          social_costs_rate: number
+        }
+        Update: {
+          created_at?: string
+          crew_profit_deduction?: number
+          folder_id?: string | null
+          id?: string
+          project_profit_deduction?: number | null
+          social_costs_rate?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "salary_rules_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_folders"
             referencedColumns: ["id"]
           },
         ]
