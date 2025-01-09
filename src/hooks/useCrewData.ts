@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { CrewMember, NewCrewMember } from "@/types/crew";
+import { CrewMember } from "@/types/crew";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 
@@ -12,17 +12,7 @@ export function useCrewData() {
     try {
       const { data, error } = await supabase
         .from('crew_members')
-        .select(`
-          *,
-          crew_member_roles (
-            role_id,
-            crew_roles (
-              id,
-              name,
-              color
-            )
-          )
-        `);
+        .select('*');
 
       if (error) throw error;
 

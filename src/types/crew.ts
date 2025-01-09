@@ -5,10 +5,7 @@ export interface CrewMember {
   phone: string;
   folder_id: string;
   folder?: string; // Keep for backward compatibility during migration
-  crew_member_roles?: Array<{
-    role_id: string;
-    crew_roles?: CrewRole;
-  }>;
+  roles: CrewRole[];
 }
 
 export interface NewCrewMember {
@@ -16,7 +13,7 @@ export interface NewCrewMember {
   phone: string;
   email: string;
   folder_id: string;
-  roleIds: string[];
+  roles: CrewRole[];
 }
 
 export interface CrewRole {
@@ -24,13 +21,6 @@ export interface CrewRole {
   name: string;
   color: string;
   created_at?: string;
-}
-
-export interface CrewMemberRole {
-  id: string;
-  crew_member_id: string;
-  role_id: string;
-  created_at: string;
 }
 
 export interface CrewFolder {

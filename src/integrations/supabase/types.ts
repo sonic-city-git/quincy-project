@@ -27,42 +27,6 @@ export type Database = {
         }
         Relationships: []
       }
-      crew_member_roles: {
-        Row: {
-          created_at: string
-          crew_member_id: string
-          id: string
-          role_id: string
-        }
-        Insert: {
-          created_at?: string
-          crew_member_id: string
-          id?: string
-          role_id: string
-        }
-        Update: {
-          created_at?: string
-          crew_member_id?: string
-          id?: string
-          role_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "crew_member_roles_crew_member_id_fkey"
-            columns: ["crew_member_id"]
-            isOneToOne: false
-            referencedRelation: "crew_members"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "crew_member_roles_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "crew_roles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       crew_members: {
         Row: {
           created_at: string
@@ -71,6 +35,7 @@ export type Database = {
           id: string
           name: string
           phone: string
+          roles: Json | null
         }
         Insert: {
           created_at?: string
@@ -79,6 +44,7 @@ export type Database = {
           id?: string
           name: string
           phone: string
+          roles?: Json | null
         }
         Update: {
           created_at?: string
@@ -87,6 +53,7 @@ export type Database = {
           id?: string
           name?: string
           phone?: string
+          roles?: Json | null
         }
         Relationships: [
           {

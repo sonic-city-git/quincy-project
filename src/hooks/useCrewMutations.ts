@@ -15,24 +15,12 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
           email: newMember.email,
           phone: newMember.phone,
           folder_id: newMember.folder_id,
+          roles: newMember.roles,
         })
         .select()
         .single();
 
       if (crewError) throw crewError;
-
-      if (newMember.roleIds.length > 0) {
-        const roleAssignments = newMember.roleIds.map(roleId => ({
-          crew_member_id: crewMember.id,
-          role_id: roleId,
-        }));
-
-        const { error: rolesError } = await supabase
-          .from('crew_member_roles')
-          .insert(roleAssignments);
-
-        if (rolesError) throw rolesError;
-      }
 
       await fetchCrewMembers();
       toast({
@@ -49,7 +37,7 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
     }
   }, [fetchCrewMembers, toast]);
 
-  const handleEditCrewMember = useCallback(async (editedMember: CrewMember & { roleIds: string[] }) => {
+  const handleEditCrewMember = useCallback(async (editedMember: CrewMember) => {
     try {
       const { error: updateError } = await supabase
         .from('crew_members')
@@ -58,30 +46,11 @@ export function useCrewMutations(fetchCrewMembers: () => Promise<void>) {
           email: editedMember.email,
           phone: editedMember.phone,
           folder_id: editedMember.folder_id,
+          roles: editedMember.roles,
         })
         .eq('id', editedMember.id);
 
       if (updateError) throw updateError;
-
-      const { error: deleteError } = await supabase
-        .from('crew_member_roles')
-        .delete()
-        .eq('crew_member_id', editedMember.id);
-
-      if (deleteError) throw deleteError;
-
-      if (editedMember.roleIds.length > 0) {
-        const roleAssignments = editedMember.roleIds.map(roleId => ({
-          crew_member_id: editedMember.id,
-          role_id: roleId,
-        }));
-
-        const { error: rolesError } = await supabase
-          .from('crew_member_roles')
-          .insert(roleAssignments);
-
-        if (rolesError) throw rolesError;
-      }
 
       await fetchCrewMembers();
       toast({

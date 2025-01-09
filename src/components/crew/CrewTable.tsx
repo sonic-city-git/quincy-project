@@ -46,7 +46,7 @@ const CrewTableRow = memo(({
       )}
     </TableCell>
     <TableCell className="w-[320px]">
-      <RoleTags crewMemberId={crew.id} />
+      <RoleTags roles={crew.roles || []} />
     </TableCell>
     <TableCell className="w-[280px] truncate">{crew.email}</TableCell>
     <TableCell className="w-[180px] truncate">{crew.phone}</TableCell>

@@ -1,42 +1,16 @@
-import { useCrewRoles } from "@/hooks/useCrewRoles";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { memo, useMemo } from "react";
+import { memo } from "react";
+import { CrewRole } from "@/types/crew";
 
 interface RoleTagsProps {
-  crewMemberId: string;
+  roles: CrewRole[];
 }
 
-export const RoleTags = memo(({ crewMemberId }: RoleTagsProps) => {
-  const { roles } = useCrewRoles();
-  const queryClient = useQueryClient();
+export const RoleTags = memo(({ roles }: RoleTagsProps) => {
+  if (!roles?.length) return null;
   
-  const { data: memberRoles } = useQuery({
-    queryKey: ['crew-member-roles', crewMemberId],
-    queryFn: async () => {
-      if (!crewMemberId) return [];
-      
-      const { data, error } = await supabase
-        .from('crew_member_roles')
-        .select('role_id')
-        .eq('crew_member_id', crewMemberId);
-      
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!crewMemberId,
-    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
-    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
-  });
-
-  const roleElements = useMemo(() => {
-    if (!memberRoles?.length) return null;
-    
-    return memberRoles.map((memberRole) => {
-      const role = roles.find(r => r.id === memberRole.role_id);
-      if (!role) return null;
-      
-      return (
+  return (
+    <div className="flex gap-1 flex-wrap">
+      {roles.map((role) => (
         <span
           key={role.id}
           className="px-2 py-0.5 rounded text-xs font-medium text-white"
@@ -44,15 +18,7 @@ export const RoleTags = memo(({ crewMemberId }: RoleTagsProps) => {
         >
           {role.name.toUpperCase()}
         </span>
-      );
-    });
-  }, [memberRoles, roles]);
-  
-  if (!roleElements) return null;
-  
-  return (
-    <div className="flex gap-1 flex-wrap">
-      {roleElements}
+      ))}
     </div>
   );
 });
