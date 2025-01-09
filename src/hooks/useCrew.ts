@@ -9,33 +9,36 @@ export function useCrew() {
       const { data, error } = await supabase
         .from('crew_members')
         .select(`
-          *,
+          id,
+          name,
+          email,
+          phone,
           folder:crew_folders!crew_members_folder_id_fkey (
             id,
             name
           ),
-          crew_member_roles (
+          role:crew_member_roles!inner (
             crew_roles (
               id,
               name,
               color
             )
           )
-        `);
+        `)
+        .order('name');
 
       if (error) {
         console.error('Error fetching crew:', error);
         throw error;
       }
-      
-      // Transform the data to match CrewMember type
+
       return data.map((member: any) => ({
         id: member.id,
         name: member.name,
         email: member.email,
         phone: member.phone,
         folder: member.folder,
-        role: member.crew_member_roles[0]?.crew_roles || null,
+        role: member.role?.[0]?.crew_roles || null,
         created_at: member.created_at,
         updated_at: member.updated_at
       })) as CrewMember[];
