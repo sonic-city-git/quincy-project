@@ -67,38 +67,27 @@ export function useCrew() {
           return [];
         }
 
-        // Map the response to match the CrewMember type
         return data.map((member): CrewMember => {
-          // Safely handle folder data with type assertion after validation
-          const folderData = member.folder;
           let folder = null;
-          
-          if (folderData && typeof folderData === 'object') {
-            const hasValidId = 'id' in folderData && typeof folderData.id === 'string';
-            const hasValidName = 'name' in folderData && typeof folderData.name === 'string';
-            
-            if (hasValidId && hasValidName) {
+          if (member.folder && typeof member.folder === 'object') {
+            const folderObj = member.folder as { id?: string; name?: string };
+            if (folderObj.id && folderObj.name) {
               folder = {
-                id: folderData.id,
-                name: folderData.name
+                id: folderObj.id,
+                name: folderObj.name
               };
             }
           }
 
-          // Safely handle role data with type assertion after validation
-          const roleData = member.role?.[0]?.crew_roles;
           let role = null;
-
+          const roleData = member.role?.[0]?.crew_roles;
           if (roleData && typeof roleData === 'object') {
-            const hasValidId = 'id' in roleData && typeof roleData.id === 'string';
-            const hasValidName = 'name' in roleData && typeof roleData.name === 'string';
-            const hasValidColor = 'color' in roleData && typeof roleData.color === 'string';
-
-            if (hasValidId && hasValidName && hasValidColor) {
+            const roleObj = roleData as { id?: string; name?: string; color?: string };
+            if (roleObj.id && roleObj.name && roleObj.color) {
               role = {
-                id: roleData.id,
-                name: roleData.name,
-                color: roleData.color
+                id: roleObj.id,
+                name: roleObj.name,
+                color: roleObj.color
               };
             }
           }
