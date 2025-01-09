@@ -4,7 +4,7 @@ import { useDebounceResize } from "@/hooks/useDebounceResize";
 import { Equipment } from "@/types/equipment";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Filter, Pen } from "lucide-react";
+import { Search, Plus, Filter } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -114,27 +114,17 @@ export function EquipmentList({
           </div>
           <div className="flex items-center gap-2">
             {hasSelection && selectedItems.length === 1 && singleSelectedEquipment && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-9 w-9" 
-                onClick={() => document.getElementById('edit-equipment-trigger')?.click()}
-              >
-                <Pen className="h-4 w-4" />
-              </Button>
-            )}
-            <Button size="sm" className="gap-2 h-9" onClick={() => document.getElementById('add-equipment-trigger')?.click()}>
-              <Plus className="h-4 w-4" />
-              Add equipment
-            </Button>
-            <AddEquipmentDialog onAddEquipment={onAddEquipment} />
-            {selectedItems.length === 1 && singleSelectedEquipment && (
               <EditEquipmentDialog
                 equipment={singleSelectedEquipment}
                 onEditEquipment={onEditEquipment}
                 onDeleteEquipment={handleDeleteEquipment}
               />
             )}
+            <Button size="sm" className="gap-2 h-9" onClick={() => document.getElementById('add-equipment-trigger')?.click()}>
+              <Plus className="h-4 w-4" />
+              Add equipment
+            </Button>
+            <AddEquipmentDialog onAddEquipment={onAddEquipment} />
           </div>
         </div>
       </div>
