@@ -11,6 +11,7 @@ import { RoleFormFields } from "./RoleFormFields";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Trash2 } from "lucide-react";
 
 interface AddRoleDialogProps {
   roles?: CrewRole[];
@@ -21,6 +22,7 @@ interface AddRoleDialogProps {
     hourlyRate: number;
     quantity?: number;
   }) => void;
+  onDelete?: () => void;
   loading?: boolean;
   editMode?: boolean;
   initialValues?: {
@@ -36,7 +38,8 @@ interface AddRoleDialogProps {
 export function AddRoleDialog({ 
   roles, 
   onClose, 
-  onSubmit, 
+  onSubmit,
+  onDelete,
   loading,
   editMode = false,
   initialValues,
@@ -112,7 +115,7 @@ export function AddRoleDialog({
           roleId: selectedRole,
           dailyRate: parseFloat(dailyRate),
           hourlyRate: parseFloat(hourlyRate),
-          quantity: 1, // Add default quantity
+          quantity: 1,
         });
         toast({
           title: editMode ? "Role Updated" : "Role Added",
@@ -151,13 +154,22 @@ export function AddRoleDialog({
         onDailyRateChange={setDailyRate}
         onHourlyRateChange={setHourlyRate}
       />
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-        <Button onClick={handleSubmit} disabled={loading}>
-          {loading ? (editMode ? "Updating..." : "Adding...") : (editMode ? "Update Role" : "Add Role")}
-        </Button>
+      <div className="flex justify-between gap-2">
+        {editMode && onDelete && (
+          <Button 
+            variant="destructive" 
+            onClick={onDelete}
+            className="gap-2"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </Button>
+        )}
+        <div className="flex-1 flex justify-end">
+          <Button onClick={handleSubmit} disabled={loading}>
+            {loading ? (editMode ? "Updating..." : "Adding...") : (editMode ? "Update Role" : "Add Role")}
+          </Button>
+        </div>
       </div>
     </DialogContent>
   );
