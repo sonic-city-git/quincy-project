@@ -17,6 +17,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CrewMember, CrewRole } from "@/types/crew";
+import { Json } from "@/integrations/supabase/types";
 
 interface CrewMemberSelectProps {
   projectRoleId: string;
@@ -26,24 +27,26 @@ interface CrewMemberSelectProps {
 }
 
 // Type guard for crew role JSON data
-const isValidRole = (value: any): value is CrewRole => {
+const isValidRole = (value: unknown): value is CrewRole => {
+  if (!value || typeof value !== 'object') return false;
+  
+  const role = value as Record<string, unknown>;
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof value.id === 'string' &&
-    typeof value.name === 'string' &&
-    typeof value.color === 'string'
+    typeof role.id === 'string' &&
+    typeof role.name === 'string' &&
+    (role.color === null || typeof role.color === 'string')
   );
 };
 
 // Type guard for crew folder JSON data
-const isValidCrewFolder = (value: any): value is { id: string; name: string; created_at: string } => {
+const isValidCrewFolder = (value: unknown): value is { id: string; name: string; created_at: string } => {
+  if (!value || typeof value !== 'object') return false;
+  
+  const folder = value as Record<string, unknown>;
   return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof value.id === 'string' &&
-    typeof value.name === 'string' &&
-    typeof value.created_at === 'string'
+    typeof folder.id === 'string' &&
+    typeof folder.name === 'string' &&
+    typeof folder.created_at === 'string'
   );
 };
 
@@ -87,11 +90,15 @@ export function CrewMemberSelect({
 
       // Transform and validate the data
       const validMembers = data.map(member => {
-        // Ensure roles is an array and validate each role
-        const validRoles = Array.isArray(member.roles) 
-          ? member.roles
-              .filter((role): role is CrewRole => isValidRole(role))
-          : [];
+        // Parse and validate roles
+        const validRoles: CrewRole[] = [];
+        if (Array.isArray(member.roles)) {
+          member.roles.forEach((role: unknown) => {
+            if (isValidRole(role)) {
+              validRoles.push(role);
+            }
+          });
+        }
 
         // Validate and transform crew_folder
         const crewFolder = member.crew_folder && isValidCrewFolder(member.crew_folder)
