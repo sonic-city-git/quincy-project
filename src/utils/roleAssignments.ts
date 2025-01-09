@@ -38,9 +38,10 @@ export const createRoleAssignments = async (projectId: string, eventId: string) 
       project_id: projectId,
       event_id: eventId,
       role_id: role.role_id,
-      crew_member_id: role.preferred_id || null,
-      daily_rate: role.daily_rate,
-      hourly_rate: role.hourly_rate
+      crew_member_id: role.preferred_id,
+      daily_rate: role.daily_rate || null,
+      hourly_rate: role.hourly_rate || null,
+      hours_worked: null
     }));
 
     console.log('Creating role assignments:', roleAssignments);
@@ -48,7 +49,18 @@ export const createRoleAssignments = async (projectId: string, eventId: string) 
     const { data: insertedRoles, error: insertError } = await supabase
       .from('project_event_roles')
       .insert(roleAssignments)
-      .select('*, crew_roles (id, name, color), crew_members (id, name)');
+      .select(`
+        *,
+        crew_roles (
+          id,
+          name,
+          color
+        ),
+        crew_members (
+          id,
+          name
+        )
+      `);
 
     if (insertError) {
       console.error('Error creating role assignments:', insertError);
