@@ -43,7 +43,6 @@ export function CrewList() {
       crew.name.toLowerCase().includes(searchLower) ||
       crew.email.toLowerCase().includes(searchLower) ||
       crew.phone.toLowerCase().includes(searchLower) ||
-      crew.role?.toLowerCase().includes(searchLower) ||
       crew.folder.toLowerCase().includes(searchLower)
     );
   });

@@ -4,6 +4,10 @@ export interface CrewMember {
   email: string;
   phone: string;
   folder: string;
+  crew_member_roles?: Array<{
+    role_id: string;
+    crew_roles?: CrewRole;
+  }>;
 }
 
 export interface NewCrewMember {
@@ -20,4 +24,11 @@ export interface CrewRole {
   name: string;
   color: string;
   created_at?: string;
+}
+
+export interface CrewMemberRole {
+  id: string;
+  crew_member_id: string;
+  role_id: string;
+  created_at: string;
 }

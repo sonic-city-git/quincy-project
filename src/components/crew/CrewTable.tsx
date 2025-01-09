@@ -58,7 +58,7 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
           </TableCell>
           <TableCell className="w-[240px] truncate">{crew.name}</TableCell>
           <TableCell className="w-[320px]">
-            <RoleTags role={crew.role} />
+            <RoleTags crewMemberId={crew.id} />
           </TableCell>
           <TableCell className="w-[280px] truncate">{crew.email}</TableCell>
           <TableCell className="w-[180px] truncate">{crew.phone}</TableCell>

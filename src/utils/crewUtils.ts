@@ -3,13 +3,16 @@ import { CrewMember } from "@/types/crew";
 export const getAllUniqueRoles = (crewMembers: CrewMember[]): string[] => {
   if (!crewMembers || !Array.isArray(crewMembers)) return [];
   
-  return Array.from(
-    new Set(
-      crewMembers
-        .filter(member => member.role_id)
-        .map(member => member.role_id!)
-    )
-  ).sort();
+  const roleIds = new Set<string>();
+  crewMembers.forEach(member => {
+    member.crew_member_roles?.forEach(role => {
+      if (role.role_id) {
+        roleIds.add(role.role_id);
+      }
+    });
+  });
+  
+  return Array.from(roleIds).sort();
 };
 
 export const filterCrewByRoles = (crewMembers: CrewMember[], selectedRoles: string[]): CrewMember[] => {
@@ -17,7 +20,9 @@ export const filterCrewByRoles = (crewMembers: CrewMember[], selectedRoles: stri
   if (!crewMembers || !Array.isArray(crewMembers)) return [];
   
   return crewMembers.filter((member) =>
-    member.role_id ? selectedRoles.includes(member.role_id) : false
+    member.crew_member_roles?.some(role => 
+      role.role_id && selectedRoles.includes(role.role_id)
+    ) ?? false
   );
 };
 
