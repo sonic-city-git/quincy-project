@@ -8,10 +8,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { CrewMember } from "@/types/crew";
 
 interface CrewMemberSelectProps {
   projectRoleId: string;
-  selectedCrewMember: { id: string; name: string; folder: string } | null;
+  selectedCrewMember: CrewMember | null;
   onSelect: (projectRoleId: string, crewMemberId: string) => void;
   roleName: string;
 }
@@ -29,21 +30,17 @@ export function CrewMemberSelect({
         .from('crew_members')
         .select(`
           *,
-          crew_member_roles (
+          crew_member_roles!inner (
             role_id,
-            crew_roles (
+            crew_roles!inner (
               name
             )
           )
-        `);
+        `)
+        .eq('crew_member_roles.crew_roles.name', roleName);
       
       if (membersError) throw membersError;
-      
-      return members?.filter(member => 
-        member.crew_member_roles?.some(role => 
-          role.crew_roles?.name === roleName
-        )
-      ) || [];
+      return members as CrewMember[];
     },
   });
 
@@ -81,7 +78,7 @@ export function CrewMemberSelect({
             {crew.name} {crew.folder === "Sonic City" && "⭐"}
           </DropdownMenuItem>
         ))}
-        {availableCrew?.length === 0 && (
+        {(!availableCrew || availableCrew.length === 0) && (
           <DropdownMenuItem disabled>
             No crew members available
           </DropdownMenuItem>
