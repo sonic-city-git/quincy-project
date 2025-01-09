@@ -1,8 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { CrewMember } from "@/types/crew";
-import { DeleteCrewMemberButton } from "./DeleteCrewMemberButton";
 import { RoleSelector } from "../shared/RoleSelector";
 import { BasicInfoFields } from "../add/BasicInfoFields";
+import { Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface EditCrewMemberFormProps {
   crewMember: CrewMember;
@@ -41,8 +52,27 @@ export function EditCrewMemberForm({
         onRolesChange={onRolesChange}
       />
       <div className="flex justify-between items-center">
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button type="button" variant="destructive">
+              <Trash2 className="w-4 h-4 mr-2" />
+              Delete
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the selected crew member(s).
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
         <Button type="submit">Save Changes</Button>
-        <DeleteCrewMemberButton onDelete={onDelete} />
       </div>
     </form>
   );
