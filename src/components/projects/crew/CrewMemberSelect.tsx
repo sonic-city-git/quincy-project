@@ -40,7 +40,7 @@ export function CrewMemberSelect({
       
       const { data, error } = await supabase
         .from('crew_members')
-        .select('*');
+        .select('id, name, email, phone, roles, crew_folder, created_at');
       
       if (error) {
         console.error('Error fetching crew members:', error);
@@ -56,9 +56,13 @@ export function CrewMemberSelect({
 
       // Transform and validate the data
       const validMembers = data.map(member => ({
-        ...member,
+        id: member.id,
+        name: member.name,
+        email: member.email,
+        phone: member.phone,
+        created_at: member.created_at,
         roles: Array.isArray(member.roles) 
-          ? (member.roles as any[]).map(role => ({
+          ? member.roles.map((role: any) => ({
               id: role.id || '',
               name: role.name || '',
               color: role.color || '',
