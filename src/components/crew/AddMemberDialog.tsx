@@ -35,13 +35,15 @@ export function AddMemberDialog() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('crew_roles')
-        .select('id, name');
+        .select('id, name')
+        .order('name');
       
       if (error) {
+        console.error('Error loading roles:', error);
         toast.error("Failed to load roles");
         throw error;
       }
-      return data;
+      return data || [];
     },
   });
 
@@ -50,13 +52,15 @@ export function AddMemberDialog() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('crew_folders')
-        .select('id, name');
+        .select('id, name')
+        .order('name');
       
       if (error) {
+        console.error('Error loading folders:', error);
         toast.error("Failed to load folders");
         throw error;
       }
-      return data;
+      return data || [];
     },
   });
 
