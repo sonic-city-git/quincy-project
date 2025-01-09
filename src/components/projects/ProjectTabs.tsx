@@ -16,12 +16,11 @@ export function ProjectTabs({ projectId, project }: ProjectTabsProps) {
       </TabsList>
 
       <TabsContent value="general">
-        <ProjectGeneralTab 
+        <ProjectGeneralTab
           projectId={projectId}
-          initialOwner={project.owner_id}
-          initialCustomer={project.customer || ""}
-          gigPrice={project.gig_price || ""}
-          yearlyRevenue={project.yearly_revenue || ""}
+          initialCustomer={project.customer || ''}
+          gigPrice={project.gig_price}
+          yearlyRevenue={project.yearly_revenue}
         />
       </TabsContent>
 

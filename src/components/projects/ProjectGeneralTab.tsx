@@ -1,15 +1,13 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { ProjectCalendar } from "@/components/events/ProjectCalendar";
 import { CustomerSelect } from "./customer/CustomerSelect";
 import { FinancialInfo } from "./financial/FinancialInfo";
 
 interface ProjectGeneralTabProps {
   projectId: string;
-  initialOwner: string;
   initialCustomer: string;
-  gigPrice: string;
-  yearlyRevenue: string;
+  gigPrice?: string | null;
+  yearlyRevenue?: string | null;
 }
 
 export const ProjectGeneralTab = ({ 
@@ -21,16 +19,15 @@ export const ProjectGeneralTab = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       <div className="lg:col-span-1">
-        <Card>
-          <CardContent className="p-4">
-            <ProjectCalendar className="rounded-md border" />
-          </CardContent>
-        </Card>
+        <FinancialInfo 
+          gigPrice={gigPrice} 
+          yearlyRevenue={yearlyRevenue}
+        />
       </div>
 
       <div className="lg:col-span-2 space-y-4">
         <Card>
-          <CardContent className="p-6 space-y-6">
+          <CardContent className="p-6">
             <CustomerSelect 
               projectId={projectId}
               initialCustomer={initialCustomer}
@@ -40,13 +37,10 @@ export const ProjectGeneralTab = ({
 
         <Card>
           <CardContent className="p-6">
-            <FinancialInfo 
-              gigPrice={gigPrice}
-              yearlyRevenue={yearlyRevenue}
-            />
+            <ProjectCalendar projectId={projectId} />
           </CardContent>
         </Card>
       </div>
     </div>
   );
-};
+}

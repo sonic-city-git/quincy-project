@@ -38,13 +38,17 @@ const ProjectDetails = () => {
   }
 
   const projectData = {
-    ...project,
-    owner_id: project.customer_id,
-    customer: project.customer_id,
+    id: project.id,
+    name: project.name,
+    customer_id: project.customer_id,
+    status: project.status,
     color: 'blue',
     last_invoiced: null,
-    gig_price: null,
-    yearly_revenue: null
+    gig_price: project.project_number,
+    yearly_revenue: project.description,
+    owner_id: project.customer_id,
+    customer: project.customer_id,
+    created_at: project.created_at
   };
 
   return (

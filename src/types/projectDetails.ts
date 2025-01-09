@@ -8,8 +8,6 @@ export interface ProjectData {
   gig_price: string | null;
   yearly_revenue: string | null;
   created_at: string;
-  crew_members: {
-    id: string;
-    name: string;
-  } | null;
+  customer_id: string | null;
+  status: string;
 }
