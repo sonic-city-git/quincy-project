@@ -64,7 +64,7 @@ export function CrewMemberSelect({
 }: CrewMemberSelectProps) {
   const [open, setOpen] = useState(false);
 
-  const { data: crewMembers, isLoading } = useQuery({
+  const { data: crewMembers = [], isLoading } = useQuery({
     queryKey: ['crew-members', roleName],
     queryFn: async () => {
       console.log('Fetching crew members for role:', roleName);
@@ -89,7 +89,8 @@ export function CrewMemberSelect({
       const validMembers = data.map(member => {
         // Ensure roles is an array and validate each role
         const validRoles = Array.isArray(member.roles) 
-          ? member.roles.filter(isValidRole)
+          ? member.roles
+              .filter((role): role is CrewRole => isValidRole(role))
           : [];
 
         // Validate and transform crew_folder
@@ -109,7 +110,7 @@ export function CrewMemberSelect({
           created_at: member.created_at,
           roles: validRoles,
           crew_folder: crewFolder
-        } as CrewMember;
+        } satisfies CrewMember;
       });
 
       console.log('Processed crew members:', validMembers);
@@ -137,9 +138,6 @@ export function CrewMemberSelect({
     },
   });
 
-  // Initialize members array before the loading check
-  const members = crewMembers || [];
-
   if (isLoading) {
     return (
       <Button variant="outline" className="w-[200px] justify-between" disabled>
@@ -166,10 +164,10 @@ export function CrewMemberSelect({
           <CommandInput placeholder="Search crew member..." />
           <CommandEmpty>No crew member found.</CommandEmpty>
           <CommandGroup>
-            {members.length === 0 ? (
+            {crewMembers.length === 0 ? (
               <CommandItem disabled>No crew members available</CommandItem>
             ) : (
-              members.map((crew) => (
+              crewMembers.map((crew) => (
                 <CommandItem
                   key={crew.id}
                   value={crew.name}
