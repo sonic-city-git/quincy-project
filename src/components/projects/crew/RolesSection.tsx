@@ -1,6 +1,5 @@
 import { RolesHeader } from "./RolesHeader";
 import { RatesList } from "./RatesList";
-import { RoleSelectionActions } from "./RoleSelectionActions";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
@@ -85,8 +84,6 @@ export function RolesSection({ projectId }: RolesSectionProps) {
         <RolesHeader 
           projectId={projectId}
           onAddRole={handleAddRole}
-        />
-        <RoleSelectionActions 
           selectedItems={selectedItems}
           onEdit={handleEdit}
         />
