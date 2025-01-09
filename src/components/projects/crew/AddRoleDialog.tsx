@@ -1,12 +1,13 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { EntitySelect } from "@/components/shared/EntitySelect";
 import { useForm } from "react-hook-form";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
+import { sortRoles } from "@/utils/roleUtils";
 
 interface AddRoleFormData {
   roleId: string;
@@ -30,7 +31,7 @@ export function AddRoleDialog({ projectId, onSubmit, trigger }: AddRoleDialogPro
     },
   });
 
-  const { data: roles = [], isLoading } = useQuery({
+  const { data: unsortedRoles = [], isLoading } = useQuery({
     queryKey: ['crew-roles'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -42,6 +43,8 @@ export function AddRoleDialog({ projectId, onSubmit, trigger }: AddRoleDialogPro
       return data;
     },
   });
+
+  const roles = sortRoles(unsortedRoles);
 
   const handleSubmit = async (data: AddRoleFormData) => {
     onSubmit(data);
@@ -63,6 +66,7 @@ export function AddRoleDialog({ projectId, onSubmit, trigger }: AddRoleDialogPro
             <FormField
               control={form.control}
               name="roleId"
+              rules={{ required: "Role is required" }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Role</FormLabel>
@@ -74,17 +78,19 @@ export function AddRoleDialog({ projectId, onSubmit, trigger }: AddRoleDialogPro
                       }))}
                       value={field.value}
                       onValueChange={field.onChange}
-                      placeholder="role"
+                      placeholder="Select role"
                       isLoading={isLoading}
                       required
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
               name="dailyRate"
+              rules={{ required: "Daily rate is required" }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Daily Rate</FormLabel>
@@ -92,15 +98,18 @@ export function AddRoleDialog({ projectId, onSubmit, trigger }: AddRoleDialogPro
                     <Input
                       type="number"
                       placeholder="Enter daily rate"
+                      required
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
               name="hourlyRate"
+              rules={{ required: "Hourly rate is required" }}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Hourly Rate</FormLabel>
@@ -108,9 +117,11 @@ export function AddRoleDialog({ projectId, onSubmit, trigger }: AddRoleDialogPro
                     <Input
                       type="number"
                       placeholder="Enter hourly rate"
+                      required
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
