@@ -17,47 +17,10 @@ export function ProjectList() {
     setSelectedItem(null);
   };
 
-  console.log('ProjectList render:', { 
-    totalProjects: projects.length,
-    selectedOwner,
-    projectOwners: projects.map(p => ({ 
-      id: p.id, 
-      name: p.name,
-      owner_id: p.owner_id,
-      owner: p.owner
-    })),
-    timestamp: new Date().toISOString()
-  });
-
   // Filter projects based on the selected owner's ID
   const filteredProjects = selectedOwner
-    ? projects.filter(project => {
-        const matches = project.owner_id === selectedOwner;
-        console.log('Filtering project:', {
-          projectId: project.id,
-          projectName: project.name,
-          projectOwnerId: project.owner_id,
-          projectOwner: project.owner,
-          selectedOwner,
-          matches,
-          comparison: `${project.owner_id} === ${selectedOwner}`,
-          timestamp: new Date().toISOString()
-        });
-        return matches;
-      })
+    ? projects.filter(project => project.owner_id === selectedOwner)
     : projects;
-
-  console.log('Filtered results:', {
-    totalProjects: projects.length,
-    filteredProjects: filteredProjects.length,
-    selectedOwner,
-    filteredProjectNames: filteredProjects.map(p => ({
-      name: p.name,
-      owner: p.owner,
-      owner_id: p.owner_id
-    })),
-    timestamp: new Date().toISOString()
-  });
 
   if (loading) {
     return <div>Loading...</div>;
@@ -68,14 +31,7 @@ export function ProjectList() {
       <div className="flex items-center justify-between">
         <ProjectFilterButton 
           selectedOwner={selectedOwner}
-          onOwnerSelect={(ownerId) => {
-            console.log('Owner selection changed:', { 
-              previous: selectedOwner, 
-              new: ownerId,
-              timestamp: new Date().toISOString()
-            });
-            setSelectedOwner(ownerId);
-          }}
+          onOwnerSelect={setSelectedOwner}
         />
         <ProjectActions 
           selectedItems={selectedItem ? [selectedItem] : []} 

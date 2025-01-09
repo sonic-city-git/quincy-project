@@ -23,10 +23,6 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
 
   const fetchSonicCityCrewMembers = async () => {
     try {
-      console.log('Fetching crew members...', { 
-        timestamp: new Date().toISOString(),
-        currentSelection: selectedOwner 
-      });
       setLoading(true);
       const { data, error } = await supabase
         .from('crew_members')
@@ -39,15 +35,6 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
         return;
       }
 
-      console.log('Fetched crew members:', {
-        count: data?.length,
-        members: data?.map(m => ({ 
-          id: m.id, 
-          name: m.name,
-          isCurrentlySelected: m.id === selectedOwner
-        })),
-        timestamp: new Date().toISOString()
-      });
       setCrewMembers(data || []);
     } catch (error) {
       console.error('Error:', error);
@@ -61,16 +48,6 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
   }, []);
 
   const selectedMemberName = crewMembers.find(member => member.id === selectedOwner)?.name;
-  console.log('Current filter state:', { 
-    selectedOwner, 
-    selectedMemberName,
-    availableMembers: crewMembers.map(m => ({ 
-      id: m.id, 
-      name: m.name,
-      isCurrentlySelected: m.id === selectedOwner 
-    })),
-    timestamp: new Date().toISOString()
-  });
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -83,7 +60,7 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
         >
           {loading ? (
             "Loading..."
-          ) : selectedMemberName || "Select member..."}
+          ) : selectedMemberName || "Filter by owner"}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -96,14 +73,6 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
               <CommandItem
                 key={member.id}
                 onSelect={() => {
-                  console.log('Member selection event:', { 
-                    memberId: member.id, 
-                    memberName: member.name,
-                    currentlySelected: selectedOwner === member.id,
-                    willSelect: selectedOwner !== member.id,
-                    willClear: selectedOwner === member.id,
-                    timestamp: new Date().toISOString()
-                  });
                   onOwnerSelect(selectedOwner === member.id ? null : member.id);
                   setOpen(false);
                 }}
