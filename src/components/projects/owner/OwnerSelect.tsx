@@ -24,8 +24,8 @@ export function OwnerSelect({ selectedOwnerId, onOwnerSelect }: OwnerSelectProps
         console.log('Fetching Sonic City crew members...');
         const { data, error } = await supabase
           .from('crew_members')
-          .select('id, name, crew_folder')
-          .eq('crew_folder->>name', 'Sonic City');
+          .select('id, name')
+          .filter('crew_folder->name', 'eq', 'Sonic City');
 
         if (error) throw error;
 
