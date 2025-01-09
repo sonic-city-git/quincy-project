@@ -4,12 +4,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 interface ProjectTableRowProps {
   project: Project;
+  index: number;
   colorStyle: React.HTMLAttributes<HTMLDivElement>;
   isSelected: boolean;
   onSelect: () => void;
 }
 
-export function ProjectTableRow({ project, colorStyle, isSelected, onSelect }: ProjectTableRowProps) {
+export function ProjectTableRow({ project, index, colorStyle, isSelected, onSelect }: ProjectTableRowProps) {
   return (
     <TableRow 
       className={`group hover:bg-zinc-800/50 ${
@@ -21,6 +22,9 @@ export function ProjectTableRow({ project, colorStyle, isSelected, onSelect }: P
           checked={isSelected}
           onCheckedChange={onSelect}
         />
+      </TableCell>
+      <TableCell className="text-sm text-muted-foreground">
+        {index}
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
@@ -38,10 +42,7 @@ export function ProjectTableRow({ project, colorStyle, isSelected, onSelect }: P
         {project.lastInvoiced || '-'}
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
-        {project.gigPrice || '-'}
-      </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
-        {project.yearlyRevenue || '-'}
+        {project.status}
       </TableCell>
     </TableRow>
   );
