@@ -53,7 +53,7 @@ export function CrewList() {
       );
     });
     setFilteredBySearch(filtered);
-  }, [searchTerm, filteredCrewMembers]);
+  }, [searchTerm, filteredCrewMembers, roles]); // Added roles to dependency array
 
   if (isLoading) {
     return (
