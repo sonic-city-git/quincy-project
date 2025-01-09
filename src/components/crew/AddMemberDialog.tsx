@@ -15,6 +15,7 @@ interface AddMemberFormData {
   email: string;
   phone: string;
   role_ids: string[];
+  folder_id: string;
 }
 
 export function AddMemberDialog() {
@@ -33,6 +34,18 @@ export function AddMemberDialog() {
     },
   });
 
+  const { data: folders = [], isLoading: foldersLoading } = useQuery({
+    queryKey: ['crew_folders'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('crew_folders')
+        .select('*');
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const onSubmit = async (data: AddMemberFormData) => {
     try {
       // First create the crew member
@@ -42,6 +55,7 @@ export function AddMemberDialog() {
           name: data.name,
           email: data.email,
           phone: data.phone,
+          folder_id: data.folder_id,
         }])
         .select()
         .single();
@@ -119,6 +133,25 @@ export function AddMemberDialog() {
                   <FormLabel>Phone</FormLabel>
                   <FormControl>
                     <Input placeholder="Enter phone number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="folder_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Folder</FormLabel>
+                  <FormControl>
+                    <EntitySelect
+                      entities={folders}
+                      value={field.value || ''}
+                      onValueChange={field.onChange}
+                      placeholder="Select folder"
+                      isLoading={foldersLoading}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
