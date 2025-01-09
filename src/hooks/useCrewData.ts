@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { CrewMember } from "@/types/crew";
+import { CrewMember, CrewRole } from "@/types/crew";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 
@@ -16,7 +16,12 @@ export function useCrewData() {
 
       if (error) throw error;
 
-      setCrewMembers(data as CrewMember[]);
+      const typedData = data.map(member => ({
+        ...member,
+        roles: member.roles as CrewRole[]
+      }));
+
+      setCrewMembers(typedData);
     } catch (error) {
       console.error('Error fetching crew members:', error);
       toast({

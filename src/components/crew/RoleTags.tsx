@@ -1,26 +1,22 @@
-import { memo } from "react";
+import { Badge } from "@/components/ui/badge";
 import { CrewRole } from "@/types/crew";
 
 interface RoleTagsProps {
   roles: CrewRole[];
 }
 
-export const RoleTags = memo(({ roles }: RoleTagsProps) => {
-  if (!roles?.length) return null;
-  
+export function RoleTags({ roles }: RoleTagsProps) {
   return (
-    <div className="flex gap-1 flex-wrap">
-      {roles.map((role) => (
-        <span
+    <div className="flex flex-wrap gap-1">
+      {roles?.map((role) => (
+        <Badge
           key={role.id}
-          className="px-2 py-0.5 rounded text-xs font-medium text-white"
-          style={{ backgroundColor: role.color || '#666666' }}
+          style={{ backgroundColor: role.color }}
+          className="text-white"
         >
-          {role.name.toUpperCase()}
-        </span>
+          {role.name}
+        </Badge>
       ))}
     </div>
   );
-});
-
-RoleTags.displayName = 'RoleTags';
+}

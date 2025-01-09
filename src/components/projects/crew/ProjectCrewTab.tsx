@@ -18,21 +18,14 @@ export function ProjectCrewTab({ projectId }: ProjectCrewTabProps) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('crew_members')
-        .select(`
-          *,
-          crew_member_roles (
-            role_id,
-            crew_roles (
-              id,
-              name,
-              color
-            )
-          )
-        `)
+        .select('*')
         .order('name');
       
       if (error) throw error;
-      return data as CrewMember[];
+      return data.map(member => ({
+        ...member,
+        roles: member.roles as CrewRole[]
+      })) as CrewMember[];
     },
   });
 
@@ -73,7 +66,7 @@ export function ProjectCrewTab({ projectId }: ProjectCrewTabProps) {
                   <TableRow key={crew.id} className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
                     <TableCell className="w-[240px] truncate">{crew.name}</TableCell>
                     <TableCell className="w-[320px]">
-                      <RoleTags crewMemberId={crew.id} />
+                      <RoleTags roles={crew.roles} />
                     </TableCell>
                     <TableCell className="w-[280px] truncate">{crew.email}</TableCell>
                     <TableCell className="truncate">{crew.phone}</TableCell>

@@ -28,27 +28,34 @@ export function CrewMemberSelect({
     queryFn: async () => {
       const { data: members, error: membersError } = await supabase
         .from('crew_members')
-        .select(`
-          *,
-          crew_member_roles!inner (
-            role_id,
-            crew_roles!inner (
-              id,
-              name,
-              color
-            )
-          )
-        `)
-        .eq('crew_member_roles.crew_roles.name', roleName);
+        .select('*')
+        .eq('roles->name', roleName);
       
       if (membersError) throw membersError;
-      return members as unknown as CrewMember[];
+      return members as CrewMember[];
     },
   });
 
+  const { data: folders } = useQuery({
+    queryKey: ['crew-folders'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('crew_folders')
+        .select('*');
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  const getFolderName = (folderId: string) => {
+    return folders?.find(f => f.id === folderId)?.name || '';
+  };
+
   const availableCrew = crewMembers?.sort((a, b) => {
-    if (a.folder === "Sonic City" && b.folder !== "Sonic City") return -1;
-    if (a.folder !== "Sonic City" && b.folder === "Sonic City") return 1;
+    const folderA = getFolderName(a.folder_id);
+    const folderB = getFolderName(b.folder_id);
+    if (folderA === "Sonic City" && folderB !== "Sonic City") return -1;
+    if (folderA !== "Sonic City" && folderB === "Sonic City") return 1;
     return a.name.localeCompare(b.name);
   });
 
@@ -63,7 +70,7 @@ export function CrewMemberSelect({
           {selectedCrewMember ? (
             <span>
               {selectedCrewMember.name} 
-              {selectedCrewMember.folder === "Sonic City" && "⭐"}
+              {getFolderName(selectedCrewMember.folder_id) === "Sonic City" && "⭐"}
             </span>
           ) : (
             "Select crew member"
@@ -77,7 +84,7 @@ export function CrewMemberSelect({
             key={crew.id}
             onClick={() => onSelect(projectRoleId, crew.id)}
           >
-            {crew.name} {crew.folder === "Sonic City" && "⭐"}
+            {crew.name} {getFolderName(crew.folder_id) === "Sonic City" && "⭐"}
           </DropdownMenuItem>
         ))}
         {(!availableCrew || availableCrew.length === 0) && (
