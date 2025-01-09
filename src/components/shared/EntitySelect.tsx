@@ -44,10 +44,10 @@ export function EntitySelect({
         .filter(Boolean);
       return selectedNames.length > 0 
         ? selectedNames.join(', ') 
-        : isLoading ? `Loading ${placeholder}...` : `Select ${placeholder}`;
+        : isLoading ? 'Loading...' : placeholder;
     }
     const selectedEntity = entities.find(e => e.id === value);
-    return selectedEntity?.name || (isLoading ? `Loading ${placeholder}...` : `Select ${placeholder}`);
+    return selectedEntity?.name || (isLoading ? 'Loading...' : placeholder);
   };
 
   return (
