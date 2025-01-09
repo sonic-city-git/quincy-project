@@ -39,7 +39,7 @@ export function useProjects() {
       id: project.id,
       name: project.name,
       customer_id: project.customer_id,
-      lastInvoiced: project.start_date || '',
+      lastInvoiced: project.created_at || '',
       owner: project.crew_member?.name || project.customer?.name || 'No Owner',
       owner_id: project.crew_member_id || project.customer_id,
       status: project.status || 'draft',
