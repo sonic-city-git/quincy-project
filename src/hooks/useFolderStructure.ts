@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Equipment } from "@/types/equipment";
-import { Folder } from "@/types/folders";
 import { supabase } from "@/integrations/supabase/client";
+import { Folder } from "@/types/folders";
 
 export function useFolderStructure() {
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -33,6 +33,7 @@ export function useFolderStructure() {
     const { data, error } = await supabase
       .from('folders')
       .select('*')
+      .eq('type', 'equipment')
       .order('name');
 
     if (error) {

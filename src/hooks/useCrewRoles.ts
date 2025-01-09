@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CrewRole } from "@/types/crew";
+import { Role } from "@/types/crew";
 import { sortRoles } from "@/utils/roleUtils";
 
 export function useCrewRoles() {
@@ -9,7 +9,7 @@ export function useCrewRoles() {
     queryFn: async () => {
       console.log('Fetching crew roles...');
       const { data, error } = await supabase
-        .from('crew_roles')
+        .from('roles')
         .select('*')
         .order('name');
       
@@ -19,7 +19,7 @@ export function useCrewRoles() {
       }
       
       console.log('Fetched crew roles:', data);
-      return data as CrewRole[];
+      return data as Role[];
     },
   });
 

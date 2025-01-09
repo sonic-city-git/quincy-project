@@ -34,7 +34,7 @@ export type Database = {
             foreignKeyName: "crew_member_roles_role_id_fkey"
             columns: ["role_id"]
             isOneToOne: false
-            referencedRelation: "roles"
+            referencedRelation: "crew_roles"
             referencedColumns: ["id"]
           },
         ]
@@ -76,6 +76,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      crew_roles: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          sort_order: number | null
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number | null
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
       }
       customers: {
         Row: {
@@ -594,7 +618,7 @@ export type Database = {
             foreignKeyName: "project_roles_role_id_fkey"
             columns: ["role_id"]
             isOneToOne: false
-            referencedRelation: "roles"
+            referencedRelation: "crew_roles"
             referencedColumns: ["id"]
           },
         ]
@@ -646,30 +670,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      roles: {
-        Row: {
-          color: string
-          created_at: string
-          id: string
-          name: string
-          sort_order: number | null
-        }
-        Insert: {
-          color: string
-          created_at?: string
-          id?: string
-          name: string
-          sort_order?: number | null
-        }
-        Update: {
-          color?: string
-          created_at?: string
-          id?: string
-          name?: string
-          sort_order?: number | null
-        }
-        Relationships: []
       }
       salary_rules: {
         Row: {

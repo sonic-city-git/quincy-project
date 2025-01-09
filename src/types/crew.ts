@@ -3,39 +3,32 @@ export interface CrewMember {
   name: string;
   email: string;
   phone: string;
-  crew_folder: {
-    id: string;
-    name: string;
-    created_at: string;
-  } | null;
-  roles: CrewRole[];
+  folder_id: string | null;
+  metadata: Record<string, any>;
   created_at: string;
+  roles?: Role[];
 }
 
 export interface NewCrewMember {
   name: string;
   phone: string;
   email: string;
-  crew_folder: {
-    id: string;
-    name: string;
-    created_at: string;
-  } | null;
-  roles: CrewRole[];
+  folder_id: string | null;
+  roles: Role[];
 }
 
-export interface CrewRole {
+export interface Role {
   id: string;
   name: string;
   color: string;
+  sort_order?: number;
   created_at?: string;
 }
 
 export interface CrewFolder {
   id: string;
-  data: {
-    name: string;
-    created_at: string;
-  };
+  name: string;
+  type: 'crew' | 'equipment';
+  parent_id: string | null;
   created_at: string;
 }

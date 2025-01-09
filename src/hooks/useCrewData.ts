@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { CrewMember, CrewRole } from "@/types/crew";
+import { CrewMember, Role } from "@/types/crew";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 
@@ -11,52 +11,56 @@ export function useCrewData() {
   const fetchCrewMembers = useCallback(async () => {
     try {
       console.log('Fetching crew members...');
-      const { data, error } = await supabase
+      const { data: membersData, error: membersError } = await supabase
         .from('crew_members')
-        .select('*');
+        .select(`
+          *,
+          crew_member_roles (
+            roles (
+              id,
+              name,
+              color,
+              created_at
+            )
+          )
+        `);
 
-      if (error) {
-        console.error('Error fetching crew members:', error);
-        // Check if the error is due to a blocked request
-        if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
-          toast({
-            title: "Connection Error",
-            description: "It seems like your ad blocker or browser settings might be blocking the connection. Please try disabling your ad blocker for this site.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Error",
-            description: "Failed to fetch crew members: " + error.message,
-            variant: "destructive",
-          });
-        }
-        throw error;
+      if (membersError) {
+        console.error('Error fetching crew members:', membersError);
+        throw membersError;
       }
 
-      console.log('Received crew data:', data);
+      console.log('Received crew data:', membersData);
 
-      const typedData = data.map(member => ({
-        ...member,
-        roles: Array.isArray(member.roles) 
-          ? (member.roles as any[]).map(role => ({
-              id: role.id,
-              name: role.name,
-              color: role.color,
-              created_at: role.created_at
-            } as CrewRole)) 
-          : [],
-        crew_folder: member.crew_folder ? {
-          id: (member.crew_folder as any).id || '',
-          name: (member.crew_folder as any).name || '',
-          created_at: (member.crew_folder as any).created_at || ''
-        } : null
-      })) as CrewMember[];
+      const typedData = (membersData || []).map(member => {
+        const roles = member.crew_member_roles?.map(role => ({
+          id: role.roles.id,
+          name: role.roles.name,
+          color: role.roles.color,
+          created_at: role.roles.created_at
+        } as Role)) || [];
+
+        return {
+          id: member.id,
+          name: member.name,
+          email: member.email,
+          phone: member.phone,
+          folder_id: member.folder_id,
+          metadata: member.metadata,
+          created_at: member.created_at,
+          roles: roles
+        } as CrewMember;
+      });
 
       console.log('Processed crew data:', typedData);
       setCrewMembers(typedData);
     } catch (error) {
       console.error('Error fetching crew members:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch crew members",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
