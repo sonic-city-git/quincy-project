@@ -42,11 +42,15 @@ export function CrewList() {
     const filtered = filteredCrewMembers.filter(crew => {
       if (!searchTerm) return true;
       const searchLower = searchTerm.toLowerCase();
+      
+      // Parse the crew folder from JSON if it exists
+      const folderName = crew.crew_folder ? crew.crew_folder.name : '';
+      
       return (
         crew.name.toLowerCase().includes(searchLower) ||
         crew.email.toLowerCase().includes(searchLower) ||
         crew.phone.toLowerCase().includes(searchLower) ||
-        (crew.crew_folder?.name || '').toLowerCase().includes(searchLower)
+        folderName.toLowerCase().includes(searchLower)
       );
     });
     setFilteredBySearch(filtered);
