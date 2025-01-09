@@ -111,7 +111,7 @@ export function ProjectRoleCard({
       <div className="flex items-center">
         <RoleInfo color={color} name={name} />
         <div className="grid grid-cols-[200px,200px,1fr] gap-6">
-          <span className="text-sm pl-1 flex items-center">{dailyRate || '-'}</span>
+          <span className="text-sm pl-1 flex items-center -ml-[10px]">{dailyRate || '-'}</span>
           <span className="text-sm pl-1 flex items-center">{hourlyRate || '-'}</span>
           <div className="-ml-[50px]">
             <EntitySelect
