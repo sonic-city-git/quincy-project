@@ -1,6 +1,9 @@
 import { RolesHeader } from "./RolesHeader";
 import { RatesList } from "./RatesList";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
+import { Dialog } from "@/components/ui/dialog";
+import { AddRoleDialog } from "./AddRoleDialog";
+import { EditRoleDialog } from "./EditRoleDialog";
 
 interface RolesSectionProps {
   projectId: string;
@@ -40,12 +43,18 @@ export function RolesSection({ projectId }: RolesSectionProps) {
     });
   };
 
+  const handleEdit = (roleId: string) => {
+    setEditMode(true);
+    setOpen(true);
+    handleEditRole(roleId);
+  };
+
   return (
     <div className="space-y-4">
       <div className="bg-zinc-900/50 rounded-lg p-3">
         <RolesHeader
           selectedItems={selectedItems}
-          onEdit={handleEditRole}
+          onEdit={handleEdit}
           onDelete={handleDeleteRole}
           open={open}
           onOpenChange={setOpen}
@@ -54,6 +63,25 @@ export function RolesSection({ projectId }: RolesSectionProps) {
           loading={loading}
           roles={roles || []}
         />
+        <Dialog open={open} onOpenChange={setOpen}>
+          {editMode ? (
+            <EditRoleDialog
+              projectId={projectId}
+              roleId={selectedItems[0]}
+              onClose={handleDialogClose}
+              onSubmit={handleEditRole}
+              onDelete={() => handleDeleteRole(selectedItems[0])}
+              loading={loading}
+            />
+          ) : (
+            <AddRoleDialog
+              roles={roles || []}
+              onClose={handleDialogClose}
+              onSubmit={handleAddRole}
+              loading={loading}
+            />
+          )}
+        </Dialog>
         <div className="grid gap-1.5">
           <RatesList
             projectRoles={projectRoles || []}
