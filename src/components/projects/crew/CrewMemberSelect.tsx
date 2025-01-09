@@ -33,9 +33,11 @@ export function CrewMemberSelect({
 }: CrewMemberSelectProps) {
   const [open, setOpen] = useState(false);
 
-  const { data: crewMembers, isLoading } = useQuery({
+  const { data: crewMembers = [], isLoading } = useQuery({
     queryKey: ['crew-members', roleName],
     queryFn: async () => {
+      console.log('Fetching crew members for role:', roleName);
+      
       const { data, error } = await supabase
         .from('crew_members')
         .select('id, name, roles, crew_folder');
@@ -45,7 +47,12 @@ export function CrewMemberSelect({
         throw error;
       }
 
-      if (!data) return [];
+      if (!data) {
+        console.log('No crew members found');
+        return [];
+      }
+
+      console.log('Raw crew members data:', data);
 
       // Safely transform the data with proper type checking
       const validMembers = data.map(member => {
@@ -64,15 +71,17 @@ export function CrewMemberSelect({
         } as CrewMember;
       });
 
+      console.log('Processed crew members:', validMembers);
+
       // Filter members by role
-      return validMembers.filter(member => 
+      const filteredMembers = validMembers.filter(member => 
         member.roles.some(role => role.name === roleName)
       );
+
+      console.log('Filtered crew members by role:', filteredMembers);
+      return filteredMembers;
     },
   });
-
-  // Ensure we always have an array to map over
-  const filteredMembers = crewMembers || [];
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -94,8 +103,10 @@ export function CrewMemberSelect({
           <CommandGroup>
             {isLoading ? (
               <CommandItem disabled>Loading...</CommandItem>
+            ) : crewMembers.length === 0 ? (
+              <CommandItem disabled>No crew members available</CommandItem>
             ) : (
-              filteredMembers.map((crew) => (
+              crewMembers.map((crew) => (
                 <CommandItem
                   key={crew.id}
                   value={crew.name}
