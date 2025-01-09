@@ -43,7 +43,7 @@ export function useCrew() {
             created_at,
             updated_at,
             folder:crew_folders(id, name),
-            role:crew_member_roles(crew_roles(id, name, color))
+            role:crew_roles(id, name, color)
           `)
           .order('name');
 
@@ -70,8 +70,8 @@ export function useCrew() {
           }
 
           let role = null;
-          if (member.role && Array.isArray(member.role) && member.role[0]?.crew_roles) {
-            const roleData = member.role[0].crew_roles;
+          if (member.role && Array.isArray(member.role) && member.role[0]) {
+            const roleData = member.role[0];
             if (roleData.id && roleData.name && roleData.color) {
               role = {
                 id: roleData.id,
