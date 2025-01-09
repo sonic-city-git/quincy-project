@@ -69,27 +69,34 @@ export function useCrew() {
 
         // Map the response to match the CrewMember type
         return data.map((member): CrewMember => {
-          // Safely handle folder data
-          const folder = member.folder && 
-            typeof member.folder === 'object' && 
-            'id' in member.folder && 
-            'name' in member.folder
+          // Safely handle folder data with type assertion after validation
+          const folderData = member.folder;
+          const folder = folderData && 
+            typeof folderData === 'object' && 
+            'id' in folderData && 
+            typeof folderData.id === 'string' &&
+            'name' in folderData && 
+            typeof folderData.name === 'string'
             ? {
-                id: member.folder.id as string,
-                name: member.folder.name as string
+                id: folderData.id,
+                name: folderData.name
               }
             : null;
 
-          // Safely handle role data
-          const role = member.role?.[0]?.crew_roles && 
-            typeof member.role[0].crew_roles === 'object' && 
-            'id' in member.role[0].crew_roles && 
-            'name' in member.role[0].crew_roles &&
-            'color' in member.role[0].crew_roles
+          // Safely handle role data with type assertion after validation
+          const roleData = member.role?.[0]?.crew_roles;
+          const role = roleData &&
+            typeof roleData === 'object' &&
+            'id' in roleData &&
+            typeof roleData.id === 'string' &&
+            'name' in roleData &&
+            typeof roleData.name === 'string' &&
+            'color' in roleData &&
+            typeof roleData.color === 'string'
             ? {
-                id: member.role[0].crew_roles.id as string,
-                name: member.role[0].crew_roles.name as string,
-                color: member.role[0].crew_roles.color as string
+                id: roleData.id,
+                name: roleData.name,
+                color: roleData.color
               }
             : null;
 
