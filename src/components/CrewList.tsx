@@ -73,8 +73,8 @@ export function CrewList() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="bg-zinc-900 rounded-md flex flex-col h-[calc(100vh-8rem)]">
+    <div className="h-[calc(100vh-6rem)]">
+      <div className="bg-zinc-900 rounded-md flex flex-col h-full">
         <div className="p-4 border-b border-zinc-800/50">
           <CrewHeader 
             selectedCount={selectedItems.length} 

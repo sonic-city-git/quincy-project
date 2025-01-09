@@ -26,7 +26,7 @@ export function CrewTableContainer({
           roles={roles}
         />
       </div>
-      <ScrollArea className="h-[300px]">
+      <ScrollArea className="h-[calc(100vh-24rem)]">
         <CrewTable 
           crewMembers={crewMembers}
           selectedItems={selectedItems}
