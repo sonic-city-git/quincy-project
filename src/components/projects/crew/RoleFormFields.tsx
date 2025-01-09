@@ -17,7 +17,7 @@ interface RoleFormFieldsProps {
 const roleOrder = ["FOH", "MON", "PLAYBACK", "BACKLINE"];
 
 export function RoleFormFields({
-  roles,
+  roles = [], // Provide default empty array
   selectedRole,
   dailyRate,
   hourlyRate,
@@ -27,9 +27,10 @@ export function RoleFormFields({
   onDailyRateChange,
   onHourlyRateChange,
 }: RoleFormFieldsProps) {
-  const selectedRoleData = roles?.find(role => role.id === selectedRole);
+  const selectedRoleData = roles.find(role => role.id === selectedRole);
 
-  const sortedRoles = [...(roles || [])].sort((a, b) => {
+  // Ensure we have a valid array to sort
+  const sortedRoles = [...roles].sort((a, b) => {
     const roleA = a.name.toUpperCase();
     const roleB = b.name.toUpperCase();
     
@@ -55,7 +56,7 @@ export function RoleFormFields({
         <Label htmlFor="role" className="after:content-['*'] after:ml-0.5 after:text-red-500">Role</Label>
         {editMode ? (
           <div className="w-full p-2 rounded-md border border-zinc-800 bg-zinc-950">
-            {selectedRoleData?.name}
+            {selectedRoleData?.name || 'No role selected'}
           </div>
         ) : (
           <select
@@ -65,7 +66,7 @@ export function RoleFormFields({
             onChange={(e) => onRoleChange(e.target.value)}
           >
             <option value="">Select a role</option>
-            {sortedRoles?.map((role) => (
+            {sortedRoles.map((role) => (
               <option key={role.id} value={role.id}>
                 {role.name}
               </option>
