@@ -65,7 +65,7 @@ export function ProjectActions({ selectedItems = [], onProjectDeleted }: Project
   const handleAddProject = async (projectData: {
     name: string;
     owner_id: string;
-    customer: string | null;
+    customer_id: string | null;
     color: string;
   }) => {
     try {
@@ -76,9 +76,22 @@ export function ProjectActions({ selectedItems = [], onProjectDeleted }: Project
 
       if (error) throw error;
 
+      // Invalidate and refetch projects after successful addition
+      await queryClient.invalidateQueries({ queryKey: ['projects'] });
+
+      toast({
+        title: "Success",
+        description: "Project created successfully",
+      });
+
       return data;
     } catch (error) {
       console.error('Error creating project:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create project",
+        variant: "destructive",
+      });
       throw error;
     }
   };
