@@ -25,7 +25,7 @@ export function OwnerSelect({ selectedOwnerId, onOwnerSelect }: OwnerSelectProps
         const { data, error } = await supabase
           .from('crew_members')
           .select('id, name, crew_folder')
-          .eq('crew_folder->data->name', 'Sonic City');
+          .eq('crew_folder->>name', 'Sonic City');
 
         if (error) throw error;
 
