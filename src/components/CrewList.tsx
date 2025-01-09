@@ -8,7 +8,7 @@ import { useCrewRoles } from "@/hooks/useCrewRoles";
 
 export function CrewList() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { roles } = useCrewRoles();
+  const { roles, isLoading: isRolesLoading } = useCrewRoles();
   
   const {
     selectedItems,
@@ -53,9 +53,9 @@ export function CrewList() {
       );
     });
     setFilteredBySearch(filtered);
-  }, [searchTerm, filteredCrewMembers, roles]); // Added roles to dependency array
+  }, [searchTerm, filteredCrewMembers]);
 
-  if (isLoading) {
+  if (isLoading || isRolesLoading) {
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-300"></div>
@@ -84,7 +84,7 @@ export function CrewList() {
           crewMembers={filteredBySearch}
           selectedItems={selectedItems}
           onItemSelect={handleItemSelect}
-          roles={roles}
+          roles={roles || []}
         />
 
         <div className="border-t border-zinc-800/50">
