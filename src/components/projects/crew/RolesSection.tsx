@@ -35,10 +35,12 @@ export function RolesSection({ projectId }: RolesSectionProps) {
 
   const handleItemSelect = (roleId: string) => {
     setSelectedItems((prev) => {
+      // If the clicked item is already selected, unselect it
       if (prev.includes(roleId)) {
-        return prev.filter((id) => id !== roleId);
+        return [];
       }
-      return [...prev, roleId];
+      // Otherwise, select only this item
+      return [roleId];
     });
   };
 
