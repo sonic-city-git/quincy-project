@@ -1,9 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { RoleInfo } from "./RoleInfo";
-import { EntitySelect } from "@/components/shared/EntitySelect";
-import { useQuery } from "@tanstack/react-query";
+import { PreferredCrewSelect } from "./PreferredCrewSelect";
 import { supabase } from "@/integrations/supabase/client";
-import { CrewMember, CrewRole } from "@/types/crew";
 
 interface ProjectRoleCardProps {
   id: string;
@@ -28,74 +26,11 @@ export function ProjectRoleCard({
   preferredId,
   onUpdate
 }: ProjectRoleCardProps) {
-  const { data: crewMembers = [] } = useQuery({
-    queryKey: ['crew-members', roleId],
-    queryFn: async () => {
-      console.log('Fetching crew members for role:', { roleId, name });
-      
-      // Query crew members where roles array contains the role id
-      const { data, error } = await supabase
-        .from('crew_members')
-        .select('*')
-        .filter('roles', 'cs', `[{"id":"${roleId}"}]`);
-      
-      if (error) {
-        console.error('Error fetching crew members:', error);
-        throw error;
-      }
-
-      console.log('Received crew data:', data);
-
-      // Transform and sort crew members
-      const transformedData = (data || []).map(member => {
-        // Transform roles from Json to CrewRole[]
-        const roles = Array.isArray(member.roles) 
-          ? member.roles.map((role: any) => ({
-              id: role.id || '',
-              name: role.name || '',
-              color: role.color || '',
-              created_at: role.created_at
-            }))
-          : [];
-
-        // Transform crew_folder from Json to the expected type
-        const crewFolder = member.crew_folder && typeof member.crew_folder === 'object'
-          ? {
-              id: (member.crew_folder as any).id || '',
-              name: (member.crew_folder as any).name || '',
-              created_at: (member.crew_folder as any).created_at || ''
-            }
-          : null;
-
-        return {
-          id: member.id,
-          name: member.name,
-          email: member.email,
-          phone: member.phone,
-          created_at: member.created_at,
-          crew_folder: crewFolder,
-          roles: roles
-        } as CrewMember;
-      });
-
-      // Sort crew members with Sonic City first
-      return transformedData.sort((a, b) => {
-        const aIsSonicCity = a.crew_folder?.name === 'Sonic City';
-        const bIsSonicCity = b.crew_folder?.name === 'Sonic City';
-        
-        if (aIsSonicCity && !bIsSonicCity) return -1;
-        if (!aIsSonicCity && bIsSonicCity) return 1;
-        return a.name.localeCompare(b.name);
-      });
-    }
-  });
-
-  // Handle preferred crew member change
   const handlePreferredChange = async (crewId: string) => {
     const { error } = await supabase
       .from('project_roles')
       .update({ preferred_id: crewId })
-      .eq('id', id);  // Use the project_role id instead of role_id
+      .eq('id', id);
 
     if (error) {
       console.error('Error updating preferred crew member:', error);
@@ -115,14 +50,10 @@ export function ProjectRoleCard({
           <span className="text-sm pl-1 flex items-center -ml-[20px]">{dailyRate || '-'}</span>
           <span className="text-sm pl-1 flex items-center -ml-[80px]">{hourlyRate || '-'}</span>
           <div className="-ml-[130px]">
-            <EntitySelect
-              entities={crewMembers.map(crew => ({
-                id: crew.id,
-                name: crew.name
-              }))}
-              value={preferredId || ''}
-              onValueChange={handlePreferredChange}
-              placeholder="Preferred crew"
+            <PreferredCrewSelect
+              roleId={roleId}
+              preferredId={preferredId}
+              onUpdate={handlePreferredChange}
             />
           </div>
         </div>
