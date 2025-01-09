@@ -15,6 +15,7 @@ export function useAddMember() {
 
   const addMember = async (data: AddMemberFormData) => {
     try {
+      // First, insert the crew member
       const { data: crewMember, error: crewError } = await supabase
         .from('crew_members')
         .insert({
@@ -37,6 +38,7 @@ export function useAddMember() {
         return false;
       }
 
+      // Then, if there are roles to assign, insert them
       if (data.role_ids.length > 0) {
         const roleInserts = data.role_ids.map(roleId => ({
           crew_member_id: crewMember.id,
