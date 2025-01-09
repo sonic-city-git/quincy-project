@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useMemo } from "react";
 import { EquipmentFolderSelect } from "../EquipmentFolderSelect";
 import { Label } from "@/components/ui/label";
-import { BasicEquipmentFields } from "./BasicEquipmentFields";
+import { BasicEquipmentFields } from "../add/BasicEquipmentFields";
 import { StockManagementSection } from "./sections/StockManagementSection";
 import { TotalBookValueSection } from "./sections/TotalBookValueSection";
 
