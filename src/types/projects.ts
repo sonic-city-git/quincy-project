@@ -7,8 +7,6 @@ export interface Project {
   color: string;
   status: string;
   lastInvoiced?: string | null;
-  gigPrice?: string | null;
-  yearlyRevenue?: string | null;
 }
 
 export interface ProjectData extends Project {

@@ -663,44 +663,35 @@ export type Database = {
       }
       projects: {
         Row: {
+          "#": number | null
           created_at: string
           customer_id: string | null
-          description: string | null
-          end_date: string | null
           id: string
-          location: string | null
           name: string
           notes: string | null
           project_number: string | null
-          start_date: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          "#"?: number | null
           created_at?: string
           customer_id?: string | null
-          description?: string | null
-          end_date?: string | null
           id?: string
-          location?: string | null
           name: string
           notes?: string | null
           project_number?: string | null
-          start_date?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          "#"?: number | null
           created_at?: string
           customer_id?: string | null
-          description?: string | null
-          end_date?: string | null
           id?: string
-          location?: string | null
           name?: string
           notes?: string | null
           project_number?: string | null
-          start_date?: string | null
           status?: string
           updated_at?: string
         }

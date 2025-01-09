@@ -40,8 +40,6 @@ export function useProjects() {
       owner_id: project.customer_id,
       status: project.status || 'draft',
       color: 'blue', // Default color for now
-      gigPrice: project.project_number || '',
-      yearlyRevenue: project.description || ''
     })) as Project[];
   };
 
