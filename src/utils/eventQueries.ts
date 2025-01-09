@@ -44,7 +44,8 @@ export const createEvent = async (
     project_id: projectId,
     date: formattedDate,
     name: eventName,
-    event_type_id: eventType.id
+    event_type_id: eventType.id,
+    needs_crew: eventType.needs_crew
   });
 
   try {
@@ -79,7 +80,14 @@ export const createEvent = async (
     // If the event type needs crew, create role assignments
     if (eventType.needs_crew) {
       console.log('Event needs crew, creating role assignments');
-      await createRoleAssignments(projectId, eventData.id);
+      try {
+        const roleAssignments = await createRoleAssignments(projectId, eventData.id);
+        console.log('Created role assignments:', roleAssignments);
+      } catch (roleError) {
+        console.error('Error creating role assignments:', roleError);
+        // We might want to delete the event if role assignments fail
+        // For now, we'll just log the error and continue
+      }
     }
 
     return eventData;

@@ -26,7 +26,7 @@ export const createRoleAssignments = async (projectId: string, eventId: string) 
 
     if (!projectRoles?.length) {
       console.log('No project roles found to create assignments for');
-      return;
+      return [];
     }
 
     // Create event role assignments for each project role
@@ -41,17 +41,18 @@ export const createRoleAssignments = async (projectId: string, eventId: string) 
 
     console.log('Creating role assignments:', roleAssignments);
 
-    const { error: insertError } = await supabase
+    const { data: insertedRoles, error: insertError } = await supabase
       .from('project_event_roles')
-      .insert(roleAssignments);
+      .insert(roleAssignments)
+      .select();
 
     if (insertError) {
       console.error('Error creating role assignments:', insertError);
       throw insertError;
     }
 
-    console.log('Successfully created role assignments');
-    return roleAssignments;
+    console.log('Successfully created role assignments:', insertedRoles);
+    return insertedRoles;
   } catch (error) {
     console.error('Error in createRoleAssignments:', error);
     throw error;
