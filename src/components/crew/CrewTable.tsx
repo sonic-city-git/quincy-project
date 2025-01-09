@@ -4,6 +4,7 @@ import { CrewMember } from "@/types/crew";
 import { RoleTags } from "./RoleTags";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { memo } from "react";
 
 interface CrewTableProps {
   crewMembers: CrewMember[];
@@ -13,7 +14,49 @@ interface CrewTableProps {
   bodyOnly?: boolean;
 }
 
-export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly, bodyOnly }: CrewTableProps) {
+// Memoized table row component to prevent unnecessary re-renders
+const CrewTableRow = memo(({ 
+  crew, 
+  folderName, 
+  isSelected, 
+  onSelect 
+}: { 
+  crew: CrewMember; 
+  folderName: string; 
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+}) => (
+  <TableRow key={crew.id} className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
+    <TableCell className="w-[48px]">
+      <Checkbox 
+        checked={isSelected}
+        onCheckedChange={() => onSelect(crew.id)}
+      />
+    </TableCell>
+    <TableCell className="w-[240px] truncate">
+      {crew.name}
+      {folderName === 'Sonic City' && (
+        <span className="ml-1">⭐</span>
+      )}
+    </TableCell>
+    <TableCell className="w-[320px]">
+      <RoleTags crewMemberId={crew.id} />
+    </TableCell>
+    <TableCell className="w-[280px] truncate">{crew.email}</TableCell>
+    <TableCell className="w-[180px] truncate">{crew.phone}</TableCell>
+    <TableCell className="truncate">{folderName}</TableCell>
+  </TableRow>
+));
+CrewTableRow.displayName = 'CrewTableRow';
+
+export function CrewTable({ 
+  crewMembers, 
+  selectedItems, 
+  onItemSelect, 
+  headerOnly, 
+  bodyOnly 
+}: CrewTableProps) {
+  // Use react-query for caching folder data
   const { data: folders } = useQuery({
     queryKey: ['crew-folders'],
     queryFn: async () => {
@@ -25,6 +68,7 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
       if (error) throw error;
       return data;
     },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
   });
 
   const getFolderName = (folderId: string) => {
@@ -67,31 +111,15 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
 
   const tableBody = (
     <TableBody>
-      {crewMembers.map((crew) => {
-        const folderName = getFolderName(crew.folder_id);
-        return (
-          <TableRow key={crew.id} className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
-            <TableCell className="w-[48px]">
-              <Checkbox 
-                checked={selectedItems.includes(crew.id)}
-                onCheckedChange={() => onItemSelect(crew.id)}
-              />
-            </TableCell>
-            <TableCell className="w-[240px] truncate">
-              {crew.name}
-              {folderName === 'Sonic City' && (
-                <span className="ml-1">⭐</span>
-              )}
-            </TableCell>
-            <TableCell className="w-[320px]">
-              <RoleTags crewMemberId={crew.id} />
-            </TableCell>
-            <TableCell className="w-[280px] truncate">{crew.email}</TableCell>
-            <TableCell className="w-[180px] truncate">{crew.phone}</TableCell>
-            <TableCell className="truncate">{folderName}</TableCell>
-          </TableRow>
-        );
-      })}
+      {crewMembers.map((crew) => (
+        <CrewTableRow
+          key={crew.id}
+          crew={crew}
+          folderName={getFolderName(crew.folder_id)}
+          isSelected={selectedItems.includes(crew.id)}
+          onSelect={onItemSelect}
+        />
+      ))}
     </TableBody>
   );
 
