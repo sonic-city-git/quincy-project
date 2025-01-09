@@ -32,6 +32,7 @@ export function useProjects() {
       name: project.name,
       lastInvoiced: project.last_invoiced || '',
       owner: project.crew_members?.name || 'Unknown Owner',
+      owner_id: project.owner_id,
       color: project.color,
       gigPrice: project.gig_price || '',
       yearlyRevenue: project.yearly_revenue || ''

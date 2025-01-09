@@ -18,7 +18,7 @@ export function ProjectList() {
   };
 
   const filteredProjects = selectedOwner
-    ? projects.filter(project => project.owner === selectedOwner)
+    ? projects.filter(project => project.owner_id === selectedOwner)
     : projects;
 
   if (loading) {
