@@ -25,17 +25,6 @@ interface CrewMemberSelectProps {
   roleName: string;
 }
 
-// Type guard for crew folder JSON data
-const isValidCrewFolder = (value: any): value is { id: string; name: string; created_at: string } => {
-  return (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof value.id === 'string' &&
-    typeof value.name === 'string' &&
-    typeof value.created_at === 'string'
-  );
-};
-
 // Type guard for crew role JSON data
 const isValidRole = (value: any): value is CrewRole => {
   return (
@@ -44,6 +33,17 @@ const isValidRole = (value: any): value is CrewRole => {
     typeof value.id === 'string' &&
     typeof value.name === 'string' &&
     typeof value.color === 'string'
+  );
+};
+
+// Type guard for crew folder JSON data
+const isValidCrewFolder = (value: any): value is { id: string; name: string; created_at: string } => {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof value.id === 'string' &&
+    typeof value.name === 'string' &&
+    typeof value.created_at === 'string'
   );
 };
 
@@ -86,23 +86,31 @@ export function CrewMemberSelect({
       console.log('Raw crew members data:', data);
 
       // Transform and validate the data
-      const validMembers = data.map(member => ({
-        id: member.id,
-        name: member.name,
-        email: member.email,
-        phone: member.phone,
-        created_at: member.created_at,
-        roles: Array.isArray(member.roles) 
+      const validMembers = data.map(member => {
+        // Ensure roles is an array and validate each role
+        const validRoles = Array.isArray(member.roles) 
           ? member.roles.filter(isValidRole)
-          : [],
-        crew_folder: member.crew_folder && isValidCrewFolder(member.crew_folder)
+          : [];
+
+        // Validate and transform crew_folder
+        const crewFolder = member.crew_folder && isValidCrewFolder(member.crew_folder)
           ? {
               id: member.crew_folder.id,
               name: member.crew_folder.name,
               created_at: member.crew_folder.created_at
             }
-          : null
-      })) as CrewMember[];
+          : null;
+
+        return {
+          id: member.id,
+          name: member.name,
+          email: member.email,
+          phone: member.phone,
+          created_at: member.created_at,
+          roles: validRoles,
+          crew_folder: crewFolder
+        } as CrewMember;
+      });
 
       console.log('Processed crew members:', validMembers);
 
