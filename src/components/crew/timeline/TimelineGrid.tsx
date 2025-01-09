@@ -24,7 +24,7 @@ export function TimelineGrid({ days, selectedCrew }: TimelineGridProps) {
   };
 
   return (
-    <div className="p-4">
+    <div className="p-4 h-full">
       <div className="sticky top-0 z-10 bg-zinc-900 pb-4">
         <div className="grid grid-cols-14 gap-1 mb-1">
           {days.map((day) => (
@@ -49,7 +49,7 @@ export function TimelineGrid({ days, selectedCrew }: TimelineGridProps) {
       </div>
       
       {selectedCrew.length > 0 ? (
-        <div className="space-y-4 mt-4">
+        <div className="space-y-4 mt-4 min-h-[calc(100%-5rem)]">
           {selectedCrew.map((crew) => (
             <div key={crew.id}>
               <div className="flex items-center gap-2 mb-1">
@@ -79,7 +79,7 @@ export function TimelineGrid({ days, selectedCrew }: TimelineGridProps) {
           ))}
         </div>
       ) : (
-        <div className="text-center py-4 text-zinc-400">
+        <div className="text-center py-4 text-zinc-400 min-h-[calc(100%-5rem)]">
           Select crew members to view their timeline
         </div>
       )}
