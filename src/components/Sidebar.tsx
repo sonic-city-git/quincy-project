@@ -34,10 +34,10 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="pb-12 w-64 bg-[#F1F0FB] dark:bg-zinc-900">
-      <div className="px-3 py-4 border-b border-zinc-200 dark:border-zinc-800">
+    <div className="pb-12 w-64 bg-zinc-900">
+      <div className="px-3 py-4 border-b border-zinc-800">
         <div className="flex items-center justify-center mb-4">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-[#9b87f5] to-[#7E69AB] bg-clip-text text-transparent">
+          <h1 className="text-2xl font-bold text-[#F97316]">
             QUINCY
           </h1>
         </div>
@@ -50,10 +50,10 @@ export function Sidebar() {
                 key={link.href}
                 to={link.href}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-zinc-500 transition-all",
+                  "flex items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all",
                   link.bgColor,
-                  "hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100",
-                  link.isActive && "bg-zinc-100 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100"
+                  "hover:text-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100",
+                  link.isActive && "bg-zinc-800 text-zinc-100"
                 )}
               >
                 <link.icon className="h-4 w-4" />
