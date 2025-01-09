@@ -61,7 +61,7 @@ export function CustomerSelect({ projectId, initialCustomer, onCustomerSelect }:
       if (projectId && projectId.length > 0) {
         const { error: updateError } = await supabase
           .from('projects')
-          .update({ customer: selectedCustomerData.name })
+          .update({ customer_id: customerId })
           .eq('id', projectId);
 
         if (updateError) {
