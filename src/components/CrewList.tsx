@@ -3,7 +3,6 @@ import { CrewTimeline } from "./crew/CrewTimeline";
 import { addDays, subDays } from "date-fns";
 import { useCrewManagement } from "@/hooks/useCrewManagement";
 import { useState, useEffect } from "react";
-import { SelectionHeader } from "./crew/selection/SelectionHeader";
 import { CrewTableContainer } from "./crew/table/CrewTableContainer";
 
 export function CrewList() {
@@ -68,20 +67,15 @@ export function CrewList() {
           <CrewHeader 
             selectedCount={selectedItems.length} 
             onAddCrewMember={handleAddCrewMember}
+            onEditCrewMember={handleEditCrewMember}
             selectedRoles={selectedRoles}
             allRoles={allRoles}
             onRoleSelect={handleRoleSelect}
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
+            selectedCrew={selectedCrew}
           />
         </div>
-
-        <SelectionHeader 
-          selectedCount={selectedItems.length}
-          selectedCrew={selectedCrew}
-          onEditCrewMember={handleEditCrewMember}
-          onDeleteCrewMembers={handleDeleteCrewMembers}
-        />
 
         <CrewTableContainer 
           crewMembers={filteredBySearch}
