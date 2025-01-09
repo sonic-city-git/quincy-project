@@ -45,7 +45,7 @@ export function AddEquipmentDialog({ onAddEquipment }: AddEquipmentDialogProps) 
           }}
           onSubmit={handleSubmit}
           onDelete={() => setOpen(false)}
-          isNewEquipment
+          mode="add"
         />
       </DialogContent>
     </Dialog>

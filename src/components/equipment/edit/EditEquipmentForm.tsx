@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useMemo } from "react";
 import { EquipmentFolderSelect } from "../EquipmentFolderSelect";
 import { Label } from "@/components/ui/label";
-import { BasicInfoSection } from "./sections/BasicInfoSection";
+import { BasicEquipmentFields } from "./BasicEquipmentFields";
 import { StockManagementSection } from "./sections/StockManagementSection";
 import { TotalBookValueSection } from "./sections/TotalBookValueSection";
 
@@ -11,12 +11,14 @@ interface EditEquipmentFormProps {
   equipment: Equipment;
   onSubmit: (editedEquipment: Equipment) => void;
   onDelete: () => void;
+  mode?: 'edit' | 'add';
 }
 
 export function EditEquipmentForm({
   equipment,
   onSubmit,
   onDelete,
+  mode = 'edit'
 }: EditEquipmentFormProps) {
   const [stockCalculationMethod, setStockCalculationMethod] = useState<"manual" | "serial_numbers">(
     equipment.stockCalculationMethod || "manual"
@@ -55,6 +57,7 @@ export function EditEquipmentForm({
       serialNumbers: stockCalculationMethod === "serial_numbers" ? validSerialNumbers : undefined,
       stockCalculationMethod,
       folder_id: selectedFolder,
+      notes: (formData.get("notes") as string) || undefined,
     };
 
     onSubmit(editedEquipment);
@@ -79,13 +82,21 @@ export function EditEquipmentForm({
   return (
     <form onSubmit={handleSubmit} className="py-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Left Column */}
         <div className="space-y-4">
-          <BasicInfoSection equipment={equipment} />
+          <BasicEquipmentFields
+            defaultValues={{
+              code: equipment.code,
+              name: equipment.name,
+              price: equipment.price,
+              value: equipment.value,
+              weight: equipment.weight,
+              notes: equipment.notes,
+            }}
+            required 
+          />
           <TotalBookValueSection totalBookValue={totalBookValue} />
         </div>
 
-        {/* Right Column */}
         <div className="space-y-4">
           <StockManagementSection
             stockCalculationMethod={stockCalculationMethod}
@@ -109,10 +120,14 @@ export function EditEquipmentForm({
       </div>
 
       <div className="flex justify-between items-center mt-6">
-        <Button type="button" variant="destructive" onClick={onDelete}>
-          Delete
-        </Button>
-        <Button type="submit">Save changes</Button>
+        {mode === 'edit' ? (
+          <Button type="button" variant="destructive" onClick={onDelete}>
+            Delete
+          </Button>
+        ) : (
+          <div /> // Empty div to maintain spacing
+        )}
+        <Button type="submit">{mode === 'edit' ? 'Save changes' : 'Add equipment'}</Button>
       </div>
     </form>
   );

@@ -1,9 +1,26 @@
 import { useState, useCallback, useRef, useMemo } from "react";
 import { addDays, subDays } from "date-fns";
 import { useDebounceResize } from "@/hooks/useDebounceResize";
-import { EquipmentHeader } from "./equipment/EquipmentHeader";
-import { EquipmentContent } from "./equipment/EquipmentContent";
 import { Equipment } from "@/types/equipment";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Search, Plus, Wrench, Trash2 } from "lucide-react";
+import { EquipmentFolderSelect } from "./equipment/EquipmentFolderSelect";
+import { EquipmentTable } from "./equipment/EquipmentTable";
+import { EquipmentTimeline } from "./equipment/EquipmentTimeline";
+import { AddEquipmentDialog } from "./equipment/AddEquipmentDialog";
+import { EditEquipmentDialog } from "./equipment/EditEquipmentDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface EquipmentListProps {
   equipment: Equipment[];
@@ -63,33 +80,95 @@ export function EquipmentList({
       }));
   }, [equipment, selectedItems]);
 
+  const hasSelection = selectedItems.length > 0;
+  const singleSelectedEquipment = equipment.find(item => selectedItems.includes(item.id));
+
   return (
     <div className="flex flex-col h-[calc(100vh-theme(spacing.16))]" ref={containerRef}>
-      <EquipmentHeader
-        selectedFolder={selectedFolder}
-        onFolderSelect={onFolderSelect}
-        onAddEquipment={onAddEquipment}
-        onEditEquipment={onEditEquipment}
-        onDeleteEquipment={handleDeleteEquipment}
-        searchTerm={searchTerm}
-        onSearchChange={onSearchChange}
-        selectedItems={selectedItems}
-        equipment={equipment}
-      />
+      <div className="space-y-4">
+        <div className="flex justify-between items-center gap-4">
+          <div className="flex items-center gap-4 flex-1">
+            <EquipmentFolderSelect
+              selectedFolder={selectedFolder}
+              onFolderSelect={onFolderSelect}
+            />
+            <div className="w-[300px]">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search equipment..."
+                  value={searchTerm}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  className="pl-8 h-9"
+                />
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {hasSelection && selectedItems.length === 1 && singleSelectedEquipment && (
+              <EditEquipmentDialog
+                equipment={singleSelectedEquipment}
+                onEditEquipment={onEditEquipment}
+                onDeleteEquipment={handleDeleteEquipment}
+              />
+            )}
+            {hasSelection && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="gap-2 h-9"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    DELETE
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete {selectedItems.length} {selectedItems.length === 1 ? 'item' : 'items'}.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteEquipment}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+            <Button size="sm" className="gap-2 h-9" onClick={() => document.getElementById('add-equipment-trigger')?.click()}>
+              <Plus className="h-4 w-4" />
+              Add equipment
+            </Button>
+            <AddEquipmentDialog onAddEquipment={onAddEquipment} />
+          </div>
+        </div>
+      </div>
 
-      <EquipmentContent
-        filteredEquipment={equipment}
-        selectedItems={selectedItems}
-        selectedEquipment={selectedEquipment}
-        startDate={startDate}
-        daysToShow={daysToShow}
-        onSelectAll={onSelectAll}
-        onItemSelect={onItemSelect}
-        onPreviousPeriod={handlePreviousPeriod}
-        onNextPeriod={handleNextPeriod}
-        observe={observe}
-        unobserve={unobserve}
-      />
+      <div className="flex-1 flex flex-col bg-zinc-900 rounded-md mt-4 overflow-hidden">
+        <div className="flex-1 overflow-auto">
+          <EquipmentTable
+            equipment={equipment}
+            selectedItems={selectedItems}
+            onSelectAll={onSelectAll}
+            onItemSelect={onItemSelect}
+          />
+        </div>
+
+        <div className="flex-shrink-0">
+          <EquipmentTimeline
+            startDate={startDate}
+            daysToShow={daysToShow}
+            selectedEquipment={selectedEquipment}
+            onPreviousPeriod={handlePreviousPeriod}
+            onNextPeriod={handleNextPeriod}
+            onMount={observe}
+            onUnmount={unobserve}
+          />
+        </div>
+      </div>
     </div>
   );
 }
