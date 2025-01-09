@@ -1,6 +1,7 @@
 import { sortRolesByPriority } from "@/utils/roleSort";
 import { RoleSelect } from "./form-fields/RoleSelect";
 import { RateInput } from "./form-fields/RateInput";
+import { useCrewRoles } from "@/hooks/useCrewRoles";
 
 interface RoleFormFieldsProps {
   roles?: Array<{ id: string; name: string }>;
@@ -15,7 +16,6 @@ interface RoleFormFieldsProps {
 }
 
 export function RoleFormFields({
-  roles = [],
   selectedRole,
   dailyRate,
   hourlyRate,
@@ -25,8 +25,9 @@ export function RoleFormFields({
   onDailyRateChange,
   onHourlyRateChange,
 }: RoleFormFieldsProps) {
-  const selectedRoleData = roles.find(role => role.id === selectedRole);
-  const sortedRoles = sortRolesByPriority(roles);
+  const { roles, isLoading } = useCrewRoles();
+  const sortedRoles = sortRolesByPriority(roles || []);
+  const selectedRoleData = roles?.find(role => role.id === selectedRole);
 
   return (
     <div className="space-y-4 py-4">
@@ -37,6 +38,7 @@ export function RoleFormFields({
         selectedRoleName={selectedRoleData?.name}
         onRoleChange={onRoleChange}
         error={errors.role}
+        isLoading={isLoading}
       />
       
       <RateInput

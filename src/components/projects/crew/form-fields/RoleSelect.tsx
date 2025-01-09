@@ -7,6 +7,7 @@ interface RoleSelectProps {
   selectedRoleName?: string;
   onRoleChange: (value: string) => void;
   error?: string;
+  isLoading?: boolean;
 }
 
 export function RoleSelect({
@@ -15,7 +16,8 @@ export function RoleSelect({
   editMode = false,
   selectedRoleName,
   onRoleChange,
-  error
+  error,
+  isLoading
 }: RoleSelectProps) {
   return (
     <div className="space-y-2">
@@ -32,8 +34,9 @@ export function RoleSelect({
           className="w-full p-2 rounded-md border border-zinc-800 bg-zinc-950"
           value={selectedRole}
           onChange={(e) => onRoleChange(e.target.value)}
+          disabled={isLoading}
         >
-          <option value="">Select a role</option>
+          <option value="">{isLoading ? 'Loading roles...' : 'Select a role'}</option>
           {roles.map((role) => (
             <option key={role.id} value={role.id}>
               {role.name}
