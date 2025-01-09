@@ -24,7 +24,7 @@ export function OwnerSelect({ selectedOwnerId, onOwnerSelect }: OwnerSelectProps
         const { data, error } = await supabase
           .from('crew_members')
           .select('id, name')
-          .filter('crew_folder->name', 'eq', 'Sonic City');
+          .filter('crew_folder->data->name', 'eq', 'Sonic City');
 
         if (error) throw error;
         setSonicCityCrewMembers(data || []);
@@ -50,11 +50,17 @@ export function OwnerSelect({ selectedOwnerId, onOwnerSelect }: OwnerSelectProps
         <SelectValue placeholder="Select owner" />
       </SelectTrigger>
       <SelectContent>
-        {sonicCityCrewMembers?.map((crew) => (
-          <SelectItem key={crew.id} value={crew.id}>
-            {crew.name}
+        {sonicCityCrewMembers && sonicCityCrewMembers.length > 0 ? (
+          sonicCityCrewMembers.map((crew) => (
+            <SelectItem key={crew.id} value={crew.id}>
+              {crew.name}
+            </SelectItem>
+          ))
+        ) : (
+          <SelectItem value="no-data" disabled>
+            No crew members found
           </SelectItem>
-        ))}
+        )}
       </SelectContent>
     </Select>
   );
