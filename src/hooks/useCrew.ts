@@ -57,41 +57,23 @@ export function useCrew() {
           return [];
         }
 
-        return data.map((member): CrewMember => {
-          let folder = null;
-          if (member.folder && Array.isArray(member.folder) && member.folder[0]) {
-            const folderData = member.folder[0];
-            if (folderData.id && folderData.name) {
-              folder = {
-                id: folderData.id,
-                name: folderData.name
-              };
-            }
-          }
-
-          let role = null;
-          if (member.role && Array.isArray(member.role) && member.role[0]) {
-            const roleData = member.role[0];
-            if (roleData.id && roleData.name && roleData.color) {
-              role = {
-                id: roleData.id,
-                name: roleData.name,
-                color: roleData.color
-              };
-            }
-          }
-
-          return {
-            id: member.id,
-            name: member.name,
-            email: member.email || null,
-            phone: member.phone || null,
-            folder,
-            role,
-            created_at: member.created_at,
-            updated_at: member.updated_at
-          };
-        });
+        return data.map((member): CrewMember => ({
+          id: member.id,
+          name: member.name,
+          email: member.email || null,
+          phone: member.phone || null,
+          folder: member.folder?.[0] ? {
+            id: member.folder[0].id,
+            name: member.folder[0].name
+          } : null,
+          role: member.role?.[0] ? {
+            id: member.role[0].id,
+            name: member.role[0].name,
+            color: member.role[0].color
+          } : null,
+          created_at: member.created_at,
+          updated_at: member.updated_at
+        }));
       } catch (error) {
         console.error('Error in crew query:', error);
         toast.error("Failed to fetch crew members");
