@@ -22,12 +22,24 @@ export function ProjectFilterButton({
 
   useEffect(() => {
     const fetchSonicCityCrewMembers = async () => {
-      const { data } = await supabase
+      console.log('Fetching Sonic City crew members...');
+      const { data, error } = await supabase
         .from('crew_members')
-        .select('id, name')
-        .eq('folder', 'Sonic City');
-      
-      setSonicCityCrewMembers(data || []);
+        .select('id, name, crew_folder')
+        .eq('crew_folder->>name', 'Sonic City');
+
+      if (error) {
+        console.error('Error fetching crew members:', error);
+        return;
+      }
+
+      // Ensure data is an array and has valid members
+      const validMembers = Array.isArray(data) 
+        ? data.filter(member => member && member.id && member.name)
+        : [];
+
+      console.log('Fetched crew members:', validMembers);
+      setSonicCityCrewMembers(validMembers);
     };
 
     fetchSonicCityCrewMembers();
