@@ -6,9 +6,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { CrewRole } from "@/types/crew";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RoleFormFields } from "./RoleFormFields";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AddRoleDialogProps {
   roles?: CrewRole[];
@@ -27,6 +29,8 @@ interface AddRoleDialogProps {
     hourlyRate: number;
     quantity?: number;
   };
+  projectId?: string;
+  roleId?: string;
 }
 
 export function AddRoleDialog({ 
@@ -35,13 +39,50 @@ export function AddRoleDialog({
   onSubmit, 
   loading,
   editMode = false,
-  initialValues 
+  initialValues,
+  projectId,
+  roleId
 }: AddRoleDialogProps) {
   const [selectedRole, setSelectedRole] = useState<string>(initialValues?.roleId || "");
   const [dailyRate, setDailyRate] = useState(initialValues?.dailyRate?.toString() || "");
   const [hourlyRate, setHourlyRate] = useState(initialValues?.hourlyRate?.toString() || "");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { toast } = useToast();
+
+  // Fetch role data if in edit mode
+  const { data: roleData } = useQuery({
+    queryKey: ['project-role', projectId, roleId],
+    queryFn: async () => {
+      if (!editMode || !projectId || !roleId) return null;
+      
+      const { data, error } = await supabase
+        .from('project_roles')
+        .select(`
+          *,
+          crew_roles (
+            id,
+            name,
+            color
+          )
+        `)
+        .eq('project_id', projectId)
+        .eq('role_id', roleId)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: editMode && !!projectId && !!roleId
+  });
+
+  // Update form when role data is fetched
+  useEffect(() => {
+    if (roleData) {
+      setSelectedRole(roleData.role_id);
+      setDailyRate(roleData.daily_rate?.toString() || "");
+      setHourlyRate(roleData.hourly_rate?.toString() || "");
+    }
+  }, [roleData]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
