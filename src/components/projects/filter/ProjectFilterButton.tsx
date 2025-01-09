@@ -17,6 +17,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { sortCrewMembers } from "@/utils/crewUtils";
+import { CrewMember } from "@/types/crew";
 
 interface ProjectFilterButtonProps {
   selectedOwner: string | null;
@@ -39,10 +40,26 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
         throw error;
       }
 
-      const members = data.map(member => ({
+      // Map the data to match CrewMember type
+      const members: CrewMember[] = data.map(member => ({
         id: member.id,
         name: member.name,
-        crew_folder: member.crew_folder
+        email: member.email,
+        phone: member.phone,
+        roles: Array.isArray(member.roles) 
+          ? member.roles.map((role: any) => ({
+              id: role.id,
+              name: role.name,
+              color: role.color,
+              created_at: role.created_at
+            }))
+          : [],
+        crew_folder: member.crew_folder ? {
+          id: member.crew_folder.id,
+          name: member.crew_folder.name,
+          created_at: member.crew_folder.created_at
+        } : null,
+        created_at: member.created_at
       }));
 
       // Sort members with Sonic City first
@@ -59,7 +76,7 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
     );
   }
 
-  const selectedMemberName = crewMembers.find(member => member.id === selectedOwner)?.name;
+  const selectedMemberName = crewMembers?.find(member => member.id === selectedOwner)?.name;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -79,7 +96,7 @@ export function ProjectFilterButton({ selectedOwner, onOwnerSelect }: ProjectFil
           <CommandInput placeholder="Search members..." />
           <CommandEmpty>No member found.</CommandEmpty>
           <CommandGroup>
-            {crewMembers.map((member) => (
+            {(crewMembers || []).map((member) => (
               <CommandItem
                 key={member.id}
                 onSelect={() => {
