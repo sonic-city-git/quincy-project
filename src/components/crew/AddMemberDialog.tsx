@@ -67,19 +67,38 @@ export function AddMemberDialog() {
 
   const onSubmit = async (data: AddMemberFormData) => {
     try {
-      const { error: crewError } = await supabase
+      const { data: insertedData, error: crewError } = await supabase
         .from('crew_members')
         .insert([{
           name: data.name,
           email: data.email,
           phone: data.phone,
-          folder_id: data.folder_id,
-        }]);
+          folder_id: data.folder_id || null,
+        }])
+        .select()
+        .single();
 
       if (crewError) {
         console.error('Error inserting crew member:', crewError);
-        toast.error("Failed to add crew member");
+        toast.error(crewError.message || "Failed to add crew member");
         return;
+      }
+
+      if (data.role_ids.length > 0) {
+        const { error: rolesError } = await supabase
+          .from('crew_member_roles')
+          .insert(
+            data.role_ids.map(roleId => ({
+              crew_member_id: insertedData.id,
+              role_id: roleId
+            }))
+          );
+
+        if (rolesError) {
+          console.error('Error inserting crew member roles:', rolesError);
+          toast.error("Member added but roles could not be assigned");
+          return;
+        }
       }
 
       await queryClient.invalidateQueries({ queryKey: ['crew'] });
