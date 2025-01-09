@@ -113,15 +113,17 @@ export function ProjectRoleCard({
         <div className="grid grid-cols-[200px,200px,1fr] gap-6">
           <span className="text-sm pl-1 flex items-center">{dailyRate || '-'}</span>
           <span className="text-sm pl-1 flex items-center">{hourlyRate || '-'}</span>
-          <EntitySelect
-            entities={crewMembers.map(crew => ({
-              id: crew.id,
-              name: crew.name
-            }))}
-            value={preferredId || ''}
-            onValueChange={handlePreferredChange}
-            placeholder="Preferred crew"
-          />
+          <div className="-ml-10">
+            <EntitySelect
+              entities={crewMembers.map(crew => ({
+                id: crew.id,
+                name: crew.name
+              }))}
+              value={preferredId || ''}
+              onValueChange={handlePreferredChange}
+              placeholder="Preferred crew"
+            />
+          </div>
         </div>
       </div>
     </Card>
