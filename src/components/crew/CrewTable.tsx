@@ -71,7 +71,7 @@ export const CrewTable = memo(({
       return data;
     },
     staleTime: 10 * 60 * 1000, // Cache for 10 minutes
-    cacheTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
+    gcTime: 15 * 60 * 1000, // Keep in cache for 15 minutes
   });
 
   const getFolderName = useCallback((folderId: string) => {
