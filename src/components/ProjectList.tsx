@@ -10,10 +10,6 @@ export function ProjectList() {
     setSelectedItem(prev => prev === id ? null : id);
   };
 
-  const handleProjectDeleted = () => {
-    setSelectedItem(null);
-  };
-
   if (loading) {
     return <div>Loading...</div>;
   }
