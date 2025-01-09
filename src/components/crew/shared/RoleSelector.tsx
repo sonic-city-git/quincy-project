@@ -1,6 +1,7 @@
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
+import { sortRoles } from "@/utils/roleUtils";
 
 interface RoleSelectorProps {
   selectedRoleIds: string[];
@@ -14,6 +15,8 @@ export function RoleSelector({ selectedRoleIds, onRolesChange }: RoleSelectorPro
     return <div className="animate-pulse h-20 bg-zinc-900/50 rounded-md" />;
   }
 
+  const sortedRoles = sortRoles(roles);
+
   const handleRoleToggle = (roleId: string, checked: boolean) => {
     if (checked) {
       onRolesChange([...selectedRoleIds, roleId]);
@@ -26,7 +29,7 @@ export function RoleSelector({ selectedRoleIds, onRolesChange }: RoleSelectorPro
     <div className="grid gap-2">
       <Label>Roles</Label>
       <div className="flex flex-wrap gap-4">
-        {roles.map((role) => (
+        {sortedRoles.map((role) => (
           <div key={role.id} className="flex items-center space-x-2">
             <Checkbox
               id={role.id}

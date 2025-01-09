@@ -1,5 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { CrewRole } from "@/types/crew";
+import { sortRoles } from "@/utils/roleUtils";
 
 interface RoleTagsProps {
   roles: CrewRole[];
@@ -11,9 +12,11 @@ export function RoleTags({ roles }: RoleTagsProps) {
     role && typeof role === 'object' && 'name' in role && 'color' in role
   ) : [];
 
+  const sortedRoles = sortRoles(validRoles);
+
   return (
     <div className="flex flex-wrap gap-1">
-      {validRoles.map((role) => (
+      {sortedRoles.map((role) => (
         <Badge
           key={role.id}
           variant="default"
