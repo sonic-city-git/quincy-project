@@ -2,17 +2,17 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export function useProjectRoles(projectId: string, selectedItems: string[] = []) {
+export function useProjectRoles(projectId: string) {
   const queryClient = useQueryClient();
 
-  const { data: projectRoles, isLoading: loading } = useQuery({
+  const { data: roles = [], isLoading: loading } = useQuery({
     queryKey: ['project_roles', projectId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('project_roles')
         .select(`
           *,
-          crew_roles (
+          role:crew_roles (
             id,
             name,
             color
@@ -75,20 +75,11 @@ export function useProjectRoles(projectId: string, selectedItems: string[] = [])
     }
   };
 
-  const selectedRole = selectedItems.length === 1 && projectRoles?.find(role => role.id === selectedItems[0])
-    ? {
-        name: projectRoles.find(role => role.id === selectedItems[0])?.crew_roles?.name || '',
-        dailyRate: projectRoles.find(role => role.id === selectedItems[0])?.daily_rate,
-        hourlyRate: projectRoles.find(role => role.id === selectedItems[0])?.hourly_rate,
-      }
-    : null;
-
   return {
-    projectRoles,
+    roles,
     loading,
-    selectedRole,
     deleteRole,
     updateRole,
-    addRole,
+    addRole
   };
 }

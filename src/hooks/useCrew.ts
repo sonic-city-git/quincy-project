@@ -10,27 +10,34 @@ export function useCrew() {
         .from('crew_members')
         .select(`
           *,
+          folder:folder_id (
+            id,
+            name
+          ),
           crew_member_roles!crew_member_roles_crew_member_id_fkey (
-            crew_roles (
+            role:crew_roles (
               id,
               name,
               color
             )
           )
         `);
-      
+
       if (error) throw error;
       
       // Transform the data to match CrewMember type
-      return data.map(member => ({
-        ...member,
-        role: member.crew_member_roles?.[0]?.crew_roles || null
+      return data.map((member: any) => ({
+        id: member.id,
+        name: member.name,
+        email: member.email,
+        phone: member.phone,
+        folder: member.folder,
+        role: member.crew_member_roles[0]?.role || null,
+        created_at: member.created_at,
+        updated_at: member.updated_at
       })) as CrewMember[];
-    },
+    }
   });
 
-  return {
-    crew,
-    loading,
-  };
+  return { crew, loading };
 }
