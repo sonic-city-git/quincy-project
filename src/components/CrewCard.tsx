@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Mail, Phone, UserRound } from "lucide-react";
 
 interface CrewCardProps {
@@ -7,18 +6,14 @@ interface CrewCardProps {
   email: string;
   phone: string;
   role: string;
-  status: string;
 }
 
-export function CrewCard({ name, email, phone, role, status }: CrewCardProps) {
+export function CrewCard({ name, email, phone, role }: CrewCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
           <span className="text-lg font-semibold">{name}</span>
-          <Badge variant="outline" className="text-blue-600">
-            {status}
-          </Badge>
         </CardTitle>
         <p className="text-sm text-muted-foreground">{role}</p>
       </CardHeader>

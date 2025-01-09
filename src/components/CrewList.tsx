@@ -80,7 +80,6 @@ export function CrewList() {
                     email={member.email || ''}
                     phone={member.phone || ''}
                     role={member.role?.name || 'No role assigned'}
-                    status={member.status || 'Active'}
                   />
                 ))}
               </div>

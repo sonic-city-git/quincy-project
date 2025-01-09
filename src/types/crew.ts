@@ -8,6 +8,5 @@ export interface CrewMember {
     name: string;
     color: string;
   } | null;
-  status: string | null;
   notes: string | null;
 }
