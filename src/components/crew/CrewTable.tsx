@@ -29,8 +29,8 @@ const CrewTableRow = memo(({
         onCheckedChange={() => onSelect(crew.id)}
       />
     </TableCell>
-    <TableCell className="w-[240px] truncate p-2">
-      <div className="flex items-center space-x-1 truncate">
+    <TableCell className="w-[240px] p-2">
+      <div className="flex items-center gap-1 truncate">
         <span className="truncate">{crew.name}</span>
         {crew.crew_folder?.name === 'Sonic City' && (
           <span className="flex-shrink-0">⭐</span>
@@ -38,7 +38,7 @@ const CrewTableRow = memo(({
       </div>
     </TableCell>
     <TableCell className="w-[320px] p-2">
-      <div className="truncate">
+      <div className="flex items-center truncate">
         <RoleTags roles={crew.roles || []} />
       </div>
     </TableCell>

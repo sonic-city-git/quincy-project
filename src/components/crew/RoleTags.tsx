@@ -15,12 +15,12 @@ export function RoleTags({ roles }: RoleTagsProps) {
   const sortedRoles = sortRoles(validRoles);
 
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-nowrap gap-1 overflow-hidden">
       {sortedRoles.map((role) => (
         <Badge
           key={role.id}
           variant="default"
-          className="text-white border-0"
+          className="text-white border-0 whitespace-nowrap"
           style={{ 
             backgroundColor: role.color || '#666',
             opacity: 1
