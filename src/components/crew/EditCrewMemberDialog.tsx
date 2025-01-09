@@ -57,17 +57,18 @@ export function EditCrewMemberDialog({
     
     const updatedRoles = allRoles?.filter(role => selectedRoleIds.includes(role.id)) || [];
     
-    const editedMember = {
+    const editedMember: CrewMember = {
       ...crewMember,
       name: formData.get("name") as string,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
+      roles: updatedRoles,
+      // Preserve the existing crew_folder structure
       crew_folder: crewMember.crew_folder ? {
         id: crewMember.crew_folder.id,
         name: crewMember.crew_folder.name,
         created_at: crewMember.crew_folder.created_at
-      } : null,
-      roles: updatedRoles,
+      } : null
     };
 
     onEditCrewMember(editedMember);
