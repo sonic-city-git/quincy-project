@@ -22,21 +22,26 @@ export const filterCrewByRoles = (crewMembers: CrewMember[], selectedRoles: stri
   );
 };
 
-const getFolderPriority = (folderId: string | null) => {
-  // These IDs will be populated from the database query
-  const sonicCityPriority = 1;
-  const associatePriority = 2;
-  return folderId ? 
-    (folderId === 'sonic_city_folder_id' ? sonicCityPriority : 
-     folderId === 'associate_folder_id' ? associatePriority : 3) 
-    : 4;
+const getFolderPriority = (folderName: string | null) => {
+  if (!folderName) return 4;
+  
+  switch (folderName.toLowerCase()) {
+    case 'sonic city':
+      return 1;
+    case 'associate':
+      return 2;
+    default:
+      return 3;
+  }
 };
 
 export const sortCrewMembers = (crewMembers: CrewMember[]) => {
   return [...crewMembers].sort((a, b) => {
     // First, sort by folder priority
-    const aPriority = getFolderPriority(a.folder_id);
-    const bPriority = getFolderPriority(b.folder_id);
+    const aFolder = a.folder?.toLowerCase() || null;
+    const bFolder = b.folder?.toLowerCase() || null;
+    const aPriority = getFolderPriority(aFolder);
+    const bPriority = getFolderPriority(bFolder);
     
     if (aPriority !== bPriority) {
       return aPriority - bPriority;

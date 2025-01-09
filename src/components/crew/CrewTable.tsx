@@ -67,28 +67,31 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
 
   const tableBody = (
     <TableBody>
-      {crewMembers.map((crew) => (
-        <TableRow key={crew.id} className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
-          <TableCell className="w-[48px]">
-            <Checkbox 
-              checked={selectedItems.includes(crew.id)}
-              onCheckedChange={() => onItemSelect(crew.id)}
-            />
-          </TableCell>
-          <TableCell className="w-[240px] truncate">
-            {crew.name}
-            {getFolderName(crew.folder_id) === 'Sonic City' && (
-              <span className="ml-1">⭐</span>
-            )}
-          </TableCell>
-          <TableCell className="w-[320px]">
-            <RoleTags crewMemberId={crew.id} />
-          </TableCell>
-          <TableCell className="w-[280px] truncate">{crew.email}</TableCell>
-          <TableCell className="w-[180px] truncate">{crew.phone}</TableCell>
-          <TableCell className="truncate">{getFolderName(crew.folder_id)}</TableCell>
-        </TableRow>
-      ))}
+      {crewMembers.map((crew) => {
+        const folderName = getFolderName(crew.folder_id);
+        return (
+          <TableRow key={crew.id} className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
+            <TableCell className="w-[48px]">
+              <Checkbox 
+                checked={selectedItems.includes(crew.id)}
+                onCheckedChange={() => onItemSelect(crew.id)}
+              />
+            </TableCell>
+            <TableCell className="w-[240px] truncate">
+              {crew.name}
+              {folderName === 'Sonic City' && (
+                <span className="ml-1">⭐</span>
+              )}
+            </TableCell>
+            <TableCell className="w-[320px]">
+              <RoleTags crewMemberId={crew.id} />
+            </TableCell>
+            <TableCell className="w-[280px] truncate">{crew.email}</TableCell>
+            <TableCell className="w-[180px] truncate">{crew.phone}</TableCell>
+            <TableCell className="truncate">{folderName}</TableCell>
+          </TableRow>
+        );
+      })}
     </TableBody>
   );
 
