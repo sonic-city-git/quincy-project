@@ -32,7 +32,7 @@ export function useCrew() {
         throw error;
       }
 
-      return data.map((member: any) => ({
+      return data.map((member: any): CrewMember => ({
         id: member.id,
         name: member.name,
         email: member.email,
@@ -41,8 +41,9 @@ export function useCrew() {
         role: member.role?.[0]?.crew_roles || null,
         created_at: member.created_at,
         updated_at: member.updated_at
-      })) as CrewMember[];
-    }
+      }));
+    },
+    retry: false
   });
 
   return { crew, loading };
