@@ -33,23 +33,28 @@ export function CrewMemberSelect({
 }: CrewMemberSelectProps) {
   const [open, setOpen] = useState(false);
 
-  const { data: crewMembers } = useQuery({
+  const { data: crewMembers, isLoading } = useQuery({
     queryKey: ['crew-members', roleName],
     queryFn: async () => {
-      // First get all crew members
       const { data, error } = await supabase
         .from('crew_members')
-        .select('*');
+        .select('id, name, roles');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching crew members:', error);
+        throw error;
+      }
 
-      // Then filter those who have the required role
-      return data.filter(member => {
-        const roles = member.roles as any[] || [];
+      // Ensure data is an array and filter those with matching role
+      const validMembers = Array.isArray(data) ? data : [];
+      return validMembers.filter(member => {
+        const roles = Array.isArray(member.roles) ? member.roles : [];
         return roles.some(role => role.name === roleName);
       });
     },
   });
+
+  const filteredMembers = crewMembers || [];
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -69,24 +74,28 @@ export function CrewMemberSelect({
           <CommandInput placeholder="Search crew member..." />
           <CommandEmpty>No crew member found.</CommandEmpty>
           <CommandGroup>
-            {crewMembers?.map((crew) => (
-              <CommandItem
-                key={crew.id}
-                value={crew.name}
-                onSelect={() => {
-                  onSelect(projectRoleId, crew.id);
-                  setOpen(false);
-                }}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selectedCrewMember?.id === crew.id ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {crew.name}
-              </CommandItem>
-            ))}
+            {isLoading ? (
+              <CommandItem disabled>Loading...</CommandItem>
+            ) : (
+              filteredMembers.map((crew) => (
+                <CommandItem
+                  key={crew.id}
+                  value={crew.name}
+                  onSelect={() => {
+                    onSelect(projectRoleId, crew.id);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      selectedCrewMember?.id === crew.id ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {crew.name}
+                </CommandItem>
+              ))
+            )}
           </CommandGroup>
         </Command>
       </PopoverContent>
