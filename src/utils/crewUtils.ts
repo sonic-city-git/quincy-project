@@ -4,9 +4,9 @@ import { supabase } from "@/integrations/supabase/client";
 export const getAllUniqueRoles = (crewMembers: CrewMember[]) => {
   const roles = new Set<string>();
   crewMembers.forEach(member => {
-    member.crew_member_roles?.forEach(role => {
-      if (role.crew_roles?.name) {
-        roles.add(role.crew_roles.name);
+    member.roles?.forEach(role => {
+      if (role.name) {
+        roles.add(role.name);
       }
     });
   });
@@ -17,8 +17,8 @@ export const filterCrewByRoles = (crewMembers: CrewMember[], selectedRoles: stri
   if (selectedRoles.length === 0) return crewMembers;
   
   return crewMembers.filter(member => 
-    member.crew_member_roles?.some(role => 
-      role.crew_roles?.name && selectedRoles.includes(role.crew_roles.name)
+    member.roles?.some(role => 
+      role.name && selectedRoles.includes(role.name)
     )
   );
 };

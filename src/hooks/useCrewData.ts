@@ -16,7 +16,7 @@ export function useCrewData() {
 
       if (error) throw error;
 
-      setCrewMembers(data || []);
+      setCrewMembers(data as CrewMember[]);
     } catch (error) {
       console.error('Error fetching crew members:', error);
       toast({

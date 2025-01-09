@@ -4,8 +4,8 @@ export interface CrewMember {
   email: string;
   phone: string;
   folder_id: string;
-  folder?: string; // Keep for backward compatibility during migration
   roles: CrewRole[];
+  created_at: string;
 }
 
 export interface NewCrewMember {

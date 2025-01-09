@@ -11,12 +11,10 @@ import { useState, useEffect } from "react";
 import { CrewMember } from "@/types/crew";
 import { useToast } from "@/hooks/use-toast";
 import { EditCrewMemberForm } from "./edit/EditCrewMemberForm";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 interface EditCrewMemberDialogProps {
   selectedCrew: CrewMember[];
-  onEditCrewMember: (editedMember: CrewMember & { roleIds: string[] }) => void;
+  onEditCrewMember: (editedMember: CrewMember) => void;
   onDeleteCrewMember: () => void;
 }
 
@@ -31,26 +29,13 @@ export function EditCrewMemberDialog({
 
   if (!crewMember) return null;
 
-  const { data: memberRoles } = useQuery({
-    queryKey: ['crew-member-roles', crewMember.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('crew_member_roles')
-        .select('role_id')
-        .eq('crew_member_id', crewMember.id);
-      
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>(
+    crewMember.roles?.map(role => role.id) || []
+  );
 
   useEffect(() => {
-    if (memberRoles) {
-      setSelectedRoleIds(memberRoles.map(role => role.role_id));
-    }
-  }, [memberRoles]);
+    setSelectedRoleIds(crewMember.roles?.map(role => role.id) || []);
+  }, [crewMember]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -62,7 +47,7 @@ export function EditCrewMemberDialog({
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
       folder_id: formData.get("folder_id") as string,
-      roleIds: selectedRoleIds,
+      roles: crewMember.roles.filter(role => selectedRoleIds.includes(role.id)),
     };
 
     onEditCrewMember(editedMember);
