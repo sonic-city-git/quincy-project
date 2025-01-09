@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/popover";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CrewMember, CrewRole } from "@/types/crew";
+import { CrewMember } from "@/types/crew";
 
 interface CrewMemberSelectProps {
   projectRoleId: string;
@@ -24,6 +24,17 @@ interface CrewMemberSelectProps {
   onSelect: (projectRoleId: string, crewMemberId: string) => void;
   roleName: string;
 }
+
+// Type guard to check if a value is a valid crew folder object
+const isValidCrewFolder = (value: any): value is { id: string; name: string; created_at: string } => {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof value.id === 'string' &&
+    typeof value.name === 'string' &&
+    typeof value.created_at === 'string'
+  );
+};
 
 export function CrewMemberSelect({ 
   projectRoleId,
@@ -69,11 +80,11 @@ export function CrewMemberSelect({
               created_at: role.created_at || new Date().toISOString()
             }))
           : [],
-        crew_folder: member.crew_folder 
+        crew_folder: member.crew_folder && isValidCrewFolder(member.crew_folder)
           ? {
-              id: typeof member.crew_folder === 'object' ? member.crew_folder.id || '' : '',
-              name: typeof member.crew_folder === 'object' ? member.crew_folder.name || '' : '',
-              created_at: typeof member.crew_folder === 'object' ? member.crew_folder.created_at || new Date().toISOString() : new Date().toISOString()
+              id: member.crew_folder.id,
+              name: member.crew_folder.name,
+              created_at: member.crew_folder.created_at
             }
           : null
       })) as CrewMember[];
