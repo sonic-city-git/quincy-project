@@ -46,8 +46,10 @@ export function useCrew() {
           name: member.name,
           email: member.email || null,
           phone: member.phone || null,
-          folder: member.folder || null,
-          role: member.role?.[0]?.crew_roles || null,
+          folder: member.folder && !('error' in member.folder) ? member.folder : null,
+          role: member.role?.[0]?.crew_roles && !('error' in member.role?.[0]?.crew_roles) 
+            ? member.role[0].crew_roles 
+            : null,
           created_at: member.created_at,
           updated_at: member.updated_at
         }));
