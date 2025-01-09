@@ -1,3 +1,4 @@
+import React from 'react';
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import {
@@ -46,6 +47,8 @@ export function CrewMemberSelect({
         member.roles.some(role => role.name === roleName)
       ) as CrewMember[];
     },
+    retry: 3,
+    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
   });
 
   const { data: folders, isLoading: isLoadingFolders, error: foldersError } = useQuery({
@@ -54,11 +57,13 @@ export function CrewMemberSelect({
       const { data, error } = await supabase
         .from('crew_folders')
         .select('*');
+      
       if (error) throw error;
       return data;
     },
-    retry: 3, // Retry failed requests 3 times
-    staleTime: 5 * 60 * 1000, // Consider data fresh for 5 minutes
+    retry: 3,
+    staleTime: 5 * 60 * 1000,
+    cacheTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
 
   const getFolderName = (folderId: string) => {
