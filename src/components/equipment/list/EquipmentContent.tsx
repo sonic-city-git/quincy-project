@@ -54,7 +54,7 @@ export function EquipmentContent({
   const singleSelectedEquipment = filteredEquipment.find(item => selectedItems.includes(item.id));
 
   return (
-    <div className="flex-1 flex flex-col bg-zinc-900 rounded-md mt-6 overflow-hidden">
+    <div className="flex-1 flex flex-col bg-zinc-900 rounded-md overflow-hidden">
       <div className="p-4 border-b border-zinc-800">
         <div className="flex items-center justify-between">
           <div className="text-sm text-zinc-400">
@@ -103,7 +103,7 @@ export function EquipmentContent({
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto">
         <EquipmentTable
           equipment={filteredEquipment}
           selectedItems={selectedItems}
