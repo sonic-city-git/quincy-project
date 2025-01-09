@@ -119,7 +119,7 @@ export function CrewMemberSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-[200px] justify-between truncate"
         >
           {selectedCrewMember ? selectedCrewMember.name : "Select crew member..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -141,14 +141,15 @@ export function CrewMemberSelect({
                     onSelect(projectRoleId, crew.id);
                     setOpen(false);
                   }}
+                  className="truncate"
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "mr-2 h-4 w-4 flex-shrink-0",
                       selectedCrewMember?.id === crew.id ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {crew.name}
+                  <span className="truncate">{crew.name}</span>
                 </CommandItem>
               ))
             )}
