@@ -22,7 +22,7 @@ export function EventsNeedingCrew({ projectId }: EventsNeedingCrewProps) {
             name,
             color,
             needs_crew,
-            rate_multiplier
+            crew_rate_multiplier
           ),
           project_event_roles (
             id,
@@ -86,9 +86,9 @@ export function EventsNeedingCrew({ projectId }: EventsNeedingCrewProps) {
                   <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
                     <CalendarIcon className="w-4 h-4" />
                     <span>{format(new Date(event.date), 'dd.MM.yy')}</span>
-                    {event.event_types.rate_multiplier !== 1 && (
+                    {event.event_types.crew_rate_multiplier !== 1 && (
                       <span className="ml-2">
-                        Rate: {event.event_types.rate_multiplier}x
+                        Rate: {event.event_types.crew_rate_multiplier}x
                       </span>
                     )}
                   </div>
