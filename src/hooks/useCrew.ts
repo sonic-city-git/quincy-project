@@ -80,7 +80,11 @@ export function useCrew() {
             'id' in member.role[0].crew_roles && 
             'name' in member.role[0].crew_roles &&
             'color' in member.role[0].crew_roles
-            ? member.role[0].crew_roles
+            ? {
+                id: member.role[0].crew_roles.id,
+                name: member.role[0].crew_roles.name,
+                color: member.role[0].crew_roles.color
+              }
             : null;
 
           return {
