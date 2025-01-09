@@ -39,9 +39,20 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
     
     const selectedRoles = roles?.filter(role => selectedRoleIds.includes(role.id)) || [];
     const crewFolderStr = formData.get("crew_folder") as string;
-    const crewFolder = crewFolderStr ? JSON.parse(crewFolderStr) : null;
+    let crewFolder = null;
     
-    console.log('Selected roles:', selectedRoles);
+    try {
+      if (crewFolderStr) {
+        const parsedFolder = JSON.parse(crewFolderStr);
+        crewFolder = {
+          id: parsedFolder.id,
+          name: parsedFolder.name,
+          created_at: parsedFolder.created_at
+        };
+      }
+    } catch (error) {
+      console.error('Error parsing crew folder:', error);
+    }
     
     const newCrewMember: NewCrewMember = {
       name: formData.get("name") as string,

@@ -36,7 +36,6 @@ export function EditCrewMemberDialog({
     crewMember.roles?.map(role => role.id) || []
   );
 
-  // Fetch all available roles
   const { data: allRoles } = useQuery({
     queryKey: ['crew-roles'],
     queryFn: async () => {
@@ -56,17 +55,18 @@ export function EditCrewMemberDialog({
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     
-    // Get the complete role objects for selected role IDs
     const updatedRoles = allRoles?.filter(role => selectedRoleIds.includes(role.id)) || [];
-    
-    console.log('Updating crew member with roles:', updatedRoles);
     
     const editedMember = {
       ...crewMember,
       name: formData.get("name") as string,
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
-      crew_folder: crewMember.crew_folder,
+      crew_folder: crewMember.crew_folder ? {
+        id: crewMember.crew_folder.id,
+        name: crewMember.crew_folder.name,
+        created_at: crewMember.crew_folder.created_at
+      } : null,
       roles: updatedRoles,
     };
 
