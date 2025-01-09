@@ -30,24 +30,37 @@ export function ProjectRoleCard({
   const { data: crewMembers = [] } = useQuery({
     queryKey: ['crew-members', id],
     queryFn: async () => {
+      console.log('Fetching crew members for role:', { id, name });
+      
       const { data, error } = await supabase
         .from('crew_members')
         .select('*, crew_folder')
         .contains('roles', [{ id, name }]);
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching crew members:', error);
+        throw error;
+      }
+
+      console.log('Received crew data:', data);
+
+      // Transform and sort crew members
+      const transformedData = (data || []).map(member => ({
+        ...member,
+        crew_folder: member.crew_folder && typeof member.crew_folder === 'object' 
+          ? {
+              id: (member.crew_folder as any).id || '',
+              name: (member.crew_folder as any).name || '',
+              created_at: (member.crew_folder as any).created_at || ''
+            }
+          : null,
+        roles: Array.isArray(member.roles) ? member.roles : []
+      })) as CrewMember[];
 
       // Sort crew members with Sonic City first
-      return (data as CrewMember[]).sort((a, b) => {
-        const aIsSonicCity = typeof a.crew_folder === 'object' && 
-          a.crew_folder !== null && 
-          'name' in a.crew_folder && 
-          a.crew_folder.name === 'Sonic City';
-        
-        const bIsSonicCity = typeof b.crew_folder === 'object' && 
-          b.crew_folder !== null && 
-          'name' in b.crew_folder && 
-          b.crew_folder.name === 'Sonic City';
+      return transformedData.sort((a, b) => {
+        const aIsSonicCity = a.crew_folder?.name === 'Sonic City';
+        const bIsSonicCity = b.crew_folder?.name === 'Sonic City';
         
         if (aIsSonicCity && !bIsSonicCity) return -1;
         if (!aIsSonicCity && bIsSonicCity) return 1;
