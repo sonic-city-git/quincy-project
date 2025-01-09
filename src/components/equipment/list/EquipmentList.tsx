@@ -74,6 +74,9 @@ export function EquipmentList({
         onNextPeriod={onNextPeriod}
         observe={observe}
         unobserve={unobserve}
+        onAddEquipment={onAddEquipment}
+        onEditEquipment={onEditEquipment}
+        onDeleteEquipment={onDeleteEquipment}
       />
     </div>
   );

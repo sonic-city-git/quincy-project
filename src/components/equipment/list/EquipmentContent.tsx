@@ -1,6 +1,21 @@
 import { Equipment } from "@/types/equipment";
 import { EquipmentTable } from "../table/EquipmentTable";
 import { EquipmentTimeline } from "../timeline/EquipmentTimeline";
+import { Button } from "@/components/ui/button";
+import { Plus, Edit, Trash2 } from "lucide-react";
+import { AddEquipmentDialog } from "../dialogs/AddEquipmentDialog";
+import { EditEquipmentDialog } from "../dialogs/EditEquipmentDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface EquipmentContentProps {
   filteredEquipment: Equipment[];
@@ -14,6 +29,9 @@ interface EquipmentContentProps {
   onNextPeriod: () => void;
   observe: (element: Element | null) => void;
   unobserve: (element: Element | null) => void;
+  onAddEquipment: (equipment: Equipment) => void;
+  onEditEquipment: (equipment: Equipment) => void;
+  onDeleteEquipment: () => void;
 }
 
 export function EquipmentContent({
@@ -28,9 +46,63 @@ export function EquipmentContent({
   onNextPeriod,
   observe,
   unobserve,
+  onAddEquipment,
+  onEditEquipment,
+  onDeleteEquipment,
 }: EquipmentContentProps) {
+  const hasSelection = selectedItems.length > 0;
+  const singleSelectedEquipment = filteredEquipment.find(item => selectedItems.includes(item.id));
+
   return (
     <div className="flex-1 flex flex-col bg-zinc-900 rounded-md mt-6 overflow-hidden">
+      <div className="p-4 border-b border-zinc-800">
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-zinc-400">
+            {selectedItems.length} item{selectedItems.length !== 1 ? 's' : ''} selected
+          </div>
+          <div className="flex items-center gap-2">
+            {hasSelection && selectedItems.length === 1 && singleSelectedEquipment && (
+              <EditEquipmentDialog
+                equipment={singleSelectedEquipment}
+                onEditEquipment={onEditEquipment}
+                onDeleteEquipment={onDeleteEquipment}
+              />
+            )}
+            {hasSelection && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="h-8"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete {selectedItems.length} {selectedItems.length === 1 ? 'item' : 'items'}.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={onDeleteEquipment}>Delete</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
+            <Button size="sm" className="h-8" onClick={() => document.getElementById('add-equipment-trigger')?.click()}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add equipment
+            </Button>
+            <AddEquipmentDialog onAddEquipment={onAddEquipment} />
+          </div>
+        </div>
+      </div>
+
       <div className="flex-1 overflow-auto p-4">
         <EquipmentTable
           equipment={filteredEquipment}
