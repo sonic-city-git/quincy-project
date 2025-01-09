@@ -42,8 +42,9 @@ export function CrewHeader({
       <div className="flex items-center gap-4">
         {selectedCrew.length === 1 && (
           <EditCrewMemberDialog 
-            crewMember={selectedCrew[0]}
+            selectedCrew={selectedCrew}
             onEditCrewMember={onEditCrewMember}
+            onDeleteCrewMember={() => {}}
           />
         )}
         <AddCrewMemberDialog onAddCrewMember={onAddCrewMember} />
