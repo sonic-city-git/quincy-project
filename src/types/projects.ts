@@ -5,7 +5,7 @@ export interface Project {
   owner: string;
   owner_id: string | null;
   color: string;
-  status: string | null;
+  status: string;
   lastInvoiced?: string | null;
   gigPrice?: string | null;
   yearlyRevenue?: string | null;

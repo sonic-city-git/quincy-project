@@ -34,13 +34,15 @@ export function useProjects() {
     return projectsData.map(project => ({
       id: project.id,
       name: project.name,
-      lastInvoiced: project.last_invoiced || '',
+      customer_id: project.customer_id,
+      lastInvoiced: project.start_date || '',
       owner: project.customer?.name || 'No Customer',
       owner_id: project.customer_id,
+      status: project.status || 'draft',
       color: 'blue', // Default color for now
-      gigPrice: project.invoice_reference || '',
-      yearlyRevenue: project.cost_center || ''
-    }));
+      gigPrice: project.project_number || '',
+      yearlyRevenue: project.description || ''
+    })) as Project[];
   };
 
   const { data: projects = [], isLoading: loading } = useQuery({

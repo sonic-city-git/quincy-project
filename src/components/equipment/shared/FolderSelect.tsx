@@ -29,7 +29,7 @@ export function FolderSelect({
         {
           event: '*',
           schema: 'public',
-          table: 'folders'
+          table: 'equipment_folders'
         },
         () => {
           fetchFolders();
@@ -46,7 +46,7 @@ export function FolderSelect({
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('folders')
+        .from('equipment_folders')
         .select('*')
         .order('name');
 
@@ -61,31 +61,8 @@ export function FolderSelect({
     }
   };
 
-  const getFolderPath = (folderId: string | null): string => {
-    if (!folderId || folderId === "all") return 'All folders';
-
-    const folder = folders.find(f => f.id === folderId);
-    if (!folder) return 'All folders';
-
-    if (folder.parent_id) {
-      const parent = folders.find(f => f.id === folder.parent_id);
-      return parent ? `${parent.name} -> ${folder.name}` : folder.name;
-    }
-
-    return folder.name;
-  };
-
-  const renderFolderOptions = (parentId: string | null = null, level = 0): Folder[] => {
-    return folders
-      .filter(folder => folder.parent_id === parentId)
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .reduce((acc: Folder[], folder) => {
-        return [...acc, folder, ...renderFolderOptions(folder.id, level + 1)];
-      }, []);
-  };
-
-  const allFolders = showAllFolders ? [{ id: 'all', name: 'All folders', parent_id: null }] : [];
-  const flattenedFolders = [...allFolders, ...renderFolderOptions()];
+  const allFolders = showAllFolders ? [{ id: 'all', name: 'All folders', parent_id: null, created_at: '', updated_at: '' }] : [];
+  const flattenedFolders = [...allFolders, ...folders];
 
   return (
     <div className="space-y-2">
