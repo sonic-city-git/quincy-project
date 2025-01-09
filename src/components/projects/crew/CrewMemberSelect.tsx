@@ -36,13 +36,18 @@ export function CrewMemberSelect({
   const { data: crewMembers } = useQuery({
     queryKey: ['crew-members', roleName],
     queryFn: async () => {
+      // First get all crew members
       const { data, error } = await supabase
         .from('crew_members')
-        .select('id, name')
-        .contains('roles', [{ name: roleName }]);
+        .select('*');
       
       if (error) throw error;
-      return data;
+
+      // Then filter those who have the required role
+      return data.filter(member => {
+        const roles = member.roles as any[] || [];
+        return roles.some(role => role.name === roleName);
+      });
     },
   });
 
