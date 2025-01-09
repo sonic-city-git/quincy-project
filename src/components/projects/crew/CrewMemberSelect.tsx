@@ -33,14 +33,16 @@ export function CrewMemberSelect({
           crew_member_roles!inner (
             role_id,
             crew_roles!inner (
-              name
+              id,
+              name,
+              color
             )
           )
         `)
         .eq('crew_member_roles.crew_roles.name', roleName);
       
       if (membersError) throw membersError;
-      return members as CrewMember[];
+      return members as unknown as CrewMember[];
     },
   });
 
