@@ -19,8 +19,21 @@ export function ProjectList() {
 
   // Filter projects based on the selected owner's ID
   const filteredProjects = selectedOwner
-    ? projects.filter(project => project.owner_id === selectedOwner)
+    ? projects.filter(project => {
+        console.log('Filtering project:', {
+          projectOwnerId: project.owner_id,
+          selectedOwner,
+          matches: project.owner_id === selectedOwner
+        });
+        return project.owner_id === selectedOwner;
+      })
     : projects;
+
+  console.log('Projects after filtering:', {
+    totalProjects: projects.length,
+    filteredProjects: filteredProjects.length,
+    selectedOwner
+  });
 
   if (loading) {
     return <div>Loading...</div>;
@@ -31,7 +44,10 @@ export function ProjectList() {
       <div className="flex items-center justify-between">
         <ProjectFilterButton 
           selectedOwner={selectedOwner}
-          onOwnerSelect={setSelectedOwner}
+          onOwnerSelect={(ownerId) => {
+            console.log('Owner selected:', ownerId);
+            setSelectedOwner(ownerId);
+          }}
         />
         <ProjectActions 
           selectedItems={selectedItem ? [selectedItem] : []} 
