@@ -14,7 +14,7 @@ export function useProjectRoles(projectId: string) {
         .from('project_roles')
         .select(`
           *,
-          crew_roles (
+          crew_roles:role_id (
             id,
             name,
             color
@@ -98,7 +98,7 @@ export function useProjectRoles(projectId: string) {
 
   const selectedRole = projectRoles?.find(role => role.id === selectedItems[0])
     ? {
-        name: projectRoles.find(role => role.id === selectedItems[0])?.crew_roles.name || '',
+        name: projectRoles.find(role => role.id === selectedItems[0])?.crew_roles?.name || '',
         dailyRate: projectRoles.find(role => role.id === selectedItems[0])?.daily_rate,
         hourlyRate: projectRoles.find(role => role.id === selectedItems[0])?.hourly_rate,
       }

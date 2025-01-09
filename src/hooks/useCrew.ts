@@ -10,15 +10,22 @@ export function useCrew() {
         .from('crew_members')
         .select(`
           *,
-          role:role_id (
-            id,
-            name,
-            color
+          role:crew_member_roles (
+            crew_roles (
+              id,
+              name,
+              color
+            )
           )
         `);
 
       if (error) throw error;
-      return data as CrewMember[];
+      
+      // Transform the data to match CrewMember type
+      return data.map(member => ({
+        ...member,
+        role: member.role?.[0]?.crew_roles || null
+      })) as CrewMember[];
     },
   });
 
