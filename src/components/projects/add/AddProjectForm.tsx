@@ -17,14 +17,14 @@ interface AddProjectFormProps {
 }
 
 export function AddProjectForm({ onSubmit }: AddProjectFormProps) {
-  const [selectedOwner, setSelectedOwner] = useState<string>("");
+  const [selectedOwnerId, setSelectedOwnerId] = useState<string>("");
   const [selectedCustomer, setSelectedCustomer] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    if (!selectedOwner) {
+    if (!selectedOwnerId) {
       toast({
         title: "Error",
         description: "Please select a project owner",
@@ -47,7 +47,7 @@ export function AddProjectForm({ onSubmit }: AddProjectFormProps) {
     
     const newProject = {
       name: projectName,
-      owner_id: selectedOwner,
+      owner_id: selectedOwnerId,
       customer: selectedCustomer,
       color: '#' + Math.floor(Math.random()*16777215).toString(16), // Random color
     };
@@ -67,15 +67,16 @@ export function AddProjectForm({ onSubmit }: AddProjectFormProps) {
         />
       </div>
       
-      <div className="max-h-[300px] overflow-hidden">
+      <div className="space-y-2">
+        <Label>Owner</Label>
         <OwnerSelect
-          projectId=""
-          initialOwner={selectedOwner}
-          onOwnerSelect={(ownerId) => setSelectedOwner(ownerId)}
+          selectedOwnerId={selectedOwnerId}
+          onOwnerSelect={setSelectedOwnerId}
         />
       </div>
 
-      <div className="max-h-[300px] overflow-hidden">
+      <div className="space-y-2">
+        <Label>Customer</Label>
         <CustomerSelect
           projectId=""
           initialCustomer={selectedCustomer || ""}

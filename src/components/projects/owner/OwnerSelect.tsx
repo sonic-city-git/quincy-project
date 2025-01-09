@@ -23,11 +23,10 @@ export function OwnerSelect({ selectedOwnerId, onOwnerSelect }: OwnerSelectProps
       try {
         const { data, error } = await supabase
           .from('crew_members')
-          .select('id, name, crew_folder')
-          .eq('crew_folder->name', 'Sonic City');
+          .select('id, name')
+          .filter('crew_folder->name', 'eq', 'Sonic City');
 
         if (error) throw error;
-
         setSonicCityCrewMembers(data || []);
       } catch (error) {
         console.error('Error fetching Sonic City crew members:', error);
@@ -51,7 +50,7 @@ export function OwnerSelect({ selectedOwnerId, onOwnerSelect }: OwnerSelectProps
         <SelectValue placeholder="Select owner" />
       </SelectTrigger>
       <SelectContent>
-        {sonicCityCrewMembers.map((crew) => (
+        {sonicCityCrewMembers?.map((crew) => (
           <SelectItem key={crew.id} value={crew.id}>
             {crew.name}
           </SelectItem>
