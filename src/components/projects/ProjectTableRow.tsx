@@ -1,5 +1,4 @@
 import { TableCell, TableRow } from "@/components/ui/table";
-import { useNavigate } from "react-router-dom";
 import { Project } from "@/types/projects";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -11,21 +10,11 @@ interface ProjectTableRowProps {
 }
 
 export function ProjectTableRow({ project, colorStyle, isSelected, onSelect }: ProjectTableRowProps) {
-  const navigate = useNavigate();
-
-  const handleClick = (e: React.MouseEvent) => {
-    if ((e.target as HTMLElement).closest('[role="checkbox"]')) {
-      return;
-    }
-    navigate(`/projects/${project.id}`);
-  };
-
   return (
     <TableRow 
-      className={`group hover:bg-zinc-800/50 cursor-pointer transition-colors ${
+      className={`group hover:bg-zinc-800/50 ${
         isSelected ? 'bg-zinc-800/75' : ''
       }`}
-      onClick={handleClick}
     >
       <TableCell className="w-12">
         <Checkbox 
