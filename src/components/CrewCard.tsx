@@ -1,13 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, Folder } from "lucide-react";
 
 interface CrewCardProps {
   name: string;
   email: string;
   phone: string;
+  folderName?: string;
 }
 
-export function CrewCard({ name, email, phone }: CrewCardProps) {
+export function CrewCard({ name, email, phone, folderName }: CrewCardProps) {
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
       <CardHeader>
@@ -25,6 +26,12 @@ export function CrewCard({ name, email, phone }: CrewCardProps) {
             <Phone className="h-4 w-4" />
             <span>{phone || 'No phone'}</span>
           </div>
+          {folderName && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Folder className="h-4 w-4" />
+              <span>{folderName}</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

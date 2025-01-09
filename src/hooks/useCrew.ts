@@ -41,7 +41,11 @@ export function useCrew() {
             email,
             phone,
             created_at,
-            updated_at
+            updated_at,
+            folder_id,
+            crew_folders (
+              name
+            )
           `)
           .order('name');
 
@@ -61,7 +65,9 @@ export function useCrew() {
           email: member.email || null,
           phone: member.phone || null,
           created_at: member.created_at,
-          updated_at: member.updated_at
+          updated_at: member.updated_at,
+          folder_id: member.folder_id,
+          folderName: member.crew_folders?.name || null
         }));
       } catch (error) {
         console.error('Error in crew query:', error);

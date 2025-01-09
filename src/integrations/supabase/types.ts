@@ -66,6 +66,7 @@ export type Database = {
         Row: {
           created_at: string
           email: string | null
+          folder_id: string | null
           id: string
           name: string
           phone: string | null
@@ -75,6 +76,7 @@ export type Database = {
         Insert: {
           created_at?: string
           email?: string | null
+          folder_id?: string | null
           id?: string
           name: string
           phone?: string | null
@@ -84,13 +86,22 @@ export type Database = {
         Update: {
           created_at?: string
           email?: string | null
+          folder_id?: string | null
           id?: string
           name?: string
           phone?: string | null
           role_id?: string | null
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "crew_members_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "crew_folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       crew_roles: {
         Row: {

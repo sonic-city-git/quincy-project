@@ -79,6 +79,7 @@ export function CrewList() {
                     name={member.name}
                     email={member.email || ''}
                     phone={member.phone || ''}
+                    folderName={member.folderName || ''}
                   />
                 ))}
               </div>

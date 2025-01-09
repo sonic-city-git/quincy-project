@@ -5,4 +5,6 @@ export interface CrewMember {
   phone: string | null;
   created_at: string;
   updated_at: string;
+  folder_id: string | null;
+  folderName?: string;
 }
