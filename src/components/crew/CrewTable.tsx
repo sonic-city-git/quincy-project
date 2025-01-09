@@ -1,6 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CrewMember } from "@/types/crew";
+import { CrewMember, CrewRole } from "@/types/crew";
 import { RoleTags } from "./RoleTags";
 import { memo, useCallback } from "react";
 
@@ -10,17 +10,20 @@ interface CrewTableProps {
   onItemSelect: (id: string) => void;
   headerOnly?: boolean;
   bodyOnly?: boolean;
+  roles: CrewRole[];
 }
 
 // Memoized table row component to prevent unnecessary re-renders
 const CrewTableRow = memo(({ 
   crew, 
   isSelected, 
-  onSelect 
+  onSelect,
+  roles 
 }: { 
   crew: CrewMember; 
   isSelected: boolean;
   onSelect: (id: string) => void;
+  roles: CrewRole[];
 }) => (
   <TableRow className="h-8 hover:bg-zinc-800/50 border-b border-zinc-800/50">
     <TableCell className="w-[48px] p-2">
@@ -53,7 +56,8 @@ export const CrewTable = memo(({
   selectedItems, 
   onItemSelect, 
   headerOnly, 
-  bodyOnly 
+  bodyOnly,
+  roles 
 }: CrewTableProps) => {
   const handleSelectAll = useCallback(() => {
     if (selectedItems.length === crewMembers.length) {
@@ -97,6 +101,7 @@ export const CrewTable = memo(({
           crew={crew}
           isSelected={selectedItems.includes(crew.id)}
           onSelect={onItemSelect}
+          roles={roles}
         />
       ))}
     </TableBody>

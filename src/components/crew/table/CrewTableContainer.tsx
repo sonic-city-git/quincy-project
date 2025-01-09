@@ -1,17 +1,19 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CrewTable } from "../CrewTable";
-import { CrewMember } from "@/types/crew";
+import { CrewMember, CrewRole } from "@/types/crew";
 
 interface CrewTableContainerProps {
   crewMembers: CrewMember[];
   selectedItems: string[];
   onItemSelect: (id: string) => void;
+  roles: CrewRole[];
 }
 
 export function CrewTableContainer({ 
   crewMembers, 
   selectedItems, 
-  onItemSelect 
+  onItemSelect,
+  roles
 }: CrewTableContainerProps) {
   return (
     <div className="relative">
@@ -21,6 +23,7 @@ export function CrewTableContainer({
           selectedItems={selectedItems}
           onItemSelect={onItemSelect}
           headerOnly
+          roles={roles}
         />
       </div>
       <ScrollArea className="h-[calc(100vh-26rem)]">
@@ -29,6 +32,7 @@ export function CrewTableContainer({
           selectedItems={selectedItems}
           onItemSelect={onItemSelect}
           bodyOnly
+          roles={roles}
         />
       </ScrollArea>
     </div>

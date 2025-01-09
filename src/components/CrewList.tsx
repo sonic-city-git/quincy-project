@@ -4,9 +4,12 @@ import { addDays, subDays } from "date-fns";
 import { useCrewManagement } from "@/hooks/useCrewManagement";
 import { useState, useEffect } from "react";
 import { CrewTableContainer } from "./crew/table/CrewTableContainer";
+import { useCrewRoles } from "@/hooks/useCrewRoles";
 
 export function CrewList() {
   const [searchTerm, setSearchTerm] = useState("");
+  const { roles } = useCrewRoles();
+  
   const {
     selectedItems,
     startDate,
@@ -81,6 +84,7 @@ export function CrewList() {
           crewMembers={filteredBySearch}
           selectedItems={selectedItems}
           onItemSelect={handleItemSelect}
+          roles={roles}
         />
 
         <div className="border-t border-zinc-800/50">
