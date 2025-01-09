@@ -122,10 +122,7 @@ export function AddMemberDialog() {
                 </FormItem>
               )}
             />
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setOpen(false)}>
-                Cancel
-              </Button>
+            <div className="flex justify-end pt-4">
               <Button type="submit">Add Member</Button>
             </div>
           </form>
