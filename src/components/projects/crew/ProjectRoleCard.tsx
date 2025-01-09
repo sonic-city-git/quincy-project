@@ -32,11 +32,11 @@ export function ProjectRoleCard({
     queryFn: async () => {
       console.log('Fetching crew members for role:', { id, name });
       
-      // Query crew members where roles array contains an object with matching id
+      // Query crew members where roles array contains the role id
       const { data, error } = await supabase
         .from('crew_members')
-        .select('*, crew_folder')
-        .contains('roles', [{ id }]);
+        .select('*')
+        .filter('roles', 'cs', `[{"id": "${id}"}]`);
       
       if (error) {
         console.error('Error fetching crew members:', error);
