@@ -48,7 +48,7 @@ export function TimelineGrid({ days, selectedCrew }: TimelineGridProps) {
         </div>
       </div>
       
-      <div className="flex-1 overflow-y-auto px-4">
+      <div className="flex-1 overflow-y-auto px-4 bg-zinc-900">
         {selectedCrew.length > 0 ? (
           <div className="space-y-4 py-4">
             {selectedCrew.map((crew) => (
