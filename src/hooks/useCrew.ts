@@ -15,6 +15,8 @@ export function useCrew() {
             name,
             email,
             phone,
+            created_at,
+            updated_at,
             folder:crew_folders (
               id,
               name
@@ -42,9 +44,9 @@ export function useCrew() {
         return data.map((member): CrewMember => ({
           id: member.id,
           name: member.name,
-          email: member.email,
-          phone: member.phone,
-          folder: member.folder,
+          email: member.email || null,
+          phone: member.phone || null,
+          folder: member.folder || null,
           role: member.role?.[0]?.crew_roles || null,
           created_at: member.created_at,
           updated_at: member.updated_at
