@@ -33,7 +33,7 @@ export function CrewMemberSelect({
 }: CrewMemberSelectProps) {
   const [open, setOpen] = useState(false);
 
-  const { data: crewMembers = [], isLoading } = useQuery({
+  const { data: crewMembers = [], isLoading, error } = useQuery({
     queryKey: ['crew-members', roleName],
     queryFn: async () => {
       console.log('Fetching crew members for role:', roleName);
@@ -55,21 +55,22 @@ export function CrewMemberSelect({
       console.log('Raw crew members data:', data);
 
       // Safely transform the data with proper type checking
-      const validMembers = data.map(member => {
-        const roles = member.roles && Array.isArray(member.roles)
-          ? (member.roles as any[]).map(role => ({
+      const validMembers = data.map(member => ({
+        ...member,
+        roles: Array.isArray(member.roles) 
+          ? member.roles.map((role: any) => ({
               id: role.id || '',
               name: role.name || '',
               color: role.color || '',
-              created_at: role.created_at
+              created_at: role.created_at || new Date().toISOString()
             }))
-          : [];
-
-        return {
-          ...member,
-          roles
-        } as CrewMember;
-      });
+          : [],
+        crew_folder: member.crew_folder ? {
+          id: typeof member.crew_folder === 'object' ? (member.crew_folder as any).id || '' : '',
+          name: typeof member.crew_folder === 'object' ? (member.crew_folder as any).name || '' : '',
+          created_at: typeof member.crew_folder === 'object' ? (member.crew_folder as any).created_at || new Date().toISOString() : new Date().toISOString()
+        } : null
+      })) as CrewMember[];
 
       console.log('Processed crew members:', validMembers);
 
@@ -83,6 +84,15 @@ export function CrewMemberSelect({
     },
   });
 
+  if (error) {
+    console.error('Error in CrewMemberSelect:', error);
+    return (
+      <Button variant="outline" className="w-[200px] justify-between" disabled>
+        Error loading crew members
+      </Button>
+    );
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -91,6 +101,7 @@ export function CrewMemberSelect({
           role="combobox"
           aria-expanded={open}
           className="w-[200px] justify-between"
+          disabled={isLoading}
         >
           {selectedCrewMember ? selectedCrewMember.name : "Select crew member..."}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
