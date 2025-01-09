@@ -17,6 +17,20 @@ export function useCrewData() {
 
       if (error) {
         console.error('Error fetching crew members:', error);
+        // Check if the error is due to a blocked request
+        if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
+          toast({
+            title: "Connection Error",
+            description: "It seems like your ad blocker or browser settings might be blocking the connection. Please try disabling your ad blocker for this site.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to fetch crew members: " + error.message,
+            variant: "destructive",
+          });
+        }
         throw error;
       }
 
@@ -43,11 +57,6 @@ export function useCrewData() {
       setCrewMembers(typedData);
     } catch (error) {
       console.error('Error fetching crew members:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch crew members",
-        variant: "destructive",
-      });
     } finally {
       setIsLoading(false);
     }
