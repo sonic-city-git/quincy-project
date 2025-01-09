@@ -20,16 +20,27 @@ interface AddMemberFormData {
 
 export function AddMemberDialog() {
   const [open, setOpen] = useState(false);
-  const form = useForm<AddMemberFormData>();
+  const form = useForm<AddMemberFormData>({
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      role_ids: [],
+      folder_id: ''
+    }
+  });
 
   const { data: roles = [], isLoading: rolesLoading } = useQuery({
     queryKey: ['crew_roles'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('crew_roles')
-        .select('*');
+        .select('id, name');
       
-      if (error) throw error;
+      if (error) {
+        toast.error("Failed to load roles");
+        throw error;
+      }
       return data;
     },
   });
@@ -39,9 +50,12 @@ export function AddMemberDialog() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('crew_folders')
-        .select('*');
+        .select('id, name');
       
-      if (error) throw error;
+      if (error) {
+        toast.error("Failed to load folders");
+        throw error;
+      }
       return data;
     },
   });
@@ -147,7 +161,7 @@ export function AddMemberDialog() {
                   <FormControl>
                     <EntitySelect
                       entities={folders}
-                      value={field.value || ''}
+                      value={field.value}
                       onValueChange={field.onChange}
                       placeholder="Select folder"
                       isLoading={foldersLoading}
@@ -166,7 +180,7 @@ export function AddMemberDialog() {
                   <FormControl>
                     <EntitySelect
                       entities={roles}
-                      value={field.value || []}
+                      value={field.value}
                       onValueChange={field.onChange}
                       placeholder="Select roles"
                       isLoading={rolesLoading}
