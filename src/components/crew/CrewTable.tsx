@@ -2,6 +2,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { CrewMember } from "@/types/crew";
 import { RoleTags } from "./RoleTags";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CrewTableProps {
   crewMembers: CrewMember[];
@@ -12,6 +14,22 @@ interface CrewTableProps {
 }
 
 export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly, bodyOnly }: CrewTableProps) {
+  const { data: folders } = useQuery({
+    queryKey: ['crew-folders'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('crew_folders')
+        .select('*');
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const getFolderName = (folderId: string) => {
+    return folders?.find(f => f.id === folderId)?.name || '';
+  };
+
   const handleSelectAll = () => {
     if (selectedItems.length === crewMembers.length) {
       crewMembers.forEach((crew) => {
@@ -62,7 +80,7 @@ export function CrewTable({ crewMembers, selectedItems, onItemSelect, headerOnly
           </TableCell>
           <TableCell className="w-[280px] truncate">{crew.email}</TableCell>
           <TableCell className="w-[180px] truncate">{crew.phone}</TableCell>
-          <TableCell className="truncate">{crew.folder}</TableCell>
+          <TableCell className="truncate">{getFolderName(crew.folder_id)}</TableCell>
         </TableRow>
       ))}
     </TableBody>

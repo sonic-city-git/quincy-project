@@ -24,8 +24,7 @@ export const filterCrewByRoles = (crewMembers: CrewMember[], selectedRoles: stri
 
 export const sortCrewMembers = (crewMembers: CrewMember[]) => {
   return [...crewMembers].sort((a, b) => {
-    if (a.folder === "Sonic City" && b.folder !== "Sonic City") return -1;
-    if (a.folder !== "Sonic City" && b.folder === "Sonic City") return 1;
+    // We'll sort by name since folder is now an ID
     return a.name.localeCompare(b.name);
   });
 };

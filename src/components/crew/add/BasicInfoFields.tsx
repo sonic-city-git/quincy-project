@@ -7,6 +7,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BasicInfoFieldsProps {
   defaultValues?: {
@@ -14,11 +16,24 @@ interface BasicInfoFieldsProps {
     lastName: string;
     email: string;
     phone: string;
-    folder: string;
+    folder_id: string;
   };
 }
 
 export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
+  const { data: folders } = useQuery({
+    queryKey: ['crew-folders'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('crew_folders')
+        .select('*')
+        .order('name');
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
@@ -66,14 +81,17 @@ export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
         />
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="folder">Folder</Label>
-        <Select name="folder" defaultValue={defaultValues?.folder} required>
+        <Label htmlFor="folder_id">Folder</Label>
+        <Select name="folder_id" defaultValue={defaultValues?.folder_id} required>
           <SelectTrigger>
             <SelectValue placeholder="Select folder" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="Sonic City">Sonic City</SelectItem>
-            <SelectItem value="Freelance">Freelance</SelectItem>
+            {folders?.map((folder) => (
+              <SelectItem key={folder.id} value={folder.id}>
+                {folder.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
