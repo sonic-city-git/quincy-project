@@ -1,7 +1,5 @@
-import { useState, useCallback, useRef } from "react";
-import { addDays, subDays } from "date-fns";
+import { useState, useCallback } from "react";
 import { Equipment } from "@/types/equipment";
-import { useDebounceResize } from "@/hooks/useDebounceResize";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, Filter } from "lucide-react";
@@ -12,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { EquipmentContent } from "./EquipmentContent";
+import { addDays, subDays } from "date-fns";
 
 interface EquipmentListProps {
   equipment: Equipment[];
@@ -48,14 +47,7 @@ export function EquipmentList({
   onPreviousPeriod,
   onNextPeriod,
 }: EquipmentListProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const daysToShow = 14;
-
-  const handleResize = useCallback(() => {
-    // Empty callback is enough to trigger the debounced resize handling
-  }, []);
-
-  const { observe, unobserve } = useDebounceResize(handleResize);
 
   return (
     <div className="h-[calc(100vh-6rem)]">
@@ -121,8 +113,6 @@ export function EquipmentList({
           onItemSelect={onItemSelect}
           onPreviousPeriod={onPreviousPeriod}
           onNextPeriod={onNextPeriod}
-          observe={observe}
-          unobserve={unobserve}
           onAddEquipment={onAddEquipment}
           onEditEquipment={onEditEquipment}
           onDeleteEquipment={onDeleteEquipment}

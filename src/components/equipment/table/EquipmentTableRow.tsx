@@ -40,7 +40,7 @@ export function EquipmentTableRow({
         {item.stock}
       </TableCell>
       <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-3">
-        {formatValue(item.price)}
+        {formatValue(item.price?.toString())}
       </TableCell>
       <TableCell className="whitespace-nowrap overflow-hidden text-ellipsis py-3">
         {item.weight} kg
