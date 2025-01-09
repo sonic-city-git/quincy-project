@@ -30,7 +30,15 @@ export function RoleSelector({ selectedRoleIds, onRolesChange }: RoleSelectorPro
       <Label>Roles</Label>
       <div className="flex flex-wrap gap-4">
         {sortedRoles.map((role) => (
-          <div key={role.id} className="flex items-center space-x-2">
+          <div 
+            key={role.id} 
+            className={`
+              flex items-center gap-2 px-3 py-2 rounded-md border border-zinc-800 
+              transition-colors cursor-pointer hover:bg-zinc-900
+              ${selectedRoleIds.includes(role.id) ? 'bg-zinc-900' : 'bg-zinc-950'}
+            `}
+            onClick={() => handleRoleToggle(role.id, !selectedRoleIds.includes(role.id))}
+          >
             <Checkbox
               id={role.id}
               checked={selectedRoleIds.includes(role.id)}
@@ -38,13 +46,18 @@ export function RoleSelector({ selectedRoleIds, onRolesChange }: RoleSelectorPro
                 handleRoleToggle(role.id, checked as boolean);
               }}
             />
-            <Label 
-              htmlFor={role.id} 
-              className="text-sm font-normal"
-              style={{ color: role.color }}
-            >
-              {role.name}
-            </Label>
+            <div className="flex items-center gap-2">
+              <div
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: role.color || '#666' }}
+              />
+              <Label 
+                htmlFor={role.id} 
+                className="text-sm font-normal cursor-pointer"
+              >
+                {role.name}
+              </Label>
+            </div>
           </div>
         ))}
       </div>
