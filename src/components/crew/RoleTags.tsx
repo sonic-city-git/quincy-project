@@ -18,12 +18,14 @@ export function RoleTags({ role }: RoleTagsProps) {
       {tags.map((tag, index) => {
         const upperTag = tag.toUpperCase();
         const roleConfig = roles.find(r => r.name === upperTag);
-        const bgColor = roleConfig ? `bg-[${roleConfig.color}]` : 'bg-zinc-700';
         
         return (
           <span
             key={index}
-            className={`px-2 py-0.5 rounded text-xs font-medium ${bgColor} text-white`}
+            className="px-2 py-0.5 rounded text-xs font-medium text-white"
+            style={{ 
+              backgroundColor: roleConfig?.color || '#666666',
+            }}
           >
             {upperTag}
           </span>
