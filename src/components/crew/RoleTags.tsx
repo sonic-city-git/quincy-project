@@ -22,7 +22,7 @@ export function RoleTags({ roles }: RoleTagsProps) {
           variant="default"
           className="text-white border-0 whitespace-nowrap"
           style={{ 
-            backgroundColor: role.color || '#666',
+            backgroundColor: role.color || '#666', // Fallback to gray if no color is set
             opacity: 1
           }}
         >
