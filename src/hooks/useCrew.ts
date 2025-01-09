@@ -70,8 +70,14 @@ export function useCrew() {
         // Map the response to match the CrewMember type
         return data.map((member): CrewMember => {
           // Safely handle folder data
-          const folder = member.folder && typeof member.folder === 'object' && 'id' in member.folder && 'name' in member.folder
-            ? { id: member.folder.id, name: member.folder.name }
+          const folder = member.folder && 
+            typeof member.folder === 'object' && 
+            'id' in member.folder && 
+            'name' in member.folder
+            ? {
+                id: member.folder.id as string,
+                name: member.folder.name as string
+              }
             : null;
 
           // Safely handle role data
@@ -81,9 +87,9 @@ export function useCrew() {
             'name' in member.role[0].crew_roles &&
             'color' in member.role[0].crew_roles
             ? {
-                id: member.role[0].crew_roles.id,
-                name: member.role[0].crew_roles.name,
-                color: member.role[0].crew_roles.color
+                id: member.role[0].crew_roles.id as string,
+                name: member.role[0].crew_roles.name as string,
+                color: member.role[0].crew_roles.color as string
               }
             : null;
 
