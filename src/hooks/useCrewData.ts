@@ -10,11 +10,17 @@ export function useCrewData() {
 
   const fetchCrewMembers = useCallback(async () => {
     try {
+      console.log('Fetching crew members...');
       const { data, error } = await supabase
         .from('crew_members')
         .select('*');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching crew members:', error);
+        throw error;
+      }
+
+      console.log('Received crew data:', data);
 
       const typedData = data.map(member => ({
         ...member,
@@ -33,6 +39,7 @@ export function useCrewData() {
         } : null
       })) as CrewMember[];
 
+      console.log('Processed crew data:', typedData);
       setCrewMembers(typedData);
     } catch (error) {
       console.error('Error fetching crew members:', error);
