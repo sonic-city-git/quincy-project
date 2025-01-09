@@ -9,6 +9,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { Folder } from "@/types/folders";
+import { Label } from "@/components/ui/label";
 
 interface EquipmentFolderSelectProps {
   selectedFolder: string | null;
@@ -90,12 +91,13 @@ export function EquipmentFolderSelect({
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="w-64">
+      <Label>Folder</Label>
       <Select
         value={selectedFolder || "all"}
         onValueChange={(value) => onFolderSelect(value === "all" ? null : value)}
       >
-        <SelectTrigger className="w-full">
+        <SelectTrigger className="h-9">
           <SelectValue placeholder="Select folder">
             {getFolderPath(selectedFolder)}
           </SelectValue>

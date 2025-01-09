@@ -14,7 +14,7 @@ export function EquipmentSearch({ searchTerm, onSearchChange }: EquipmentSearchP
         placeholder="Search equipment..."
         value={searchTerm}
         onChange={(e) => onSearchChange(e.target.value)}
-        className="pl-8"
+        className="pl-8 h-9"
       />
     </div>
   );

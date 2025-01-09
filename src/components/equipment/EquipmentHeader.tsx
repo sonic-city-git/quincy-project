@@ -2,8 +2,8 @@ import { Equipment } from "@/types/equipment";
 import { AddEquipmentDialog } from "./AddEquipmentDialog";
 import { EquipmentFolderSelect } from "./EquipmentFolderSelect";
 import { EquipmentSearch } from "./EquipmentSearch";
-import { Button } from "../ui/button";
-import { Edit, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash2, Plus } from "lucide-react";
 import { EditEquipmentDialog } from "./EditEquipmentDialog";
 import {
   AlertDialog,
@@ -72,7 +72,7 @@ export function EquipmentHeader({
                 <Button
                   variant="destructive"
                   size="sm"
-                  className="gap-2"
+                  className="gap-2 h-9"
                 >
                   <Trash2 className="h-4 w-4" />
                   DELETE
@@ -92,6 +92,10 @@ export function EquipmentHeader({
               </AlertDialogContent>
             </AlertDialog>
           )}
+          <Button size="sm" className="gap-2 h-9" onClick={() => document.getElementById('add-equipment-trigger')?.click()}>
+            <Plus className="h-4 w-4" />
+            Add equipment
+          </Button>
           <AddEquipmentDialog onAddEquipment={onAddEquipment} />
         </div>
       </div>
