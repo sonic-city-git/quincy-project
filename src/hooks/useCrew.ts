@@ -10,7 +10,7 @@ export function useCrew() {
         .from('crew_members')
         .select(`
           *,
-          folder:crew_folders (
+          folder:crew_folders!crew_members_folder_id_fkey (
             id,
             name
           ),
@@ -23,7 +23,10 @@ export function useCrew() {
           )
         `);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching crew:', error);
+        throw error;
+      }
       
       // Transform the data to match CrewMember type
       return data.map((member: any) => ({
