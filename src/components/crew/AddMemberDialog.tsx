@@ -33,7 +33,7 @@ export function AddMemberDialog() {
       phone: '',
       role_ids: [],
       folder_id: ''
-    }
+    } as AddMemberFormData
   });
 
   const { data: roles = [], isLoading: rolesLoading } = useQuery({
