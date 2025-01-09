@@ -38,6 +38,7 @@ export function CrewMemberSelect({
     queryFn: async () => {
       console.log('Fetching crew members for role:', roleName);
       
+      // Query all crew members without filtering by folder in the query
       const { data, error } = await supabase
         .from('crew_members')
         .select('id, name, roles, crew_folder');
@@ -58,7 +59,7 @@ export function CrewMemberSelect({
       const validMembers = data.map(member => ({
         ...member,
         roles: Array.isArray(member.roles) 
-          ? member.roles.map((role: any) => ({
+          ? (member.roles as any[]).map(role => ({
               id: role.id || '',
               name: role.name || '',
               color: role.color || '',
@@ -76,7 +77,7 @@ export function CrewMemberSelect({
 
       // Filter members by role
       const filteredMembers = validMembers.filter(member => 
-        member.roles.some(role => role.name === roleName)
+        member.roles?.some(role => role.name === roleName)
       );
 
       console.log('Filtered crew members by role:', filteredMembers);
