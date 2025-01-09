@@ -36,11 +36,7 @@ export function useAddMember() {
 
       if (insertError) {
         console.error('Error inserting crew member:', insertError);
-        if (insertError.code === '42501') {
-          toast.error("Authentication error. Please sign in again.");
-        } else {
-          toast.error(insertError.message || "Failed to add crew member");
-        }
+        toast.error(insertError.message || "Failed to add crew member");
         return false;
       }
 
@@ -68,7 +64,6 @@ export function useAddMember() {
       }
 
       await queryClient.invalidateQueries({ queryKey: ['crew'] });
-      toast.success("Crew member added successfully");
       return true;
     } catch (error) {
       console.error('Error adding crew member:', error);

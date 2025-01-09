@@ -8,20 +8,25 @@ import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { AddMemberDialogContent } from "./AddMemberDialogContent";
 import { useAddMember } from "@/hooks/useAddMember";
+import * as z from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
-interface AddMemberFormData {
-  name: string;
-  email: string;
-  phone: string;
-  role_ids: string[];
-  folder_id: string;
-}
+const addMemberSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  email: z.string().email().optional().or(z.literal("")),
+  phone: z.string().optional().or(z.literal("")),
+  role_ids: z.array(z.string()),
+  folder_id: z.string().min(1, "Folder is required"),
+});
+
+type AddMemberFormData = z.infer<typeof addMemberSchema>;
 
 export function AddMemberDialog() {
   const [open, setOpen] = useState(false);
   const { addMember } = useAddMember();
   
   const form = useForm<AddMemberFormData>({
+    resolver: zodResolver(addMemberSchema),
     defaultValues: {
       name: '',
       email: '',
@@ -66,10 +71,16 @@ export function AddMemberDialog() {
   });
 
   const onSubmit = async (data: AddMemberFormData) => {
-    const success = await addMember(data);
-    if (success) {
-      setOpen(false);
-      form.reset();
+    try {
+      const success = await addMember(data);
+      if (success) {
+        setOpen(false);
+        form.reset();
+        toast.success("Crew member added successfully");
+      }
+    } catch (error) {
+      console.error('Error in onSubmit:', error);
+      toast.error("Failed to add crew member");
     }
   };
 
