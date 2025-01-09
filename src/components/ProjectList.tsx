@@ -2,7 +2,7 @@ import { ProjectTable } from "./projects/ProjectTable";
 import { useProjects } from "@/hooks/useProjects";
 import { useState } from "react";
 import { ProjectActions } from "./projects/ProjectActions";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent } from "./ui/card";
 
 export function ProjectList() {
   const { projects, loading } = useProjects();
@@ -19,9 +19,6 @@ export function ProjectList() {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle>Projects</CardTitle>
-        </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <ProjectActions 
