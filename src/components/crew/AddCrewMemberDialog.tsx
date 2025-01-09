@@ -33,6 +33,18 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
     },
   });
 
+  const { data: folders } = useQuery({
+    queryKey: ['crew-folders'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('crew_folders')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
@@ -86,6 +98,7 @@ export function AddCrewMemberDialog({ onAddCrewMember }: AddCrewMemberDialogProp
           selectedRoleIds={selectedRoleIds}
           onRolesChange={setSelectedRoleIds}
           onSubmit={handleSubmit}
+          folders={folders || []}
         />
       </DialogContent>
     </Dialog>

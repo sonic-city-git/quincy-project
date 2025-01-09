@@ -7,9 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Json } from "@/integrations/supabase/types";
 
 interface BasicInfoFieldsProps {
   defaultValues?: {
@@ -22,13 +19,11 @@ interface BasicInfoFieldsProps {
       created_at: string;
     } | null;
   };
-}
-
-interface FolderData {
-  id: string;
-  data: Json;
-  name: string;
-  created_at: string;
+  folders: {
+    id: string;
+    name: string;
+    created_at: string;
+  }[];
 }
 
 const getFolderPriority = (folderName: string): number => {
@@ -39,27 +34,16 @@ const getFolderPriority = (folderName: string): number => {
   return 4;
 };
 
-export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
-  const { data: folders } = useQuery({
-    queryKey: ['crew-folders'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('crew_folders')
-        .select('*');
-      
-      if (error) throw error;
-
-      return (data as FolderData[]).sort((a, b) => {
-        const priorityA = getFolderPriority((a.data as { name: string }).name);
-        const priorityB = getFolderPriority((b.data as { name: string }).name);
-        
-        if (priorityA !== priorityB) {
-          return priorityA - priorityB;
-        }
-        
-        return (a.data as { name: string }).name.localeCompare((b.data as { name: string }).name);
-      });
-    },
+export function BasicInfoFields({ defaultValues, folders }: BasicInfoFieldsProps) {
+  const sortedFolders = [...folders].sort((a, b) => {
+    const priorityA = getFolderPriority(a.name);
+    const priorityB = getFolderPriority(b.name);
+    
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB;
+    }
+    
+    return a.name.localeCompare(b.name);
   });
 
   return (
@@ -100,14 +84,18 @@ export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
         <Label htmlFor="crew_folder">Folder</Label>
         <Select 
           name="crew_folder" 
-          defaultValue={defaultValues?.crew_folder?.id} 
+          defaultValue={defaultValues?.crew_folder?.id ? JSON.stringify({
+            id: defaultValues.crew_folder.id,
+            name: defaultValues.crew_folder.name,
+            created_at: defaultValues.crew_folder.created_at
+          }) : undefined}
           required
         >
           <SelectTrigger>
             <SelectValue placeholder="Select folder" />
           </SelectTrigger>
           <SelectContent>
-            {folders?.map((folder) => (
+            {sortedFolders.map((folder) => (
               <SelectItem 
                 key={folder.id} 
                 value={JSON.stringify({

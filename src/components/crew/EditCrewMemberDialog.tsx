@@ -47,6 +47,18 @@ export function EditCrewMemberDialog({
     },
   });
 
+  const { data: folders } = useQuery({
+    queryKey: ['crew-folders'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('crew_folders')
+        .select('*')
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+  });
+
   useEffect(() => {
     setSelectedRoleIds(crewMember.roles?.map(role => role.id) || []);
   }, [crewMember]);
@@ -56,6 +68,21 @@ export function EditCrewMemberDialog({
     const formData = new FormData(e.currentTarget);
     
     const updatedRoles = allRoles?.filter(role => selectedRoleIds.includes(role.id)) || [];
+    const crewFolderStr = formData.get("crew_folder") as string;
+    let crewFolder = null;
+    
+    try {
+      if (crewFolderStr) {
+        const parsedFolder = JSON.parse(crewFolderStr);
+        crewFolder = {
+          id: parsedFolder.id,
+          name: parsedFolder.name,
+          created_at: parsedFolder.created_at
+        };
+      }
+    } catch (error) {
+      console.error('Error parsing crew folder:', error);
+    }
     
     const editedMember: CrewMember = {
       ...crewMember,
@@ -63,12 +90,7 @@ export function EditCrewMemberDialog({
       email: formData.get("email") as string,
       phone: formData.get("phone") as string,
       roles: updatedRoles,
-      // Preserve the existing crew_folder structure
-      crew_folder: crewMember.crew_folder ? {
-        id: crewMember.crew_folder.id,
-        name: crewMember.crew_folder.name,
-        created_at: crewMember.crew_folder.created_at
-      } : null
+      crew_folder: crewFolder || crewMember.crew_folder
     };
 
     onEditCrewMember(editedMember);
@@ -105,6 +127,7 @@ export function EditCrewMemberDialog({
           onRolesChange={setSelectedRoleIds}
           onSubmit={handleSubmit}
           onDelete={handleDelete}
+          folders={folders || []}
         />
       </DialogContent>
     </Dialog>
