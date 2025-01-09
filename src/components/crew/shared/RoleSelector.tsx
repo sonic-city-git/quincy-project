@@ -3,28 +3,36 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 
 interface RoleSelectorProps {
-  selectedRoleId: string | null;
-  onRoleChange: (roleId: string | null) => void;
+  selectedRoleIds: string[];
+  onRolesChange: (roleIds: string[]) => void;
 }
 
-export function RoleSelector({ selectedRoleId, onRoleChange }: RoleSelectorProps) {
+export function RoleSelector({ selectedRoleIds, onRolesChange }: RoleSelectorProps) {
   const { roles, isLoading } = useCrewRoles();
 
   if (isLoading) {
-    return <div className="animate-pulse h-20 bg-zinc-100 dark:bg-zinc-800 rounded-md" />;
+    return <div className="animate-pulse h-20 bg-zinc-900/50 rounded-md" />;
   }
+
+  const handleRoleToggle = (roleId: string, checked: boolean) => {
+    if (checked) {
+      onRolesChange([...selectedRoleIds, roleId]);
+    } else {
+      onRolesChange(selectedRoleIds.filter(id => id !== roleId));
+    }
+  };
 
   return (
     <div className="grid gap-2">
-      <Label>Role</Label>
+      <Label>Roles</Label>
       <div className="flex flex-wrap gap-4">
         {roles.map((role) => (
           <div key={role.id} className="flex items-center space-x-2">
             <Checkbox
               id={role.id}
-              checked={selectedRoleId === role.id}
+              checked={selectedRoleIds.includes(role.id)}
               onCheckedChange={(checked) => {
-                onRoleChange(checked ? role.id : null);
+                handleRoleToggle(role.id, checked as boolean);
               }}
             />
             <Label 

@@ -1,29 +1,47 @@
 import { useCrewRoles } from "@/hooks/useCrewRoles";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface RoleTagsProps {
-  role_id: string | null;
+  crewMemberId: string;
 }
 
-export function RoleTags({ role_id }: RoleTagsProps) {
+export function RoleTags({ crewMemberId }: RoleTagsProps) {
   const { roles } = useCrewRoles();
   
-  if (!role_id) {
+  const { data: memberRoles } = useQuery({
+    queryKey: ['crew-member-roles', crewMemberId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('crew_member_roles')
+        .select('role_id')
+        .eq('crew_member_id', crewMemberId);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+  
+  if (!memberRoles?.length) {
     return null;
   }
   
-  const role = roles.find(r => r.id === role_id);
-  if (!role) return null;
-        
   return (
-    <div className="flex gap-1 whitespace-nowrap">
-      <span
-        className="px-2 py-0.5 rounded text-xs font-medium text-white"
-        style={{ 
-          backgroundColor: role.color || '#666666',
-        }}
-      >
-        {role.name.toUpperCase()}
-      </span>
+    <div className="flex gap-1 flex-wrap">
+      {memberRoles.map((memberRole) => {
+        const role = roles.find(r => r.id === memberRole.role_id);
+        if (!role) return null;
+        
+        return (
+          <span
+            key={role.id}
+            className="px-2 py-0.5 rounded text-xs font-medium text-white"
+            style={{ backgroundColor: role.color || '#666666' }}
+          >
+            {role.name.toUpperCase()}
+          </span>
+        );
+      })}
     </div>
   );
 }

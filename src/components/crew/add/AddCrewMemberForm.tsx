@@ -9,7 +9,7 @@ interface AddCrewMemberFormProps {
 }
 
 export function AddCrewMemberForm({ onSubmit }: AddCrewMemberFormProps) {
-  const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
+  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -21,7 +21,7 @@ export function AddCrewMemberForm({ onSubmit }: AddCrewMemberFormProps) {
       phone: formData.get("phone") as string,
       email: formData.get("email") as string,
       folder: formData.get("folder") as string,
-      role_id: selectedRoleId,
+      roleIds: selectedRoleIds,
     };
 
     onSubmit(e);
@@ -31,8 +31,8 @@ export function AddCrewMemberForm({ onSubmit }: AddCrewMemberFormProps) {
     <form onSubmit={handleSubmit} className="grid gap-4 py-4">
       <BasicInfoFields />
       <RoleSelector 
-        selectedRoleId={selectedRoleId}
-        onRoleChange={setSelectedRoleId}
+        selectedRoleIds={selectedRoleIds}
+        onRolesChange={setSelectedRoleIds}
       />
       <Button type="submit" className="mt-4">Add crew member</Button>
     </form>

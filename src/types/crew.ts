@@ -1,7 +1,6 @@
 export interface CrewMember {
   id: string;
   name: string;
-  role_id: string | null;
   email: string;
   phone: string;
   folder: string;
@@ -13,7 +12,7 @@ export interface NewCrewMember {
   phone: string;
   email: string;
   folder: string;
-  role_id?: string | null;
+  roleIds: string[];
 }
 
 export interface CrewRole {

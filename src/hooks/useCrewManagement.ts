@@ -21,7 +21,17 @@ export function useCrewManagement() {
     try {
       const { data, error } = await supabase
         .from('crew_members')
-        .select('*, crew_roles(*)');
+        .select(`
+          *,
+          crew_member_roles (
+            role_id,
+            crew_roles (
+              id,
+              name,
+              color
+            )
+          )
+        `);
 
       if (error) throw error;
 
@@ -44,23 +54,35 @@ export function useCrewManagement() {
 
   const handleAddCrewMember = useCallback(async (newMember: NewCrewMember) => {
     try {
-      const crewMember = {
-        name: `${newMember.firstName} ${newMember.lastName}`,
-        role_id: newMember.role_id,
-        email: newMember.email,
-        phone: newMember.phone,
-        folder: newMember.folder,
-      };
-
-      const { data, error } = await supabase
+      // First, create the crew member
+      const { data: crewMember, error: crewError } = await supabase
         .from('crew_members')
-        .insert([crewMember])
+        .insert({
+          name: `${newMember.firstName} ${newMember.lastName}`,
+          email: newMember.email,
+          phone: newMember.phone,
+          folder: newMember.folder,
+        })
         .select()
         .single();
 
-      if (error) throw error;
+      if (crewError) throw crewError;
 
-      setCrewMembers(prev => [...prev, data]);
+      // Then, create the role associations
+      if (newMember.roleIds.length > 0) {
+        const roleAssignments = newMember.roleIds.map(roleId => ({
+          crew_member_id: crewMember.id,
+          role_id: roleId,
+        }));
+
+        const { error: rolesError } = await supabase
+          .from('crew_member_roles')
+          .insert(roleAssignments);
+
+        if (rolesError) throw rolesError;
+      }
+
+      await fetchCrewMembers();
       toast({
         title: "Success",
         description: "Crew member added successfully",
@@ -73,20 +95,46 @@ export function useCrewManagement() {
         variant: "destructive",
       });
     }
-  }, [toast]);
+  }, [fetchCrewMembers, toast]);
 
-  const handleEditCrewMember = useCallback(async (editedMember: CrewMember) => {
+  const handleEditCrewMember = useCallback(async (editedMember: CrewMember & { roleIds: string[] }) => {
     try {
-      const { error } = await supabase
+      // Update crew member basic info
+      const { error: updateError } = await supabase
         .from('crew_members')
-        .update(editedMember)
+        .update({
+          name: editedMember.name,
+          email: editedMember.email,
+          phone: editedMember.phone,
+          folder: editedMember.folder,
+        })
         .eq('id', editedMember.id);
 
-      if (error) throw error;
+      if (updateError) throw updateError;
 
-      setCrewMembers(prev =>
-        prev.map(member => member.id === editedMember.id ? editedMember : member)
-      );
+      // Delete existing role associations
+      const { error: deleteError } = await supabase
+        .from('crew_member_roles')
+        .delete()
+        .eq('crew_member_id', editedMember.id);
+
+      if (deleteError) throw deleteError;
+
+      // Create new role associations
+      if (editedMember.roleIds.length > 0) {
+        const roleAssignments = editedMember.roleIds.map(roleId => ({
+          crew_member_id: editedMember.id,
+          role_id: roleId,
+        }));
+
+        const { error: rolesError } = await supabase
+          .from('crew_member_roles')
+          .insert(roleAssignments);
+
+        if (rolesError) throw rolesError;
+      }
+
+      await fetchCrewMembers();
       clearSelection();
       toast({
         title: "Success",
@@ -100,7 +148,7 @@ export function useCrewManagement() {
         variant: "destructive",
       });
     }
-  }, [clearSelection, toast]);
+  }, [fetchCrewMembers, clearSelection, toast]);
 
   const handleDeleteCrewMembers = useCallback(async () => {
     try {
@@ -111,9 +159,7 @@ export function useCrewManagement() {
 
       if (error) throw error;
 
-      setCrewMembers(prev => 
-        prev.filter(member => !selectedItems.includes(member.id))
-      );
+      await fetchCrewMembers();
       clearSelection();
       toast({
         title: "Success",
@@ -127,7 +173,7 @@ export function useCrewManagement() {
         variant: "destructive",
       });
     }
-  }, [selectedItems, clearSelection, toast]);
+  }, [selectedItems, fetchCrewMembers, clearSelection, toast]);
 
   const allRoles = getAllUniqueRoles(crewMembers);
   const filteredCrewMembers = sortCrewMembers(filterCrewByRoles(crewMembers, selectedRoles));
