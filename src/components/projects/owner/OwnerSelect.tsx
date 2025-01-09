@@ -27,12 +27,16 @@ export function OwnerSelect({ selectedOwnerId, onOwnerSelect }: OwnerSelectProps
           .select('id, name')
           .filter('crew_folder->name', 'eq', 'Sonic City');
 
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase error:', error);
+          throw error;
+        }
 
-        // Filter out any null results and map to the required format
-        const validMembers = (data || [])
-          .filter(member => member && member.id && member.name)
-          .map(({ id, name }) => ({ id, name }));
+        // Ensure data is an array and has valid members
+        const validMembers = Array.isArray(data) 
+          ? data.filter(member => member && member.id && member.name)
+              .map(({ id, name }) => ({ id, name }))
+          : [];
 
         console.log('Fetched crew members:', validMembers);
         setSonicCityCrewMembers(validMembers);
