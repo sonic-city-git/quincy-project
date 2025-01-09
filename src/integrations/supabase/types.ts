@@ -77,6 +77,38 @@ export type Database = {
         }
         Relationships: []
       }
+      crew_member_roles: {
+        Row: {
+          created_at: string
+          crew_member_id: string | null
+          id: string
+          role_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          crew_member_id?: string | null
+          id?: string
+          role_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          crew_member_id?: string | null
+          id?: string
+          role_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_member_roles_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_members: {
         Row: {
           created_at: string
@@ -103,41 +135,6 @@ export type Database = {
           name?: string
           phone?: string | null
           role_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "crew_members_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "crew_roles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      crew_roles: {
-        Row: {
-          color: string
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          updated_at: string
-        }
-        Insert: {
-          color: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          updated_at?: string
-        }
-        Update: {
-          color?: string
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
           updated_at?: string
         }
         Relationships: []
@@ -433,13 +430,6 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "project_crew_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "crew_roles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       project_equipment: {
@@ -546,13 +536,6 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "project_event_roles_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "crew_roles"
-            referencedColumns: ["id"]
-          },
         ]
       }
       project_events: {
@@ -644,13 +627,6 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_roles_role_id_fkey"
-            columns: ["role_id"]
-            isOneToOne: false
-            referencedRelation: "crew_roles"
             referencedColumns: ["id"]
           },
         ]

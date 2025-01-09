@@ -49,16 +49,18 @@ export function AddMemberDialog() {
       if (crewError) throw crewError;
 
       // Then create the role associations
-      const roleAssignments = data.role_ids.map(role_id => ({
-        crew_member_id: crewMember.id,
-        role_id: role_id
-      }));
+      if (data.role_ids.length > 0) {
+        const roleAssignments = data.role_ids.map(role_id => ({
+          crew_member_id: crewMember.id,
+          role_id: role_id
+        }));
 
-      const { error: rolesError } = await supabase
-        .from('crew_member_roles')
-        .insert(roleAssignments);
+        const { error: rolesError } = await supabase
+          .from('crew_member_roles')
+          .insert(roleAssignments);
 
-      if (rolesError) throw rolesError;
+        if (rolesError) throw rolesError;
+      }
 
       toast.success("Crew member added successfully");
       setOpen(false);

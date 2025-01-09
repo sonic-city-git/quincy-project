@@ -27,8 +27,8 @@ interface AddProjectDialogProps {
 export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
   const [open, setOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
-  const [selectedOwnerId, setSelectedOwnerId] = useState("");
-  const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [selectedOwnerId, setSelectedOwnerId] = useState<string>("");
+  const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
 
   const { data: crewMembers = [], isLoading: isLoadingCrew } = useQuery({
     queryKey: ['crew_members'],
@@ -105,7 +105,7 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
             <EntitySelect
               entities={crewMembers}
               value={selectedOwnerId}
-              onValueChange={setSelectedOwnerId}
+              onValueChange={(value) => setSelectedOwnerId(value as string)}
               placeholder="Project Owner"
               isLoading={isLoadingCrew}
               required
@@ -116,7 +116,7 @@ export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
             <EntitySelect
               entities={customers}
               value={selectedCustomerId}
-              onValueChange={setSelectedCustomerId}
+              onValueChange={(value) => setSelectedCustomerId(value as string)}
               placeholder="Customer"
               isLoading={isLoadingCustomers}
             />
