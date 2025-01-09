@@ -37,7 +37,7 @@ export function Sidebar() {
     <div className="pb-12 w-64 bg-zinc-900">
       <div className="px-3 py-4 border-b border-zinc-800">
         <div className="flex items-center mb-4 px-3">
-          <h1 className="text-5xl font-bold text-[#F97316]">
+          <h1 className="text-5xl font-bold text-primary">
             QUINCY
           </h1>
         </div>
