@@ -211,18 +211,24 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          needs_crew: boolean | null
+          rate_multiplier: number | null
         }
         Insert: {
           color: string
           created_at?: string
           id?: string
           name: string
+          needs_crew?: boolean | null
+          rate_multiplier?: number | null
         }
         Update: {
           color?: string
           created_at?: string
           id?: string
           name?: string
+          needs_crew?: boolean | null
+          rate_multiplier?: number | null
         }
         Relationships: []
       }
@@ -251,6 +257,71 @@ export type Database = {
             columns: ["parent_id"]
             isOneToOne: false
             referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_event_roles: {
+        Row: {
+          created_at: string
+          crew_member_id: string | null
+          daily_rate: number | null
+          event_id: string
+          hourly_rate: number | null
+          hours_worked: number | null
+          id: string
+          project_id: string
+          role_id: string
+        }
+        Insert: {
+          created_at?: string
+          crew_member_id?: string | null
+          daily_rate?: number | null
+          event_id: string
+          hourly_rate?: number | null
+          hours_worked?: number | null
+          id?: string
+          project_id: string
+          role_id: string
+        }
+        Update: {
+          created_at?: string
+          crew_member_id?: string | null
+          daily_rate?: number | null
+          event_id?: string
+          hourly_rate?: number | null
+          hours_worked?: number | null
+          id?: string
+          project_id?: string
+          role_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_event_roles_crew_member_id_fkey"
+            columns: ["crew_member_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_event_roles_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "project_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_event_roles_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_event_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "crew_roles"
             referencedColumns: ["id"]
           },
         ]

@@ -90,6 +90,11 @@ export const AddEventDialog = ({
           <DialogTitle>Add Event</DialogTitle>
           <DialogDescription>
             Add an event for {date ? format(date, 'dd.MM.yy') : ''}
+            {selectedEventType?.needs_crew && (
+              <span className="block text-sm text-muted-foreground mt-1">
+                This event type requires crew assignments. Rate multiplier: {selectedEventType.rate_multiplier}x
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">

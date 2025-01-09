@@ -13,6 +13,8 @@ interface DatabaseEvent {
     id: string;
     name: string;
     color: string;
+    needs_crew: boolean;
+    rate_multiplier: number;
   };
 }
 
@@ -35,7 +37,9 @@ export const useCalendarEvents = (projectId: string | undefined) => {
             event_types (
               id,
               name,
-              color
+              color,
+              needs_crew,
+              rate_multiplier
             )
           `)
           .eq('project_id', projectId);
@@ -73,7 +77,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     try {
       const formattedDate = formatDatabaseDate(date);
       
-      const { data, error } = await supabase
+      // First, insert the event
+      const { data: eventData, error: eventError } = await supabase
         .from('project_events')
         .insert({
           project_id: projectId,
@@ -86,20 +91,45 @@ export const useCalendarEvents = (projectId: string | undefined) => {
           event_types (
             id,
             name,
-            color
+            color,
+            needs_crew,
+            rate_multiplier
           )
         `)
         .single();
 
-      if (error) {
-        console.error('Database error when adding event:', error);
-        throw error;
+      if (eventError) throw eventError;
+
+      // If this event type needs crew, create role assignments
+      if (eventType.needs_crew) {
+        const { data: projectRoles, error: rolesError } = await supabase
+          .from('project_roles')
+          .select('*')
+          .eq('project_id', projectId);
+
+        if (rolesError) throw rolesError;
+
+        if (projectRoles && projectRoles.length > 0) {
+          const roleAssignments = projectRoles.map(role => ({
+            project_id: projectId,
+            event_id: eventData.id,
+            role_id: role.role_id,
+            daily_rate: role.daily_rate,
+            hourly_rate: role.hourly_rate
+          }));
+
+          const { error: assignError } = await supabase
+            .from('project_event_roles')
+            .insert(roleAssignments);
+
+          if (assignError) throw assignError;
+        }
       }
 
       const newEvent: CalendarEvent = {
-        date: new Date(data.date),
-        name: data.name,
-        type: data.event_types
+        date: new Date(eventData.date),
+        name: eventData.name,
+        type: eventData.event_types
       };
 
       setEvents(prev => [...prev, newEvent]);
