@@ -8,7 +8,11 @@ export const createRoleAssignments = async (projectId: string, eventId: string) 
     const { data: projectRoles, error: rolesError } = await supabase
       .from('project_roles')
       .select(`
-        *,
+        id,
+        role_id,
+        daily_rate,
+        hourly_rate,
+        preferred_id,
         crew_roles (
           id,
           name,
@@ -44,7 +48,7 @@ export const createRoleAssignments = async (projectId: string, eventId: string) 
     const { data: insertedRoles, error: insertError } = await supabase
       .from('project_event_roles')
       .insert(roleAssignments)
-      .select();
+      .select('*, crew_roles (id, name, color), crew_members (id, name)');
 
     if (insertError) {
       console.error('Error creating role assignments:', insertError);
