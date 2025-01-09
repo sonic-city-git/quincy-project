@@ -34,8 +34,7 @@ export function BasicInfoFields({ defaultValues }: BasicInfoFieldsProps) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('crew_folders')
-        .select('*')
-        .order('name');
+        .select('*');
       
       if (error) throw error;
 
