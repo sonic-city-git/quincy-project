@@ -27,7 +27,8 @@ export function useCustomers() {
         throw error;
       }
     },
-    retry: 1
+    retry: 1,
+    refetchOnWindowFocus: false
   });
 
   return { customers, loading };
