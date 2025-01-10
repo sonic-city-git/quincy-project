@@ -46,12 +46,13 @@ export function EntitySelect({
     // Ensure we're working with an array
     const entityArray = Array.isArray(entities) ? entities : [];
     
+    // Filter out invalid entries and ensure type safety
     return entityArray.filter((entity): entity is Entity => 
       entity !== null &&
       typeof entity === 'object' &&
       'id' in entity &&
-      'name' in entity &&
       typeof entity.id === 'string' &&
+      'name' in entity &&
       typeof entity.name === 'string'
     );
   }, [entities]);
@@ -69,7 +70,7 @@ export function EntitySelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-full justify-between"
+          className="w-full justify-between bg-zinc-900/50"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -82,7 +83,7 @@ export function EntitySelect({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0 bg-zinc-900/90">
         <Command>
           <CommandInput 
             placeholder={`Search ${placeholder.toLowerCase()}...`}
