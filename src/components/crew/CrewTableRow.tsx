@@ -2,6 +2,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { CrewMember } from "@/types/crew";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
+import { sortRoles } from "@/utils/roleUtils";
 
 interface CrewTableRowProps {
   member: CrewMember;
@@ -12,8 +13,8 @@ interface CrewTableRowProps {
 export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps) {
   const { roles: allRoles } = useCrewRoles();
   
-  const memberRoles = allRoles.filter(role => 
-    member.roles?.includes(role.id)
+  const memberRoles = sortRoles(
+    allRoles.filter(role => member.roles?.includes(role.id))
   );
 
   return (

@@ -14,7 +14,7 @@ export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) 
       <TableHeader className="bg-zinc-900/50 border-b border-zinc-800">
         <TableRow>
           <TableHead className="w-12"></TableHead>
-          <TableHead>Name</TableHead>
+          <TableHead className="min-w-[300px]">Name / Roles</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Phone</TableHead>
           <TableHead>Folder</TableHead>
