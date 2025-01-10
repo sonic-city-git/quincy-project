@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -65,9 +65,12 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent aria-describedby="add-project-description">
         <DialogHeader>
           <DialogTitle>Add New Project</DialogTitle>
+          <DialogDescription id="add-project-description">
+            Fill in the details below to create a new project.
+          </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
