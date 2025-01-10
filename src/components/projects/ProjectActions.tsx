@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
+import { Edit, Plus } from "lucide-react";
 import { useState } from "react";
 import { AddProjectDialog } from "./AddProjectDialog";
 import { useProjects } from "@/hooks/useProjects";
@@ -11,6 +11,7 @@ interface ProjectActionsProps {
 
 export function ProjectActions({ selectedItems, onProjectDeleted }: ProjectActionsProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
   const { projects } = useProjects();
   
   const selectedProject = projects.find(project => project.id === selectedItems[0]);
@@ -28,7 +29,19 @@ export function ProjectActions({ selectedItems, onProjectDeleted }: ProjectActio
           Edit
         </Button>
       )}
-      <AddProjectDialog />
+      <Button
+        variant="default"
+        size="sm"
+        className="gap-2"
+        onClick={() => setAddDialogOpen(true)}
+      >
+        <Plus className="h-4 w-4" />
+        Add Project
+      </Button>
+      <AddProjectDialog 
+        open={addDialogOpen}
+        onOpenChange={setAddDialogOpen}
+      />
     </div>
   );
 }

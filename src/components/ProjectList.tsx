@@ -10,7 +10,6 @@ export function ProjectList() {
   const { projects, loading } = useProjects();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   const handleItemSelect = (id: string) => {
     setSelectedItem(prev => prev === id ? null : id);
@@ -39,33 +38,15 @@ export function ProjectList() {
               onSearchChange={setSearchQuery}
               selectedItem={selectedItem}
               onProjectDeleted={() => setSelectedItem(null)}
-              viewMode={viewMode}
-              onViewModeChange={setViewMode}
             />
             <Separator className="bg-zinc-800" />
-            
-            {viewMode === 'list' ? (
-              <div className="rounded-lg overflow-hidden border border-zinc-800">
-                <ProjectTable 
-                  projects={filteredProjects} 
-                  selectedItem={selectedItem}
-                  onItemSelect={handleItemSelect}
-                />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredProjects.map((project) => (
-                  <ProjectCard
-                    key={project.id}
-                    title={project.name}
-                    customer={project.owner}
-                    equipmentCount={0}
-                    staffCount={0}
-                    nextBooking={project.lastInvoiced}
-                  />
-                ))}
-              </div>
-            )}
+            <div className="rounded-lg overflow-hidden border border-zinc-800">
+              <ProjectTable 
+                projects={filteredProjects} 
+                selectedItem={selectedItem}
+                onItemSelect={handleItemSelect}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>

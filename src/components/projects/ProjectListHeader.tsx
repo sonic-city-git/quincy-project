@@ -1,14 +1,11 @@
 import { ProjectSearchInput } from "./filters/ProjectSearchInput";
 import { ProjectActions } from "./ProjectActions";
-import { ViewToggle } from "./ViewToggle";
 
 interface ProjectListHeaderProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   selectedItem: string | null;
   onProjectDeleted: () => void;
-  viewMode: 'list' | 'grid';
-  onViewModeChange: (mode: 'list' | 'grid') => void;
 }
 
 export function ProjectListHeader({
@@ -16,8 +13,6 @@ export function ProjectListHeader({
   onSearchChange,
   selectedItem,
   onProjectDeleted,
-  viewMode,
-  onViewModeChange,
 }: ProjectListHeaderProps) {
   return (
     <div className="flex items-center gap-4">
@@ -27,7 +22,6 @@ export function ProjectListHeader({
           onChange={onSearchChange}
         />
       </div>
-      <ViewToggle currentView={viewMode} onViewChange={onViewModeChange} />
       <ProjectActions 
         selectedItems={selectedItem ? [selectedItem] : []} 
         onProjectDeleted={onProjectDeleted}
