@@ -1,20 +1,16 @@
-import { ProjectTable } from "./projects/ProjectTable";
-import { useProjects } from "@/hooks/useProjects";
 import { useState } from "react";
-import { ProjectActions } from "./projects/ProjectActions";
 import { Card, CardContent } from "./ui/card";
-import { Filter, Loader2 } from "lucide-react";
 import { Separator } from "./ui/separator";
-import { ProjectCard } from "./ProjectCard";
-import { ViewToggle } from "./projects/ViewToggle";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Loader2 } from "lucide-react";
+import { useProjects } from "@/hooks/useProjects";
+import { ProjectTable } from "./projects/ProjectTable";
+import { ProjectListHeader } from "./projects/ProjectListHeader";
 
 export function ProjectList() {
   const { projects, loading } = useProjects();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
 
   const handleItemSelect = (id: string) => {
     setSelectedItem(prev => prev === id ? null : id);
@@ -38,29 +34,14 @@ export function ProjectList() {
       <Card className="border-0 shadow-md bg-zinc-900/50">
         <CardContent className="p-6">
           <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="flex-1">
-                <Input
-                  placeholder="Search projects..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="max-w-sm bg-zinc-800/50"
-                />
-              </div>
-              <ViewToggle currentView={viewMode} onViewChange={setViewMode} />
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Filter className="h-4 w-4" />
-                Filter
-              </Button>
-              <ProjectActions 
-                selectedItems={selectedItem ? [selectedItem] : []} 
-                onProjectDeleted={() => setSelectedItem(null)}
-              />
-            </div>
+            <ProjectListHeader
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              selectedItem={selectedItem}
+              onProjectDeleted={() => setSelectedItem(null)}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+            />
             <Separator className="bg-zinc-800" />
             
             {viewMode === 'list' ? (
