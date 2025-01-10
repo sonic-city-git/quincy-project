@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Trash } from "lucide-react";
-import { AddMemberDialog } from "./AddMemberDialog";
 
 interface CrewActionsProps {
   selectedItems: string[];
@@ -10,7 +9,6 @@ interface CrewActionsProps {
 export function CrewActions({ selectedItems, onCrewMemberDeleted }: CrewActionsProps) {
   return (
     <div className="flex items-center gap-2">
-      <AddMemberDialog />
       {selectedItems.length > 0 && (
         <Button 
           variant="outline" 
