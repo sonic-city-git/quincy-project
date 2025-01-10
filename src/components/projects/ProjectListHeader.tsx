@@ -1,11 +1,14 @@
 import { ProjectSearchInput } from "./filters/ProjectSearchInput";
 import { ProjectActions } from "./ProjectActions";
+import { ProjectOwnerFilter } from "./filters/ProjectOwnerFilter";
 
 interface ProjectListHeaderProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   selectedItem: string | null;
   onProjectDeleted: () => void;
+  ownerFilter: string;
+  onOwnerFilterChange: (value: string) => void;
 }
 
 export function ProjectListHeader({
@@ -13,6 +16,8 @@ export function ProjectListHeader({
   onSearchChange,
   selectedItem,
   onProjectDeleted,
+  ownerFilter,
+  onOwnerFilterChange,
 }: ProjectListHeaderProps) {
   return (
     <div className="flex items-center gap-4">
@@ -20,6 +25,10 @@ export function ProjectListHeader({
         <ProjectSearchInput 
           value={searchQuery}
           onChange={onSearchChange}
+        />
+        <ProjectOwnerFilter
+          value={ownerFilter}
+          onChange={onOwnerFilterChange}
         />
       </div>
       <ProjectActions 

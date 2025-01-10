@@ -10,15 +10,20 @@ export function ProjectList() {
   const { projects, loading } = useProjects();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [ownerFilter, setOwnerFilter] = useState('');
 
   const handleItemSelect = (id: string) => {
     setSelectedItem(prev => prev === id ? null : id);
   };
 
-  const filteredProjects = projects.filter(project => 
-    project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (project.owner && project.owner.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredProjects = projects.filter(project => {
+    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (project.owner && project.owner.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    const matchesOwner = !ownerFilter || project.owner_id === ownerFilter;
+    
+    return matchesSearch && matchesOwner;
+  });
 
   if (loading) {
     return (
@@ -38,6 +43,8 @@ export function ProjectList() {
               onSearchChange={setSearchQuery}
               selectedItem={selectedItem}
               onProjectDeleted={() => setSelectedItem(null)}
+              ownerFilter={ownerFilter}
+              onOwnerFilterChange={setOwnerFilter}
             />
             <Separator className="bg-zinc-800" />
             <div className="rounded-lg overflow-hidden border border-zinc-800">
