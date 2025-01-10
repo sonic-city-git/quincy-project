@@ -13,6 +13,7 @@ import { useCrewRoles } from "@/hooks/useCrewRoles";
 import { Loader2, UserPlus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { sortRoles } from "@/utils/roleUtils";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -62,6 +63,8 @@ export function AddMemberDialog() {
       },
     });
   };
+
+  const sortedRoles = sortRoles(roles);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -144,8 +147,8 @@ export function AddMemberDialog() {
               render={() => (
                 <FormItem>
                   <FormLabel>Roles</FormLabel>
-                  <div className="space-y-2">
-                    {roles.map((role) => (
+                  <div className="grid grid-cols-2 gap-4 border rounded-lg p-4">
+                    {sortedRoles.map((role) => (
                       <div key={role.id} className="flex items-center space-x-2">
                         <Checkbox
                           id={role.id}
@@ -157,10 +160,12 @@ export function AddMemberDialog() {
                               : currentRoles.filter(id => id !== role.id);
                             form.setValue('role_ids', newRoles);
                           }}
+                          className="data-[state=checked]:bg-[#4F46E5] data-[state=checked]:border-[#4F46E5]"
                         />
                         <label
                           htmlFor={role.id}
                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          style={{ color: role.color }}
                         >
                           {role.name}
                         </label>
