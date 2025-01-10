@@ -9,6 +9,7 @@ import { ViewToggle } from "./projects/ViewToggle";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useCrew } from "@/hooks/useCrew";
+import { AddMemberDialog } from "./crew/AddMemberDialog";
 
 export function CrewList() {
   const { crew, loading } = useCrew();
@@ -56,6 +57,7 @@ export function CrewList() {
                 <Filter className="h-4 w-4" />
                 Filter
               </Button>
+              <AddMemberDialog />
               <CrewActions 
                 selectedItems={selectedItem ? [selectedItem] : []} 
                 onCrewMemberDeleted={() => setSelectedItem(null)}
