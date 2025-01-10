@@ -8,8 +8,8 @@ import { CrewTable } from "./crew/CrewTable";
 import { CrewListHeader } from "./crew/CrewListHeader";
 
 export function CrewList() {
-  const { crew, loading } = useCrew();
-  const { roles } = useCrewRoles();
+  const { crew = [], loading } = useCrew();
+  const { roles = [] } = useCrewRoles();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
@@ -31,7 +31,7 @@ export function CrewList() {
     setSelectedRoles([]);
   };
 
-  const filteredCrew = crew.filter(member => {
+  const filteredCrew = (crew || []).filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (member.email && member.email.toLowerCase().includes(searchQuery.toLowerCase()));
 
