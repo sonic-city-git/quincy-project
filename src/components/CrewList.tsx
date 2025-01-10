@@ -10,9 +10,11 @@ import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { useCrew } from "@/hooks/useCrew";
 import { AddMemberDialog } from "./crew/AddMemberDialog";
+import { useCrewRoles } from "@/hooks/useCrewRoles";
 
 export function CrewList() {
   const { crew, loading } = useCrew();
+  const { roles } = useCrewRoles();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [searchQuery, setSearchQuery] = useState('');
@@ -57,11 +59,11 @@ export function CrewList() {
                 <Filter className="h-4 w-4" />
                 Filter
               </Button>
-              <AddMemberDialog />
               <CrewActions 
                 selectedItems={selectedItem ? [selectedItem] : []} 
                 onCrewMemberDeleted={() => setSelectedItem(null)}
               />
+              <AddMemberDialog />
             </div>
             <Separator className="bg-zinc-800" />
             
@@ -75,15 +77,22 @@ export function CrewList() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredCrew.map((member) => (
-                  <CrewCard
-                    key={member.id}
-                    name={member.name}
-                    email={member.email || ''}
-                    phone={member.phone || ''}
-                    folderName={member.folderName || ''}
-                  />
-                ))}
+                {filteredCrew.map((member) => {
+                  const memberRoles = roles.filter(role => 
+                    member.roles?.includes(role.id)
+                  );
+                  
+                  return (
+                    <CrewCard
+                      key={member.id}
+                      name={member.name}
+                      email={member.email || ''}
+                      phone={member.phone || ''}
+                      folderName={member.folderName || ''}
+                      roles={memberRoles}
+                    />
+                  );
+                })}
               </div>
             )}
           </div>
