@@ -65,14 +65,14 @@ export function EntitySelect({
       </SelectTrigger>
       <SelectContent 
         ref={scrollRef}
-        className="max-h-[300px]"
+        className="max-h-[300px] relative z-50"
         position="popper"
         sideOffset={4}
       >
         <ScrollArea 
-          className="h-[var(--radix-select-content-available-height)] w-full bg-red-500/10"
+          className="h-[var(--radix-select-content-available-height)] w-full bg-red-500/10 absolute inset-0"
         >
-          <div className="w-full border-2 border-blue-500/50">
+          <div className="w-full border-2 border-blue-500/50 relative">
             {sortedEntities.map((entity) => (
               <SelectItem 
                 key={entity.id} 
