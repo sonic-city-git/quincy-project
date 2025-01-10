@@ -60,19 +60,17 @@ export function EntitySelect({
       <SelectTrigger className="w-full">
         <SelectValue placeholder={getDisplayValue()} />
       </SelectTrigger>
-      <SelectContent>
-        <ScrollArea className="h-[150px]" type="hover">
-          <div className="p-1">
-            {sortedEntities.map((entity) => (
-              <SelectItem 
-                key={entity.id} 
-                value={entity.id}
-                className="cursor-pointer relative flex w-full select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 hover:bg-accent hover:text-accent-foreground"
-              >
-                {entity.name}
-              </SelectItem>
-            ))}
-          </div>
+      <SelectContent className="max-h-[300px]">
+        <ScrollArea className="h-full max-h-[300px]" type="auto">
+          {sortedEntities.map((entity) => (
+            <SelectItem 
+              key={entity.id} 
+              value={entity.id}
+              className="cursor-pointer relative flex w-full select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 hover:bg-accent hover:text-accent-foreground"
+            >
+              {entity.name}
+            </SelectItem>
+          ))}
         </ScrollArea>
       </SelectContent>
     </Select>
