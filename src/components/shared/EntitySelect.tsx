@@ -69,7 +69,7 @@ export function EntitySelect({
         position="popper"
         sideOffset={4}
       >
-        <ScrollArea className="h-[var(--radix-select-content-available-height)] w-full">
+        <ScrollArea className="h-[var(--radix-select-content-available-height)]">
           <div className="p-1">
             {sortedEntities.map((entity) => (
               <SelectItem 
