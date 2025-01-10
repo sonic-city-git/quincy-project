@@ -108,7 +108,7 @@ export function EntitySelect({
             className="h-9"
           />
           <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup>
+          <CommandGroup className="max-h-[200px] overflow-auto">
             {safeEntities.length > 0 ? safeEntities.map((entity) => (
               <CommandItem
                 key={entity.id}
