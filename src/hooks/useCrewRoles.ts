@@ -10,7 +10,7 @@ export interface CrewRole {
 }
 
 export function useCrewRoles() {
-  const { data: roles = [], isLoading } = useQuery({
+  const { data: roles = [], isLoading, error } = useQuery({
     queryKey: ['crew-roles'],
     queryFn: async () => {
       console.log('Fetching crew roles...');
@@ -25,12 +25,21 @@ export function useCrewRoles() {
         throw error;
       }
 
+      if (!data) {
+        console.log('No roles found');
+        return [];
+      }
+
       console.log('Successfully fetched crew roles:', data);
       return data as CrewRole[];
     },
     staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     retry: 1,
   });
+
+  if (error) {
+    console.error('Query error:', error);
+  }
 
   return { roles, isLoading };
 }
