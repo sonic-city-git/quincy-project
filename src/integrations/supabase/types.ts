@@ -125,6 +125,7 @@ export type Database = {
           name: string
           organization_number: string | null
           phone_number: string | null
+          tripletex_id: number | null
           updated_at: string
         }
         Insert: {
@@ -135,6 +136,7 @@ export type Database = {
           name: string
           organization_number?: string | null
           phone_number?: string | null
+          tripletex_id?: number | null
           updated_at?: string
         }
         Update: {
@@ -145,6 +147,7 @@ export type Database = {
           name?: string
           organization_number?: string | null
           phone_number?: string | null
+          tripletex_id?: number | null
           updated_at?: string
         }
         Relationships: []

@@ -7,6 +7,8 @@ import { EntitySelect } from "@/components/shared/EntitySelect";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useCrew } from "@/hooks/useCrew";
 import { useAddProject } from "@/hooks/useAddProject";
+import { useCustomerSync } from "@/hooks/useCustomerSync";
+import { RefreshCw } from "lucide-react";
 
 interface AddProjectFormData {
   name: string;
@@ -23,6 +25,7 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
   const { customers, loading: customersLoading } = useCustomers();
   const { crew, loading: crewLoading } = useCrew();
   const addProject = useAddProject();
+  const { syncCustomers, isSyncing } = useCustomerSync();
 
   const form = useForm<AddProjectFormData>({
     defaultValues: {
@@ -69,14 +72,25 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
                 />
               </div>
 
-              <div className="space-y-2">
-                <EntitySelect
-                  entities={customerEntities}
-                  value={form.watch('customer_id') ?? ''}
-                  onValueChange={(value) => form.setValue('customer_id', value)}
-                  placeholder="Select customer"
-                  isLoading={customersLoading}
-                />
+              <div className="space-y-2 relative">
+                <div className="flex items-center gap-2">
+                  <EntitySelect
+                    entities={customerEntities}
+                    value={form.watch('customer_id') ?? ''}
+                    onValueChange={(value) => form.setValue('customer_id', value)}
+                    placeholder="Select customer"
+                    isLoading={customersLoading}
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => syncCustomers()}
+                    disabled={isSyncing}
+                  >
+                    <RefreshCw className={`h-4 w-4 ${isSyncing ? 'animate-spin' : ''}`} />
+                  </Button>
+                </div>
               </div>
 
               <div className="space-y-2">
