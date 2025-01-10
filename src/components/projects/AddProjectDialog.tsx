@@ -72,7 +72,7 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
               <div className="space-y-2">
                 <EntitySelect
                   entities={customerEntities}
-                  value={form.watch('customer_id') || ''}
+                  value={form.watch('customer_id') ?? ''}
                   onValueChange={(value) => form.setValue('customer_id', value)}
                   placeholder="Select customer"
                   isLoading={customersLoading}
@@ -82,7 +82,7 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
               <div className="space-y-2">
                 <EntitySelect
                   entities={crewEntities}
-                  value={form.watch('crew_member_id') || ''}
+                  value={form.watch('crew_member_id') ?? ''}
                   onValueChange={(value) => form.setValue('crew_member_id', value)}
                   placeholder="Select crew member"
                   isLoading={crewLoading}

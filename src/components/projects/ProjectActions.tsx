@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 interface ProjectActionsProps {
   selectedItems?: string[];
@@ -27,6 +28,7 @@ export function ProjectActions({ selectedItems = [], onProjectDeleted }: Project
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   const handleDelete = async () => {
     try {
@@ -39,10 +41,7 @@ export function ProjectActions({ selectedItems = [], onProjectDeleted }: Project
 
       if (error) throw error;
 
-      // Invalidate the projects query first
       await queryClient.invalidateQueries({ queryKey: ['projects'] });
-
-      // Clear selection and show success toast
       onProjectDeleted?.();
       
       toast({
@@ -50,7 +49,6 @@ export function ProjectActions({ selectedItems = [], onProjectDeleted }: Project
         description: "The project has been deleted successfully",
       });
       
-      // Navigate back to projects list after successful deletion
       navigate('/projects');
     } catch (error) {
       console.error('Error deleting project:', error);
@@ -59,40 +57,6 @@ export function ProjectActions({ selectedItems = [], onProjectDeleted }: Project
         description: "Failed to delete the project",
         variant: "destructive",
       });
-    }
-  };
-
-  const handleAddProject = async (projectData: {
-    name: string;
-    owner_id: string;
-    customer_id: string | null;
-    color: string;
-  }) => {
-    try {
-      const { data, error } = await supabase
-        .from('projects')
-        .insert([projectData])
-        .select();
-
-      if (error) throw error;
-
-      // Invalidate and refetch projects after successful addition
-      await queryClient.invalidateQueries({ queryKey: ['projects'] });
-
-      toast({
-        title: "Success",
-        description: "Project created successfully",
-      });
-
-      return data;
-    } catch (error) {
-      console.error('Error creating project:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create project",
-        variant: "destructive",
-      });
-      throw error;
     }
   };
 
@@ -127,7 +91,11 @@ export function ProjectActions({ selectedItems = [], onProjectDeleted }: Project
         </>
       )}
       <div className="ml-auto">
-        <AddProjectDialog onAddProject={handleAddProject} />
+        <Button onClick={() => setIsAddDialogOpen(true)}>Add Project</Button>
+        <AddProjectDialog 
+          open={isAddDialogOpen} 
+          onOpenChange={setIsAddDialogOpen}
+        />
       </div>
     </div>
   );
