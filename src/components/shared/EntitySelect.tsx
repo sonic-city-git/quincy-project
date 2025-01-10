@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,57 +22,47 @@ interface Entity {
 
 interface EntitySelectProps {
   entities: Entity[];
-  value?: string;
+  value: string;
   onValueChange: (value: string) => void;
   placeholder?: string;
   isLoading?: boolean;
 }
 
 export function EntitySelect({
-  entities,
+  entities = [],
   value,
   onValueChange,
   placeholder = "Select...",
   isLoading = false,
 }: EntitySelectProps) {
-  const [open, setOpen] = React.useState(false);
-
-  const sortedEntities = React.useMemo(() => {
-    return [...entities].sort((a, b) => a.name.localeCompare(b.name));
-  }, [entities]);
-
-  const selectedEntity = sortedEntities.find((entity) => entity.id === value);
+  const selectedEntity = entities.find((entity) => entity.id === value);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
-          aria-expanded={open}
           className="w-full justify-between"
         >
-          {selectedEntity ? selectedEntity.name : placeholder}
+          {selectedEntity?.name || placeholder}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
+      <PopoverContent className="p-0" align="start">
         <Command>
           <CommandInput 
-            placeholder={`Search ${placeholder.toLowerCase()}...`}
+            placeholder={`Search ${placeholder.toLowerCase()}`} 
             className="h-9"
             autoComplete="off"
           />
-          <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup>
-            <ScrollArea className="h-[200px] overflow-y-auto">
-              {sortedEntities.map((entity) => (
+          <ScrollArea className="h-[200px]">
+            <CommandEmpty>No results found.</CommandEmpty>
+            <CommandGroup>
+              {(entities || []).map((entity) => (
                 <CommandItem
                   key={entity.id}
-                  value={entity.name}
-                  onSelect={() => {
-                    onValueChange(entity.id);
-                    setOpen(false);
-                  }}
+                  value={entity.id}
+                  onSelect={() => onValueChange(entity.id)}
                   className="cursor-pointer"
                 >
                   {entity.name}
@@ -85,8 +74,8 @@ export function EntitySelect({
                   />
                 </CommandItem>
               ))}
-            </ScrollArea>
-          </CommandGroup>
+            </CommandGroup>
+          </ScrollArea>
         </Command>
       </PopoverContent>
     </Popover>
