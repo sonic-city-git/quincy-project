@@ -1,76 +1,34 @@
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-interface AddMemberFormData {
+interface AddMemberData {
   name: string;
-  email: string;
-  phone: string;
-  role_ids: string[];
-  folder_id: string;
+  email?: string;
+  phone?: string;
+  folder_id?: string;
 }
 
 export function useAddMember() {
   const queryClient = useQueryClient();
 
-  const addMember = async (data: AddMemberFormData) => {
-    try {
-      // First check if we're authenticated
-      const { data: session } = await supabase.auth.getSession();
-      if (!session.session) {
-        toast.error("You must be signed in to add crew members");
-        return false;
-      }
-
-      // Then, insert the crew member
-      const { data: insertedMember, error: insertError } = await supabase
+  const mutation = useMutation({
+    mutationFn: async (data: AddMemberData) => {
+      const { error } = await supabase
         .from('crew_members')
-        .insert({
-          name: data.name,
-          email: data.email || null,
-          phone: data.phone || null,
-          folder_id: data.folder_id || null,
-        })
-        .select('*')
-        .single();
+        .insert([data]);
 
-      if (insertError) {
-        console.error('Error inserting crew member:', insertError);
-        toast.error(insertError.message || "Failed to add crew member");
-        return false;
-      }
-
-      if (!insertedMember) {
-        toast.error("Failed to add crew member - no data returned");
-        return false;
-      }
-
-      // Then, if there are roles to assign, insert them
-      if (data.role_ids.length > 0) {
-        const roleInserts = data.role_ids.map(roleId => ({
-          crew_member_id: insertedMember.id,
-          role_id: roleId
-        }));
-
-        const { error: rolesError } = await supabase
-          .from('crew_member_roles')
-          .insert(roleInserts);
-
-        if (rolesError) {
-          console.error('Error inserting crew member roles:', rolesError);
-          toast.error("Member added but roles could not be assigned");
-          return false;
-        }
-      }
-
-      await queryClient.invalidateQueries({ queryKey: ['crew'] });
-      return true;
-    } catch (error) {
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['crew'] });
+      toast.success('Crew member added successfully');
+    },
+    onError: (error) => {
       console.error('Error adding crew member:', error);
-      toast.error("Failed to add crew member");
-      return false;
+      toast.error('Failed to add crew member');
     }
-  };
+  });
 
-  return { addMember };
+  return mutation;
 }

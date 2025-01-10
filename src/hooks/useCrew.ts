@@ -36,13 +36,7 @@ export function useCrew() {
         const { data, error } = await supabase
           .from('crew_members')
           .select(`
-            id,
-            name,
-            email,
-            phone,
-            created_at,
-            updated_at,
-            folder_id,
+            *,
             crew_folders (
               name
             )

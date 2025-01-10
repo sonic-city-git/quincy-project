@@ -1,130 +1,109 @@
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { EntitySelect } from "@/components/shared/EntitySelect";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useCustomers } from "@/hooks/useCustomers";
+import { useCrew } from "@/hooks/useCrew";
+import { useAddProject } from "@/hooks/useAddProject";
 
 interface AddProjectDialogProps {
-  onAddProject: (projectData: {
-    name: string;
-    owner_id: string;
-    customer_id: string | null;
-    color: string;
-  }) => Promise<any>;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function AddProjectDialog({ onAddProject }: AddProjectDialogProps) {
-  const [open, setOpen] = useState(false);
-  const [projectName, setProjectName] = useState("");
-  const [selectedOwnerId, setSelectedOwnerId] = useState<string>("");
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string>("");
+interface AddProjectFormData {
+  name: string;
+  customer_id?: string;
+  crew_member_id?: string;
+}
 
-  const { data: crewMembers = [], isLoading: isLoadingCrew } = useQuery({
-    queryKey: ['crew_members'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('crew_members')
-        .select('id, name')
-        .order('name');
-      
-      if (error) throw error;
-      return data;
-    },
+export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) {
+  const { customers, loading: customersLoading } = useCustomers();
+  const { crew, loading: crewLoading } = useCrew();
+  const addProject = useAddProject();
+
+  const form = useForm<AddProjectFormData>({
+    defaultValues: {
+      name: '',
+      customer_id: undefined,
+      crew_member_id: undefined
+    }
   });
 
-  const { data: customers = [], isLoading: isLoadingCustomers } = useQuery({
-    queryKey: ['customers'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('customers')
-        .select('id, name')
-        .order('name');
-      
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: AddProjectFormData) => {
     try {
-      await onAddProject({
-        name: projectName,
-        owner_id: selectedOwnerId,
-        customer_id: selectedCustomerId || null,
-        color: "#000000",
-      });
-      setOpen(false);
-      setProjectName("");
-      setSelectedOwnerId("");
-      setSelectedCustomerId("");
+      await addProject.mutateAsync(data);
+      form.reset();
+      onOpenChange(false);
     } catch (error) {
-      console.error("Error adding project:", error);
+      console.error('Failed to add project:', error);
     }
   };
 
+  const customerEntities = customers.map(customer => ({
+    id: customer.id,
+    name: customer.name
+  }));
+
+  const crewEntities = crew.map(member => ({
+    id: member.id,
+    name: member.name
+  }));
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Plus className="h-4 w-4" />
-          Add Project
-        </Button>
-      </DialogTrigger>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New Project</DialogTitle>
-          <DialogDescription>
-            Create a new project by entering the details below.
-          </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Project Name</Label>
-            <Input
-              id="name"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              placeholder="Enter project name"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="owner">Project Owner</Label>
-            <EntitySelect
-              entities={crewMembers}
-              value={selectedOwnerId}
-              onValueChange={(value) => setSelectedOwnerId(value as string)}
-              placeholder="Project Owner"
-              isLoading={isLoadingCrew}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="customer">Customer</Label>
-            <EntitySelect
-              entities={customers}
-              value={selectedCustomerId}
-              onValueChange={(value) => setSelectedCustomerId(value as string)}
-              placeholder="Customer"
-              isLoading={isLoadingCustomers}
-            />
-          </div>
-          <div className="flex justify-end">
-            <Button type="submit">Create Project</Button>
-          </div>
-        </form>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Input
+                  placeholder="Project name"
+                  {...form.register('name')}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <EntitySelect
+                  entities={customerEntities}
+                  value={form.watch('customer_id') || ''}
+                  onValueChange={(value) => form.setValue('customer_id', value)}
+                  placeholder="Select customer"
+                  isLoading={customersLoading}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <EntitySelect
+                  entities={crewEntities}
+                  value={form.watch('crew_member_id') || ''}
+                  onValueChange={(value) => form.setValue('crew_member_id', value)}
+                  placeholder="Select crew member"
+                  isLoading={crewLoading}
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="submit">
+                Add Project
+              </Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

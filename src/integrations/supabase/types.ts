@@ -54,6 +54,44 @@ export type Database = {
         }
         Relationships: []
       }
+      crew_members: {
+        Row: {
+          created_at: string
+          email: string | null
+          folder_id: string | null
+          id: string
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          folder_id?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          folder_id?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crew_members_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "crew_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_roles: {
         Row: {
           color: string
