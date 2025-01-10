@@ -18,6 +18,7 @@ import {
 interface Entity {
   id: string;
   name: string;
+  [key: string]: any; // Allow for additional properties
 }
 
 interface EntitySelectProps {
@@ -40,10 +41,11 @@ export function EntitySelect({
   // Ensure entities is always a valid array and filter out invalid entries
   const safeEntities = React.useMemo(() => {
     if (!Array.isArray(entities)) return [];
-    return entities.filter(entity => 
-      entity && 
-      typeof entity === 'object' && 
-      'id' in entity && 
+    
+    return entities.filter((entity): entity is Entity => 
+      entity !== null &&
+      typeof entity === 'object' &&
+      'id' in entity &&
       'name' in entity &&
       typeof entity.id === 'string' &&
       typeof entity.name === 'string'
