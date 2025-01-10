@@ -1,6 +1,7 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { CrewMember } from "@/types/crew";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useCrewRoles } from "@/hooks/useCrewRoles";
 
 interface CrewTableRowProps {
   member: CrewMember;
@@ -9,6 +10,12 @@ interface CrewTableRowProps {
 }
 
 export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps) {
+  const { roles: allRoles } = useCrewRoles();
+  
+  const memberRoles = allRoles.filter(role => 
+    member.roles?.includes(role.id)
+  );
+
   return (
     <TableRow 
       className={`group hover:bg-zinc-800/50 ${
@@ -42,6 +49,19 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
         <span className="truncate block max-w-[150px]">
           {member.folderName || '-'}
         </span>
+      </TableCell>
+      <TableCell>
+        <div className="flex flex-wrap gap-1">
+          {memberRoles.map((role) => (
+            <div
+              key={role.id}
+              className="text-xs px-2 py-1 rounded text-white"
+              style={{ backgroundColor: role.color }}
+            >
+              {role.name}
+            </div>
+          ))}
+        </div>
       </TableCell>
     </TableRow>
   );
