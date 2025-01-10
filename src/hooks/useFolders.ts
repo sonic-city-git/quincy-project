@@ -7,7 +7,7 @@ export function useFolders() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('crew_folders')
-        .select('id, name, parent_id, created_at, updated_at')
+        .select('id, name, created_at, updated_at')
         .order('name');
 
       if (error) throw error;
