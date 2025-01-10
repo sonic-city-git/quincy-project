@@ -69,16 +69,18 @@ export function EntitySelect({
         position="popper"
         sideOffset={4}
       >
-        <ScrollArea className="h-[var(--radix-select-content-available-height)]">
-          {sortedEntities.map((entity) => (
-            <SelectItem 
-              key={entity.id} 
-              value={entity.id}
-              className="cursor-pointer"
-            >
-              {entity.name}
-            </SelectItem>
-          ))}
+        <ScrollArea className="h-[var(--radix-select-content-available-height)] w-full">
+          <div className="p-1">
+            {sortedEntities.map((entity) => (
+              <SelectItem 
+                key={entity.id} 
+                value={entity.id}
+                className="cursor-pointer rounded-sm"
+              >
+                {entity.name}
+              </SelectItem>
+            ))}
+          </div>
         </ScrollArea>
       </SelectContent>
     </Select>
