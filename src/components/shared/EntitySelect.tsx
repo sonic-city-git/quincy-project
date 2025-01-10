@@ -37,11 +37,16 @@ export function EntitySelect({
 }: EntitySelectProps) {
   const [open, setOpen] = React.useState(false);
 
-  // Ensure entities is always a valid array
+  // Ensure entities is always a valid array and filter out invalid entries
   const safeEntities = React.useMemo(() => {
     if (!Array.isArray(entities)) return [];
     return entities.filter((entity): entity is Entity => 
-      entity && typeof entity === 'object' && 'id' in entity && 'name' in entity
+      entity && 
+      typeof entity === 'object' && 
+      'id' in entity && 
+      typeof entity.id === 'string' &&
+      'name' in entity &&
+      typeof entity.name === 'string'
     );
   }, [entities]);
   
