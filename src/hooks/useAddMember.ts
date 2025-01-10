@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-interface AddMemberData {
+export interface AddMemberData {
   name: string;
   email?: string;
   phone?: string;

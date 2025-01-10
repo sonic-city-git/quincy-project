@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useAddMember } from "@/hooks/useAddMember";
+import { useAddMember, AddMemberData } from "@/hooks/useAddMember";
 import { EntitySelect } from "@/components/shared/EntitySelect";
 import { useFolders } from "@/hooks/useFolders";
 import { Loader2, UserPlus } from "lucide-react";
@@ -36,10 +36,14 @@ export function AddMemberDialog() {
   });
 
   const onSubmit = (data: FormData) => {
-    // Ensure name is provided since it's required by AddMemberData
-    if (!data.name) return;
+    const memberData: AddMemberData = {
+      name: data.name,
+      email: data.email || undefined,
+      phone: data.phone || undefined,
+      folder_id: data.folder_id || undefined,
+    };
     
-    addMember(data, {
+    addMember(memberData, {
       onSuccess: () => {
         setOpen(false);
         form.reset();
