@@ -18,7 +18,6 @@ import {
 interface Entity {
   id: string;
   name: string;
-  [key: string]: any;
 }
 
 interface EntitySelectProps {
@@ -38,36 +37,23 @@ export function EntitySelect({
 }: EntitySelectProps) {
   const [open, setOpen] = React.useState(false);
 
-  // Initialize safeEntities with an empty array if entities is undefined
+  // Ensure entities is always an array and contains valid data
   const safeEntities = React.useMemo(() => {
     if (!Array.isArray(entities)) {
       console.warn('EntitySelect: entities prop is not an array', entities);
       return [];
     }
-    
-    const filtered = entities.filter((entity): entity is Entity => {
+    return entities.filter((entity): entity is Entity => {
       if (!entity || typeof entity !== 'object') {
         console.warn('EntitySelect: invalid entity', entity);
         return false;
       }
-      
-      const hasValidId = 'id' in entity && typeof entity.id === 'string';
-      const hasValidName = 'name' in entity && typeof entity.name === 'string';
-      
-      if (!hasValidId || !hasValidName) {
-        console.warn('EntitySelect: entity missing required properties', entity);
-        return false;
-      }
-      
-      return true;
+      return typeof entity.id === 'string' && typeof entity.name === 'string';
     });
-
-    return filtered;
   }, [entities]);
 
-  // Find the selected entity safely
+  // Find the selected entity
   const selectedEntity = React.useMemo(() => {
-    if (!value) return undefined;
     return safeEntities.find(entity => entity.id === value);
   }, [value, safeEntities]);
 
@@ -75,11 +61,12 @@ export function EntitySelect({
     return (
       <Button
         variant="outline"
+        role="combobox"
         className="w-full justify-between bg-zinc-900/50"
         disabled
       >
         <Loader2 className="h-4 w-4 animate-spin" />
-        <span>Loading...</span>
+        <span className="ml-2">Loading...</span>
       </Button>
     );
   }
@@ -109,7 +96,7 @@ export function EntitySelect({
           />
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup className="max-h-[200px] overflow-auto">
-            {safeEntities.length > 0 ? safeEntities.map((entity) => (
+            {safeEntities.map((entity) => (
               <CommandItem
                 key={entity.id}
                 value={entity.id}
@@ -126,9 +113,7 @@ export function EntitySelect({
                 />
                 {entity.name}
               </CommandItem>
-            )) : (
-              <CommandItem disabled>No options available</CommandItem>
-            )}
+            ))}
           </CommandGroup>
         </Command>
       </PopoverContent>
