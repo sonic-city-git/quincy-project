@@ -40,9 +40,13 @@ export function EntitySelect({
 
   // Ensure entities is always a valid array and filter out invalid entries
   const safeEntities = React.useMemo(() => {
-    if (!Array.isArray(entities)) return [];
+    // If entities is undefined or null, return empty array
+    if (!entities) return [];
     
-    return entities.filter((entity): entity is Entity => 
+    // Ensure we're working with an array
+    const entityArray = Array.isArray(entities) ? entities : [];
+    
+    return entityArray.filter((entity): entity is Entity => 
       entity !== null &&
       typeof entity === 'object' &&
       'id' in entity &&
