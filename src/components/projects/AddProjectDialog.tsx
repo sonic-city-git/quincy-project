@@ -21,7 +21,7 @@ interface AddProjectDialogProps {
 }
 
 export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) {
-  const { customers, loading: customersLoading } = useCustomers();
+  const { customers, loading: customersLoading } = useCustomers(open); // Only fetch when dialog is open
   const { crew, loading: crewLoading } = useCrew();
   const { folders } = useFolders();
   const addProject = useAddProject();

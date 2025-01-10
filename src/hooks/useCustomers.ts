@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-export function useCustomers() {
+export function useCustomers(enabled: boolean = false) {
   const { data: customers = [], isLoading: loading } = useQuery({
     queryKey: ['customers'],
     queryFn: async () => {
@@ -43,10 +43,11 @@ export function useCustomers() {
         throw error;
       }
     },
+    enabled: enabled, // Only fetch when enabled is true
     retry: 1,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    refetchOnMount: true,
+    refetchOnMount: false, // Don't refetch on mount by default
   });
 
   return { customers, loading };
