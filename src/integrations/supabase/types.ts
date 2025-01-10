@@ -580,7 +580,6 @@ export type Database = {
       }
       projects: {
         Row: {
-          "#": number | null
           created_at: string
           crew_member_id: string | null
           customer_id: string | null
@@ -592,7 +591,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          "#"?: number | null
           created_at?: string
           crew_member_id?: string | null
           customer_id?: string | null
@@ -604,7 +602,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          "#"?: number | null
           created_at?: string
           crew_member_id?: string | null
           customer_id?: string | null

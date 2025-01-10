@@ -16,7 +16,7 @@ export function useProjects() {
           id,
           name
         ),
-        crew_members!projects_crew_member_id_fkey (
+        crew_members (
           id,
           name
         )
