@@ -11,8 +11,9 @@ export function useFolders() {
         .order('name');
 
       if (error) throw error;
-      return data;
-    }
+      return data || [];
+    },
+    refetchOnMount: true
   });
 
   return { folders, loading };

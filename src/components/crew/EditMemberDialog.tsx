@@ -37,8 +37,8 @@ export function EditMemberDialog({
 }: EditMemberDialogProps) {
   const [isPending, setIsPending] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
-  const { folders, loading: foldersLoading } = useFolders();
-  const { roles, isLoading: rolesLoading } = useCrewRoles();
+  const { folders = [], loading: foldersLoading } = useFolders();
+  const { roles = [], isLoading: rolesLoading } = useCrewRoles();
   const queryClient = useQueryClient();
 
   const form = useForm<FormData>({
@@ -143,9 +143,9 @@ export function EditMemberDialog({
             form={form}
             onSubmit={onSubmit}
             isPending={isPending}
-            folders={folders}
+            folders={folders || []}
             foldersLoading={foldersLoading}
-            roles={roles}
+            roles={roles || []}
             rolesLoading={rolesLoading}
             onDelete={() => setShowDeleteAlert(true)}
           />
