@@ -1,5 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useEffect, useRef } from "react";
 
 interface Entity {
   id: string;
@@ -23,6 +24,8 @@ export function EntitySelect({
   isLoading,
   required
 }: EntitySelectProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
   console.log('EntitySelect received entities:', entities);
   console.log('EntitySelect current value:', value);
 
@@ -51,6 +54,62 @@ export function EntitySelect({
 
   console.log('EntitySelect sorted entities:', sortedEntities);
 
+  useEffect(() => {
+    const scrollContainer = scrollRef.current;
+    if (!scrollContainer) return;
+
+    let touchStartY = 0;
+    let isScrolling = false;
+
+    const handleWheel = (e: WheelEvent) => {
+      // Detect if the event is from a touchpad based on deltaMode and deltaY
+      const isTouchpad = e.deltaMode === 0 && Math.abs(e.deltaY) < 50;
+      
+      if (isTouchpad) {
+        e.preventDefault();
+        scrollContainer.scrollTop += e.deltaY;
+      }
+    };
+
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+      isScrolling = true;
+    };
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isScrolling) return;
+      
+      const touchDeltaY = touchStartY - e.touches[0].clientY;
+      scrollContainer.scrollTop += touchDeltaY;
+      touchStartY = e.touches[0].clientY;
+      
+      // Prevent default only if we're scrolling
+      if (Math.abs(touchDeltaY) > 5) {
+        e.preventDefault();
+      }
+    };
+
+    const handleTouchEnd = () => {
+      isScrolling = false;
+    };
+
+    try {
+      scrollContainer.addEventListener('wheel', handleWheel, { passive: false });
+      scrollContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
+      scrollContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
+      scrollContainer.addEventListener('touchend', handleTouchEnd);
+
+      return () => {
+        scrollContainer.removeEventListener('wheel', handleWheel);
+        scrollContainer.removeEventListener('touchstart', handleTouchStart);
+        scrollContainer.removeEventListener('touchmove', handleTouchMove);
+        scrollContainer.removeEventListener('touchend', handleTouchEnd);
+      };
+    } catch (error) {
+      console.error('Error setting up scroll handlers:', error);
+    }
+  }, []);
+
   return (
     <Select 
       value={value} 
@@ -61,7 +120,12 @@ export function EntitySelect({
         <SelectValue placeholder={getDisplayValue()} />
       </SelectTrigger>
       <SelectContent className="max-h-[300px]">
-        <ScrollArea className="h-full max-h-[300px]" type="auto">
+        <ScrollArea 
+          ref={scrollRef}
+          className="h-full max-h-[300px] overflow-y-auto" 
+          type="auto"
+          style={{ scrollBehavior: 'smooth' }}
+        >
           {sortedEntities.map((entity) => (
             <SelectItem 
               key={entity.id} 
