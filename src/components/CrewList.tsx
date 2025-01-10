@@ -10,6 +10,7 @@ import { useCrew } from "@/hooks/useCrew";
 import { AddMemberDialog } from "./crew/AddMemberDialog";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 import { Badge } from "./ui/badge";
+import { sortRoles } from "@/utils/roleUtils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +52,8 @@ export function CrewList() {
     return matchesSearch && matchesRoles;
   });
 
+  const sortedRoles = sortRoles(roles);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -89,7 +92,7 @@ export function CrewList() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-56">
-                    {roles.map((role) => (
+                    {sortedRoles.map((role) => (
                       <DropdownMenuCheckboxItem
                         key={role.id}
                         checked={selectedRoles.includes(role.id)}
