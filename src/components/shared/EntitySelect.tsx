@@ -1,6 +1,20 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import * as React from "react";
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useRef } from "react";
 
 interface Entity {
   id: string;
@@ -9,80 +23,72 @@ interface Entity {
 
 interface EntitySelectProps {
   entities: Entity[];
-  value: string;
+  value?: string;
   onValueChange: (value: string) => void;
-  placeholder: string;
+  placeholder?: string;
   isLoading?: boolean;
-  required?: boolean;
 }
 
-export function EntitySelect({ 
-  entities, 
-  value, 
-  onValueChange, 
-  placeholder,
-  isLoading,
-  required
+export function EntitySelect({
+  entities,
+  value,
+  onValueChange,
+  placeholder = "Select...",
+  isLoading = false,
 }: EntitySelectProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  
-  console.log('EntitySelect received entities:', entities);
-  console.log('EntitySelect current value:', value);
+  const [open, setOpen] = React.useState(false);
 
-  // Custom sort function to prioritize specific names
-  const sortedEntities = [...entities].sort((a, b) => {
-    const order = ['Sonic City', 'Associate', 'Freelance'];
-    const aIndex = order.indexOf(a.name);
-    const bIndex = order.indexOf(b.name);
-    
-    // If both items are in the priority list, sort by their order
-    if (aIndex !== -1 && bIndex !== -1) {
-      return aIndex - bIndex;
-    }
-    // If only a is in the priority list, it comes first
-    if (aIndex !== -1) return -1;
-    // If only b is in the priority list, it comes first
-    if (bIndex !== -1) return 1;
-    // For all other items, sort alphabetically
-    return a.name.localeCompare(b.name);
-  });
+  const sortedEntities = React.useMemo(() => {
+    return [...entities].sort((a, b) => a.name.localeCompare(b.name));
+  }, [entities]);
 
-  console.log('EntitySelect sorted entities:', sortedEntities);
-
-  const getDisplayValue = () => {
-    const selectedEntity = entities.find(e => e.id === value);
-    return selectedEntity?.name || (isLoading ? 'Loading...' : placeholder);
-  };
+  const selectedEntity = sortedEntities.find((entity) => entity.id === value);
 
   return (
-    <Select 
-      value={value} 
-      onValueChange={onValueChange}
-      required={required}
-    >
-      <SelectTrigger className="w-full">
-        <SelectValue placeholder={getDisplayValue()} />
-      </SelectTrigger>
-      <SelectContent 
-        ref={scrollRef}
-        className="max-h-[300px] overflow-hidden"
-        position="popper"
-        sideOffset={4}
-      >
-        <ScrollArea className="h-[var(--radix-select-content-available-height)]">
-          <div className="p-1">
-            {sortedEntities.map((entity) => (
-              <SelectItem 
-                key={entity.id} 
-                value={entity.id}
-                className="cursor-pointer rounded-sm relative"
-              >
-                {entity.name}
-              </SelectItem>
-            ))}
-          </div>
-        </ScrollArea>
-      </SelectContent>
-    </Select>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between"
+        >
+          {selectedEntity ? selectedEntity.name : placeholder}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-full p-0" align="start">
+        <Command>
+          <CommandInput 
+            placeholder={`Search ${placeholder.toLowerCase()}...`}
+            className="h-9"
+            autoComplete="off"
+          />
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup>
+            <ScrollArea className="h-[200px] overflow-y-auto">
+              {sortedEntities.map((entity) => (
+                <CommandItem
+                  key={entity.id}
+                  value={entity.name}
+                  onSelect={() => {
+                    onValueChange(entity.id);
+                    setOpen(false);
+                  }}
+                  className="cursor-pointer"
+                >
+                  {entity.name}
+                  <Check
+                    className={cn(
+                      "ml-auto h-4 w-4",
+                      value === entity.id ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                </CommandItem>
+              ))}
+            </ScrollArea>
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }
