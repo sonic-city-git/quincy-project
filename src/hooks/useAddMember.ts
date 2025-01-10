@@ -22,7 +22,7 @@ export function useAddMember() {
       const { data: newMember, error: memberError } = await supabase
         .from('crew_members')
         .insert([memberData])
-        .select()
+        .select('*')
         .single();
 
       if (memberError) {
@@ -33,7 +33,7 @@ export function useAddMember() {
       console.log('Successfully added crew member:', newMember);
 
       // If there are roles to assign, create the role assignments
-      if (role_ids && role_ids.length > 0) {
+      if (role_ids && role_ids.length > 0 && newMember) {
         const roleAssignments = role_ids.map(role_id => ({
           crew_member_id: newMember.id,
           role_id: role_id,
@@ -45,10 +45,11 @@ export function useAddMember() {
 
         if (rolesError) {
           console.error('Error assigning roles:', rolesError);
-          throw new Error(rolesError.message);
+          // Even if role assignment fails, we don't throw here since the member was created
+          toast.error(`Warning: Failed to assign roles: ${rolesError.message}`);
+        } else {
+          console.log('Successfully assigned roles:', roleAssignments);
         }
-
-        console.log('Successfully assigned roles:', roleAssignments);
       }
 
       return newMember;
