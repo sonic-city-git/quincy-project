@@ -28,8 +28,8 @@ export function useCrewRoles() {
       console.log('Successfully fetched crew roles:', data);
       return data as CrewRole[];
     },
+    staleTime: 1000 * 60 * 5, // Cache for 5 minutes
     retry: 1,
-    refetchOnWindowFocus: false
   });
 
   return { roles, isLoading };
