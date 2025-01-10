@@ -74,9 +74,9 @@ export function EntitySelect({
             {safeEntities.map((entity) => (
               <CommandItem
                 key={entity.id}
-                value={entity.name}
-                onSelect={() => {
-                  onValueChange(entity.id === value ? "" : entity.id);
+                value={entity.id}
+                onSelect={(currentValue) => {
+                  onValueChange(currentValue === value ? "" : currentValue);
                   setOpen(false);
                 }}
               >
