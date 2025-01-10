@@ -38,9 +38,9 @@ export function EntitySelect({
 }: EntitySelectProps) {
   const [open, setOpen] = React.useState(false);
 
-  // Ensure we're working with a valid array and valid entities
+  // Initialize safeEntities with an empty array if entities is undefined
   const safeEntities = React.useMemo(() => {
-    if (!entities || !Array.isArray(entities)) return [];
+    if (!Array.isArray(entities)) return [];
     
     return entities.filter((entity): entity is Entity => 
       entity !== null &&
@@ -96,7 +96,7 @@ export function EntitySelect({
           />
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup>
-            {Array.isArray(safeEntities) && safeEntities.map((entity) => (
+            {safeEntities.length > 0 ? safeEntities.map((entity) => (
               <CommandItem
                 key={entity.id}
                 value={entity.id}
@@ -113,7 +113,9 @@ export function EntitySelect({
                 />
                 {entity.name}
               </CommandItem>
-            ))}
+            )) : (
+              <CommandItem disabled>No options available</CommandItem>
+            )}
           </CommandGroup>
         </Command>
       </PopoverContent>
