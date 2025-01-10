@@ -40,16 +40,29 @@ export function EntitySelect({
 
   // Initialize safeEntities with an empty array if entities is undefined
   const safeEntities = React.useMemo(() => {
-    if (!Array.isArray(entities)) return [];
+    if (!Array.isArray(entities)) {
+      console.warn('EntitySelect: entities prop is not an array', entities);
+      return [];
+    }
     
-    return entities.filter((entity): entity is Entity => 
-      entity !== null &&
-      typeof entity === 'object' &&
-      'id' in entity &&
-      typeof entity.id === 'string' &&
-      'name' in entity &&
-      typeof entity.name === 'string'
-    );
+    const filtered = entities.filter((entity): entity is Entity => {
+      if (!entity || typeof entity !== 'object') {
+        console.warn('EntitySelect: invalid entity', entity);
+        return false;
+      }
+      
+      const hasValidId = 'id' in entity && typeof entity.id === 'string';
+      const hasValidName = 'name' in entity && typeof entity.name === 'string';
+      
+      if (!hasValidId || !hasValidName) {
+        console.warn('EntitySelect: entity missing required properties', entity);
+        return false;
+      }
+      
+      return true;
+    });
+
+    return filtered;
   }, [entities]);
 
   // Find the selected entity safely
