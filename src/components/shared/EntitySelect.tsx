@@ -119,22 +119,27 @@ export function EntitySelect({
       <SelectTrigger className="w-full">
         <SelectValue placeholder={getDisplayValue()} />
       </SelectTrigger>
-      <SelectContent className="max-h-[300px]">
+      <SelectContent 
+        className="max-h-[300px] overflow-hidden"
+        position="popper"
+        sideOffset={4}
+      >
         <ScrollArea 
           ref={scrollRef}
-          className="h-full max-h-[300px] overflow-y-auto" 
+          className="h-[var(--radix-select-content-available-height)] overflow-y-auto" 
           type="auto"
-          style={{ scrollBehavior: 'smooth' }}
         >
-          {sortedEntities.map((entity) => (
-            <SelectItem 
-              key={entity.id} 
-              value={entity.id}
-              className="cursor-pointer relative flex w-full select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 hover:bg-accent hover:text-accent-foreground"
-            >
-              {entity.name}
-            </SelectItem>
-          ))}
+          <div className="p-1">
+            {sortedEntities.map((entity) => (
+              <SelectItem 
+                key={entity.id} 
+                value={entity.id}
+                className="cursor-pointer relative flex w-full select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 hover:bg-accent hover:text-accent-foreground"
+              >
+                {entity.name}
+              </SelectItem>
+            ))}
+          </div>
         </ScrollArea>
       </SelectContent>
     </Select>
