@@ -7,6 +7,7 @@ import { EntitySelect } from "@/components/shared/EntitySelect";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useCrew } from "@/hooks/useCrew";
 import { useAddProject } from "@/hooks/useAddProject";
+import { useFolders } from "@/hooks/useFolders";
 
 interface AddProjectFormData {
   name: string;
@@ -22,6 +23,7 @@ interface AddProjectDialogProps {
 export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) {
   const { customers, loading: customersLoading } = useCustomers();
   const { crew, loading: crewLoading } = useCrew();
+  const { folders } = useFolders();
   const addProject = useAddProject();
 
   const form = useForm<AddProjectFormData>({
@@ -42,12 +44,18 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
     }
   };
 
+  // Find Sonic City folder
+  const sonicCityFolder = folders.find(folder => folder.name === 'Sonic City');
+  
+  // Filter crew members to only show those in Sonic City folder
+  const filteredCrew = crew.filter(member => member.folder_id === sonicCityFolder?.id);
+
   const customerEntities = customers.map(customer => ({
     id: customer.id,
     name: customer.name
   }));
 
-  const crewEntities = crew.map(member => ({
+  const crewEntities = filteredCrew.map(member => ({
     id: member.id,
     name: member.name
   }));
@@ -84,7 +92,7 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
                   entities={crewEntities}
                   value={form.watch('crew_member_id') ?? ''}
                   onValueChange={(value) => form.setValue('crew_member_id', value)}
-                  placeholder="Select crew member"
+                  placeholder="Select owner"
                   isLoading={crewLoading}
                 />
               </div>
