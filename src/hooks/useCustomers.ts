@@ -10,7 +10,7 @@ export function useCustomers() {
         console.log('Starting customer fetch...');
         const { data: customersData, error } = await supabase
           .from('customers')
-          .select('*')
+          .select('id, name, customer_number, organization_number')
           .order('name');
 
         if (error) {
@@ -25,6 +25,9 @@ export function useCustomers() {
         }
 
         console.log('Raw customers data:', customersData);
+        console.log('Number of customers:', customersData.length);
+        console.log('First customer:', customersData[0]);
+        
         return customersData;
       } catch (error) {
         console.error('Error in customers query:', error);
