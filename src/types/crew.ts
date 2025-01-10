@@ -7,4 +7,5 @@ export interface CrewMember {
   updated_at: string;
   folder_id: string | null;
   folderName?: string;
+  roles?: string[];
 }

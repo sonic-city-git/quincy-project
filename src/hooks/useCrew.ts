@@ -39,6 +39,9 @@ export function useCrew() {
             *,
             crew_folders (
               name
+            ),
+            crew_member_roles (
+              role_id
             )
           `)
           .order('name');
@@ -61,7 +64,8 @@ export function useCrew() {
           created_at: member.created_at,
           updated_at: member.updated_at,
           folder_id: member.folder_id,
-          folderName: member.crew_folders?.name || null
+          folderName: member.crew_folders?.name || null,
+          roles: member.crew_member_roles?.map(role => role.role_id) || []
         }));
       } catch (error) {
         console.error('Error in crew query:', error);
