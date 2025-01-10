@@ -40,13 +40,11 @@ export function EntitySelect({
   // Ensure entities is always a valid array and filter out invalid entries
   const safeEntities = React.useMemo(() => {
     if (!Array.isArray(entities)) return [];
-    return entities.filter((entity): entity is Entity => 
+    return entities.filter(entity => 
       entity && 
       typeof entity === 'object' && 
       'id' in entity && 
-      typeof entity.id === 'string' &&
-      'name' in entity &&
-      typeof entity.name === 'string'
+      'name' in entity
     );
   }, [entities]);
   
