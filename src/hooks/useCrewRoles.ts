@@ -13,11 +13,11 @@ export function useCrewRoles() {
   const { data: roles = [], isLoading, error } = useQuery({
     queryKey: ['crew-roles'],
     queryFn: async () => {
-      console.log('Fetching crew roles...');
-      const { data, error } = await supabase
+      console.log('Starting to fetch crew roles...');
+      
+      const { data, error, count } = await supabase
         .from('crew_roles')
-        .select('*')
-        .order('name');
+        .select('*', { count: 'exact' });
       
       if (error) {
         console.error('Error fetching crew roles:', error);
@@ -25,8 +25,15 @@ export function useCrewRoles() {
         throw error;
       }
 
+      console.log('Query response:', { data, error, count });
+
       if (!data) {
-        console.log('No roles found');
+        console.log('No data returned from query');
+        return [];
+      }
+
+      if (data.length === 0) {
+        console.log('No roles found in the database');
         return [];
       }
 
