@@ -1,18 +1,8 @@
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface Entity {
@@ -35,7 +25,7 @@ export function EntitySelect({
   placeholder = "Select...",
   isLoading = false,
 }: EntitySelectProps) {
-  const selectedEntity = entities.find((entity) => entity.id === value);
+  const selectedEntity = entities?.find((entity) => entity.id === value);
 
   return (
     <Popover>
@@ -48,10 +38,10 @@ export function EntitySelect({
           {selectedEntity?.name || placeholder}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="p-0" align="start">
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
         <Command>
           <CommandInput 
-            placeholder={`Search ${placeholder.toLowerCase()}`} 
+            placeholder={`Search ${placeholder.toLowerCase()}`}
             className="h-9"
             autoComplete="off"
           />
