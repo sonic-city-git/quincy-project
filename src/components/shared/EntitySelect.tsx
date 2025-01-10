@@ -37,11 +37,19 @@ export function EntitySelect({
 }: EntitySelectProps) {
   const [open, setOpen] = React.useState(false);
 
-  // Ensure entities is always a valid array
-  const safeEntities = Array.isArray(entities) ? entities : [];
+  // Ensure entities is always a valid array and handle undefined/null values
+  const safeEntities = React.useMemo(() => {
+    if (!Array.isArray(entities)) return [];
+    return entities.filter((entity): entity is Entity => 
+      entity && typeof entity === 'object' && 'id' in entity && 'name' in entity
+    );
+  }, [entities]);
   
   // Find the selected entity safely
-  const selectedEntity = value ? safeEntities.find((entity) => entity.id === value) : undefined;
+  const selectedEntity = React.useMemo(() => {
+    if (!value) return undefined;
+    return safeEntities.find(entity => entity.id === value);
+  }, [value, safeEntities]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
