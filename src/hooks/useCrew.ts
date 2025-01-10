@@ -92,6 +92,7 @@ export function useCrew() {
         throw error;
       }
     },
+    refetchOnMount: true,
     retry: 1
   });
 
