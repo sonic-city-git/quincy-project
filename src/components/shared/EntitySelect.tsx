@@ -1,6 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 
 interface Entity {
   id: string;
@@ -69,16 +69,20 @@ export function EntitySelect({
         position="popper"
         sideOffset={4}
       >
-        <ScrollArea className="h-[var(--radix-select-content-available-height)] w-full">
-          {sortedEntities.map((entity) => (
-            <SelectItem 
-              key={entity.id} 
-              value={entity.id}
-              className="cursor-pointer"
-            >
-              {entity.name}
-            </SelectItem>
-          ))}
+        <ScrollArea 
+          className="h-[var(--radix-select-content-available-height)] w-full bg-red-500/10"
+        >
+          <div className="w-full border-2 border-blue-500/50">
+            {sortedEntities.map((entity) => (
+              <SelectItem 
+                key={entity.id} 
+                value={entity.id}
+                className="cursor-pointer w-full"
+              >
+                {entity.name}
+              </SelectItem>
+            ))}
+          </div>
         </ScrollArea>
       </SelectContent>
     </Select>
