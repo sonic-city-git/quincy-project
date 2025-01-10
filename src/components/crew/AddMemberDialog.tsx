@@ -31,6 +31,9 @@ export function AddMemberDialog() {
   const { folders, loading: foldersLoading } = useFolders();
   const { roles, isLoading: rolesLoading } = useCrewRoles();
 
+  console.log('Roles loading state:', rolesLoading);
+  console.log('Fetched roles:', roles);
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -65,6 +68,7 @@ export function AddMemberDialog() {
   };
 
   const sortedRoles = sortRoles(roles);
+  console.log('Sorted roles:', sortedRoles);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -147,30 +151,40 @@ export function AddMemberDialog() {
               render={() => (
                 <FormItem>
                   <FormLabel>Roles</FormLabel>
-                  <div className="grid grid-cols-2 gap-4 border rounded-lg p-4 bg-card">
-                    {sortedRoles.map((role) => (
-                      <div key={role.id} className="flex items-center space-x-2 bg-background/50 rounded p-2 hover:bg-background/80 transition-colors">
-                        <Checkbox
-                          id={role.id}
-                          checked={form.watch('role_ids')?.includes(role.id)}
-                          onCheckedChange={(checked) => {
-                            const currentRoles = form.watch('role_ids') || [];
-                            const newRoles = checked
-                              ? [...currentRoles, role.id]
-                              : currentRoles.filter(id => id !== role.id);
-                            form.setValue('role_ids', newRoles);
-                          }}
-                          className="data-[state=checked]:bg-[#4F46E5] data-[state=checked]:border-[#4F46E5]"
-                        />
-                        <label
-                          htmlFor={role.id}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                          style={{ color: role.color }}
-                        >
-                          {role.name}
-                        </label>
+                  <div className="grid grid-cols-2 gap-4 border rounded-lg p-4 bg-zinc-900/50">
+                    {rolesLoading ? (
+                      <div className="col-span-2 flex items-center justify-center py-4">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                       </div>
-                    ))}
+                    ) : sortedRoles.length === 0 ? (
+                      <div className="col-span-2 text-center py-4 text-muted-foreground">
+                        No roles available
+                      </div>
+                    ) : (
+                      sortedRoles.map((role) => (
+                        <div key={role.id} className="flex items-center space-x-2 bg-zinc-800/50 rounded p-2 hover:bg-zinc-800 transition-colors">
+                          <Checkbox
+                            id={role.id}
+                            checked={form.watch('role_ids')?.includes(role.id)}
+                            onCheckedChange={(checked) => {
+                              const currentRoles = form.watch('role_ids') || [];
+                              const newRoles = checked
+                                ? [...currentRoles, role.id]
+                                : currentRoles.filter(id => id !== role.id);
+                              form.setValue('role_ids', newRoles);
+                            }}
+                            className="data-[state=checked]:bg-[#4F46E5] data-[state=checked]:border-[#4F46E5]"
+                          />
+                          <label
+                            htmlFor={role.id}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                            style={{ color: role.color }}
+                          >
+                            {role.name}
+                          </label>
+                        </div>
+                      ))
+                    )}
                   </div>
                   <FormMessage />
                 </FormItem>
