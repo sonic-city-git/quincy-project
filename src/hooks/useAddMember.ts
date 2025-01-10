@@ -7,6 +7,7 @@ export interface AddMemberData {
   email?: string;
   phone?: string;
   folder_id?: string;
+  role_ids?: string[];
 }
 
 export function useAddMember() {
@@ -14,11 +15,30 @@ export function useAddMember() {
 
   const mutation = useMutation({
     mutationFn: async (data: AddMemberData) => {
-      const { error } = await supabase
+      const { role_ids, ...memberData } = data;
+      
+      // Insert the crew member
+      const { data: newMember, error: memberError } = await supabase
         .from('crew_members')
-        .insert([data]);
+        .insert([memberData])
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (memberError) throw memberError;
+
+      // If there are roles to assign, create the role assignments
+      if (role_ids && role_ids.length > 0) {
+        const roleAssignments = role_ids.map(role_id => ({
+          crew_member_id: newMember.id,
+          role_id: role_id,
+        }));
+
+        const { error: rolesError } = await supabase
+          .from('crew_member_roles')
+          .insert(roleAssignments);
+
+        if (rolesError) throw rolesError;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['crew'] });

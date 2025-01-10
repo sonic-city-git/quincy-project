@@ -9,13 +9,16 @@ import * as z from "zod";
 import { useAddMember, AddMemberData } from "@/hooks/useAddMember";
 import { EntitySelect } from "@/components/shared/EntitySelect";
 import { useFolders } from "@/hooks/useFolders";
+import { useCrewRoles } from "@/hooks/useCrewRoles";
 import { Loader2, UserPlus } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email().optional().or(z.literal("")),
   phone: z.string().optional().or(z.literal("")),
   folder_id: z.string().optional(),
+  role_ids: z.array(z.string()).optional(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -23,7 +26,8 @@ type FormData = z.infer<typeof formSchema>;
 export function AddMemberDialog() {
   const [open, setOpen] = useState(false);
   const { mutate: addMember, isPending } = useAddMember();
-  const { folders, loading } = useFolders();
+  const { folders, loading: foldersLoading } = useFolders();
+  const { roles, isLoading: rolesLoading } = useCrewRoles();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -32,15 +36,17 @@ export function AddMemberDialog() {
       email: "",
       phone: "",
       folder_id: "",
+      role_ids: [],
     },
   });
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     const memberData: AddMemberData = {
       name: data.name,
       email: data.email || undefined,
       phone: data.phone || undefined,
       folder_id: data.folder_id || undefined,
+      role_ids: data.role_ids || [],
     };
     
     addMember(memberData, {
@@ -116,15 +122,48 @@ export function AddMemberDialog() {
                       value={field.value || ""}
                       onValueChange={field.onChange}
                       placeholder="Select folder"
-                      isLoading={loading}
+                      isLoading={foldersLoading}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="role_ids"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Roles</FormLabel>
+                  <div className="space-y-2">
+                    {roles.map((role) => (
+                      <div key={role.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={role.id}
+                          checked={form.watch('role_ids')?.includes(role.id)}
+                          onCheckedChange={(checked) => {
+                            const currentRoles = form.watch('role_ids') || [];
+                            const newRoles = checked
+                              ? [...currentRoles, role.id]
+                              : currentRoles.filter(id => id !== role.id);
+                            form.setValue('role_ids', newRoles);
+                          }}
+                        />
+                        <label
+                          htmlFor={role.id}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          {role.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <div className="flex justify-end">
-              <Button type="submit" disabled={isPending}>
+              <Button type="submit" disabled={isPending || rolesLoading || foldersLoading}>
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Add Member
               </Button>
