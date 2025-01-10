@@ -8,7 +8,7 @@ export function useCustomers() {
     queryFn: async () => {
       try {
         console.log('Fetching customers...');
-        const { data, error } = await supabase
+        const { data: customersData, error } = await supabase
           .from('customers')
           .select('*')
           .order('name');
@@ -19,8 +19,13 @@ export function useCustomers() {
           throw error;
         }
 
-        console.log('Customers data:', data);
-        return data || [];
+        if (!customersData) {
+          console.log('No customers data returned');
+          return [];
+        }
+
+        console.log(`Successfully fetched ${customersData.length} customers:`, customersData);
+        return customersData;
       } catch (error) {
         console.error('Error in customers query:', error);
         toast.error("Failed to fetch customers");
@@ -30,6 +35,7 @@ export function useCustomers() {
     retry: 1,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    refetchOnMount: true, // Ensure we fetch when component mounts
   });
 
   return { customers, loading };
