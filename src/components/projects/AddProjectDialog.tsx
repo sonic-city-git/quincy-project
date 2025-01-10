@@ -60,6 +60,9 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
     name: member.name
   }));
 
+  console.log('Customers:', customers); // Debug log
+  console.log('Customer entities:', customerEntities); // Debug log
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
