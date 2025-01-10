@@ -96,7 +96,7 @@ export function EntitySelect({
           />
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup>
-            {safeEntities.map((entity) => (
+            {Array.isArray(safeEntities) && safeEntities.map((entity) => (
               <CommandItem
                 key={entity.id}
                 value={entity.id}
