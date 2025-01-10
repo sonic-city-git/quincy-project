@@ -8,15 +8,15 @@ import { useCustomers } from "@/hooks/useCustomers";
 import { useCrew } from "@/hooks/useCrew";
 import { useAddProject } from "@/hooks/useAddProject";
 
-interface AddProjectDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-
 interface AddProjectFormData {
   name: string;
   customer_id?: string;
   crew_member_id?: string;
+}
+
+interface AddProjectDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) {

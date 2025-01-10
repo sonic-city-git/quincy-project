@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { Customer } from "@/integrations/supabase/types/customer";
 
 export function useCustomers() {
   const { toast } = useToast();
@@ -21,7 +22,7 @@ export function useCustomers() {
       throw error;
     }
 
-    return customers;
+    return customers as Customer[];
   };
 
   const { data: customers = [], isLoading: loading } = useQuery({

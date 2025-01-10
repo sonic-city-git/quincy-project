@@ -8,12 +8,11 @@ interface Entity {
 
 interface EntitySelectProps {
   entities: Entity[];
-  value: string | string[];
-  onValueChange: (value: string | string[]) => void;
+  value: string;
+  onValueChange: (value: string) => void;
   placeholder: string;
   isLoading?: boolean;
   required?: boolean;
-  multiple?: boolean;
 }
 
 export function EntitySelect({ 
@@ -22,30 +21,9 @@ export function EntitySelect({
   onValueChange, 
   placeholder,
   isLoading,
-  required,
-  multiple = false
+  required
 }: EntitySelectProps) {
-  const handleSelect = (selectedValue: string) => {
-    if (multiple) {
-      const currentValues = Array.isArray(value) ? value : [];
-      const newValues = currentValues.includes(selectedValue)
-        ? currentValues.filter(v => v !== selectedValue)
-        : [...currentValues, selectedValue];
-      onValueChange(newValues);
-    } else {
-      onValueChange(selectedValue);
-    }
-  };
-
   const getDisplayValue = () => {
-    if (Array.isArray(value)) {
-      const selectedNames = value
-        .map(v => entities.find(e => e.id === v)?.name)
-        .filter(Boolean);
-      return selectedNames.length > 0 
-        ? selectedNames.join(', ') 
-        : isLoading ? 'Loading...' : placeholder;
-    }
     const selectedEntity = entities.find(e => e.id === value);
     return selectedEntity?.name || (isLoading ? 'Loading...' : placeholder);
   };
@@ -70,8 +48,8 @@ export function EntitySelect({
 
   return (
     <Select 
-      value={Array.isArray(value) ? value[0] || '' : value} 
-      onValueChange={handleSelect}
+      value={value} 
+      onValueChange={onValueChange}
       required={required}
     >
       <SelectTrigger className="w-full">
@@ -84,9 +62,7 @@ export function EntitySelect({
               <SelectItem 
                 key={entity.id} 
                 value={entity.id}
-                className={`cursor-pointer relative flex w-full select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 hover:bg-accent hover:text-accent-foreground ${
-                  Array.isArray(value) && value.includes(entity.id) ? 'bg-accent' : ''
-                }`}
+                className="cursor-pointer relative flex w-full select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 hover:bg-accent hover:text-accent-foreground"
               >
                 {entity.name}
               </SelectItem>
