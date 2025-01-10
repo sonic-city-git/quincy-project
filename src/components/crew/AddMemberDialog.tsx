@@ -23,7 +23,7 @@ type FormData = z.infer<typeof formSchema>;
 export function AddMemberDialog() {
   const [open, setOpen] = useState(false);
   const { mutate: addMember, isPending } = useAddMember();
-  const { folders, isLoading: foldersLoading } = useFolders();
+  const { folders, loading } = useFolders();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -36,6 +36,9 @@ export function AddMemberDialog() {
   });
 
   const onSubmit = (data: FormData) => {
+    // Ensure name is provided since it's required by AddMemberData
+    if (!data.name) return;
+    
     addMember(data, {
       onSuccess: () => {
         setOpen(false);
@@ -109,7 +112,7 @@ export function AddMemberDialog() {
                       value={field.value || ""}
                       onValueChange={field.onChange}
                       placeholder="Select folder"
-                      isLoading={foldersLoading}
+                      isLoading={loading}
                     />
                   </FormControl>
                   <FormMessage />
