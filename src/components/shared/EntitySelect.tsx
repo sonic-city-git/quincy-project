@@ -44,7 +44,9 @@ export function EntitySelect({
       entity && 
       typeof entity === 'object' && 
       'id' in entity && 
-      'name' in entity
+      'name' in entity &&
+      typeof entity.id === 'string' &&
+      typeof entity.name === 'string'
     );
   }, [entities]);
   
