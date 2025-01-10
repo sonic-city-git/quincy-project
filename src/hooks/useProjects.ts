@@ -12,11 +12,11 @@ export function useProjects() {
       .from('projects')
       .select(`
         *,
-        customer:customers(
+        customers (
           id,
           name
         ),
-        crew_member:crew_members(
+        crew_members!projects_crew_member_id_fkey (
           id,
           name
         )
@@ -40,7 +40,7 @@ export function useProjects() {
       name: project.name,
       customer_id: project.customer_id,
       lastInvoiced: project.created_at || '',
-      owner: project.crew_member?.name || project.customer?.name || 'No Owner',
+      owner: project.crew_members?.name || project.customers?.name || 'No Owner',
       owner_id: project.crew_member_id || project.customer_id,
       status: project.status || 'draft',
       color: 'blue', // Default color for now
