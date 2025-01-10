@@ -25,10 +25,11 @@ export function useCrewRoles() {
         throw error;
       }
 
-      console.log('Fetched crew roles:', data);
+      console.log('Successfully fetched crew roles:', data);
       return data as CrewRole[];
     },
-    retry: 1
+    retry: 1,
+    refetchOnWindowFocus: false
   });
 
   return { roles, isLoading };
