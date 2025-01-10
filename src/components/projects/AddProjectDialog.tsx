@@ -60,15 +60,15 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
     name: member.name
   }));
 
-  console.log('Customers:', customers); // Debug log
-  console.log('Customer entities:', customerEntities); // Debug log
+  console.log('Customers:', customers);
+  console.log('Customer entities:', customerEntities);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent aria-describedby="add-project-description">
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New Project</DialogTitle>
-          <DialogDescription id="add-project-description">
+          <DialogDescription>
             Fill in the details below to create a new project.
           </DialogDescription>
         </DialogHeader>

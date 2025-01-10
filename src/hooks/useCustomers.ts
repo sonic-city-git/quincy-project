@@ -28,7 +28,8 @@ export function useCustomers() {
       }
     },
     retry: 1,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
   });
 
   return { customers, loading };
