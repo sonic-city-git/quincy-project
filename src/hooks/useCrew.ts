@@ -28,7 +28,7 @@ export function useCrew() {
     };
   }, [queryClient]);
 
-  const { data: crew = [], isLoading: loading } = useQuery({
+  const { data: crew = [], isLoading: loading, refetch } = useQuery({
     queryKey: ['crew'],
     queryFn: async () => {
       try {
@@ -96,5 +96,5 @@ export function useCrew() {
     retry: 1
   });
 
-  return { crew, loading };
+  return { crew, loading, refetch };
 }
