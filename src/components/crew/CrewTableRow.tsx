@@ -23,19 +23,25 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
-          <div className="text-sm font-medium">
+          <div className="text-sm font-medium truncate max-w-[200px]">
             {member.name}
           </div>
         </div>
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
-        {member.email || '-'}
+        <span className="truncate block max-w-[200px]">
+          {member.email || '-'}
+        </span>
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
-        {member.phone || '-'}
+        <span className="truncate block max-w-[150px]">
+          {member.phone || '-'}
+        </span>
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
-        {member.folderName || '-'}
+        <span className="truncate block max-w-[150px]">
+          {member.folderName || '-'}
+        </span>
       </TableCell>
     </TableRow>
   );
