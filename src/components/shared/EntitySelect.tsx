@@ -1,9 +1,19 @@
-import { Check } from "lucide-react";
+import * as React from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface Entity {
   id: string;
@@ -18,54 +28,65 @@ interface EntitySelectProps {
   isLoading?: boolean;
 }
 
-export function EntitySelect({
-  entities = [],
-  value,
+export function EntitySelect({ 
+  entities = [], 
+  value = "", 
   onValueChange,
   placeholder = "Select...",
-  isLoading = false,
+  isLoading = false
 }: EntitySelectProps) {
-  const selectedEntity = entities?.find((entity) => entity.id === value);
+  const [open, setOpen] = React.useState(false);
+
+  // Ensure entities is always an array
+  const safeEntities = Array.isArray(entities) ? entities : [];
+  
+  // Find the selected entity safely
+  const selectedEntity = safeEntities.find((entity) => entity.id === value);
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
           role="combobox"
+          aria-expanded={open}
           className="w-full justify-between"
+          disabled={isLoading}
         >
-          {selectedEntity?.name || placeholder}
+          {isLoading ? (
+            "Loading..."
+          ) : value && selectedEntity ? (
+            selectedEntity.name
+          ) : (
+            <span className="text-muted-foreground">{placeholder}</span>
+          )}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0">
+      <PopoverContent className="w-full p-0">
         <Command>
-          <CommandInput 
-            placeholder={`Search ${placeholder.toLowerCase()}`}
-            className="h-9"
-            autoComplete="off"
-          />
-          <ScrollArea className="h-[200px]">
-            <CommandEmpty>No results found.</CommandEmpty>
-            <CommandGroup>
-              {(entities || []).map((entity) => (
-                <CommandItem
-                  key={entity.id}
-                  value={entity.id}
-                  onSelect={() => onValueChange(entity.id)}
-                  className="cursor-pointer"
-                >
-                  {entity.name}
-                  <Check
-                    className={cn(
-                      "ml-auto h-4 w-4",
-                      value === entity.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </ScrollArea>
+          <CommandInput placeholder={`Search ${placeholder.toLowerCase()}...`} />
+          <CommandEmpty>No results found.</CommandEmpty>
+          <CommandGroup>
+            {safeEntities.map((entity) => (
+              <CommandItem
+                key={entity.id}
+                value={entity.id}
+                onSelect={(currentValue) => {
+                  onValueChange(currentValue === value ? "" : currentValue);
+                  setOpen(false);
+                }}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    value === entity.id ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                {entity.name}
+              </CommandItem>
+            ))}
+          </CommandGroup>
         </Command>
       </PopoverContent>
     </Popover>
