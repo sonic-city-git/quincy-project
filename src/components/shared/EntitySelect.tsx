@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,7 +18,7 @@ import {
 interface Entity {
   id: string;
   name: string;
-  [key: string]: any; // Allow for additional properties
+  [key: string]: any;
 }
 
 interface EntitySelectProps {
@@ -38,16 +38,11 @@ export function EntitySelect({
 }: EntitySelectProps) {
   const [open, setOpen] = React.useState(false);
 
-  // Ensure entities is always a valid array and filter out invalid entries
+  // Ensure we're working with a valid array and valid entities
   const safeEntities = React.useMemo(() => {
-    // If entities is undefined or null, return empty array
-    if (!entities) return [];
+    if (!entities || !Array.isArray(entities)) return [];
     
-    // Ensure we're working with an array
-    const entityArray = Array.isArray(entities) ? entities : [];
-    
-    // Filter out invalid entries and ensure type safety
-    return entityArray.filter((entity): entity is Entity => 
+    return entities.filter((entity): entity is Entity => 
       entity !== null &&
       typeof entity === 'object' &&
       'id' in entity &&
@@ -56,12 +51,25 @@ export function EntitySelect({
       typeof entity.name === 'string'
     );
   }, [entities]);
-  
+
   // Find the selected entity safely
   const selectedEntity = React.useMemo(() => {
     if (!value) return undefined;
     return safeEntities.find(entity => entity.id === value);
   }, [value, safeEntities]);
+
+  if (isLoading) {
+    return (
+      <Button
+        variant="outline"
+        className="w-full justify-between bg-zinc-900/50"
+        disabled
+      >
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span>Loading...</span>
+      </Button>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -71,11 +79,8 @@ export function EntitySelect({
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between bg-zinc-900/50"
-          disabled={isLoading}
         >
-          {isLoading ? (
-            "Loading..."
-          ) : selectedEntity ? (
+          {selectedEntity ? (
             selectedEntity.name
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
