@@ -1,0 +1,230 @@
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { EntitySelect } from "@/components/shared/EntitySelect";
+import { useFolders } from "@/hooks/useFolders";
+import { useCrewRoles } from "@/hooks/useCrewRoles";
+import { Loader2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { sortRoles } from "@/utils/roleUtils";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { CrewMember } from "@/types/crew";
+
+const formSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email().optional().or(z.literal("")),
+  phone: z.string().optional().or(z.literal("")),
+  folder_id: z.string().optional(),
+  role_ids: z.array(z.string()).optional(),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
+interface EditMemberDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  member: CrewMember;
+}
+
+export function EditMemberDialog({ open, onOpenChange, member }: EditMemberDialogProps) {
+  const [isPending, setIsPending] = useState(false);
+  const { folders, loading: foldersLoading } = useFolders();
+  const { roles, isLoading: rolesLoading, refetch: refetchRoles } = useCrewRoles();
+  const queryClient = useQueryClient();
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: member.name,
+      email: member.email || "",
+      phone: member.phone || "",
+      folder_id: member.folder_id || "",
+      role_ids: member.roles || [],
+    },
+  });
+
+  const onSubmit = async (data: FormData) => {
+    setIsPending(true);
+    try {
+      // Update crew member
+      const { error: updateError } = await supabase
+        .from('crew_members')
+        .update({
+          name: data.name,
+          email: data.email || null,
+          phone: data.phone || null,
+          folder_id: data.folder_id || null,
+        })
+        .eq('id', member.id);
+
+      if (updateError) throw updateError;
+
+      // Delete existing roles
+      const { error: deleteError } = await supabase
+        .from('crew_member_roles')
+        .delete()
+        .eq('crew_member_id', member.id);
+
+      if (deleteError) throw deleteError;
+
+      // Insert new roles
+      if (data.role_ids && data.role_ids.length > 0) {
+        const { error: rolesError } = await supabase
+          .from('crew_member_roles')
+          .insert(
+            data.role_ids.map(roleId => ({
+              crew_member_id: member.id,
+              role_id: roleId,
+            }))
+          );
+
+        if (rolesError) throw rolesError;
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['crew'] });
+      onOpenChange(false);
+      form.reset();
+      toast.success("Crew member updated successfully");
+    } catch (error: any) {
+      console.error("Error updating crew member:", error);
+      toast.error(error.message || "Failed to update crew member");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
+  const sortedRoles = sortRoles(roles);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Crew Member</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter name" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input type="email" placeholder="Enter email" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter phone number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="folder_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Folder</FormLabel>
+                  <FormControl>
+                    <EntitySelect
+                      entities={folders.map(f => ({ id: f.id, name: f.name }))}
+                      value={field.value || ""}
+                      onValueChange={field.onChange}
+                      placeholder="Select folder"
+                      isLoading={foldersLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="role_ids"
+              render={() => (
+                <FormItem>
+                  <FormLabel>Roles</FormLabel>
+                  <div className="grid grid-cols-2 gap-4 border rounded-lg p-4 bg-zinc-900/50">
+                    {rolesLoading ? (
+                      <div className="col-span-2 flex items-center justify-center py-4">
+                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : sortedRoles.length === 0 ? (
+                      <div className="col-span-2 text-center py-4 text-muted-foreground">
+                        No roles available
+                      </div>
+                    ) : (
+                      sortedRoles.map((role) => (
+                        <div 
+                          key={role.id} 
+                          className="flex items-center space-x-2 rounded p-2 transition-colors"
+                          style={{ backgroundColor: role.color, opacity: 1 }}
+                        >
+                          <Checkbox
+                            id={role.id}
+                            checked={form.watch('role_ids')?.includes(role.id)}
+                            onCheckedChange={(checked) => {
+                              const currentRoles = form.watch('role_ids') || [];
+                              const newRoles = checked
+                                ? [...currentRoles, role.id]
+                                : currentRoles.filter(id => id !== role.id);
+                              form.setValue('role_ids', newRoles);
+                            }}
+                            className="data-[state=checked]:bg-white/90 data-[state=checked]:border-white/90 border-white/70"
+                          />
+                          <label
+                            htmlFor={role.id}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-white"
+                          >
+                            {role.name}
+                          </label>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="flex justify-end">
+              <Button type="submit" disabled={isPending || rolesLoading || foldersLoading}>
+                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Save Changes
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  );
+}
