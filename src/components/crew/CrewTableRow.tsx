@@ -33,6 +33,17 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
           <div className="text-sm font-medium truncate max-w-[200px]">
             {member.name}
           </div>
+          <div className="flex flex-wrap gap-1">
+            {memberRoles.map((role) => (
+              <div
+                key={role.id}
+                className="text-xs px-2 py-1 rounded text-white whitespace-nowrap"
+                style={{ backgroundColor: role.color }}
+              >
+                {role.name}
+              </div>
+            ))}
+          </div>
         </div>
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
@@ -49,19 +60,6 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
         <span className="truncate block max-w-[150px]">
           {member.folderName || '-'}
         </span>
-      </TableCell>
-      <TableCell>
-        <div className="flex flex-wrap gap-1">
-          {memberRoles.map((role) => (
-            <div
-              key={role.id}
-              className="text-xs px-2 py-1 rounded text-white"
-              style={{ backgroundColor: role.color }}
-            >
-              {role.name}
-            </div>
-          ))}
-        </div>
       </TableCell>
     </TableRow>
   );
