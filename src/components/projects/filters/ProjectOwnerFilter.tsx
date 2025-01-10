@@ -1,4 +1,12 @@
-import { EntitySelect } from "@/components/shared/EntitySelect";
+import { Filter } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useCrew } from "@/hooks/useCrew";
 import { useFolders } from "@/hooks/useFolders";
 
@@ -17,18 +25,34 @@ export function ProjectOwnerFilter({ value, onChange }: ProjectOwnerFilterProps)
   // Filter crew members to only show those in Sonic City folder
   const filteredCrew = crew.filter(member => member.folder_id === sonicCityFolder?.id);
 
-  const crewOptions = filteredCrew.map(member => ({
-    id: member.id,
-    name: member.name
-  }));
-
   return (
-    <EntitySelect
-      entities={crewOptions}
-      value={value}
-      onValueChange={onChange}
-      placeholder="Filter by owner"
-      isLoading={loading}
-    />
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Filter className="h-4 w-4" />
+          Filter
+          {value && (
+            <Badge variant="secondary" className="ml-1">
+              1
+            </Badge>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-56">
+        {filteredCrew.map((member) => (
+          <DropdownMenuCheckboxItem
+            key={member.id}
+            checked={value === member.id}
+            onCheckedChange={() => onChange(value === member.id ? '' : member.id)}
+          >
+            {member.name}
+          </DropdownMenuCheckboxItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
