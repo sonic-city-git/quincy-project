@@ -62,10 +62,10 @@ export function CrewList() {
   }
 
   return (
-    <div className="space-y-8 px-6 py-6 max-w-[1600px] mx-auto">
-      <Card className="border-0 shadow-md bg-zinc-900/50">
-        <CardContent className="p-6">
-          <div className="space-y-6">
+    <div className="h-[calc(100vh-2rem)] py-6">
+      <Card className="border-0 shadow-md bg-zinc-900/50 h-full">
+        <CardContent className="p-6 h-full flex flex-col">
+          <div className="space-y-6 h-full flex flex-col">
             <CrewListHeader
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
@@ -78,12 +78,14 @@ export function CrewList() {
             />
             <Separator className="bg-zinc-800" />
             
-            <div className="rounded-lg overflow-hidden border border-zinc-800">
-              <CrewTable 
-                crew={sortedCrew} 
-                selectedItem={selectedItem}
-                onItemSelect={handleItemSelect}
-              />
+            <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0">
+              <div className="h-full overflow-auto">
+                <CrewTable 
+                  crew={sortedCrew} 
+                  selectedItem={selectedItem}
+                  onItemSelect={handleItemSelect}
+                />
+              </div>
             </div>
           </div>
         </CardContent>
