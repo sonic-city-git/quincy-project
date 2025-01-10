@@ -118,42 +118,33 @@ export type Database = {
       }
       customers: {
         Row: {
-          billing_address: string | null
           created_at: string
           customer_number: string | null
           email: string | null
           id: string
           name: string
-          notes: string | null
           organization_number: string | null
           phone_number: string | null
-          shipping_address: string | null
           updated_at: string
         }
         Insert: {
-          billing_address?: string | null
           created_at?: string
           customer_number?: string | null
           email?: string | null
           id?: string
           name: string
-          notes?: string | null
           organization_number?: string | null
           phone_number?: string | null
-          shipping_address?: string | null
           updated_at?: string
         }
         Update: {
-          billing_address?: string | null
           created_at?: string
           customer_number?: string | null
           email?: string | null
           id?: string
           name?: string
-          notes?: string | null
           organization_number?: string | null
           phone_number?: string | null
-          shipping_address?: string | null
           updated_at?: string
         }
         Relationships: []

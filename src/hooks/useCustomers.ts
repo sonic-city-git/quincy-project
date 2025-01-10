@@ -1,33 +1,33 @@
-import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
-import { Customer } from "@/integrations/supabase/types/customer";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export function useCustomers() {
-  const { toast } = useToast();
-
-  const fetchCustomers = async () => {
-    const { data: customers, error } = await supabase
-      .from('customers')
-      .select('*')
-      .order('name');
-
-    if (error) {
-      console.error('Error fetching customers:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch customers",
-        variant: "destructive",
-      });
-      throw error;
-    }
-
-    return customers as Customer[];
-  };
-
   const { data: customers = [], isLoading: loading } = useQuery({
     queryKey: ['customers'],
-    queryFn: fetchCustomers,
+    queryFn: async () => {
+      try {
+        console.log('Fetching customers...');
+        const { data, error } = await supabase
+          .from('customers')
+          .select('*')
+          .order('name');
+
+        if (error) {
+          console.error('Error fetching customers:', error);
+          toast.error("Failed to fetch customers");
+          throw error;
+        }
+
+        console.log('Customers data:', data);
+        return data || [];
+      } catch (error) {
+        console.error('Error in customers query:', error);
+        toast.error("Failed to fetch customers");
+        throw error;
+      }
+    },
+    retry: 1
   });
 
   return { customers, loading };
