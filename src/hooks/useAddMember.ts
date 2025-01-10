@@ -17,11 +17,6 @@ export function useAddMember() {
     mutationFn: async (data: AddMemberData) => {
       console.log('Adding crew member with data:', data);
       const { role_ids, ...memberData } = data;
-      
-      const { data: session } = await supabase.auth.getSession();
-      if (!session?.session) {
-        throw new Error('Authentication required');
-      }
 
       // Insert the crew member
       const { data: newMember, error: memberError } = await supabase
