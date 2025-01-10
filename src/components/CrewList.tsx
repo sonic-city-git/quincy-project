@@ -41,15 +41,33 @@ export function CrewList() {
     return matchesSearch && matchesRoles;
   });
 
-  // Sort crew members with Sonic City folder members on top
+  // Define folder order
+  const folderOrder = ["Sonic City", "Associate", "Freelance"];
+
+  // Sort crew members by folder order and then alphabetically by name
   const sortedCrew = [...filteredCrew].sort((a, b) => {
-    const isSonicCityA = a.folderName?.toLowerCase() === 'sonic city';
-    const isSonicCityB = b.folderName?.toLowerCase() === 'sonic city';
+    const folderA = a.folderName?.toLowerCase() || '';
+    const folderB = b.folderName?.toLowerCase() || '';
 
-    if (isSonicCityA && !isSonicCityB) return -1;
-    if (!isSonicCityA && isSonicCityB) return 1;
+    // Get the index of each folder in the folderOrder array
+    const indexA = folderOrder.findIndex(f => f.toLowerCase() === folderA);
+    const indexB = folderOrder.findIndex(f => f.toLowerCase() === folderB);
 
-    // If both are or aren't from Sonic City, sort alphabetically by name
+    // If both folders are in the order array, sort by their order
+    if (indexA !== -1 && indexB !== -1) {
+      return indexA - indexB;
+    }
+
+    // If only one folder is in the order array, prioritize it
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+
+    // If neither folder is in the order array, sort alphabetically by folder name
+    if (folderA !== folderB) {
+      return folderA.localeCompare(folderB);
+    }
+
+    // If folders are the same, sort alphabetically by name
     return a.name.localeCompare(b.name);
   });
 
