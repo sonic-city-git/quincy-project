@@ -29,11 +29,6 @@ export function EntitySelect({
   console.log('EntitySelect received entities:', entities);
   console.log('EntitySelect current value:', value);
 
-  const getDisplayValue = () => {
-    const selectedEntity = entities.find(e => e.id === value);
-    return selectedEntity?.name || (isLoading ? 'Loading...' : placeholder);
-  };
-
   // Custom sort function to prioritize specific names
   const sortedEntities = [...entities].sort((a, b) => {
     const order = ['Sonic City', 'Associate', 'Freelance'];
@@ -54,61 +49,10 @@ export function EntitySelect({
 
   console.log('EntitySelect sorted entities:', sortedEntities);
 
-  useEffect(() => {
-    const scrollContainer = scrollRef.current;
-    if (!scrollContainer) return;
-
-    let touchStartY = 0;
-    let isScrolling = false;
-
-    const handleWheel = (e: WheelEvent) => {
-      // Detect if the event is from a touchpad based on deltaMode and deltaY
-      const isTouchpad = e.deltaMode === 0 && Math.abs(e.deltaY) < 50;
-      
-      if (isTouchpad) {
-        e.preventDefault();
-        scrollContainer.scrollTop += e.deltaY;
-      }
-    };
-
-    const handleTouchStart = (e: TouchEvent) => {
-      touchStartY = e.touches[0].clientY;
-      isScrolling = true;
-    };
-
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!isScrolling) return;
-      
-      const touchDeltaY = touchStartY - e.touches[0].clientY;
-      scrollContainer.scrollTop += touchDeltaY;
-      touchStartY = e.touches[0].clientY;
-      
-      // Prevent default only if we're scrolling
-      if (Math.abs(touchDeltaY) > 5) {
-        e.preventDefault();
-      }
-    };
-
-    const handleTouchEnd = () => {
-      isScrolling = false;
-    };
-
-    try {
-      scrollContainer.addEventListener('wheel', handleWheel, { passive: false });
-      scrollContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
-      scrollContainer.addEventListener('touchmove', handleTouchMove, { passive: false });
-      scrollContainer.addEventListener('touchend', handleTouchEnd);
-
-      return () => {
-        scrollContainer.removeEventListener('wheel', handleWheel);
-        scrollContainer.removeEventListener('touchstart', handleTouchStart);
-        scrollContainer.removeEventListener('touchmove', handleTouchMove);
-        scrollContainer.removeEventListener('touchend', handleTouchEnd);
-      };
-    } catch (error) {
-      console.error('Error setting up scroll handlers:', error);
-    }
-  }, []);
+  const getDisplayValue = () => {
+    const selectedEntity = entities.find(e => e.id === value);
+    return selectedEntity?.name || (isLoading ? 'Loading...' : placeholder);
+  };
 
   return (
     <Select 
@@ -120,26 +64,21 @@ export function EntitySelect({
         <SelectValue placeholder={getDisplayValue()} />
       </SelectTrigger>
       <SelectContent 
-        className="max-h-[300px] overflow-hidden"
+        ref={scrollRef}
+        className="max-h-[300px]"
         position="popper"
         sideOffset={4}
       >
-        <ScrollArea 
-          ref={scrollRef}
-          className="h-[var(--radix-select-content-available-height)] overflow-y-auto" 
-          type="auto"
-        >
-          <div className="p-1">
-            {sortedEntities.map((entity) => (
-              <SelectItem 
-                key={entity.id} 
-                value={entity.id}
-                className="cursor-pointer relative flex w-full select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 hover:bg-accent hover:text-accent-foreground"
-              >
-                {entity.name}
-              </SelectItem>
-            ))}
-          </div>
+        <ScrollArea className="h-[var(--radix-select-content-available-height)] w-full">
+          {sortedEntities.map((entity) => (
+            <SelectItem 
+              key={entity.id} 
+              value={entity.id}
+              className="cursor-pointer"
+            >
+              {entity.name}
+            </SelectItem>
+          ))}
         </ScrollArea>
       </SelectContent>
     </Select>
