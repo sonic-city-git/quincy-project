@@ -37,11 +37,11 @@ export function EntitySelect({
 }: EntitySelectProps) {
   const [open, setOpen] = React.useState(false);
 
-  // Ensure entities is always an array
+  // Ensure entities is always a valid array
   const safeEntities = Array.isArray(entities) ? entities : [];
   
   // Find the selected entity safely
-  const selectedEntity = safeEntities.find((entity) => entity.id === value);
+  const selectedEntity = value ? safeEntities.find((entity) => entity.id === value) : undefined;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -55,7 +55,7 @@ export function EntitySelect({
         >
           {isLoading ? (
             "Loading..."
-          ) : value && selectedEntity ? (
+          ) : selectedEntity ? (
             selectedEntity.name
           ) : (
             <span className="text-muted-foreground">{placeholder}</span>
