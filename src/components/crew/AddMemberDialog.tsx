@@ -147,9 +147,9 @@ export function AddMemberDialog() {
               render={() => (
                 <FormItem>
                   <FormLabel>Roles</FormLabel>
-                  <div className="grid grid-cols-2 gap-4 border rounded-lg p-4">
+                  <div className="grid grid-cols-2 gap-4 border rounded-lg p-4 bg-background">
                     {sortedRoles.map((role) => (
-                      <div key={role.id} className="flex items-center space-x-2">
+                      <div key={role.id} className="flex items-center space-x-2 bg-muted/50 rounded p-2">
                         <Checkbox
                           id={role.id}
                           checked={form.watch('role_ids')?.includes(role.id)}
