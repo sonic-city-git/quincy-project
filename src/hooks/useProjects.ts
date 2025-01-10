@@ -16,7 +16,7 @@ export function useProjects() {
           id,
           name
         ),
-        crew_members!crew_member_id (
+        crew_members!owner_id (
           id,
           name
         )
@@ -41,10 +41,10 @@ export function useProjects() {
       customer_id: project.customer_id,
       lastInvoiced: project.created_at || '',
       owner: project.crew_members?.name || project.customers?.name || 'No Owner',
-      owner_id: project.crew_member_id || project.customer_id,
+      owner_id: project.owner_id,
       status: project.status || 'draft',
       color: 'blue', // Default color for now
-      crew_member_id: project.crew_member_id
+      crew_member_id: project.owner_id
     })) as Project[];
   };
 
