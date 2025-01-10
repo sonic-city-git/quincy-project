@@ -37,30 +37,10 @@ export function EntitySelect({
 }: EntitySelectProps) {
   const [open, setOpen] = React.useState(false);
 
-  // Ensure entities is always a valid array with required properties
-  const safeEntities = React.useMemo(() => {
-    if (!Array.isArray(entities)) {
-      console.warn('EntitySelect: entities prop is not an array', entities);
-      return [];
-    }
-
-    return entities.filter((entity): entity is Entity => {
-      if (!entity || typeof entity !== 'object') {
-        console.warn('EntitySelect: invalid entity', entity);
-        return false;
-      }
-      if (typeof entity.id !== 'string' || typeof entity.name !== 'string') {
-        console.warn('EntitySelect: entity missing required properties', entity);
-        return false;
-      }
-      return true;
-    });
-  }, [entities]);
-
   // Find the selected entity
   const selectedEntity = React.useMemo(() => {
-    return safeEntities.find(entity => entity.id === value);
-  }, [value, safeEntities]);
+    return entities?.find(entity => entity?.id === value);
+  }, [value, entities]);
 
   if (isLoading) {
     return (
@@ -100,27 +80,29 @@ export function EntitySelect({
             className="h-9"
           />
           <CommandEmpty>No results found.</CommandEmpty>
-          <CommandGroup className="max-h-[200px] overflow-auto">
-            {safeEntities.length === 0 ? (
+          <CommandGroup>
+            {!Array.isArray(entities) || entities.length === 0 ? (
               <CommandItem disabled>No options available</CommandItem>
             ) : (
-              safeEntities.map((entity) => (
-                <CommandItem
-                  key={entity.id}
-                  value={entity.id}
-                  onSelect={(currentValue) => {
-                    onValueChange(currentValue === value ? "" : currentValue);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === entity.id ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {entity.name}
-                </CommandItem>
+              entities.map((entity) => (
+                entity && (
+                  <CommandItem
+                    key={entity.id}
+                    value={entity.id}
+                    onSelect={(currentValue) => {
+                      onValueChange(currentValue === value ? "" : currentValue);
+                      setOpen(false);
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-4 w-4",
+                        value === entity.id ? "opacity-100" : "opacity-0"
+                      )}
+                    />
+                    {entity.name}
+                  </CommandItem>
+                )
               ))
             )}
           </CommandGroup>
