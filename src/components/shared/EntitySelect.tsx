@@ -37,10 +37,19 @@ export function EntitySelect({
 }: EntitySelectProps) {
   const [open, setOpen] = React.useState(false);
 
+  // Ensure entities is always a valid array with required properties
+  const safeEntities = React.useMemo(() => {
+    if (!Array.isArray(entities)) {
+      console.warn('EntitySelect: entities prop is not an array', entities);
+      return [];
+    }
+    return entities.filter(Boolean);
+  }, [entities]);
+
   // Find the selected entity
   const selectedEntity = React.useMemo(() => {
-    return entities?.find(entity => entity?.id === value);
-  }, [value, entities]);
+    return safeEntities.find(entity => entity.id === value);
+  }, [value, safeEntities]);
 
   if (isLoading) {
     return (
@@ -81,28 +90,26 @@ export function EntitySelect({
           />
           <CommandEmpty>No results found.</CommandEmpty>
           <CommandGroup>
-            {!Array.isArray(entities) || entities.length === 0 ? (
+            {safeEntities.length === 0 ? (
               <CommandItem disabled>No options available</CommandItem>
             ) : (
-              entities.map((entity) => (
-                entity && (
-                  <CommandItem
-                    key={entity.id}
-                    value={entity.id}
-                    onSelect={(currentValue) => {
-                      onValueChange(currentValue === value ? "" : currentValue);
-                      setOpen(false);
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        value === entity.id ? "opacity-100" : "opacity-0"
-                      )}
-                    />
-                    {entity.name}
-                  </CommandItem>
-                )
+              safeEntities.map((entity) => (
+                <CommandItem
+                  key={entity.id}
+                  value={entity.id}
+                  onSelect={(currentValue) => {
+                    onValueChange(currentValue === value ? "" : currentValue);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === entity.id ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {entity.name}
+                </CommandItem>
               ))
             )}
           </CommandGroup>
