@@ -162,7 +162,11 @@ export function AddMemberDialog() {
                       </div>
                     ) : (
                       sortedRoles.map((role) => (
-                        <div key={role.id} className="flex items-center space-x-2 bg-zinc-800/50 rounded p-2 hover:bg-zinc-800 transition-colors">
+                        <div 
+                          key={role.id} 
+                          className="flex items-center space-x-2 rounded p-2 transition-colors"
+                          style={{ backgroundColor: role.color }}
+                        >
                           <Checkbox
                             id={role.id}
                             checked={form.watch('role_ids')?.includes(role.id)}
@@ -173,12 +177,11 @@ export function AddMemberDialog() {
                                 : currentRoles.filter(id => id !== role.id);
                               form.setValue('role_ids', newRoles);
                             }}
-                            className="data-[state=checked]:bg-[#4F46E5] data-[state=checked]:border-[#4F46E5]"
+                            className="data-[state=checked]:bg-white/90 data-[state=checked]:border-white/90 border-white/70"
                           />
                           <label
                             htmlFor={role.id}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                            style={{ color: role.color }}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-white"
                           >
                             {role.name}
                           </label>
