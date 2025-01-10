@@ -10,7 +10,7 @@ export interface CrewRole {
 }
 
 export function useCrewRoles() {
-  const { data: roles = [], isLoading, error } = useQuery({
+  const { data: roles = [], isLoading, error, refetch } = useQuery({
     queryKey: ['crew-roles'],
     queryFn: async () => {
       console.log('Starting to fetch crew roles...');
@@ -41,5 +41,5 @@ export function useCrewRoles() {
     console.error('Query error:', error);
   }
 
-  return { roles, isLoading };
+  return { roles, isLoading, refetch };
 }
