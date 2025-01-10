@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { Loader2 } from "lucide-react";
@@ -8,11 +8,15 @@ import { CrewTable } from "./crew/CrewTable";
 import { CrewListHeader } from "./crew/CrewListHeader";
 
 export function CrewList() {
-  const { crew = [], loading } = useCrew();
+  const { crew = [], loading, refetch } = useCrew();
   const { roles = [] } = useCrewRoles();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const handleItemSelect = (id: string) => {
     setSelectedItem(prev => prev === id ? null : id);
