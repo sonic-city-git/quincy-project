@@ -42,23 +42,23 @@ export function CrewList() {
         <CardContent className="p-6">
           <div className="space-y-6">
             <div className="flex items-center gap-4">
-              <div className="flex-1">
+              <div className="flex items-center gap-2 flex-1">
                 <Input
                   placeholder="Search crew members..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="max-w-sm bg-zinc-800/50"
                 />
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Filter className="h-4 w-4" />
+                  Filter
+                </Button>
               </div>
               <ViewToggle currentView={viewMode} onViewChange={setViewMode} />
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Filter className="h-4 w-4" />
-                Filter
-              </Button>
               <CrewActions 
                 selectedItems={selectedItem ? [selectedItem] : []} 
                 onCrewMemberDeleted={() => setSelectedItem(null)}
