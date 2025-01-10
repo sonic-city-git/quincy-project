@@ -169,10 +169,7 @@ export function AddMemberDialog() {
                         <div 
                           key={role.id} 
                           className="flex items-center space-x-2 rounded p-2 transition-colors"
-                          style={{ 
-                            backgroundColor: role.color,
-                            opacity: 0.5
-                          }}
+                          style={{ backgroundColor: role.color, opacity: 1 }}
                         >
                           <Checkbox
                             id={role.id}
