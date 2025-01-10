@@ -41,6 +41,18 @@ export function CrewList() {
     return matchesSearch && matchesRoles;
   });
 
+  // Sort crew members with Sonic City folder members on top
+  const sortedCrew = [...filteredCrew].sort((a, b) => {
+    const isSonicCityA = a.folderName?.toLowerCase() === 'sonic city';
+    const isSonicCityB = b.folderName?.toLowerCase() === 'sonic city';
+
+    if (isSonicCityA && !isSonicCityB) return -1;
+    if (!isSonicCityA && isSonicCityB) return 1;
+
+    // If both are or aren't from Sonic City, sort alphabetically by name
+    return a.name.localeCompare(b.name);
+  });
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -68,7 +80,7 @@ export function CrewList() {
             
             <div className="rounded-lg overflow-hidden border border-zinc-800">
               <CrewTable 
-                crew={filteredCrew} 
+                crew={sortedCrew} 
                 selectedItem={selectedItem}
                 onItemSelect={handleItemSelect}
               />
