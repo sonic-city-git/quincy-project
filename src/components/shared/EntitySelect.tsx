@@ -23,6 +23,9 @@ export function EntitySelect({
   isLoading,
   required
 }: EntitySelectProps) {
+  console.log('EntitySelect received entities:', entities);
+  console.log('EntitySelect current value:', value);
+
   const getDisplayValue = () => {
     const selectedEntity = entities.find(e => e.id === value);
     return selectedEntity?.name || (isLoading ? 'Loading...' : placeholder);
@@ -45,6 +48,8 @@ export function EntitySelect({
     // For all other items, sort alphabetically
     return a.name.localeCompare(b.name);
   });
+
+  console.log('EntitySelect sorted entities:', sortedEntities);
 
   return (
     <Select 

@@ -7,7 +7,7 @@ export function useCustomers() {
     queryKey: ['customers'],
     queryFn: async () => {
       try {
-        console.log('Fetching customers...');
+        console.log('Starting customer fetch...');
         const { data: customersData, error } = await supabase
           .from('customers')
           .select('*')
@@ -24,7 +24,7 @@ export function useCustomers() {
           return [];
         }
 
-        console.log(`Successfully fetched ${customersData.length} customers:`, customersData);
+        console.log('Raw customers data:', customersData);
         return customersData;
       } catch (error) {
         console.error('Error in customers query:', error);
@@ -35,7 +35,7 @@ export function useCustomers() {
     retry: 1,
     refetchOnWindowFocus: false,
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    refetchOnMount: true, // Ensure we fetch when component mounts
+    refetchOnMount: true,
   });
 
   return { customers, loading };
