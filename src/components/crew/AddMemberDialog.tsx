@@ -29,10 +29,15 @@ export function AddMemberDialog() {
   const [open, setOpen] = useState(false);
   const { mutate: addMember, isPending } = useAddMember();
   const { folders, loading: foldersLoading } = useFolders();
-  const { roles, isLoading: rolesLoading } = useCrewRoles();
+  const { roles, isLoading: rolesLoading, refetch: refetchRoles } = useCrewRoles();
 
-  console.log('Roles loading state:', rolesLoading);
-  console.log('Fetched roles:', roles);
+  // Refetch roles when dialog opens
+  const handleOpenChange = (newOpen: boolean) => {
+    if (newOpen) {
+      refetchRoles();
+    }
+    setOpen(newOpen);
+  };
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -68,10 +73,9 @@ export function AddMemberDialog() {
   };
 
   const sortedRoles = sortRoles(roles);
-  console.log('Sorted roles:', sortedRoles);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="gap-2">
           <UserPlus className="h-4 w-4" />
