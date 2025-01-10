@@ -581,33 +581,30 @@ export type Database = {
       projects: {
         Row: {
           created_at: string
-          crew_member_id: string | null
           customer_id: string | null
           id: string
           name: string
-          notes: string | null
+          owner_id: string | null
           project_number: string | null
           status: string
           updated_at: string
         }
         Insert: {
           created_at?: string
-          crew_member_id?: string | null
           customer_id?: string | null
           id?: string
           name: string
-          notes?: string | null
+          owner_id?: string | null
           project_number?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
-          crew_member_id?: string | null
           customer_id?: string | null
           id?: string
           name?: string
-          notes?: string | null
+          owner_id?: string | null
           project_number?: string | null
           status?: string
           updated_at?: string
