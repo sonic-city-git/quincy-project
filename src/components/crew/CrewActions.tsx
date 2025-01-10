@@ -9,7 +9,7 @@ interface CrewActionsProps {
   onCrewMemberDeleted?: () => void;
 }
 
-export function CrewActions({ selectedItems }: CrewActionsProps) {
+export function CrewActions({ selectedItems, onCrewMemberDeleted }: CrewActionsProps) {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { crew } = useCrew();
   
@@ -32,6 +32,7 @@ export function CrewActions({ selectedItems }: CrewActionsProps) {
             open={editDialogOpen}
             onOpenChange={setEditDialogOpen}
             member={selectedMember}
+            onCrewMemberDeleted={onCrewMemberDeleted}
           />
         </>
       )}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -9,13 +9,23 @@ import * as z from "zod";
 import { EntitySelect } from "@/components/shared/EntitySelect";
 import { useFolders } from "@/hooks/useFolders";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { sortRoles } from "@/utils/roleUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { CrewMember } from "@/types/crew";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -31,12 +41,14 @@ interface EditMemberDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   member: CrewMember;
+  onCrewMemberDeleted?: () => void;
 }
 
-export function EditMemberDialog({ open, onOpenChange, member }: EditMemberDialogProps) {
+export function EditMemberDialog({ open, onOpenChange, member, onCrewMemberDeleted }: EditMemberDialogProps) {
   const [isPending, setIsPending] = useState(false);
+  const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const { folders, loading: foldersLoading } = useFolders();
-  const { roles, isLoading: rolesLoading, refetch: refetchRoles } = useCrewRoles();
+  const { roles, isLoading: rolesLoading } = useCrewRoles();
   const queryClient = useQueryClient();
 
   const form = useForm<FormData>({
@@ -49,6 +61,38 @@ export function EditMemberDialog({ open, onOpenChange, member }: EditMemberDialo
       role_ids: member.roles || [],
     },
   });
+
+  const handleDelete = async () => {
+    setIsPending(true);
+    try {
+      // Delete crew member roles first
+      const { error: rolesError } = await supabase
+        .from('crew_member_roles')
+        .delete()
+        .eq('crew_member_id', member.id);
+
+      if (rolesError) throw rolesError;
+
+      // Then delete the crew member
+      const { error: deleteError } = await supabase
+        .from('crew_members')
+        .delete()
+        .eq('id', member.id);
+
+      if (deleteError) throw deleteError;
+
+      queryClient.invalidateQueries({ queryKey: ['crew'] });
+      onOpenChange(false);
+      onCrewMemberDeleted?.();
+      toast.success("Crew member deleted successfully");
+    } catch (error: any) {
+      console.error("Error deleting crew member:", error);
+      toast.error(error.message || "Failed to delete crew member");
+    } finally {
+      setIsPending(false);
+      setShowDeleteAlert(false);
+    }
+  };
 
   const onSubmit = async (data: FormData) => {
     setIsPending(true);
@@ -103,13 +147,15 @@ export function EditMemberDialog({ open, onOpenChange, member }: EditMemberDialo
   const sortedRoles = sortRoles(roles);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Edit Crew Member</DialogTitle>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Crew Member</DialogTitle>
+            <DialogDescription>Make changes to the crew member's information below.</DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="name"
@@ -216,15 +262,48 @@ export function EditMemberDialog({ open, onOpenChange, member }: EditMemberDialo
                 </FormItem>
               )}
             />
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isPending || rolesLoading || foldersLoading}>
-                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                Save Changes
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+              <div className="flex justify-between">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  disabled={isPending}
+                  onClick={() => setShowDeleteAlert(true)}
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete Member
+                </Button>
+                <Button type="submit" disabled={isPending}>
+                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Save Changes
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete {member.name} and remove all of their data from the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
