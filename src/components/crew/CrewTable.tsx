@@ -14,7 +14,6 @@ export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) 
       <TableHeader className="bg-zinc-900/50 border-b border-zinc-800">
         <TableRow>
           <TableHead className="w-12"></TableHead>
-          <TableHead className="w-12">#</TableHead>
           <TableHead>Name</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Phone</TableHead>
@@ -22,11 +21,10 @@ export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) 
         </TableRow>
       </TableHeader>
       <TableBody>
-        {crew.map((member, index) => (
+        {crew.map((member) => (
           <CrewTableRow
             key={member.id}
             member={member}
-            index={index + 1}
             isSelected={selectedItem === member.id}
             onSelect={() => onItemSelect(member.id)}
           />

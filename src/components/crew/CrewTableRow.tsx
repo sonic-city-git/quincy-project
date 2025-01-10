@@ -4,12 +4,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 interface CrewTableRowProps {
   member: CrewMember;
-  index: number;
   isSelected: boolean;
   onSelect: () => void;
 }
 
-export function CrewTableRow({ member, index, isSelected, onSelect }: CrewTableRowProps) {
+export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps) {
   return (
     <TableRow 
       className={`group hover:bg-zinc-800/50 ${
@@ -21,9 +20,6 @@ export function CrewTableRow({ member, index, isSelected, onSelect }: CrewTableR
           checked={isSelected}
           onCheckedChange={onSelect}
         />
-      </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
-        {index}
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
