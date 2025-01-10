@@ -30,21 +30,21 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
         />
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-2">
-          <div className="text-sm font-medium truncate max-w-[200px]">
-            {member.name}
-          </div>
-          <div className="flex gap-1">
-            {memberRoles.map((role) => (
-              <div
-                key={role.id}
-                className="text-xs px-2 py-1 rounded text-white whitespace-nowrap"
-                style={{ backgroundColor: role.color }}
-              >
-                {role.name}
-              </div>
-            ))}
-          </div>
+        <div className="text-sm font-medium truncate max-w-[200px]">
+          {member.name}
+        </div>
+      </TableCell>
+      <TableCell>
+        <div className="flex gap-1">
+          {memberRoles.map((role) => (
+            <div
+              key={role.id}
+              className="text-xs px-2 py-1 rounded text-white whitespace-nowrap"
+              style={{ backgroundColor: role.color }}
+            >
+              {role.name}
+            </div>
+          ))}
         </div>
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
