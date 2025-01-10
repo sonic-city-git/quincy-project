@@ -18,6 +18,11 @@ export function useAddMember() {
       console.log('Adding crew member with data:', data);
       const { role_ids, ...memberData } = data;
       
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session) {
+        throw new Error('Authentication required');
+      }
+
       try {
         // Insert the crew member
         const { data: newMember, error: memberError } = await supabase
@@ -46,7 +51,6 @@ export function useAddMember() {
 
           if (rolesError) {
             console.error('Error assigning roles:', rolesError);
-            // Even if role assignment fails, we don't throw here since the member was created
             toast.error(`Warning: Failed to assign roles: ${rolesError.message}`);
           } else {
             console.log('Successfully assigned roles:', roleAssignments);
@@ -56,21 +60,12 @@ export function useAddMember() {
         return newMember;
       } catch (error: any) {
         console.error('Error in mutation:', error);
-        if (error.code === '401') {
-          toast.error('Unauthorized: Please check your authentication');
-        } else {
-          toast.error(`Failed to add crew member: ${error.message}`);
-        }
         throw error;
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['crew'] });
-      toast.success('Crew member added successfully');
     },
-    onError: (error: Error) => {
-      console.error('Error adding crew member:', error);
-    }
   });
 
   return mutation;

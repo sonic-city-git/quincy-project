@@ -12,6 +12,8 @@ import { useFolders } from "@/hooks/useFolders";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 import { Loader2, UserPlus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -41,6 +43,13 @@ export function AddMemberDialog() {
   });
 
   const onSubmit = async (data: FormData) => {
+    const { data: session } = await supabase.auth.getSession();
+    
+    if (!session?.session) {
+      toast.error("You must be logged in to add crew members");
+      return;
+    }
+
     const memberData: AddMemberData = {
       name: data.name,
       email: data.email || undefined,
@@ -53,6 +62,11 @@ export function AddMemberDialog() {
       onSuccess: () => {
         setOpen(false);
         form.reset();
+        toast.success("Crew member added successfully");
+      },
+      onError: (error: any) => {
+        console.error("Error adding crew member:", error);
+        toast.error(error.message || "Failed to add crew member");
       },
     });
   };
