@@ -16,7 +16,7 @@ export function useProjects() {
           id,
           name
         ),
-        crew_members (
+        owner:crew_members!projects_owner_id_fkey (
           id,
           name
         )
@@ -40,7 +40,7 @@ export function useProjects() {
       name: project.name,
       customer_id: project.customer_id,
       lastInvoiced: project.created_at || '',
-      owner: project.crew_members?.name || project.customers?.name || 'No Owner',
+      owner: project.owner?.name || project.customers?.name || 'No Owner',
       owner_id: project.owner_id,
       status: project.status || 'draft',
       color: 'blue', // Default color for now
