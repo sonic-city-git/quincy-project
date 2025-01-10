@@ -33,7 +33,7 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
           <div className="text-sm font-medium truncate max-w-[200px]">
             {member.name}
           </div>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex gap-1">
             {memberRoles.map((role) => (
               <div
                 key={role.id}
