@@ -65,7 +65,7 @@ export function EntitySelect({
       </SelectTrigger>
       <SelectContent 
         ref={scrollRef}
-        className="max-h-[300px] relative z-50"
+        className="max-h-[300px] overflow-hidden"
         position="popper"
         sideOffset={4}
       >
@@ -75,7 +75,7 @@ export function EntitySelect({
               <SelectItem 
                 key={entity.id} 
                 value={entity.id}
-                className="cursor-pointer rounded-sm"
+                className="cursor-pointer rounded-sm relative"
               >
                 {entity.name}
               </SelectItem>
