@@ -1,6 +1,5 @@
 import { Calendar } from "@/components/ui/calendar/Calendar";
 import { CalendarEvent } from "@/types/events";
-import { normalizeDate } from "@/utils/calendarUtils";
 import { useState } from "react";
 
 interface CalendarViewProps {
@@ -20,63 +19,58 @@ export function CalendarView({
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 
   const handleDayClick = (date: Date) => {
-    const normalizedDate = normalizeDate(date);
-    if (!normalizedDate) return;
-    
-    // Find if there's an event on this date
+    // Find if there's an event on this date by comparing just the date parts
     const eventOnDate = events.find(event => {
-      const eventDate = normalizeDate(new Date(event.date));
-      return eventDate.getTime() === normalizedDate.getTime();
+      const eventDate = new Date(event.date);
+      return eventDate.getDate() === date.getDate() && 
+             eventDate.getMonth() === date.getMonth() && 
+             eventDate.getFullYear() === date.getFullYear();
     });
 
-    console.log('Calendar day clicked', { date: normalizedDate, existingEvent: eventOnDate });
+    console.log('Calendar day clicked', { date, existingEvent: eventOnDate });
     
     if (eventOnDate) {
       console.log('Found event, opening edit dialog for event:', eventOnDate);
       onDayClick(new Date(eventOnDate.date));
     } else {
       console.log('No event found, opening add dialog');
-      onDayClick(normalizedDate);
+      onDayClick(date);
     }
   };
 
   const handleDragStart = (date: Date) => {
-    const normalizedDate = normalizeDate(date);
-    if (!normalizedDate) return;
-
     // Check if there's an event on this date
     const hasEvent = events.some(event => {
-      const eventDate = normalizeDate(new Date(event.date));
-      return eventDate.getTime() === normalizedDate.getTime();
+      const eventDate = new Date(event.date);
+      return eventDate.getDate() === date.getDate() && 
+             eventDate.getMonth() === date.getMonth() && 
+             eventDate.getFullYear() === date.getFullYear();
     });
 
     if (!hasEvent) {
       setIsDragging(true);
-      setSelectedDates([normalizedDate]);
+      setSelectedDates([date]);
     }
   };
 
   const handleDragEnter = (date: Date) => {
     if (!isDragging) return;
 
-    const normalizedDate = normalizeDate(date);
-    if (!normalizedDate) return;
-
     const startDate = selectedDates[0];
     const dates: Date[] = [];
     
     // Calculate the range of dates
-    const start = normalizeDate(new Date(Math.min(startDate.getTime(), normalizedDate.getTime())));
-    const end = normalizeDate(new Date(Math.max(startDate.getTime(), normalizedDate.getTime())));
-    
-    if (!start || !end) return;
+    const start = new Date(Math.min(startDate.getTime(), date.getTime()));
+    const end = new Date(Math.max(startDate.getTime(), date.getTime()));
     
     let current = new Date(start);
     while (current <= end) {
       // Only add dates that don't have existing events
       const hasEvent = events.some(event => {
-        const eventDate = normalizeDate(new Date(event.date));
-        return eventDate?.getTime() === normalizeDate(current)?.getTime();
+        const eventDate = new Date(event.date);
+        return eventDate.getDate() === current.getDate() && 
+               eventDate.getMonth() === current.getMonth() && 
+               eventDate.getFullYear() === current.getFullYear();
       });
       
       if (!hasEvent) {
@@ -93,10 +87,7 @@ export function CalendarView({
       // Sort dates to ensure we're using the first date chronologically
       const sortedDates = [...selectedDates].sort((a, b) => a.getTime() - b.getTime());
       // Open add dialog with the first selected date
-      const firstDate = normalizeDate(sortedDates[0]);
-      if (firstDate) {
-        onDayClick(firstDate);
-      }
+      onDayClick(sortedDates[0]);
     }
     setIsDragging(false);
     setSelectedDates([]);
