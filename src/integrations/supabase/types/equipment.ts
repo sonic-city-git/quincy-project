@@ -11,15 +11,17 @@ export type Equipment = {
   serial_number: string | null;
   weight: number | null;
   stock_calculation: string | null;
-  equipment_serial_numbers?: {
-    id: string;
-    equipment_id: string;
-    serial_number: string;
-    status: string;
-    notes: string | null;
-    created_at: string;
-    updated_at: string;
-  }[];
+  equipment_serial_numbers?: EquipmentSerialNumber[];
+};
+
+export type EquipmentSerialNumber = {
+  id: string;
+  equipment_id: string;
+  serial_number: string;
+  status: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 export type EquipmentInsert = {

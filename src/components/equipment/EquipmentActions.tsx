@@ -13,7 +13,7 @@ export function EquipmentActions({ selectedItems, onEquipmentDeleted }: Equipmen
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const { equipment } = useEquipment();
   
-  const selectedEquipment = equipment.find(item => item.id === selectedItems[0]);
+  const selectedEquipment = equipment?.find(item => item.id === selectedItems[0]);
 
   return (
     <div className="flex items-center gap-2">
