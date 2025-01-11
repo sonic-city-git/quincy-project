@@ -54,11 +54,18 @@ export const useCalendarDrag = (openAddDialog: (date: Date, callback?: (date: Da
     });
   }, [isDragging, selectedDates, openAddDialog, addEvent]);
 
+  const resetSelection = useCallback(() => {
+    setSelectedDates([]);
+    setIsDragging(false);
+    setDragStartDate(null);
+  }, []);
+
   return {
     isDragging,
     selectedDates,
     handleDragStart,
     handleDragEnter,
-    handleDragEnd
+    handleDragEnd,
+    resetSelection
   };
 };

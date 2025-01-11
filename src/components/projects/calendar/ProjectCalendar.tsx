@@ -40,7 +40,8 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     selectedDates,
     handleDragStart,
     handleDragEnter,
-    handleDragEnd
+    handleDragEnd,
+    resetSelection
   } = useCalendarDrag(openAddDialog, addEvent);
 
   const handleDayClick = useCallback((date: Date) => {
@@ -61,6 +62,11 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     }
   }, [isDragging, events, normalizeDate, openEditDialog, openAddDialog, handleDragEnd]);
 
+  const handleCloseAddDialog = useCallback(() => {
+    closeAddDialog();
+    resetSelection();
+  }, [closeAddDialog, resetSelection]);
+
   if (isLoading || !eventTypes) {
     return null;
   }
@@ -80,7 +86,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
       <EventDialog
         isOpen={isAddDialogOpen}
-        onClose={closeAddDialog}
+        onClose={handleCloseAddDialog}
         date={selectedDate}
         eventTypes={eventTypes}
         onAddEvent={addEvent}
