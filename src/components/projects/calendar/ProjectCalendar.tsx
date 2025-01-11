@@ -61,9 +61,11 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
       [key]: {
         backgroundColor: event.type.color,
         color: '#FFFFFF',
-        borderRadius: '4px',
+        borderRadius: '8px',
         cursor: 'pointer',
         position: 'relative' as const,
+        width: '100%',
+        height: '100%',
       }
     };
   }, {} as Record<string, React.CSSProperties>) || {};
@@ -75,25 +77,22 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     return {
       ...acc,
       [key]: ({ date }: { date: Date }) => (
-        <div className="relative w-full h-full">
-          <HoverCard>
-            <HoverCardTrigger asChild>
-              <div className="w-full h-full flex items-center justify-center cursor-pointer">
-                <span>{date.getDate()}</span>
-              </div>
-            </HoverCardTrigger>
-            <HoverCardContent 
-              className="fixed bg-zinc-950 border border-zinc-800 text-white p-3 rounded-md shadow-xl"
-              style={{ zIndex: 999999 }}
-              sideOffset={5}
-            >
-              <div className="space-y-1.5">
-                <p className="font-semibold text-white">{event.name}</p>
-                <p className="text-sm text-zinc-300">{event.type.name}</p>
-              </div>
-            </HoverCardContent>
-          </HoverCard>
-        </div>
+        <HoverCard>
+          <HoverCardTrigger asChild>
+            <div className="w-10 h-10 flex items-center justify-center cursor-pointer">
+              <span>{date.getDate()}</span>
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent 
+            className="z-50 bg-zinc-950 border border-zinc-800 text-white p-3 rounded-md shadow-xl"
+            sideOffset={5}
+          >
+            <div className="space-y-1.5">
+              <p className="font-semibold text-white">{event.name}</p>
+              <p className="text-sm text-zinc-300">{event.type.name}</p>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
       )
     };
   }, {} as Record<string, (props: { date: Date }) => JSX.Element>) || {};
@@ -112,7 +111,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         modifiers={modifiers}
         modifiersStyles={modifiersStyles}
         components={modifiersContent}
-        className="rounded-md border"
+        className="rounded-md border border-zinc-800 bg-zinc-950"
       />
 
       <AddEventDialog
