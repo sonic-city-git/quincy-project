@@ -2,12 +2,19 @@ import { CalendarEvent } from "@/types/events";
 import { Card } from "@/components/ui/card";
 import { format } from "date-fns";
 import { Calendar, CheckCircle, HelpCircle, Send, XCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 interface EventListProps {
   events: CalendarEvent[];
 }
 
 export function EventList({ events }: EventListProps) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
   // Sort events by date within each status group
   const sortedEvents = [...events].sort((a, b) => a.date.getTime() - b.date.getTime());
 
@@ -17,6 +24,44 @@ export function EventList({ events }: EventListProps) {
     confirmed: sortedEvents.filter(event => event.status === 'confirmed'),
     invoice: sortedEvents.filter(event => event.status === 'invoice'),
     cancelled: sortedEvents.filter(event => event.status === 'cancelled'),
+  };
+
+  const getNextStatus = (currentStatus: CalendarEvent['status']): CalendarEvent['status'] => {
+    const statusFlow = {
+      proposed: 'confirmed',
+      confirmed: 'invoice',
+      invoice: 'cancelled',
+      cancelled: 'proposed'
+    } as const;
+    return statusFlow[currentStatus];
+  };
+
+  const handleStatusChange = async (event: CalendarEvent) => {
+    const newStatus = getNextStatus(event.status);
+    try {
+      const { error } = await supabase
+        .from('project_events')
+        .update({ status: newStatus })
+        .eq('date', format(event.date, 'yyyy-MM-dd'))
+        .eq('name', event.name);
+
+      if (error) throw error;
+
+      // Invalidate the events query to trigger a refresh
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+
+      toast({
+        title: "Status Updated",
+        description: `Event status changed to ${newStatus}`,
+      });
+    } catch (error) {
+      console.error('Error updating event status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update event status",
+        variant: "destructive",
+      });
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -51,10 +96,14 @@ export function EventList({ events }: EventListProps) {
         >
           {event.type.name}
         </div>
-        <div className="flex items-center gap-2 text-sm">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => handleStatusChange(event)}
+          className="flex items-center gap-2"
+        >
           {getStatusIcon(event.status)}
-          <span>{getStatusText(event.status)}</span>
-        </div>
+        </Button>
       </div>
     </Card>
   );
