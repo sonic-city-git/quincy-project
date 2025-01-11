@@ -14,26 +14,26 @@ export function EventList({ events }: EventListProps) {
   return (
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Project Events</h2>
-      <div className="grid gap-4">
+      <div className="grid gap-2">
         {sortedEvents.map((event, index) => (
-          <Card key={`${event.date}-${index}`} className="p-6">
-            <div className="flex items-center justify-between gap-8">
-              <div className="flex items-center gap-8">
-                <div className="flex items-center gap-2 shrink-0">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+          <Card key={`${event.date}-${index}`} className="p-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground whitespace-nowrap">
                     {format(event.date, 'dd.MM.yyyy')}
                   </span>
                 </div>
-                <h3 className="font-medium">{event.name}</h3>
+                <h3 className="font-medium text-sm">{event.name}</h3>
                 <div 
-                  className={`text-xs px-2 py-1 rounded-full shrink-0 ${event.type.color}`}
+                  className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${event.type.color}`}
                 >
                   {event.type.name}
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground opacity-50 shrink-0">
-                <Clock className="h-4 w-4" />
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground opacity-50 shrink-0">
+                <Clock className="h-3.5 w-3.5" />
                 <span>Options coming soon</span>
               </div>
             </div>
