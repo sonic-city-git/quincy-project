@@ -69,10 +69,10 @@ export function EventList({ events, projectId }: EventListProps) {
         description: `Event status changed to ${newStatus}`,
       });
 
-      // Automatically dismiss the toast after 0.4 seconds
+      // Automatically dismiss the toast after 0.6 seconds
       setTimeout(() => {
         dismiss();
-      }, 400);
+      }, 600);
 
       // Refresh all relevant queries in the background
       await Promise.all(
