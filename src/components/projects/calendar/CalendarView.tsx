@@ -41,9 +41,11 @@ export function CalendarView({
         }
       }}
       onDayClick={(date: Date) => {
+        // If we're not in the middle of a drag operation, handle the click
         if (selectedDates.length === 0) {
           onDayClick(date);
-        } else if (selectedDates.length > 0) {
+        } else {
+          // If we are in a drag operation, end it
           onDragEnd();
         }
       }}
