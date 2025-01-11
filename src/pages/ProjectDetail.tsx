@@ -3,6 +3,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
 import { Card } from "@/components/ui/card";
 import { ProjectCalendar } from "@/components/projects/calendar/ProjectCalendar";
+import { CustomerSelect } from "@/components/projects/forms/CustomerSelect";
+import { OwnerSelect } from "@/components/projects/forms/OwnerSelect";
+import { format, parseISO } from "date-fns";
 
 const ProjectDetail = () => {
   const { id } = useParams();
@@ -21,6 +24,16 @@ const ProjectDetail = () => {
       backgroundColor: `${color}80`,  // 80 in hex is 50% opacity
       color: '#FFFFFF'  // White text, fully opaque
     };
+  };
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    try {
+      return format(parseISO(dateString), 'dd.MM.yy');
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return '-';
+    }
   };
 
   const formattedProjectNumber = String(project.project_number).padStart(4, '0');
@@ -58,9 +71,32 @@ const ProjectDetail = () => {
                     <ProjectCalendar projectId={id || ''} />
                   </div>
                   
-                  <div>
-                    <div className="space-y-2">
-                      <p><span className="font-medium">Owner:</span> {project.crew_members?.name || 'No owner assigned'}</p>
+                  <div className="space-y-4">
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium mb-1 block">Customer</label>
+                        <CustomerSelect
+                          value={project.customer_id || ''}
+                          onChange={() => {}}
+                          required={false}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-1 block">Owner</label>
+                        <OwnerSelect
+                          value={project.owner_id || ''}
+                          onChange={() => {}}
+                          required={false}
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-1 block">Last Invoiced</label>
+                        <div className="text-sm text-muted-foreground">
+                          {formatDate(project.created_at)}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
