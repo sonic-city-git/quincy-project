@@ -34,11 +34,10 @@ export function CalendarView({
       
       console.log('Processing selection', { startDate, endDate });
       
+      // First end the drag operation
+      onDragEnd();
+      // Then trigger the click handler
       onDayClick(startDate);
-      
-      setTimeout(() => {
-        onDragEnd();
-      }, 0);
     }
   };
 
