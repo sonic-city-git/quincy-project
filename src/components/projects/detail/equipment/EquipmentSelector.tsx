@@ -125,6 +125,9 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
     return structure;
   };
 
+  // Calculate folder structure
+  const folderStructure = organizeEquipment();
+
   const toggleFolder = (folderId: string) => {
     setOpenFolders(prev => 
       prev.includes(folderId) 
