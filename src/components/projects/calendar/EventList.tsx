@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { EventSection } from "./EventSection";
+import { format } from "date-fns"; // Add this import
 
 interface EventListProps {
   events: CalendarEvent[];
