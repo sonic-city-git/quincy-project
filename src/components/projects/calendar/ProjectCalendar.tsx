@@ -47,6 +47,12 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     }
   }, [findEventOnDate, openEditDialog, openAddDialog]);
 
+  const handleAddMultipleEvents = async (dates: Date[], name: string, eventType: any) => {
+    for (const date of dates) {
+      await addEvent(date, name, eventType);
+    }
+  };
+
   if (isLoading) {
     return (
       <Card className="w-full p-6">
@@ -69,6 +75,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         events={events || []}
         onDayClick={handleDayClick}
         eventTypes={eventTypes}
+        onAddMultipleEvents={handleAddMultipleEvents}
       />
 
       <EventDialog
