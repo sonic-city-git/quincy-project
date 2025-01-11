@@ -67,7 +67,8 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         height: '100%',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        position: 'relative'
       }
     };
   }, {} as Record<string, React.CSSProperties>) || {};
@@ -81,14 +82,15 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
       [key]: ({ date }: { date: Date }) => (
         <HoverCard>
           <HoverCardTrigger asChild>
-            <div className="w-full h-full flex items-center justify-center">
+            <div className="w-full h-full flex items-center justify-center relative">
               {date.getDate()}
             </div>
           </HoverCardTrigger>
           <HoverCardContent 
             align="center"
             side="top"
-            className="z-50 bg-zinc-950 border border-zinc-800 text-white p-3 rounded-md shadow-xl w-[200px]"
+            sideOffset={5}
+            className="z-[100] bg-zinc-950 border border-zinc-800 text-white p-3 rounded-md shadow-xl w-[200px]"
           >
             <div className="space-y-1.5">
               <p className="font-semibold text-white">{event.name}</p>
