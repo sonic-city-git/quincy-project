@@ -14,6 +14,7 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
   const [error, setError] = useState<string | null>(null);
   const scriptId = 'google-maps-script';
   const [apiKey, setApiKey] = useState<string | null>(null);
+  const autocompleteInstance = useRef<google.maps.places.Autocomplete | null>(null);
 
   useEffect(() => {
     const fetchApiKey = async () => {
@@ -45,7 +46,7 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
     // Load Google Maps JavaScript API
     const script = document.createElement('script');
     script.id = scriptId;
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&loading=async`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
     script.async = true;
     script.defer = true;
     
@@ -72,24 +73,38 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
   }, [apiKey]);
 
   useEffect(() => {
-    if (isLoaded && inputRef.current && !error) {
-      try {
-        const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
-          types: ['(cities)'],
-          fields: ['formatted_address', 'name'],
-        });
+    if (!isLoaded || !inputRef.current || error) return;
 
-        autocomplete.addListener('place_changed', () => {
-          const place = autocomplete.getPlace();
-          if (place.name) {
-            onChange(place.name);
-          }
-        });
-      } catch (err) {
-        console.error('Error initializing Google Places Autocomplete:', err);
-        setError('Failed to initialize location search');
+    try {
+      // Clean up previous instance if it exists
+      if (autocompleteInstance.current) {
+        google.maps.event.clearInstanceListeners(autocompleteInstance.current);
       }
+
+      // Initialize new Autocomplete instance
+      autocompleteInstance.current = new google.maps.places.Autocomplete(inputRef.current, {
+        types: ['(cities)'],
+        fields: ['formatted_address', 'name'],
+      });
+
+      // Add place_changed listener
+      autocompleteInstance.current.addListener('place_changed', () => {
+        const place = autocompleteInstance.current?.getPlace();
+        if (place?.name) {
+          onChange(place.name);
+        }
+      });
+    } catch (err) {
+      console.error('Error initializing Google Places Autocomplete:', err);
+      setError('Failed to initialize location search');
     }
+
+    // Cleanup function
+    return () => {
+      if (autocompleteInstance.current) {
+        google.maps.event.clearInstanceListeners(autocompleteInstance.current);
+      }
+    };
   }, [isLoaded, onChange, error]);
 
   return (
