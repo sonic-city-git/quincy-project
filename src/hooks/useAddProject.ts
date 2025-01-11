@@ -21,7 +21,6 @@ export function useAddProject() {
           name: data.name,
           customer_id: data.customer_id || null,
           owner_id: data.crew_member_id || null, // Map crew_member_id to owner_id
-          status: 'draft'
         }])
         .select()
         .single();

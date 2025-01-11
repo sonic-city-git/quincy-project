@@ -5,7 +5,6 @@ export interface Project {
   owner: string;
   owner_id: string | null;
   color: string;
-  status: string;
   lastInvoiced?: string | null;
   crew_member_id?: string | null;
 }
