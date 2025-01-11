@@ -5,25 +5,22 @@ import { Loader2 } from "lucide-react";
 import { useProjects } from "@/hooks/useProjects";
 import { ProjectTable } from "./projects/ProjectTable";
 import { ProjectListHeader } from "./projects/ProjectListHeader";
+import { useProjectFilters } from "@/hooks/useProjectFilters";
 
 export function ProjectList() {
   const { projects, loading } = useProjects();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [ownerFilter, setOwnerFilter] = useState('');
+  const {
+    searchQuery,
+    setSearchQuery,
+    ownerFilter,
+    setOwnerFilter,
+    filteredProjects
+  } = useProjectFilters(projects);
 
   const handleItemSelect = (id: string) => {
     setSelectedItem(prev => prev === id ? null : id);
   };
-
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (project.owner && project.owner.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesOwner = !ownerFilter || project.owner_id === ownerFilter;
-    
-    return matchesSearch && matchesOwner;
-  });
 
   if (loading) {
     return (
