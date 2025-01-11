@@ -56,7 +56,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   const modifiersStyles = events?.reduce((acc, event) => {
     const eventDate = new Date(event.date);
     const key = `event-${eventDate.getTime()}`;
-    // Add opacity to the background color to dampen it
     const backgroundColor = event.type.color.replace(')', ', 0.8)').replace('rgb', 'rgba');
     return {
       ...acc,
@@ -68,24 +67,24 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     };
   }, {} as Record<string, React.CSSProperties>) || {};
 
-  // Create tooltips for each event
+  // Create content renderer for each event day
   const modifiersContent = events?.reduce((acc, event) => {
     const eventDate = new Date(event.date);
     const key = `event-${eventDate.getTime()}`;
     return {
       ...acc,
       [key]: ({ date }: { date: Date }) => (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="w-full h-full">{date.getDate()}</div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="font-medium">{event.name}</p>
-              <p className="text-sm text-muted-foreground">{event.type.name}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="w-full h-full flex items-center justify-center">
+              {date.getDate()}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="font-medium">{event.name}</p>
+            <p className="text-sm text-muted-foreground">{event.type.name}</p>
+          </TooltipContent>
+        </Tooltip>
       )
     };
   }, {} as Record<string, (props: { date: Date }) => JSX.Element>) || {};
@@ -96,16 +95,18 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
   return (
     <div className="space-y-4">
-      <Calendar
-        mode="single"
-        month={currentDate}
-        onMonthChange={setCurrentDate}
-        onDayClick={handleDayClick}
-        modifiers={modifiers}
-        modifiersStyles={modifiersStyles}
-        components={modifiersContent}
-        className="rounded-md border"
-      />
+      <TooltipProvider>
+        <Calendar
+          mode="single"
+          month={currentDate}
+          onMonthChange={setCurrentDate}
+          onDayClick={handleDayClick}
+          modifiers={modifiers}
+          modifiersStyles={modifiersStyles}
+          components={modifiersContent}
+          className="rounded-md border"
+        />
+      </TooltipProvider>
 
       <AddEventDialog
         isOpen={isAddDialogOpen}
