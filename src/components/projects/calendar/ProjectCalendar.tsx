@@ -52,7 +52,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     };
   }, {} as Record<string, (date: Date) => boolean>) || {};
 
-  // Create styles for each event using their specific class names with reduced opacity
+  // Create styles for each event using their specific class names
   const modifiersStyles = events?.reduce((acc, event) => {
     const eventDate = new Date(event.date);
     const key = `event-${eventDate.getTime()}`;
@@ -63,7 +63,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         backgroundColor,
         color: '#FFFFFF',
         borderRadius: '4px',
-        position: 'relative' as const
+        position: 'relative' as const,
       }
     };
   }, {} as Record<string, React.CSSProperties>) || {};
@@ -75,19 +75,20 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     return {
       ...acc,
       [key]: ({ date }: { date: Date }) => (
-        <TooltipProvider>
+        <TooltipProvider delayDuration={100}>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="w-full h-full flex items-center justify-center cursor-pointer">
+              <div className="w-full h-full flex items-center justify-center cursor-pointer relative">
                 {date.getDate()}
               </div>
             </TooltipTrigger>
             <TooltipContent 
-              side="top" 
-              className="z-[100] bg-popover text-popover-foreground shadow-lg"
+              side="top"
+              align="center"
+              className="z-[9999] bg-zinc-900 text-white px-3 py-2 rounded-md shadow-xl border border-zinc-800"
             >
               <p className="font-medium">{event.name}</p>
-              <p className="text-sm text-muted-foreground">{event.type.name}</p>
+              <p className="text-sm text-zinc-400">{event.type.name}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
