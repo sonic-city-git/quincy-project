@@ -29,7 +29,11 @@ export function CalendarView({
     const normalizedDate = normalizeDate(date);
     if (!normalizedDate) return;
 
-    onDragEnd();
+    if (selectedDates.length > 0) {
+      onDragEnd();
+    } else {
+      onDayClick(normalizedDate);
+    }
   };
 
   return (

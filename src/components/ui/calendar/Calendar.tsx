@@ -97,7 +97,11 @@ export function Calendar({
                     e.preventDefault();
                     console.log('Calendar day mouseDown', { day, event });
                     if (!event) {
-                      onDayClick?.(day);
+                      if (mode === 'multiple') {
+                        onSelect?.([day]);
+                      } else {
+                        onDayClick?.(day);
+                      }
                     }
                   }}
                   onMouseEnter={() => {
