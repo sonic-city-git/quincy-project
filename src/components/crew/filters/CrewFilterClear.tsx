@@ -9,12 +9,10 @@ export function CrewFilterClear({ onClear }: CrewFilterClearProps) {
   return (
     <Button
       variant="ghost"
-      size="sm"
+      size="icon"
       onClick={onClear}
-      className="gap-2"
     >
       <X className="h-4 w-4" />
-      Clear filters
     </Button>
   );
 }
