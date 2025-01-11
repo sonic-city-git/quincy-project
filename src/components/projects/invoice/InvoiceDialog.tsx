@@ -26,7 +26,7 @@ interface InvoiceDialogProps {
   isOpen: boolean;
   onClose: () => void;
   events: CalendarEvent[];
-  onStatusChange?: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
+  onStatusChange?: (event: CalendarEvent, newStatus: CalendarEvent['status']) => Promise<void>;
 }
 
 export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: InvoiceDialogProps) {
@@ -51,32 +51,48 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
     try {
       // Process events in smaller batches to prevent UI freezing
       const batchSize = 5;
+      const failedEvents: CalendarEvent[] = [];
+
       for (let i = 0; i < invoiceReadyEvents.length; i += batchSize) {
         const batch = invoiceReadyEvents.slice(i, i + batchSize);
         
-        await Promise.all(
-          batch.map(async (event) => {
+        // Process each batch sequentially to ensure proper order
+        for (const event of batch) {
+          try {
             await onStatusChange(event, 'invoiced');
             setProcessedCount(prev => prev + 1);
-          })
-        );
+            console.log('Successfully updated event:', event.id);
+          } catch (error) {
+            console.error('Failed to update event:', event.id, error);
+            failedEvents.push(event);
+          }
+        }
 
         // Give the UI a chance to update
         await new Promise(resolve => setTimeout(resolve, 50));
       }
 
-      // Invalidate queries to refresh the data
+      // Invalidate and refetch queries to refresh the data
       await queryClient.invalidateQueries({ queryKey: ['events'] });
+      await queryClient.invalidateQueries({ queryKey: ['calendar-events'] });
 
       // Close both dialogs
       setShowConfirmation(false);
       onClose();
 
-      // Show success toast
-      toast({
-        title: "Invoice Generated",
-        description: "Events have been marked as invoiced and sent to Tripletex",
-      });
+      // Show appropriate toast based on results
+      if (failedEvents.length === 0) {
+        toast({
+          title: "Invoice Generated",
+          description: "All events have been marked as invoiced and sent to Tripletex",
+        });
+      } else {
+        toast({
+          title: "Partial Success",
+          description: `${totalEvents - failedEvents.length} events processed. ${failedEvents.length} events failed.`,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error('Error generating invoice:', error);
       toast({
