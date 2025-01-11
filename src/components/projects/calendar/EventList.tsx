@@ -21,10 +21,8 @@ export function EventList({ events }: EventListProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   
-  // Sort events by date within each status group
   const sortedEvents = [...events].sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  // Group events by status
   const groupedEvents = {
     proposed: sortedEvents.filter(event => event.status === 'proposed'),
     confirmed: sortedEvents.filter(event => event.status === 'confirmed'),
@@ -34,17 +32,17 @@ export function EventList({ events }: EventListProps) {
 
   const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
     try {
-      const { error } = await supabase
+      await supabase
         .from('project_events')
         .update({ status: newStatus })
         .eq('date', format(event.date, 'yyyy-MM-dd'))
         .eq('name', event.name);
 
-      if (error) throw error;
-
-      // Invalidate both the events query and the calendar events query
-      queryClient.invalidateQueries({ queryKey: ['events'] });
-      queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
+      // Immediately update the local cache
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['events'] }),
+        queryClient.invalidateQueries({ queryKey: ['calendarEvents'] })
+      ]);
 
       toast({
         title: "Status Updated",
