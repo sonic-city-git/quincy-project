@@ -1,7 +1,7 @@
 import { CalendarEvent } from "@/types/events";
 import { Card } from "@/components/ui/card";
 import { format } from "date-fns";
-import { Calendar, Clock, CheckCircle, QuestionMark, PaperPlaneIcon, XCircle } from "lucide-react";
+import { Calendar, Clock, CheckCircle, HelpCircle, Send, XCircle } from "lucide-react";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -16,11 +16,11 @@ export function EventList({ events }: EventListProps) {
       case 'confirmed':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
       case 'invoice':
-        return <PaperPlaneIcon className="h-4 w-4 text-blue-500" />;
+        return <Send className="h-4 w-4 text-blue-500" />;
       case 'cancelled':
         return <XCircle className="h-4 w-4 text-red-500" />;
       default: // 'proposed'
-        return <QuestionMark className="h-4 w-4 text-yellow-500" />;
+        return <HelpCircle className="h-4 w-4 text-yellow-500" />;
     }
   };
 
