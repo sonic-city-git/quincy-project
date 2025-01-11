@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarEvent } from "@/types/events";
+import { CalendarEvent, EventType } from "@/types/events";
 import { useToast } from "@/hooks/use-toast";
 import { createEvent, updateEvent } from "@/utils/eventQueries";
 import { createRoleAssignments } from "@/utils/roleAssignments";

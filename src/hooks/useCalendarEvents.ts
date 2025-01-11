@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
-import { CalendarEvent } from "@/types/events";
+import { CalendarEvent, EventType } from "@/types/events";
 import { useToast } from "@/hooks/use-toast";
 import { fetchEvents } from "@/utils/eventQueries";
 import { useEventManagement } from "./useEventManagement";
 
 export const useCalendarEvents = (projectId: string | undefined) => {
-  const [events, setEvents] = useState<CalendarEvent[]>();
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { addEvent: addEventHandler, updateEvent: updateEventHandler } = useEventManagement(projectId || '');
+  const { addEvent: addEventHandler, updateEvent: updateEventHandler } = useEventManagement(projectId);
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -41,14 +41,14 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
   const addEvent = async (date: Date, eventName: string, eventType: EventType) => {
     const newEvent = await addEventHandler(date, eventName, eventType);
-    setEvents(prev => [...(prev || []), newEvent]);
+    setEvents(prev => [...prev, newEvent]);
     return newEvent;
   };
 
   const updateEvent = async (updatedEvent: CalendarEvent) => {
     const updated = await updateEventHandler(updatedEvent);
     setEvents(prev => 
-      prev?.map(event => 
+      prev.map(event => 
         event.date.getTime() === updated.date.getTime()
           ? updated
           : event
@@ -57,7 +57,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   };
 
   const findEvent = (date: Date) => {
-    return events?.find(event => 
+    return events.find(event => 
       event.date.getTime() === date.getTime()
     );
   };
