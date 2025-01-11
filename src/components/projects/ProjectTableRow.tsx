@@ -18,14 +18,14 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
     }
   };
 
-  const getColorClasses = (color: string) => {
+  const getColorStyles = (color: string) => {
     return {
-      bg: `bg-${color}-500/10`,
-      text: `text-${color}-500`
+      backgroundColor: `${color}20`,
+      color: color
     };
   };
 
-  const colors = getColorClasses(project.color);
+  const colorStyles = getColorStyles(project.color);
 
   return (
     <TableRow className="group hover:bg-zinc-800/50">
@@ -35,7 +35,8 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
       <TableCell>
         <div className="max-w-[300px]">
           <div 
-            className={`px-2 py-1 rounded-md text-sm font-medium ${colors.bg} ${colors.text} truncate`}
+            className="px-2 py-1 rounded-md text-sm font-medium truncate"
+            style={colorStyles}
           >
             {project.name}
           </div>
