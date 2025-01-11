@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import { CalendarEvent, EventType } from '@/types/events';
-import { normalizeDate } from '@/utils/calendarUtils';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { fetchEvents } from '@/utils/eventQueries';
 import { useToast } from '@/hooks/use-toast';
 import { useEventManagement } from './useEventManagement';
+import { compareDates } from '@/utils/dateFormatters';
 
 export const useCalendarEvents = (projectId: string | undefined) => {
   const { toast } = useToast();
@@ -24,23 +24,16 @@ export const useCalendarEvents = (projectId: string | undefined) => {
 
   const handleDragStart = useCallback((date: Date | undefined) => {
     if (!date) return;
-    
-    const normalizedDate = normalizeDate(date);
-    if (!normalizedDate) return;
-    
     setIsDragging(true);
-    setDragStartDate(normalizedDate);
-    setSelectedDates([normalizedDate]);
+    setDragStartDate(date);
+    setSelectedDates([date]);
   }, []);
 
   const handleDragEnter = useCallback((date: Date) => {
     if (!isDragging || !dragStartDate) return;
-
-    const normalizedDate = normalizeDate(date);
-    if (!normalizedDate) return;
     
     const startTime = dragStartDate.getTime();
-    const currentTime = normalizedDate.getTime();
+    const currentTime = date.getTime();
 
     const dates: Date[] = [];
     const direction = currentTime >= startTime ? 1 : -1;
@@ -85,10 +78,9 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   };
 
   const findEventOnDate = useCallback((date: Date) => {
-    const normalizedTargetDate = normalizeDate(date);
     return events.find(event => {
       const eventDate = new Date(event.date);
-      return normalizeDate(eventDate).getTime() === normalizedTargetDate.getTime();
+      return compareDates(eventDate, date);
     });
   }, [events]);
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { getNextMonth, getPreviousMonth, normalizeDate } from "@/utils/calendarUtils";
+import { getNextMonth, getPreviousMonth } from "@/utils/calendarUtils";
 
 export const useCalendarDate = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -15,7 +15,6 @@ export const useCalendarDate = () => {
   return {
     currentDate,
     setCurrentDate,
-    normalizeDate,
     nextMonth,
     previousMonth
   };

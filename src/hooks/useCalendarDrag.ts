@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { normalizeDate } from '@/utils/calendarUtils';
 
 export const useCalendarDrag = (openAddDialog: (date: Date, callback?: (date: Date, name: string, eventType: any) => void) => void, addEvent: any) => {
   const [isDragging, setIsDragging] = useState(false);
@@ -8,23 +7,16 @@ export const useCalendarDrag = (openAddDialog: (date: Date, callback?: (date: Da
 
   const handleDragStart = useCallback((date: Date | undefined) => {
     if (!date) return;
-    
-    const normalizedDate = normalizeDate(date);
-    if (!normalizedDate) return;
-    
     setIsDragging(true);
-    setDragStartDate(normalizedDate);
-    setSelectedDates([normalizedDate]);
+    setDragStartDate(date);
+    setSelectedDates([date]);
   }, []);
 
   const handleDragEnter = useCallback((date: Date) => {
     if (!isDragging || !dragStartDate) return;
-
-    const normalizedDate = normalizeDate(date);
-    if (!normalizedDate) return;
     
     const startTime = dragStartDate.getTime();
-    const currentTime = normalizedDate.getTime();
+    const currentTime = date.getTime();
 
     const dates: Date[] = [];
     const direction = currentTime >= startTime ? 1 : -1;
