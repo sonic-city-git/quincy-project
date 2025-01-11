@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/projects";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { projectBaseQuery, transformProjectData } from "@/utils/projectQueries";
 
 export function useProjects() {
   const { toast } = useToast();
@@ -10,17 +11,7 @@ export function useProjects() {
     console.log('Fetching projects...');
     const { data: projectsData, error } = await supabase
       .from('projects')
-      .select(`
-        *,
-        customers (
-          id,
-          name
-        ),
-        owner:crew_members!projects_owner_id_fkey (
-          id,
-          name
-        )
-      `)
+      .select(projectBaseQuery)
       .order('name');
 
     if (error) {
@@ -34,18 +25,7 @@ export function useProjects() {
     }
 
     console.log('Projects data:', projectsData);
-
-    return projectsData.map(project => ({
-      id: project.id,
-      name: project.name,
-      customer_id: project.customer_id,
-      lastInvoiced: project.created_at || '',
-      owner: project.owner?.name || project.customers?.name || 'No Owner',
-      owner_id: project.owner_id,
-      color: project.color || 'violet', // Use the color from database, fallback to violet
-      crew_member_id: project.owner_id,
-      project_number: project.project_number
-    })) as Project[];
+    return projectsData.map(transformProjectData);
   };
 
   const { data: projects = [], isLoading: loading } = useQuery({

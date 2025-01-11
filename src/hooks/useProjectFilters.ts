@@ -1,18 +1,35 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Project } from "@/types/projects";
 
-export function useProjectFilters(projects: Project[]) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [ownerFilter, setOwnerFilter] = useState('');
+interface FilterConfig {
+  searchFields?: (keyof Project)[];
+  defaultOwnerFilter?: string;
+}
 
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (project.owner && project.owner.toLowerCase().includes(searchQuery.toLowerCase()));
-    
-    const matchesOwner = !ownerFilter || project.owner_id === ownerFilter;
-    
-    return matchesSearch && matchesOwner;
-  });
+export function useProjectFilters(
+  projects: Project[],
+  config: FilterConfig = {
+    searchFields: ['name', 'owner'],
+    defaultOwnerFilter: ''
+  }
+) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [ownerFilter, setOwnerFilter] = useState(config.defaultOwnerFilter || '');
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter(project => {
+      // Search filter
+      const matchesSearch = config.searchFields?.some(field => {
+        const value = project[field];
+        return value?.toString().toLowerCase().includes(searchQuery.toLowerCase());
+      }) ?? true;
+      
+      // Owner filter
+      const matchesOwner = !ownerFilter || project.owner_id === ownerFilter;
+      
+      return matchesSearch && matchesOwner;
+    });
+  }, [projects, searchQuery, ownerFilter, config.searchFields]);
 
   return {
     searchQuery,

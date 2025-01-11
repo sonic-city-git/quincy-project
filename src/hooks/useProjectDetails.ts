@@ -1,12 +1,12 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { projectBaseQuery } from "@/utils/projectQueries";
 
 export function useProjectDetails(projectId: string | undefined) {
   const { toast } = useToast();
 
   const fetchProjectData = async () => {
-    // Validate the project ID
     if (!projectId || projectId === ':id') {
       console.error('Invalid project ID:', projectId);
       return null;
@@ -16,13 +16,7 @@ export function useProjectDetails(projectId: string | undefined) {
 
     const { data, error } = await supabase
       .from('projects')
-      .select(`
-        *,
-        crew_members (
-          id,
-          name
-        )
-      `)
+      .select(projectBaseQuery)
       .eq('id', projectId)
       .maybeSingle();
 
@@ -43,7 +37,7 @@ export function useProjectDetails(projectId: string | undefined) {
   const { data: project, isLoading: loading, error } = useQuery({
     queryKey: ['project', projectId],
     queryFn: fetchProjectData,
-    enabled: !!projectId && projectId !== ':id', // Only run query if we have a valid ID
+    enabled: !!projectId && projectId !== ':id',
   });
 
   if (error) {
