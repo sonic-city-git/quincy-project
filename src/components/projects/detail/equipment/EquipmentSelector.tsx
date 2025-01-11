@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -37,6 +37,40 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
   const [openSubfolders, setOpenSubfolders] = useState<string[]>([]);
   const { addEquipment } = useProjectEquipment(projectId);
 
+  // Update open folders when searching
+  useEffect(() => {
+    if (search) {
+      // Get all folder IDs that contain matching equipment
+      const relevantFolders = new Set<string>();
+      equipment.forEach(item => {
+        const searchLower = search.toLowerCase();
+        const matches = item.name?.toLowerCase().includes(searchLower) ||
+                       (item.code && item.code.toLowerCase().includes(searchLower));
+        
+        if (matches && item.folder_id) {
+          // Add the direct folder
+          relevantFolders.add(item.folder_id);
+          
+          // Find and add parent folder if it exists
+          const parentFolder = folders.find(f => {
+            const subfolder = folders.find(sf => sf.id === item.folder_id);
+            return subfolder?.parent_id === f.id;
+          });
+          if (parentFolder) {
+            relevantFolders.add(parentFolder.id);
+          }
+        }
+      });
+
+      setOpenFolders(Array.from(relevantFolders));
+      setOpenSubfolders(Array.from(relevantFolders));
+    } else {
+      // Clear open folders when search is empty
+      setOpenFolders([]);
+      setOpenSubfolders([]);
+    }
+  }, [search, equipment, folders]);
+
   // Filter equipment based on search
   const filteredEquipment = equipment.filter(item => {
     const searchLower = search.toLowerCase();
@@ -46,7 +80,6 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
     );
   });
 
-  // Organize equipment into folder structure
   const organizeEquipment = () => {
     const structure: FolderStructure = {};
 
@@ -92,8 +125,6 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
     return structure;
   };
 
-  const folderStructure = organizeEquipment();
-
   const toggleFolder = (folderId: string) => {
     setOpenFolders(prev => 
       prev.includes(folderId) 
@@ -131,7 +162,6 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
     </Button>
   );
 
-  // Only show folders that have matching equipment
   const hasContent = (folderId: string) => {
     const folder = folderStructure[folderId];
     if (!folder) return false;
