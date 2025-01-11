@@ -4,6 +4,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { EventSection } from "./EventSection";
 import { format, isBefore, startOfToday } from "date-fns";
+import { useEventDialog } from "@/hooks/useEventDialog";
+import { useEventTypes } from "@/hooks/useEventTypes";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -14,6 +16,13 @@ export function EventList({ events, projectId }: EventListProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const today = startOfToday();
+  const { data: eventTypes = [] } = useEventTypes();
+  const { 
+    isEditDialogOpen, 
+    selectedEvent,
+    openEditDialog,
+    closeEditDialog
+  } = useEventDialog();
 
   // Sort function for events
   const sortByDate = (a: CalendarEvent, b: CalendarEvent) => {
@@ -100,27 +109,65 @@ export function EventList({ events, projectId }: EventListProps) {
     }
   };
 
+  const handleUpdateEvent = async (updatedEvent: CalendarEvent) => {
+    if (!projectId) return;
+
+    try {
+      const { error } = await supabase
+        .from('project_events')
+        .update({ 
+          name: updatedEvent.name,
+          event_type_id: updatedEvent.type.id,
+          status: updatedEvent.status
+        })
+        .eq('date', format(updatedEvent.date, 'yyyy-MM-dd'))
+        .eq('project_id', projectId);
+
+      if (error) throw error;
+
+      // Invalidate and refetch
+      await queryClient.invalidateQueries({ queryKey: ['events', projectId] });
+      await queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] });
+
+      toast({
+        title: "Event Updated",
+        description: "The event has been successfully updated",
+      });
+    } catch (error) {
+      console.error('Error updating event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update event",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-8">
       <EventSection 
         status="proposed"
         events={groupedEvents.proposed}
         onStatusChange={handleStatusChange}
+        onEdit={openEditDialog}
       />
       <EventSection 
         status="confirmed"
         events={groupedEvents.confirmed}
         onStatusChange={handleStatusChange}
+        onEdit={openEditDialog}
       />
       <EventSection 
         status="invoice ready"
         events={groupedEvents.invoice_ready}
         onStatusChange={handleStatusChange}
+        onEdit={openEditDialog}
       />
       <EventSection 
         status="cancelled"
         events={groupedEvents.cancelled}
         onStatusChange={handleStatusChange}
+        onEdit={openEditDialog}
       />
       {pastEvents.length > 0 && (
         <div className="border-t pt-8">
@@ -128,9 +175,18 @@ export function EventList({ events, projectId }: EventListProps) {
             status="done and dusted"
             events={pastEvents}
             onStatusChange={handleStatusChange}
+            onEdit={openEditDialog}
           />
         </div>
       )}
+
+      <EventDialog
+        isOpen={isEditDialogOpen}
+        onClose={closeEditDialog}
+        event={selectedEvent}
+        eventTypes={eventTypes}
+        onUpdateEvent={handleUpdateEvent}
+      />
     </div>
   );
 }

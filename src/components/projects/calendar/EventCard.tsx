@@ -1,6 +1,6 @@
 import { CalendarEvent } from "@/types/events";
 import { Card } from "@/components/ui/card";
-import { Calendar } from "lucide-react";
+import { Calendar, Edit } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,9 +14,10 @@ import { getStatusIcon, formatRevenue } from "@/utils/eventFormatters";
 interface EventCardProps {
   event: CalendarEvent;
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
+  onEdit?: (event: CalendarEvent) => void;
 }
 
-export function EventCard({ event, onStatusChange }: EventCardProps) {
+export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const getColorStyles = (color: string) => {
     return {
       backgroundColor: `${color}D9`,  // D9 in hex is 85% opacity
@@ -26,7 +27,7 @@ export function EventCard({ event, onStatusChange }: EventCardProps) {
 
   return (
     <Card key={`${event.date}-${event.name}`} className="p-4">
-      <div className="grid grid-cols-[160px_1fr_auto_auto_auto] items-center gap-6">
+      <div className="grid grid-cols-[160px_1fr_auto_auto_auto_auto] items-center gap-6">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
@@ -93,6 +94,16 @@ export function EventCard({ event, onStatusChange }: EventCardProps) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        {onEdit && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onEdit(event)}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <Edit className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </Card>
   );

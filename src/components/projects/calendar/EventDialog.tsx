@@ -16,6 +16,7 @@ import {
 import { CalendarEvent, EventType } from "@/types/events";
 import { useState, useEffect } from "react";
 import { format } from "date-fns";
+import { getStatusIcon } from "@/utils/eventFormatters";
 
 interface EventDialogProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export function EventDialog({
 }: EventDialogProps) {
   const [name, setName] = useState("");
   const [selectedEventType, setSelectedEventType] = useState<string>("");
+  const [selectedStatus, setSelectedStatus] = useState<CalendarEvent['status']>("proposed");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const isEditMode = !!event;
 
@@ -45,6 +47,9 @@ export function EventDialog({
     if (event) {
       setName(event.name);
       setSelectedEventType(event.type.id);
+      setSelectedStatus(event.status);
+    } else {
+      setSelectedStatus("proposed");
     }
   }, [event]);
 
@@ -63,10 +68,10 @@ export function EventDialog({
           ...event,
           name: name.trim() || eventType.name,
           type: eventType,
+          status: selectedStatus,
         };
         await onUpdateEvent(updatedEvent);
       } else if (!isEditMode && date && onAddEvent) {
-        // If it's not a Show/Double Show and name is empty, use event type name
         const eventName = (eventType.name === 'Show' || eventType.name === 'Double Show')
           ? name
           : (name.trim() || eventType.name);
@@ -83,6 +88,7 @@ export function EventDialog({
   const handleClose = () => {
     setName("");
     setSelectedEventType("");
+    setSelectedStatus("proposed");
     onClose();
   };
 
@@ -91,6 +97,13 @@ export function EventDialog({
   const displayDate = event?.date || date;
 
   if (!displayDate) return null;
+
+  const statuses: CalendarEvent['status'][] = [
+    'proposed',
+    'confirmed',
+    'invoice ready',
+    'cancelled'
+  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -136,6 +149,30 @@ export function EventDialog({
               required={isNameRequired}
             />
           </div>
+
+          {isEditMode && (
+            <div className="space-y-2">
+              <label htmlFor="status" className="text-sm font-medium">
+                Status
+              </label>
+              <Select
+                value={selectedStatus}
+                onValueChange={(value) => setSelectedStatus(value as CalendarEvent['status'])}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {statuses.map((status) => (
+                    <SelectItem key={status} value={status} className="flex items-center gap-2">
+                      {getStatusIcon(status)}
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={handleClose} type="button">

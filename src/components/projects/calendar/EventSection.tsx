@@ -20,9 +20,10 @@ interface EventSectionProps {
   status: CalendarEvent['status'] | 'done and dusted';
   events: CalendarEvent[];
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
+  onEdit?: (event: CalendarEvent) => void;
 }
 
-export function EventSection({ status, events, onStatusChange }: EventSectionProps) {
+export function EventSection({ status, events, onStatusChange, onEdit }: EventSectionProps) {
   const [isOpen, setIsOpen] = useState(status !== 'done and dusted');
 
   if (!events.length) return null;
@@ -48,6 +49,7 @@ export function EventSection({ status, events, onStatusChange }: EventSectionPro
           key={`${event.date}-${event.name}`}
           event={event}
           onStatusChange={onStatusChange}
+          onEdit={onEdit}
         />
       ))}
     </div>
