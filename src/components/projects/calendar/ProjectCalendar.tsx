@@ -3,7 +3,6 @@ import { useCalendarDate } from "@/hooks/useCalendarDate";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
-import { EVENT_COLORS } from "@/constants/eventColors";
 import { format } from "date-fns";
 import { CalendarEvent } from "@/types/events";
 import { AddEventDialog } from "./AddEventDialog";
@@ -30,7 +29,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
   const handleDayClick = (date: Date) => {
     const normalizedDate = normalizeDate(date);
-    const existingEvent = events.find(event => 
+    const existingEvent = events?.find(event => 
       event.date.getTime() === normalizedDate.getTime()
     );
 
@@ -43,6 +42,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
   const modifiers = {
     event: (date: Date) => {
+      if (!events || events.length === 0) return false;
       return events.some(event => 
         event.date.getTime() === normalizeDate(date).getTime()
       );
