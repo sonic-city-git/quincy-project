@@ -76,10 +76,10 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
       [key]: ({ date }: { date: Date }) => (
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger className="w-full h-full flex items-center justify-center">
+            <TooltipTrigger className="w-full h-full flex items-center justify-center cursor-default">
               {date.getDate()}
             </TooltipTrigger>
-            <TooltipContent>
+            <TooltipContent side="top">
               <p className="font-medium">{event.name}</p>
               <p className="text-sm text-muted-foreground">{event.type.name}</p>
             </TooltipContent>
