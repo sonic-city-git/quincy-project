@@ -512,6 +512,7 @@ export type Database = {
           id: string
           name: string
           project_id: string | null
+          revenue: number | null
           updated_at: string
         }
         Insert: {
@@ -521,6 +522,7 @@ export type Database = {
           id?: string
           name: string
           project_id?: string | null
+          revenue?: number | null
           updated_at?: string
         }
         Update: {
@@ -530,6 +532,7 @@ export type Database = {
           id?: string
           name?: string
           project_id?: string | null
+          revenue?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -606,6 +609,7 @@ export type Database = {
           name: string
           owner_id: string | null
           project_number: number
+          to_be_invoiced: number | null
           updated_at: string
         }
         Insert: {
@@ -616,6 +620,7 @@ export type Database = {
           name: string
           owner_id?: string | null
           project_number?: number
+          to_be_invoiced?: number | null
           updated_at?: string
         }
         Update: {
@@ -626,6 +631,7 @@ export type Database = {
           name?: string
           owner_id?: string | null
           project_number?: number
+          to_be_invoiced?: number | null
           updated_at?: string
         }
         Relationships: [

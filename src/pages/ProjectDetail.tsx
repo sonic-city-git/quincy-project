@@ -36,6 +36,16 @@ const ProjectDetail = () => {
     }
   };
 
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null) return '-';
+    return new Intl.NumberFormat('no-NO', { 
+      style: 'currency', 
+      currency: 'NOK',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(amount);
+  };
+
   const formattedProjectNumber = String(project.project_number).padStart(4, '0');
 
   return (
@@ -95,6 +105,13 @@ const ProjectDetail = () => {
                         <label className="text-sm font-medium mb-1 block">Last Invoiced</label>
                         <div className="text-sm text-muted-foreground">
                           {formatDate(project.created_at)}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="text-sm font-medium mb-1 block">To be Invoiced</label>
+                        <div className="text-sm text-muted-foreground">
+                          {formatCurrency(project.to_be_invoiced)}
                         </div>
                       </div>
                     </div>
