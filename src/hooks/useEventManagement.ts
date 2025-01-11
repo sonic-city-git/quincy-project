@@ -24,16 +24,7 @@ export const useEventManagement = (projectId: string) => {
         await createRoleAssignments(projectId, eventData.id);
       }
 
-      const newEvent: CalendarEvent = {
-        id: eventData.id,
-        date: new Date(eventData.date),
-        name: eventData.name,
-        type: eventData.event_types,
-        status: eventData.status as CalendarEvent['status'],
-        revenue: eventData.revenue
-      };
-
-      return newEvent;
+      return eventData;
     } catch (error) {
       console.error('Error adding event:', error);
       throw error;
