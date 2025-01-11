@@ -49,26 +49,21 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     console.log('Handling day click:', { date: normalizedDate });
     
     // Find an existing event on this date
-    const existingEvent = events.find(event => 
-      normalizeDate(event.date).getTime() === normalizedDate.getTime()
-    );
+    const existingEvent = events.find(event => {
+      const eventDate = normalizeDate(event.date);
+      return eventDate.getTime() === normalizedDate.getTime();
+    });
     
     console.log('Existing event found:', existingEvent);
-
-    if (isDragging) {
-      console.log('Handling drag end');
-      handleDragEnd();
-      return;
-    }
 
     if (existingEvent) {
       console.log('Opening edit dialog for event:', existingEvent);
       openEditDialog(existingEvent);
-    } else {
+    } else if (!isDragging) {
       console.log('Opening add dialog for date:', normalizedDate);
       openAddDialog(normalizedDate);
     }
-  }, [isDragging, events, normalizeDate, openEditDialog, openAddDialog, handleDragEnd]);
+  }, [events, normalizeDate, openEditDialog, openAddDialog, isDragging]);
 
   const handleCloseAddDialog = useCallback(() => {
     closeAddDialog();
