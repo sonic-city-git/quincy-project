@@ -26,21 +26,17 @@ export function CalendarView({
   console.log('CalendarView render', { selectedDates });
 
   const handleDayMouseUp = (date: Date) => {
+    const normalizedDate = normalizeDate(date);
+    if (!normalizedDate) return;
+
     if (selectedDates.length > 0) {
       const startDate = normalizeDate(selectedDates[0]);
-      const endDate = normalizeDate(date);
+      if (!startDate) return;
       
-      if (!startDate || !endDate) return;
-      
-      console.log('Processing selection', { startDate, endDate });
-      
-      // End drag operation and trigger click in the same synchronous block
+      console.log('Processing selection', { startDate, endDate: normalizedDate });
       onDragEnd();
       onDayClick(startDate);
     } else {
-      // If no selection, just handle as a regular click
-      const normalizedDate = normalizeDate(date);
-      if (!normalizedDate) return;
       onDayClick(normalizedDate);
     }
   };
