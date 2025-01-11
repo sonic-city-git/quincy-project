@@ -10,10 +10,13 @@ interface ProjectEquipmentItemProps {
 
 export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemProps) {
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between">
+    <Card className="p-4 h-[72px]">
+      <div className="flex items-center justify-between h-full">
         <div>
           <h3 className="font-medium">{item.name}</h3>
+          {item.code && (
+            <div className="text-sm text-muted-foreground">{item.code}</div>
+          )}
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1">
