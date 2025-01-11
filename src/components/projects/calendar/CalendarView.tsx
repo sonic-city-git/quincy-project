@@ -49,8 +49,12 @@ export function CalendarView({
       selected={undefined}
       onSelect={onDragStart}
       onDayMouseEnter={onDragEnter}
-      onDayClick={onDayClick}
-      onDayMouseUp={onDragEnd}
+      onDayClick={(date: Date | undefined) => {
+        if (date) {
+          onDayClick(date);
+          onDragEnd();
+        }
+      }}
     />
   );
 }
