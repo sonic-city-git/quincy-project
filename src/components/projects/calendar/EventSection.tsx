@@ -1,7 +1,7 @@
 import { CalendarEvent } from "@/types/events";
 import { getStatusIcon, getStatusText } from "@/utils/eventFormatters";
 import { EventCard } from "./EventCard";
-import { Broom } from "lucide-react";
+import { Brush } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 
@@ -19,7 +19,7 @@ export function EventSection({ status, events, onStatusChange }: EventSectionPro
   const isDoneAndDusted = status === "done and dusted";
   
   const sectionIcon = isDoneAndDusted ? (
-    <Broom className="h-5 w-5 text-muted-foreground" />
+    <Brush className="h-5 w-5 text-muted-foreground" />
   ) : (
     getStatusIcon(status)
   );
