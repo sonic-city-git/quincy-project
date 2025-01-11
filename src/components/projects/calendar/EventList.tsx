@@ -33,15 +33,15 @@ export function EventList({ events, projectId }: EventListProps) {
   const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
     if (!projectId) return;
 
+    // Define query keys outside try block so they're accessible in catch block
+    const queryKeysToUpdate = [
+      ['events', projectId],
+      ['calendar-events', projectId]
+    ];
+
     try {
       const updatedEvent = { ...event, status: newStatus };
       
-      // Update all relevant queries that might be showing this data
-      const queryKeysToUpdate = [
-        ['events', projectId],
-        ['calendar-events', projectId]
-      ];
-
       // Update all relevant caches optimistically
       queryKeysToUpdate.forEach(queryKey => {
         queryClient.setQueryData(queryKey, (oldData: CalendarEvent[] | undefined) => {
