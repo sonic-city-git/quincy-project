@@ -26,7 +26,7 @@ const ProjectDetail = () => {
 
   return (
     <div className="p-8 space-y-6">
-      <div className="max-w-[500px]">
+      <div className="w-fit">
         <h1 
           className="text-2xl font-bold px-3.5 py-2 rounded-md"
           style={colorStyles}
