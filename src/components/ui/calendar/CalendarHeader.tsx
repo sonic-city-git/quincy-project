@@ -1,7 +1,7 @@
 import React from 'react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface CalendarHeaderProps {
   month: Date;
@@ -24,9 +24,12 @@ export function CalendarHeader({ month, onMonthChange }: CalendarHeaderProps) {
           <ChevronLeft className="h-4 w-4" />
         </Button>
         
-        <div className="text-xl font-medium min-w-[160px] text-center">
+        <button
+          onClick={handleResetMonth}
+          className="text-xl font-medium min-w-[160px] text-center hover:text-primary transition-colors"
+        >
           {format(month, 'MMMM yyyy')}
-        </div>
+        </button>
 
         <Button
           variant="ghost"
@@ -36,15 +39,6 @@ export function CalendarHeader({ month, onMonthChange }: CalendarHeaderProps) {
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
-
-      <Button
-        variant="ghost"
-        className="absolute -top-4 -right-4 h-10 w-10 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full"
-        onClick={handleResetMonth}
-        title="Reset to current month"
-      >
-        <Calendar className="h-4 w-4" />
-      </Button>
     </div>
   );
 }
