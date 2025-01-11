@@ -21,8 +21,8 @@ export function ProjectListHeader({
   const [addDialogOpen, setAddDialogOpen] = useState(false);
 
   return (
-    <div className="flex items-center justify-between gap-4">
-      <div className="flex items-center gap-2 flex-1">
+    <div className="flex items-center justify-between gap-4 h-10">
+      <div className="flex items-center gap-2">
         <ProjectSearchInput 
           value={searchQuery}
           onChange={onSearchChange}
