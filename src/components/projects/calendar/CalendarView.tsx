@@ -39,15 +39,19 @@ export function CalendarView({
 
   return (
     <Calendar
-      mode="single"
+      mode="multiple"
       month={currentDate}
       onMonthChange={setCurrentDate}
       modifiers={modifiers}
       modifiersStyles={modifiersStyles}
       components={modifiersContent}
       className="w-full rounded-md border border-zinc-800 bg-zinc-950"
-      selected={undefined}
-      onSelect={onDragStart}
+      selected={selectedDates}
+      onSelect={(date: Date | undefined) => {
+        if (date) {
+          onDragStart(date);
+        }
+      }}
       onDayMouseEnter={onDragEnter}
       onDayClick={(date: Date | undefined) => {
         if (date) {
