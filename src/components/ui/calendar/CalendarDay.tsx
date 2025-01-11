@@ -10,9 +10,7 @@ interface CalendarDayProps {
   isToday: boolean;
   event?: CalendarEvent;
   isSelected: boolean;
-  onMouseDown: (e: React.MouseEvent) => void;
-  onMouseEnter: () => void;
-  onMouseUp: () => void;
+  onClick: () => void;
 }
 
 export function CalendarDay({
@@ -21,9 +19,7 @@ export function CalendarDay({
   isToday,
   event,
   isSelected,
-  onMouseDown,
-  onMouseEnter,
-  onMouseUp
+  onClick
 }: CalendarDayProps) {
   const baseButtonClasses = cn(
     "h-10 w-full p-0 font-normal relative",
@@ -35,9 +31,7 @@ export function CalendarDay({
   const renderDayContent = () => {
     return (
       <button
-        onMouseDown={onMouseDown}
-        onMouseEnter={onMouseEnter}
-        onMouseUp={onMouseUp}
+        onClick={onClick}
         className={cn(
           baseButtonClasses,
           isSelected && !event && "bg-blue-500/30 text-white",

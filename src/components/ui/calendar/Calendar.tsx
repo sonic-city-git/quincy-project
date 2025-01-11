@@ -18,12 +18,8 @@ interface CalendarProps {
   mode?: 'single' | 'multiple';
   month?: Date;
   onMonthChange?: (date: Date) => void;
-  selected?: Date[];
   events?: CalendarEvent[];
-  onSelect?: (dates: Date[] | undefined) => void;
-  onDayMouseEnter?: (date: Date) => void;
   onDayClick?: (date: Date) => void;
-  onDayMouseUp?: (date: Date) => void;
   className?: string;
 }
 
@@ -31,15 +27,11 @@ export function Calendar({
   mode = 'single',
   month = new Date(),
   onMonthChange,
-  selected = [],
   events = [],
-  onSelect,
-  onDayMouseEnter,
   onDayClick,
-  onDayMouseUp,
   className,
 }: CalendarProps) {
-  console.log('Calendar render', { selected, events });
+  console.log('Calendar render', { events });
 
   const weeks = useMemo(() => {
     const start = startOfWeek(startOfMonth(month));
@@ -83,7 +75,6 @@ export function Calendar({
         {weeks.map((week, weekIndex) => 
           week.map((day, dayIndex) => {
             const event = getEventForDate(day);
-            const isSelected = selected.some(selectedDate => isSameDay(selectedDate, day));
             
             return (
               <div key={`${weekIndex}-${dayIndex}`} className="p-0 relative">
@@ -92,28 +83,11 @@ export function Calendar({
                   isCurrentMonth={isSameMonth(day, month)}
                   isToday={isToday(day)}
                   event={event}
-                  isSelected={isSelected}
-                  onMouseDown={(e) => {
-                    e.preventDefault();
-                    console.log('Calendar day mouseDown', { day, event });
+                  isSelected={false}
+                  onClick={() => {
+                    console.log('Calendar day clicked', { day, event });
                     if (!event) {
-                      if (mode === 'multiple') {
-                        onSelect?.([day]);
-                      } else {
-                        onDayClick?.(day);
-                      }
-                    }
-                  }}
-                  onMouseEnter={() => {
-                    console.log('Calendar day mouseEnter', { day, selected });
-                    if (!event) {
-                      onDayMouseEnter?.(day);
-                    }
-                  }}
-                  onMouseUp={() => {
-                    console.log('Calendar day mouseUp', { day, selected });
-                    if (!event) {
-                      onDayMouseUp?.(day);
+                      onDayClick?.(day);
                     }
                   }}
                 />
