@@ -161,7 +161,6 @@ export type Database = {
           internal_remark: string | null
           name: string
           rental_price: number | null
-          serial_number: string | null
           stock: number | null
           stock_calculation: string | null
           updated_at: string
@@ -175,7 +174,6 @@ export type Database = {
           internal_remark?: string | null
           name: string
           rental_price?: number | null
-          serial_number?: string | null
           stock?: number | null
           stock_calculation?: string | null
           updated_at?: string
@@ -189,7 +187,6 @@ export type Database = {
           internal_remark?: string | null
           name?: string
           rental_price?: number | null
-          serial_number?: string | null
           stock?: number | null
           stock_calculation?: string | null
           updated_at?: string
