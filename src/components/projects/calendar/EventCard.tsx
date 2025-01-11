@@ -17,6 +17,13 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onStatusChange }: EventCardProps) {
+  const getColorStyles = (color: string) => {
+    return {
+      backgroundColor: `${color}20`,  // 20 in hex is ~12% opacity
+      color: color      // Full opacity for text
+    };
+  };
+
   return (
     <Card key={`${event.date}-${event.name}`} className="p-4">
       <div className="grid grid-cols-[160px_1fr_auto_auto_auto] items-center gap-6">
@@ -28,15 +35,19 @@ export function EventCard({ event, onStatusChange }: EventCardProps) {
         </div>
         <div className="flex items-center">
           <span 
-            className={`font-medium text-base truncate px-3 py-1 rounded-md ${event.type.color} bg-opacity-10`}
+            className="font-medium text-base truncate px-3 py-1 rounded-md"
+            style={getColorStyles(event.type.color)}
           >
             {event.name}
           </span>
         </div>
-        <div 
-          className={`text-sm px-3 py-1 rounded-full ${event.type.color} bg-opacity-10`}
-        >
-          {event.type.name}
+        <div>
+          <span 
+            className="text-sm px-3 py-1 rounded-full"
+            style={getColorStyles(event.type.color)}
+          >
+            {event.type.name}
+          </span>
         </div>
         <div className="text-sm text-muted-foreground font-medium">
           {formatRevenue(event.revenue)}
