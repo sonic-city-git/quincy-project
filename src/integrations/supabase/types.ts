@@ -155,6 +155,27 @@ export type Database = {
         }
         Relationships: []
       }
+      development_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          is_active: boolean | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          is_active?: boolean | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_active?: boolean | null
+        }
+        Relationships: []
+      }
       equipment: {
         Row: {
           code: string | null
