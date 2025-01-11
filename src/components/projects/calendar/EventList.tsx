@@ -76,14 +76,11 @@ export function EventList({ events }: EventListProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Project Events</h2>
-      <div className="space-y-8">
-        {renderEventSection('proposed', groupedEvents.proposed)}
-        {renderEventSection('confirmed', groupedEvents.confirmed)}
-        {renderEventSection('invoice', groupedEvents.invoice)}
-        {renderEventSection('cancelled', groupedEvents.cancelled)}
-      </div>
+    <div className="space-y-8">
+      {renderEventSection('proposed', groupedEvents.proposed)}
+      {renderEventSection('confirmed', groupedEvents.confirmed)}
+      {renderEventSection('invoice', groupedEvents.invoice)}
+      {renderEventSection('cancelled', groupedEvents.cancelled)}
     </div>
   );
 }
