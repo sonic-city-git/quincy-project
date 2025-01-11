@@ -31,7 +31,7 @@ export function EventSection({ status, events, onStatusChange }: EventSectionPro
   const isDoneAndDusted = status === 'done and dusted';
 
   const getStatusText = (status: string) => {
-    return `${status.charAt(0).toUpperCase()}${status.slice(1)} (${events.length})`;
+    return `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
   };
 
   const handleStatusChangeAll = (newStatus: CalendarEvent['status']) => {
