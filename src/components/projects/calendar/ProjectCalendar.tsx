@@ -52,7 +52,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     };
   }, {} as Record<string, (date: Date) => boolean>) || {};
 
-  // Create styles for each event
+  // Create styles for each event with proper CSS typing
   const modifiersStyles = events?.reduce((acc, event) => {
     const eventDate = new Date(event.date);
     const key = `event-${eventDate.getTime()}`;
@@ -68,7 +68,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        position: 'relative'
+        position: 'relative' as const
       }
     };
   }, {} as Record<string, React.CSSProperties>) || {};
