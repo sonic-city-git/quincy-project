@@ -367,6 +367,72 @@ export type Database = {
         }
         Relationships: []
       }
+      old_equipment: {
+        Row: {
+          "Book value": string | null
+          Code: string | null
+          "Created on": string | null
+          "Current book value (Serial number)": string | null
+          "Current quantity": number | null
+          "Date of purchase (Serial number)": string | null
+          "External remark": string | null
+          Folder: string | null
+          "Internal reference (Serial number)": string | null
+          "Internal remark": string | null
+          "Last change": string | null
+          "List price": string | null
+          Name: string | null
+          "Purchase price (Serial number)": string | null
+          "Remark (Serial number)": string | null
+          "Rental price": string | null
+          "Serial number": string | null
+          "Stock calculation method": string | null
+          Weight: number | null
+        }
+        Insert: {
+          "Book value"?: string | null
+          Code?: string | null
+          "Created on"?: string | null
+          "Current book value (Serial number)"?: string | null
+          "Current quantity"?: number | null
+          "Date of purchase (Serial number)"?: string | null
+          "External remark"?: string | null
+          Folder?: string | null
+          "Internal reference (Serial number)"?: string | null
+          "Internal remark"?: string | null
+          "Last change"?: string | null
+          "List price"?: string | null
+          Name?: string | null
+          "Purchase price (Serial number)"?: string | null
+          "Remark (Serial number)"?: string | null
+          "Rental price"?: string | null
+          "Serial number"?: string | null
+          "Stock calculation method"?: string | null
+          Weight?: number | null
+        }
+        Update: {
+          "Book value"?: string | null
+          Code?: string | null
+          "Created on"?: string | null
+          "Current book value (Serial number)"?: string | null
+          "Current quantity"?: number | null
+          "Date of purchase (Serial number)"?: string | null
+          "External remark"?: string | null
+          Folder?: string | null
+          "Internal reference (Serial number)"?: string | null
+          "Internal remark"?: string | null
+          "Last change"?: string | null
+          "List price"?: string | null
+          Name?: string | null
+          "Purchase price (Serial number)"?: string | null
+          "Remark (Serial number)"?: string | null
+          "Rental price"?: string | null
+          "Serial number"?: string | null
+          "Stock calculation method"?: string | null
+          Weight?: number | null
+        }
+        Relationships: []
+      }
       project_crew: {
         Row: {
           created_at: string
