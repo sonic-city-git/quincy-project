@@ -29,8 +29,14 @@ export function CalendarView({
 
     console.log('Triggering click for date:', normalizedDate, 'Event:', eventOnDate);
     
-    // Always trigger the click handler with the normalized date
-    onDayClick(normalizedDate);
+    // Pass both the date and event to the click handler
+    if (eventOnDate) {
+      console.log('Found event, opening edit dialog:', eventOnDate);
+      onDayClick(eventOnDate.date);
+    } else {
+      console.log('No event found, opening add dialog');
+      onDayClick(normalizedDate);
+    }
   };
 
   return (
