@@ -7,6 +7,9 @@ import { Card } from "@/components/ui/card";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const redirectUrl = window.location.hostname === 'localhost' 
+    ? 'http://localhost:3000'
+    : 'https://quincy.soniccity.no';
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -42,7 +45,7 @@ const Auth = () => {
             }
           }}
           providers={["google"]}
-          redirectTo={window.location.origin}
+          redirectTo={redirectUrl}
           view="sign_in"
           showLinks={false}
           onlyThirdPartyProviders={true}
