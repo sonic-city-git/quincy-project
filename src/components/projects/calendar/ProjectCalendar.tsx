@@ -134,7 +134,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
           handleDragStart(date);
         }}
         onDayMouseEnter={(date: Date) => handleDragEnter(date)}
-        onDayMouseUp={() => handleDragEnd()}
+        onMouseUp={() => handleDragEnd()}
       />
 
       <EventDialog
