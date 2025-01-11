@@ -7,12 +7,17 @@ import { CustomerSelect } from "@/components/projects/forms/CustomerSelect";
 import { OwnerSelect } from "@/components/projects/forms/OwnerSelect";
 import { format, parseISO } from "date-fns";
 import { EventList } from "@/components/projects/calendar/EventList";
-import { useCalendarEvents } from "@/hooks/useCalendarEvents";
+import { useQuery } from "@tanstack/react-query";
+import { fetchEvents } from "@/utils/eventQueries";
 
 const ProjectDetail = () => {
   const { id } = useParams();
   const { project, loading } = useProjectDetails(id);
-  const { events } = useCalendarEvents(id || '');
+  const { data: events } = useQuery({
+    queryKey: ['events', id],
+    queryFn: () => fetchEvents(id || ''),
+    enabled: !!id
+  });
 
   if (loading) {
     return <div className="p-8">Loading...</div>;
