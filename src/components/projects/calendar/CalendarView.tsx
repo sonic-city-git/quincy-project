@@ -49,16 +49,15 @@ export function CalendarView({
       selected={selectedDates}
       onSelect={(dates: Date[] | undefined) => {
         if (dates && dates.length > 0) {
-          // We take the last selected date as the starting point for the drag
           onDragStart(dates[dates.length - 1]);
         }
       }}
-      onDayMouseEnter={onDragEnter}
-      onDayClick={(date: Date | undefined) => {
-        if (date) {
-          onDayClick(date);
-          onDragEnd();
-        }
+      onDayMouseEnter={(date: Date) => {
+        onDragEnter(date);
+      }}
+      onDayClick={(date: Date) => {
+        onDayClick(date);
+        onDragEnd();
       }}
     />
   );
