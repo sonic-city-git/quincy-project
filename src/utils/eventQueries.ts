@@ -30,7 +30,7 @@ export const fetchEvents = async (projectId: string) => {
     date: new Date(event.date),
     name: event.name,
     type: event.event_types,
-    status: event.status
+    status: event.status as CalendarEvent['status'] // Type assertion to ensure correct type
   }));
 };
 
@@ -50,7 +50,6 @@ export const createEvent = async (
   });
 
   try {
-    // First create the event
     const { data: eventData, error: eventError } = await supabase
       .from('project_events')
       .insert({
@@ -58,7 +57,7 @@ export const createEvent = async (
         date: formattedDate,
         name: eventName.trim() || eventType.name,
         event_type_id: eventType.id,
-        status: 'proposed'
+        status: 'proposed' as const // Explicitly type as literal
       })
       .select(`
         *,
@@ -79,7 +78,6 @@ export const createEvent = async (
 
     console.log('Created event:', eventData);
 
-    // If the event type needs crew, create role assignments
     if (eventType.needs_crew) {
       console.log('Event needs crew, creating role assignments');
       try {
