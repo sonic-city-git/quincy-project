@@ -39,7 +39,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     }
   };
 
-  // Create a modifier for each event with a unique class name
+  // Create a modifier for each event
   const modifiers = events?.reduce((acc, event) => {
     const eventDate = new Date(event.date);
     const key = `event-${eventDate.getTime()}`;
@@ -52,18 +52,17 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     };
   }, {} as Record<string, (date: Date) => boolean>) || {};
 
-  // Create styles for each event using their specific class names
+  // Create styles for each event
   const modifiersStyles = events?.reduce((acc, event) => {
     const eventDate = new Date(event.date);
     const key = `event-${eventDate.getTime()}`;
-    const backgroundColor = event.type.color.replace(')', ', 0.8)').replace('rgb', 'rgba');
     return {
       ...acc,
       [key]: {
-        backgroundColor,
+        backgroundColor: event.type.color,
         color: '#FFFFFF',
         borderRadius: '4px',
-        position: 'relative' as const,
+        cursor: 'pointer',
       }
     };
   }, {} as Record<string, React.CSSProperties>) || {};
@@ -75,20 +74,22 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     return {
       ...acc,
       [key]: ({ date }: { date: Date }) => (
-        <TooltipProvider delayDuration={100}>
-          <Tooltip>
+        <TooltipProvider>
+          <Tooltip delayDuration={50}>
             <TooltipTrigger asChild>
-              <div className="w-full h-full flex items-center justify-center cursor-pointer relative">
+              <div className="w-full h-full flex items-center justify-center">
                 {date.getDate()}
               </div>
             </TooltipTrigger>
             <TooltipContent 
-              side="top"
+              side="top" 
               align="center"
-              className="z-[9999] bg-zinc-900 text-white px-3 py-2 rounded-md shadow-xl border border-zinc-800"
+              className="bg-zinc-900 border border-zinc-800 text-white p-3 rounded-md shadow-lg z-[100]"
             >
-              <p className="font-medium">{event.name}</p>
-              <p className="text-sm text-zinc-400">{event.type.name}</p>
+              <div className="space-y-1">
+                <p className="font-medium">{event.name}</p>
+                <p className="text-sm text-zinc-400">{event.type.name}</p>
+              </div>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
