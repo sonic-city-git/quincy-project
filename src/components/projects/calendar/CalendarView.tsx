@@ -34,10 +34,14 @@ export function CalendarView({
       
       console.log('Processing selection', { startDate, endDate });
       
-      // First end the drag operation
+      // End drag operation and trigger click in the same synchronous block
       onDragEnd();
-      // Then trigger the click handler
       onDayClick(startDate);
+    } else {
+      // If no selection, just handle as a regular click
+      const normalizedDate = normalizeDate(date);
+      if (!normalizedDate) return;
+      onDayClick(normalizedDate);
     }
   };
 
