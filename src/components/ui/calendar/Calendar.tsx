@@ -90,8 +90,10 @@ export function Calendar({
             onDayMouseEnter?.(date);
           }
         }}
-        onClick={() => {
-          onDayClick?.(date);
+        onMouseUp={() => {
+          if (selected.length > 0) {
+            onDayClick?.(date);
+          }
         }}
         className={cn(
           baseButtonClasses,
