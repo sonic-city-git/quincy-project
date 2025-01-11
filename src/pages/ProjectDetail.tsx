@@ -2,7 +2,7 @@ import { useParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
 import { Card } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchEvents } from "@/utils/eventQueries";
 import { Button } from "@/components/ui/button";
 import { Receipt } from "lucide-react";
@@ -11,18 +11,81 @@ import { ProjectGeneralTab } from "@/components/projects/detail/ProjectGeneralTa
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { InvoiceDialog } from "@/components/projects/invoice/InvoiceDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { CalendarEvent } from "@/types/events";
 
 const ProjectDetail = () => {
   const { id } = useParams();
   const { project, loading } = useProjectDetails(id);
   const { toast } = useToast();
   const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
   
   const { data: events } = useQuery({
     queryKey: ['events', id],
     queryFn: () => fetchEvents(id || ''),
     enabled: !!id
   });
+
+  const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
+    if (!id) return;
+
+    const queryKeysToUpdate = [
+      ['events', id],
+      ['calendar-events', id]
+    ];
+
+    try {
+      const updatedEvent = { ...event, status: newStatus };
+      
+      // Update all relevant caches optimistically
+      queryKeysToUpdate.forEach(queryKey => {
+        queryClient.setQueryData(queryKey, (oldData: CalendarEvent[] | undefined) => {
+          if (!oldData) return [updatedEvent];
+          return oldData.map(e => 
+            e.id === event.id ? updatedEvent : e
+          );
+        });
+      });
+
+      // Update the server
+      const { error } = await supabase
+        .from('project_events')
+        .update({ status: newStatus })
+        .eq('id', event.id)
+        .eq('project_id', id);
+
+      if (error) throw error;
+
+      const { dismiss } = toast({
+        title: "Status Updated",
+        description: `Event status changed to ${newStatus}`,
+      });
+
+      setTimeout(() => {
+        dismiss();
+      }, 600);
+
+      await Promise.all(
+        queryKeysToUpdate.map(queryKey =>
+          queryClient.invalidateQueries({ queryKey })
+        )
+      );
+
+    } catch (error) {
+      console.error('Error updating event status:', error);
+      
+      queryKeysToUpdate.forEach(queryKey => {
+        queryClient.invalidateQueries({ queryKey });
+      });
+      
+      toast({
+        title: "Error",
+        description: "Failed to update event status",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleInvoice = () => {
     setIsInvoiceDialogOpen(true);
@@ -96,6 +159,7 @@ const ProjectDetail = () => {
         isOpen={isInvoiceDialogOpen}
         onClose={() => setIsInvoiceDialogOpen(false)}
         events={events || []}
+        onStatusChange={handleStatusChange}
       />
     </div>
   );
