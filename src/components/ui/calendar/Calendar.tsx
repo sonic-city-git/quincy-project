@@ -86,6 +86,16 @@ export function Calendar({
           }
         }}
         onMouseEnter={() => onDayMouseEnter?.(date)}
+        onMouseDown={(e) => {
+          e.preventDefault();
+          onDayClick?.(date);
+          if (mode === 'multiple') {
+            onSelect?.([date]);
+          }
+        }}
+        onMouseUp={(e) => {
+          e.preventDefault();
+        }}
         className={cn(
           baseButtonClasses,
           isSelected && !event && "bg-blue-500/30 text-white",
