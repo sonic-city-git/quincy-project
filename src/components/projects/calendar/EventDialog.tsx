@@ -57,8 +57,12 @@ export function EventDialog({
       setName(event.name);
       setSelectedType(event.type.id);
       setStatus(event.status);
+    } else {
+      // Reset to default values when adding a new event
+      setStatus('proposed');
+      setSelectedType(eventTypes[0]?.id || '');
     }
-  }, [event]);
+  }, [event, eventTypes]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
