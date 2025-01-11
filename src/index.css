@@ -41,3 +41,45 @@ body {
     font-family: 'Inter', sans-serif;
   }
 }
+
+/* FullCalendar Custom Theme */
+.fc-theme-custom {
+  @apply text-white;
+}
+
+.fc-theme-custom .fc-toolbar-title {
+  @apply text-xl font-semibold;
+}
+
+.fc-theme-custom .fc-button {
+  @apply bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 focus:ring-2 focus:ring-zinc-600 focus:ring-offset-2 focus:ring-offset-zinc-900;
+}
+
+.fc-theme-custom .fc-button-active {
+  @apply bg-zinc-700;
+}
+
+.fc-theme-custom .fc-day {
+  @apply bg-zinc-950;
+}
+
+.fc-theme-custom .fc-day-today {
+  @apply bg-zinc-900 !important;
+}
+
+.fc-theme-custom .fc-event {
+  @apply border-0 rounded;
+}
+
+.fc-theme-custom .fc-scrollgrid {
+  @apply border-zinc-800;
+}
+
+.fc-theme-custom td, 
+.fc-theme-custom th {
+  @apply border-zinc-800;
+}
+
+.fc-theme-custom .fc-highlight {
+  @apply bg-zinc-800 bg-opacity-50;
+}
