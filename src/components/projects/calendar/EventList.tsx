@@ -16,9 +16,9 @@ export function EventList({ events }: EventListProps) {
       <h2 className="text-xl font-semibold">Project Events</h2>
       <div className="grid gap-4">
         {sortedEvents.map((event, index) => (
-          <Card key={`${event.date}-${index}`} className="p-4">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
+          <Card key={`${event.date}-${index}`} className="p-6">
+            <div className="flex items-center justify-between gap-8">
+              <div className="flex items-center gap-8">
                 <div className="flex items-center gap-2 shrink-0">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground whitespace-nowrap">
