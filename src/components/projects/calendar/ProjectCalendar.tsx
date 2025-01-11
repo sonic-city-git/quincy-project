@@ -63,7 +63,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         color: '#FFFFFF',
         borderRadius: '4px',
         cursor: 'pointer',
-        position: 'relative',
+        position: 'relative' as const,
       }
     };
   }, {} as Record<string, React.CSSProperties>) || {};
