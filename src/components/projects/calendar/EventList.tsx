@@ -8,6 +8,7 @@ import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import { EventDialog } from "./EventDialog";
 import { InvoiceDialog } from "../invoice/InvoiceDialog";
+import { useState } from "react";
 
 interface EventListProps {
   events: CalendarEvent[];
