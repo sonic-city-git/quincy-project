@@ -79,22 +79,19 @@ export function Calendar({
     const renderDayContent = () => (
       <button
         key={date.toString()}
-        onClick={() => {
-          onDayClick?.(date);
-          if (mode === 'multiple') {
-            onSelect?.([...(selected || []), date]);
-          }
-        }}
-        onMouseEnter={() => onDayMouseEnter?.(date)}
         onMouseDown={(e) => {
           e.preventDefault();
-          onDayClick?.(date);
           if (mode === 'multiple') {
             onSelect?.([date]);
           }
         }}
-        onMouseUp={(e) => {
-          e.preventDefault();
+        onMouseEnter={() => {
+          if (selected.length > 0) {
+            onDayMouseEnter?.(date);
+          }
+        }}
+        onClick={() => {
+          onDayClick?.(date);
         }}
         className={cn(
           baseButtonClasses,
