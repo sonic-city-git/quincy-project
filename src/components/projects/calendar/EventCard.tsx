@@ -35,12 +35,14 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           </span>
         </div>
         <div className="flex flex-col">
-          <span 
-            className="font-medium text-base truncate px-3 py-1 rounded-md"
-            style={getColorStyles(event.type.color)}
-          >
-            {event.name}
-          </span>
+          <div className="flex items-start">
+            <span 
+              className="font-medium text-base px-3 py-1 rounded-md inline-block"
+              style={getColorStyles(event.type.color)}
+            >
+              {event.name}
+            </span>
+          </div>
           {event.location && (
             <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
               <MapPin className="h-3 w-3" />
@@ -50,7 +52,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         </div>
         <div>
           <span 
-            className="text-sm px-3 py-1 rounded-md"
+            className="text-sm px-3 py-1 rounded-md inline-block"
             style={getColorStyles(event.type.color)}
           >
             {event.type.name}
