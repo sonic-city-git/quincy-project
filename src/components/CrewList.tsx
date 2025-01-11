@@ -33,6 +33,7 @@ export function CrewList() {
 
   const clearFilters = () => {
     setSelectedRoles([]);
+    setSearchQuery('');
   };
 
   const filteredCrew = (crew || []).filter(member => {
