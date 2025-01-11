@@ -39,12 +39,12 @@ export function EventSection({ status, events, onStatusChange }: EventSectionPro
   if (isDoneAndDusted) {
     return (
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-        <CollapsibleTrigger className="flex items-center gap-2 w-full group">
-          <div className="flex items-center gap-2 flex-1">
+        <CollapsibleTrigger className="flex items-center justify-between w-full group">
+          <div className="flex items-center gap-2">
             {sectionIcon}
             <h3 className="text-lg font-semibold">{getStatusText(status)}</h3>
           </div>
-          <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+          <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''} ml-2`} />
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-3">
           {content}
