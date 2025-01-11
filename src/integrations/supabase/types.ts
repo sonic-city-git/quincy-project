@@ -367,21 +367,6 @@ export type Database = {
         }
         Relationships: []
       }
-      old_equipment: {
-        Row: {
-          created_at: string
-          id: number
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-        }
-        Update: {
-          created_at?: string
-          id?: number
-        }
-        Relationships: []
-      }
       project_crew: {
         Row: {
           created_at: string
