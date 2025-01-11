@@ -14,18 +14,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   const { currentDate, setCurrentDate, normalizeDate } = useCalendarDate();
   const { data: eventTypes } = useEventTypes();
   const {
-    selectedDate,
-    isAddDialogOpen,
-    isEditDialogOpen,
-    selectedEvent,
-    openAddDialog,
-    closeAddDialog,
-    closeEditDialog,
-    openEditDialog,
-    addEventCallback
-  } = useEventDialog();
-
-  const {
     events,
     isLoading,
     isDragging,
@@ -37,6 +25,17 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     addEvent,
     updateEvent
   } = useCalendarEvents(projectId);
+
+  const {
+    selectedDate,
+    isAddDialogOpen,
+    isEditDialogOpen,
+    selectedEvent,
+    openAddDialog,
+    closeAddDialog,
+    closeEditDialog,
+    openEditDialog,
+  } = useEventDialog();
 
   const handleDayClick = useCallback((date: Date) => {
     const normalizedDate = normalizeDate(date);
@@ -50,9 +49,9 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
       openEditDialog(existingEvent);
     } else if (!isDragging) {
       console.log('Opening add dialog for date:', normalizedDate);
-      openAddDialog(normalizedDate, addEvent);
+      openAddDialog(normalizedDate);
     }
-  }, [normalizeDate, findEventOnDate, isDragging, openEditDialog, openAddDialog, addEvent]);
+  }, [normalizeDate, findEventOnDate, isDragging, openEditDialog, openAddDialog]);
 
   const handleCloseAddDialog = useCallback(() => {
     closeAddDialog();
@@ -82,7 +81,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         date={selectedDate}
         eventTypes={eventTypes}
         onAddEvent={addEvent}
-        addEventCallback={addEventCallback}
       />
 
       <EventDialog
