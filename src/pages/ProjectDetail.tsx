@@ -61,41 +61,41 @@ const ProjectDetail = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="sticky top-0 bg-background z-10 p-8 pb-0 space-y-6">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-fit">
-              <div 
-                className="px-3.5 py-2 rounded-md font-medium"
-                style={getColorStyles(project.color)}
-              >
-                <span className="text-3xl">{project.name}</span>
-              </div>
-            </div>
-            <div className="text-lg text-muted-foreground">
-              #{formattedProjectNumber}
+        <div className="flex items-center gap-4">
+          <div className="w-fit">
+            <div 
+              className="px-3.5 py-2 rounded-md font-medium"
+              style={getColorStyles(project.color)}
+            >
+              <span className="text-3xl">{project.name}</span>
             </div>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            className="gap-2"
-            onClick={() => {
-              console.log('Invoice button clicked');
-              // Invoice functionality will be implemented later
-            }}
-          >
-            <Receipt className="h-4 w-4" />
-            Invoice
-          </Button>
+          <div className="text-lg text-muted-foreground">
+            #{formattedProjectNumber}
+          </div>
         </div>
         
         <Tabs defaultValue="general" className="w-full">
-          <TabsList>
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="equipment">Equipment</TabsTrigger>
-            <TabsTrigger value="crew">Crew</TabsTrigger>
-            <TabsTrigger value="financial">Financial</TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between">
+            <TabsList>
+              <TabsTrigger value="general">General</TabsTrigger>
+              <TabsTrigger value="equipment">Equipment</TabsTrigger>
+              <TabsTrigger value="crew">Crew</TabsTrigger>
+              <TabsTrigger value="financial">Financial</TabsTrigger>
+            </TabsList>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              onClick={() => {
+                console.log('Invoice button clicked');
+                // Invoice functionality will be implemented later
+              }}
+            >
+              <Receipt className="h-4 w-4" />
+              Invoice
+            </Button>
+          </div>
 
           <TabsContent value="general">
             <div className="space-y-8">
