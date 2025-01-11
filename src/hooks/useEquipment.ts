@@ -38,8 +38,13 @@ export function useEquipment() {
           .select(`
             *,
             equipment_serial_numbers (
+              id,
+              equipment_id,
               serial_number,
-              status
+              status,
+              notes,
+              created_at,
+              updated_at
             )
           `)
           .order('name');
