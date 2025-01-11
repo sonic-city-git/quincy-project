@@ -1,8 +1,19 @@
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from './button';
 import { cn } from '@/lib/utils';
-import { addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, format, isSameMonth, isSameDay } from 'date-fns';
+import { 
+  addDays, 
+  startOfMonth, 
+  endOfMonth, 
+  eachDayOfInterval, 
+  format, 
+  isSameMonth, 
+  isSameDay,
+  startOfWeek,
+  endOfWeek,
+  isToday
+} from 'date-fns';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
 import { CalendarEvent } from '@/types/events';
 
@@ -29,64 +40,74 @@ export function CustomCalendar({
   onDayClick,
   className,
 }: CustomCalendarProps) {
-  const [currentMonth, setCurrentMonth] = useState(month);
+  const weeks = useMemo(() => {
+    const start = startOfWeek(startOfMonth(month));
+    const end = endOfWeek(endOfMonth(month));
+    const days = eachDayOfInterval({ start, end });
 
-  const handleMonthChange = (newMonth: Date) => {
-    setCurrentMonth(newMonth);
-    onMonthChange?.(newMonth);
-  };
+    const weeks = [];
+    let currentWeek = [];
 
-  const days = eachDayOfInterval({
-    start: startOfMonth(currentMonth),
-    end: endOfMonth(currentMonth),
-  });
+    days.forEach(day => {
+      currentWeek.push(day);
+      if (currentWeek.length === 7) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
+    });
 
-  const handleDayClick = (date: Date) => {
-    if (mode === 'multiple') {
-      const newSelected = [...selected, date];
-      onSelect?.(newSelected);
-    }
-    onDayClick?.(date);
-  };
+    return weeks;
+  }, [month]);
 
   const getEventForDate = (date: Date): CalendarEvent | undefined => {
-    return events.find(event => 
-      isSameDay(new Date(event.date), date)
-    );
+    return events.find(event => isSameDay(new Date(event.date), date));
   };
 
   const renderDay = (date: Date) => {
     const event = getEventForDate(date);
     const isSelected = selected.some(selectedDate => isSameDay(selectedDate, date));
-    const isCurrentMonth = isSameMonth(date, currentMonth);
+    const isCurrentMonth = isSameMonth(date, month);
+    const dayIsToday = isToday(date);
 
     if (!event) {
       return (
         <button
           key={date.toString()}
-          onClick={() => handleDayClick(date)}
+          onClick={() => {
+            onDayClick?.(date);
+            if (mode === 'multiple') {
+              onSelect?.([...(selected || []), date]);
+            }
+          }}
           onMouseEnter={() => onDayMouseEnter?.(date)}
           className={cn(
             "h-10 w-full p-0 font-normal relative",
             !isCurrentMonth && "text-muted-foreground opacity-50",
             isSelected && "bg-blue-500/50 text-white",
+            dayIsToday && "border border-blue-500",
             "hover:bg-zinc-800 rounded-md transition-colors"
           )}
         >
-          {format(date, 'd')}
+          <span className="relative z-10">{format(date, 'd')}</span>
         </button>
       );
     }
 
     return (
-      <HoverCard key={date.toString()}>
+      <HoverCard key={date.toString()} openDelay={100} closeDelay={0}>
         <HoverCardTrigger asChild>
           <button
-            onClick={() => handleDayClick(date)}
+            onClick={() => {
+              onDayClick?.(date);
+              if (mode === 'multiple') {
+                onSelect?.([...(selected || []), date]);
+              }
+            }}
             onMouseEnter={() => onDayMouseEnter?.(date)}
             className={cn(
               "h-10 w-full p-0 font-normal relative",
               isSelected && "bg-blue-500/50",
+              dayIsToday && "border border-blue-500",
               "rounded-md transition-colors"
             )}
             style={{
@@ -94,7 +115,7 @@ export function CustomCalendar({
               color: '#FFFFFF'
             }}
           >
-            {format(date, 'd')}
+            <span className="relative z-10">{format(date, 'd')}</span>
           </button>
         </HoverCardTrigger>
         <HoverCardContent 
@@ -116,20 +137,20 @@ export function CustomCalendar({
     <div className={cn("p-3", className)}>
       <div className="flex justify-center pt-1 relative items-center">
         <div className="text-xl font-medium">
-          {format(currentMonth, 'MMMM yyyy')}
+          {format(month, 'MMMM yyyy')}
         </div>
         <div className="space-x-1 flex items-center absolute right-1">
           <Button
             variant="ghost"
             className="h-10 w-10 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full"
-            onClick={() => handleMonthChange(subMonths(currentMonth, 1))}
+            onClick={() => onMonthChange?.(addDays(month, -30))}
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
             className="h-10 w-10 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full"
-            onClick={() => handleMonthChange(addMonths(currentMonth, 1))}
+            onClick={() => onMonthChange?.(addDays(month, 30))}
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
@@ -145,12 +166,14 @@ export function CustomCalendar({
           </div>
         ))}
       </div>
-      <div className="grid grid-cols-7 mt-2">
-        {days.map((day) => (
-          <div key={day.toString()} className="p-0 relative">
-            {renderDay(day)}
-          </div>
-        ))}
+      <div className="grid grid-cols-7 mt-2 gap-1">
+        {weeks.map((week, weekIndex) => 
+          week.map((day, dayIndex) => (
+            <div key={`${weekIndex}-${dayIndex}`} className="p-0 relative">
+              {renderDay(day)}
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
