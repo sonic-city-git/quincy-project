@@ -96,10 +96,7 @@ export function Calendar({
                   onMouseDown={(e) => {
                     e.preventDefault();
                     console.log('Calendar day mouseDown', { day, event });
-                    if (!event && mode === 'multiple') {
-                      onSelect?.([day]);
-                    } else {
-                      // If it's not a drag operation, trigger the click
+                    if (!event) {
                       onDayClick?.(day);
                     }
                   }}

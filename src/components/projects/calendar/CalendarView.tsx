@@ -29,13 +29,7 @@ export function CalendarView({
     const normalizedDate = normalizeDate(date);
     if (!normalizedDate) return;
 
-    // If we have selected dates, this was a drag operation
-    if (selectedDates.length > 0) {
-      onDragEnd();
-    } else {
-      // This was a single click
-      onDayClick(normalizedDate);
-    }
+    onDragEnd();
   };
 
   return (
