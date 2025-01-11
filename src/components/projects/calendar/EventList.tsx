@@ -34,13 +34,12 @@ export function EventList({ events, projectId }: EventListProps) {
     if (!projectId) return;
 
     try {
-      // Create updated event object
       const updatedEvent = { ...event, status: newStatus };
       
-      // Update the cache immediately for instant UI update
-      queryClient.setQueriesData({ queryKey: ['events', projectId] }, (oldData: any) => {
+      // Update the cache optimistically
+      queryClient.setQueryData(['events', projectId], (oldData: CalendarEvent[] | undefined) => {
         if (!oldData) return [updatedEvent];
-        return oldData.map((e: CalendarEvent) => 
+        return oldData.map(e => 
           e.date.getTime() === event.date.getTime() && e.name === event.name
             ? updatedEvent
             : e
@@ -62,14 +61,15 @@ export function EventList({ events, projectId }: EventListProps) {
         description: `Event status changed to ${newStatus}`,
       });
 
-      // Refresh the cache in the background
+      // Refresh the data in the background
       await queryClient.invalidateQueries({
         queryKey: ['events', projectId]
       });
+
     } catch (error) {
       console.error('Error updating event status:', error);
       
-      // Revert cache on error
+      // Revert the cache on error
       queryClient.invalidateQueries({
         queryKey: ['events', projectId]
       });
