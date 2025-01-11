@@ -31,27 +31,20 @@ export function EventList({ events, projectId }: EventListProps) {
   };
 
   const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
+    if (!projectId) return;
+
     try {
       // Create updated event object
       const updatedEvent = { ...event, status: newStatus };
       
-      // Define query keys as arrays
-      const queryKeys = [
-        ['events'],
-        ['events', projectId],
-        ['calendarEvents']
-      ];
-      
-      // Update all relevant queries in the cache immediately
-      queryKeys.forEach(queryKey => {
-        queryClient.setQueryData(queryKey, (oldData: CalendarEvent[] | undefined) => {
-          if (!oldData) return [updatedEvent];
-          return oldData.map(e => 
-            e.date.getTime() === event.date.getTime() && e.name === event.name
-              ? updatedEvent
-              : e
-          );
-        });
+      // Update the cache immediately for instant UI update
+      queryClient.setQueriesData({ queryKey: ['events', projectId] }, (oldData: any) => {
+        if (!oldData) return [updatedEvent];
+        return oldData.map((e: CalendarEvent) => 
+          e.date.getTime() === event.date.getTime() && e.name === event.name
+            ? updatedEvent
+            : e
+        );
       });
 
       // Update the server
@@ -59,7 +52,8 @@ export function EventList({ events, projectId }: EventListProps) {
         .from('project_events')
         .update({ status: newStatus })
         .eq('date', format(event.date, 'yyyy-MM-dd'))
-        .eq('name', event.name);
+        .eq('name', event.name)
+        .eq('project_id', projectId);
 
       if (error) throw error;
 
@@ -68,18 +62,17 @@ export function EventList({ events, projectId }: EventListProps) {
         description: `Event status changed to ${newStatus}`,
       });
 
-      // Refresh queries in the background
-      await Promise.all(
-        queryKeys.map(queryKey => 
-          queryClient.invalidateQueries({ queryKey })
-        )
-      );
+      // Refresh the cache in the background
+      await queryClient.invalidateQueries({
+        queryKey: ['events', projectId]
+      });
     } catch (error) {
       console.error('Error updating event status:', error);
       
-      // Revert cache to original data on error
-      queryClient.setQueryData(['events'], events);
-      queryClient.setQueryData(['calendarEvents'], events);
+      // Revert cache on error
+      queryClient.invalidateQueries({
+        queryKey: ['events', projectId]
+      });
       
       toast({
         title: "Error",
