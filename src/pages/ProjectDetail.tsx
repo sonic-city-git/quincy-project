@@ -130,7 +130,6 @@ const ProjectDetail = () => {
           <TabsContent value="general">
             <ProjectGeneralTab 
               project={project}
-              events={events || []}
               projectId={id || ''}
             />
           </TabsContent>
