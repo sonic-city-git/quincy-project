@@ -26,9 +26,7 @@ export function CalendarView({
   console.log('CalendarView render', { selectedDates });
 
   const handleDayMouseUp = (date: Date) => {
-    console.log('handleDayMouseUp', { date, selectedDatesLength: selectedDates.length });
     if (selectedDates.length > 0) {
-      // Ensure both dates are normalized to UTC midnight
       const startDate = normalizeDate(selectedDates[0]);
       const endDate = normalizeDate(date);
       
@@ -36,10 +34,8 @@ export function CalendarView({
       
       console.log('Processing selection', { startDate, endDate });
       
-      // Call onDayClick with the normalized start date before ending the drag
       onDayClick(startDate);
       
-      // End the drag operation after handling the click
       setTimeout(() => {
         onDragEnd();
       }, 0);
@@ -54,7 +50,6 @@ export function CalendarView({
       events={events}
       selected={selectedDates}
       onSelect={(dates: Date[] | undefined) => {
-        console.log('Calendar onSelect', { dates, selectedDates });
         if (!dates || dates.length === 0) return;
         
         const clickedDate = normalizeDate(dates[dates.length - 1]);
@@ -64,13 +59,11 @@ export function CalendarView({
         onDragStart(clickedDate);
       }}
       onDayMouseEnter={(date: Date) => {
-        console.log('Day mouse enter', date);
         const normalizedDate = normalizeDate(date);
         if (!normalizedDate) return;
         onDragEnter(normalizedDate);
       }}
       onDayClick={(date: Date) => {
-        console.log('Calendar onDayClick', { date, selectedDatesLength: selectedDates.length });
         if (selectedDates.length === 0) {
           const normalizedDate = normalizeDate(date);
           if (!normalizedDate) return;

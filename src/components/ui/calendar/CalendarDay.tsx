@@ -35,18 +35,9 @@ export function CalendarDay({
   const renderDayContent = () => {
     return (
       <button
-        onMouseDown={(e) => {
-          console.log('Day button mouseDown', { date });
-          onMouseDown(e);
-        }}
-        onMouseEnter={() => {
-          console.log('Day button mouseEnter', { date });
-          onMouseEnter();
-        }}
-        onMouseUp={() => {
-          console.log('Day button mouseUp', { date });
-          onMouseUp();
-        }}
+        onMouseDown={onMouseDown}
+        onMouseEnter={onMouseEnter}
+        onMouseUp={onMouseUp}
         className={cn(
           baseButtonClasses,
           isSelected && !event && "bg-blue-500/30 text-white",
