@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useCrew } from "@/hooks/useCrew";
 import { useFolders } from "@/hooks/useFolders";
+import { useCrewSort } from "@/components/crew/useCrewSort";
 
 interface ProjectOwnerFilterProps {
   value: string;
@@ -18,13 +19,18 @@ interface ProjectOwnerFilterProps {
 export function ProjectOwnerFilter({ value, onChange }: ProjectOwnerFilterProps) {
   const { crew, loading } = useCrew();
   const { folders } = useFolders();
-
-  // Safely find Sonic City folder
-  const sonicCityFolder = folders?.find(folder => folder.name === 'Sonic City');
+  const { sortCrew } = useCrewSort();
   
-  // Filter crew members only if we have both crew and the Sonic City folder
-  const filteredCrew = crew.filter(member => 
-    sonicCityFolder ? member.folder_id === sonicCityFolder.id : true
+  // Find Sonic City folder
+  const sonicCityFolder = folders?.find(folder => 
+    folder.name.toLowerCase() === 'sonic city'
+  );
+  
+  // Filter and sort crew members
+  const filteredCrew = sortCrew(
+    crew.filter(member => 
+      sonicCityFolder && member.folder_id === sonicCityFolder.id
+    )
   );
 
   return (
