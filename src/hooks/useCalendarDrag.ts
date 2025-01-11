@@ -6,9 +6,13 @@ export const useCalendarDrag = (openAddDialog: (date: Date, callback?: (date: Da
   const [dragStartDate, setDragStartDate] = useState<Date | null>(null);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 
-  const handleDragStart = useCallback((date: Date) => {
+  const handleDragStart = useCallback((date: Date | undefined) => {
+    if (!date) return;
+    
     setIsDragging(true);
     const normalizedDate = normalizeDate(date);
+    if (!normalizedDate) return;
+    
     setDragStartDate(normalizedDate);
     setSelectedDates([normalizedDate]);
   }, []);
@@ -17,6 +21,8 @@ export const useCalendarDrag = (openAddDialog: (date: Date, callback?: (date: Da
     if (!isDragging || !dragStartDate) return;
 
     const normalizedDate = normalizeDate(date);
+    if (!normalizedDate) return;
+    
     const startTime = dragStartDate.getTime();
     const currentTime = normalizedDate.getTime();
 

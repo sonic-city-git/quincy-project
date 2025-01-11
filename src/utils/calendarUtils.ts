@@ -1,6 +1,8 @@
 import { addMonths, subMonths } from "date-fns";
 
-export const normalizeDate = (date: Date): Date => {
+export const normalizeDate = (date: Date | undefined | null): Date | null => {
+  if (!date) return null;
+  
   return new Date(Date.UTC(
     date.getFullYear(),
     date.getMonth(),
