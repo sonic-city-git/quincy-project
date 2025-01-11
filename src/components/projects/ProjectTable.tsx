@@ -23,9 +23,6 @@ export function ProjectTable({ projects }: ProjectTableProps) {
             key={project.id}
             project={project}
             index={project.project_number}
-            colorStyle={{
-              className: `bg-${project.color}-500/10 text-${project.color}-500`
-            }}
           />
         ))}
       </TableBody>

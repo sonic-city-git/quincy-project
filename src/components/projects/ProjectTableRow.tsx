@@ -8,7 +8,7 @@ interface ProjectTableRowProps {
   colorStyle: React.HTMLAttributes<HTMLDivElement>;
 }
 
-export function ProjectTableRow({ project, index, colorStyle }: ProjectTableRowProps) {
+export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
     try {
@@ -27,7 +27,7 @@ export function ProjectTableRow({ project, index, colorStyle }: ProjectTableRowP
       <TableCell>
         <div className="flex items-center gap-2">
           <div 
-            className={`px-2 py-1 rounded-md text-sm font-medium ${colorStyle.className}`}
+            className={`px-2 py-1 rounded-md text-sm font-medium bg-${project.color}-500/10 text-${project.color}-500`}
           >
             {project.name}
           </div>
