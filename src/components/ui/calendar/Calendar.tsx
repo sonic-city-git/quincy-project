@@ -101,9 +101,10 @@ export function Calendar({
           baseButtonClasses,
           isSelected && !event && "bg-blue-500/30 text-white",
           event && !isSelected && `bg-opacity-85 text-white`,
-          isSelected && event && "bg-blue-500/30 text-white"
+          // Remove the blue highlight when there's an event
+          isSelected && event && "text-white"
         )}
-        style={event && !isSelected ? {
+        style={event ? {
           backgroundColor: `${event.type.color}D9`
         } : undefined}
       >
