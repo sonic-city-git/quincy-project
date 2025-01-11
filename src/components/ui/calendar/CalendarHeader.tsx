@@ -14,7 +14,7 @@ export function CalendarHeader({ month, onMonthChange }: CalendarHeaderProps) {
   };
 
   return (
-    <div className="flex items-center justify-between pt-1">
+    <div className="flex items-center justify-center relative pt-1">
       <div className="flex items-center gap-1">
         <Button
           variant="ghost"
@@ -39,7 +39,7 @@ export function CalendarHeader({ month, onMonthChange }: CalendarHeaderProps) {
 
       <Button
         variant="ghost"
-        className="h-10 w-10 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full"
+        className="absolute right-0 h-10 w-10 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full"
         onClick={handleResetMonth}
         title="Reset to current month"
       >
