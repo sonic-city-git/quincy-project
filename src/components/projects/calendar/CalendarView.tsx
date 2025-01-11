@@ -25,8 +25,8 @@ export function CalendarView({
     
     // Find if there's an event on this date
     const eventOnDate = events.find(event => {
-      const eventDate = new Date(event.date);
-      return normalizeDate(eventDate).getTime() === normalizedDate.getTime();
+      const eventDate = normalizeDate(new Date(event.date));
+      return eventDate.getTime() === normalizedDate.getTime();
     });
 
     console.log('Calendar day clicked', { date: normalizedDate, existingEvent: eventOnDate });
@@ -41,13 +41,14 @@ export function CalendarView({
   };
 
   const handleDragStart = (date: Date) => {
-    const normalizedDate = normalizeDate(date);
+    const normalizedDate = new Date(date);
     if (!normalizedDate) return;
 
     // Check if there's an event on this date
-    const hasEvent = events.some(event => 
-      normalizeDate(new Date(event.date)).getTime() === normalizedDate.getTime()
-    );
+    const hasEvent = events.some(event => {
+      const eventDate = new Date(event.date);
+      return eventDate.getTime() === normalizedDate.getTime();
+    });
 
     if (!hasEvent) {
       setIsDragging(true);
@@ -58,7 +59,7 @@ export function CalendarView({
   const handleDragEnter = (date: Date) => {
     if (!isDragging) return;
 
-    const normalizedDate = normalizeDate(date);
+    const normalizedDate = new Date(date);
     if (!normalizedDate) return;
 
     const startDate = selectedDates[0];
@@ -71,9 +72,10 @@ export function CalendarView({
     let current = new Date(start);
     while (current <= end) {
       // Only add dates that don't have existing events
-      const hasEvent = events.some(event => 
-        normalizeDate(new Date(event.date)).getTime() === normalizeDate(current).getTime()
-      );
+      const hasEvent = events.some(event => {
+        const eventDate = new Date(event.date);
+        return eventDate.getTime() === current.getTime();
+      });
       
       if (!hasEvent) {
         dates.push(new Date(current));
@@ -88,8 +90,8 @@ export function CalendarView({
     if (selectedDates.length > 0) {
       // Sort dates to ensure we're using the first date chronologically
       const sortedDates = [...selectedDates].sort((a, b) => a.getTime() - b.getTime());
-      // Open add dialog with the first selected date
-      onDayClick(sortedDates[0]);
+      // Open add dialog with the first selected date, ensuring we use the actual date
+      onDayClick(new Date(sortedDates[0]));
     }
     setIsDragging(false);
     setSelectedDates([]);
