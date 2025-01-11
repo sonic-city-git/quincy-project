@@ -46,16 +46,18 @@ const ProjectDetail = () => {
 
         <TabsContent value="general">
           <Card className="p-6">
-            <h2 className="text-xl font-semibold mb-4">General Information</h2>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <p><span className="font-medium">Project Number:</span> {project.project_number}</p>
-                <p><span className="font-medium">Owner:</span> {project.crew_members?.name || 'No owner assigned'}</p>
-              </div>
-              
-              <div className="mt-8">
+            <div className="grid grid-cols-2 gap-8">
+              <div>
                 <h3 className="text-lg font-semibold mb-4">Calendar</h3>
                 <ProjectCalendar projectId={id || ''} />
+              </div>
+              
+              <div>
+                <h2 className="text-xl font-semibold mb-4">General Information</h2>
+                <div className="space-y-2">
+                  <p><span className="font-medium">Project Number:</span> {project.project_number}</p>
+                  <p><span className="font-medium">Owner:</span> {project.crew_members?.name || 'No owner assigned'}</p>
+                </div>
               </div>
             </div>
           </Card>
