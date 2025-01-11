@@ -29,7 +29,7 @@ interface EventDialogProps {
   addEventCallback?: ((date: Date, name: string, eventType: EventType) => void) | null;
 }
 
-const EVENT_STATUSES = ['proposed', 'confirmed', 'invoice ready', 'cancelled', 'invoiced'] as const;
+const EVENT_STATUSES = ['proposed', 'confirmed', 'invoice ready', 'cancelled'] as const;
 
 export function EventDialog({
   isOpen,
