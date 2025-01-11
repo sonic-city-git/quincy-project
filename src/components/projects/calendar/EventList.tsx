@@ -32,13 +32,24 @@ export function EventList({ events }: EventListProps) {
 
   const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
     try {
+      // Optimistically update the cache
+      const oldData = queryClient.getQueryData(['events']) as CalendarEvent[];
+      const newData = oldData.map(e => 
+        e.date.getTime() === event.date.getTime() && e.name === event.name
+          ? { ...e, status: newStatus }
+          : e
+      );
+      queryClient.setQueryData(['events'], newData);
+      queryClient.setQueryData(['calendarEvents'], newData);
+
+      // Update the server
       await supabase
         .from('project_events')
         .update({ status: newStatus })
         .eq('date', format(event.date, 'yyyy-MM-dd'))
         .eq('name', event.name);
 
-      // Immediately update the local cache
+      // Refresh the cache to ensure consistency
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['events'] }),
         queryClient.invalidateQueries({ queryKey: ['calendarEvents'] })
@@ -50,6 +61,11 @@ export function EventList({ events }: EventListProps) {
       });
     } catch (error) {
       console.error('Error updating event status:', error);
+      // Revert the optimistic update on error
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['events'] }),
+        queryClient.invalidateQueries({ queryKey: ['calendarEvents'] })
+      ]);
       toast({
         title: "Error",
         description: "Failed to update event status",
