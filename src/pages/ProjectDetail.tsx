@@ -52,7 +52,7 @@ const ProjectDetail = () => {
         <TabsContent value="general">
           <Card className="p-6">
             <div className="grid grid-cols-2 gap-8">
-              <div>
+              <div className="w-[400px]">
                 <ProjectCalendar projectId={id || ''} />
               </div>
               
