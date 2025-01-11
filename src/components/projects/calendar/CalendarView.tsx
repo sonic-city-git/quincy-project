@@ -29,17 +29,17 @@ export function CalendarView({
     const normalizedDate = normalizeDate(date);
     if (!normalizedDate) return;
 
-    if (selectedDates.length > 0) {
+    // If we have selected dates, it means we were dragging
+    if (selectedDates.length > 1) {
       const startDate = selectedDates[0];
       const endDate = normalizedDate;
       console.log('Processing drag selection', { startDate, endDate });
-      
-      // First trigger the click event with the start date
       onDayClick(startDate);
-      // Then end the drag operation
       onDragEnd();
     } else {
+      // Single click - just trigger the click handler
       onDayClick(normalizedDate);
+      onDragEnd();
     }
   };
 
