@@ -5,8 +5,7 @@ import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import { CalendarDay } from "./CalendarDay";
 import { useCalendarModifiers } from "./CalendarModifiers";
-import { AddEventDialog } from "./AddEventDialog";
-import { EditEventDialog } from "./EditEventDialog";
+import { EventDialog } from "./EventDialog";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -72,7 +71,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         selected={undefined}
       />
 
-      <AddEventDialog
+      <EventDialog
         isOpen={isAddDialogOpen}
         onClose={closeAddDialog}
         date={selectedDate}
@@ -80,7 +79,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onAddEvent={addEvent}
       />
 
-      <EditEventDialog
+      <EventDialog
         isOpen={isEditDialogOpen}
         onClose={closeEditDialog}
         event={selectedEvent}
