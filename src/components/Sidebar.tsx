@@ -83,8 +83,8 @@ export function Sidebar() {
           </Avatar>
         </div>
       </div>
-      <div className="space-y-4 py-4 flex flex-col h-[calc(100vh-120px)]">
-        <div className="px-3 py-2">
+      <div className="flex flex-col h-[calc(100vh-120px)]">
+        <div className="px-3 py-2 flex-1">
           <div className="space-y-1">
             {links.map((link) => (
               <Link
@@ -104,7 +104,7 @@ export function Sidebar() {
             ))}
           </div>
         </div>
-        <div className="mt-auto px-3 py-2">
+        <div className="px-3 py-2 mt-auto">
           <button
             onClick={handleLogout}
             className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all hover:bg-red-500/10 hover:text-red-500"
