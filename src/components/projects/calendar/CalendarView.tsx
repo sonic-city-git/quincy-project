@@ -41,8 +41,9 @@ export function CalendarView({
         }
       }}
       onDayClick={(date: Date) => {
-        onDayClick(date);
-        if (selectedDates.length > 0) {
+        if (selectedDates.length === 0) {
+          onDayClick(date);
+        } else {
           onDragEnd();
         }
       }}
