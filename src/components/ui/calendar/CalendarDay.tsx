@@ -38,25 +38,37 @@ export function CalendarDay({
     "hover:bg-zinc-800 rounded-md transition-colors"
   );
 
-  const renderDayContent = () => (
-    <button
-      onMouseDown={onMouseDown}
-      onMouseEnter={onMouseEnter}
-      onMouseUp={onMouseUp}
-      className={cn(
-        baseButtonClasses,
-        isSelected && !event && "bg-blue-500/30 text-white",
-        event && !isSelected && `bg-opacity-85 text-white`,
-        isSelected && event && "text-white",
-        isDoneAndDusted && "opacity-50"
-      )}
-      style={event ? {
-        backgroundColor: `${event.type.color}D9`
-      } : undefined}
-    >
-      <span className="relative z-10">{format(date, 'd')}</span>
-    </button>
-  );
+  const renderDayContent = () => {
+    console.log('Rendering day content', { date, isSelected, event });
+    return (
+      <button
+        onMouseDown={(e) => {
+          console.log('Day button mouseDown', { date });
+          onMouseDown(e);
+        }}
+        onMouseEnter={() => {
+          console.log('Day button mouseEnter', { date });
+          onMouseEnter();
+        }}
+        onMouseUp={() => {
+          console.log('Day button mouseUp', { date });
+          onMouseUp();
+        }}
+        className={cn(
+          baseButtonClasses,
+          isSelected && !event && "bg-blue-500/30 text-white",
+          event && !isSelected && `bg-opacity-85 text-white`,
+          isSelected && event && "text-white",
+          isDoneAndDusted && "opacity-50"
+        )}
+        style={event ? {
+          backgroundColor: `${event.type.color}D9`
+        } : undefined}
+      >
+        <span className="relative z-10">{format(date, 'd')}</span>
+      </button>
+    );
+  };
 
   if (!event) {
     return renderDayContent();

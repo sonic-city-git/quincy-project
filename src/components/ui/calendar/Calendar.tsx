@@ -37,6 +37,8 @@ export function Calendar({
   onDayClick,
   className,
 }: CalendarProps) {
+  console.log('Calendar render', { selected, events });
+
   const weeks = useMemo(() => {
     const start = startOfWeek(startOfMonth(month));
     const end = endOfWeek(endOfMonth(month));
@@ -90,17 +92,20 @@ export function Calendar({
                   event={event}
                   isSelected={isSelected}
                   onMouseDown={(e) => {
+                    console.log('Calendar day mouseDown', { day, event });
                     e.preventDefault();
                     if (mode === 'multiple' && !event) {
                       onSelect?.([day]);
                     }
                   }}
                   onMouseEnter={() => {
+                    console.log('Calendar day mouseEnter', { day, selected });
                     if (selected.length > 0 && !event) {
                       onDayMouseEnter?.(day);
                     }
                   }}
                   onMouseUp={() => {
+                    console.log('Calendar day mouseUp', { day, selected });
                     if (selected.length > 0) {
                       onDayClick?.(day);
                     }
