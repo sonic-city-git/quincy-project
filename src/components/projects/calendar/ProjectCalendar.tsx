@@ -39,24 +39,14 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
   const handleDayClick = useCallback((date: Date) => {
     const normalizedDate = normalizeDate(date);
-    console.log('Handling day click:', { date: normalizedDate });
-    
     const existingEvent = findEventOnDate(normalizedDate);
-    console.log('Existing event found:', existingEvent);
 
     if (existingEvent) {
-      console.log('Opening edit dialog for event:', existingEvent);
       openEditDialog(existingEvent);
     } else if (!isDragging) {
-      console.log('Opening add dialog for date:', normalizedDate);
       openAddDialog(normalizedDate);
     }
   }, [normalizeDate, findEventOnDate, isDragging, openEditDialog, openAddDialog]);
-
-  const handleCloseAddDialog = useCallback(() => {
-    closeAddDialog();
-    resetSelection();
-  }, [closeAddDialog, resetSelection]);
 
   if (isLoading || !eventTypes) {
     return null;
@@ -77,7 +67,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
       <EventDialog
         isOpen={isAddDialogOpen}
-        onClose={handleCloseAddDialog}
+        onClose={closeAddDialog}
         date={selectedDate}
         eventTypes={eventTypes}
         onAddEvent={addEvent}
