@@ -28,6 +28,8 @@ export function CalendarView({
     });
 
     console.log('Triggering click for date:', normalizedDate, 'Event:', eventOnDate);
+    
+    // Always trigger the click handler with the normalized date
     onDayClick(normalizedDate);
   };
 
