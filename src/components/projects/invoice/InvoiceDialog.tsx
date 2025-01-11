@@ -42,46 +42,57 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
     setShowConfirmation(true);
   };
 
-  const handleConfirmInvoice = async () => {
-    if (!onStatusChange || isProcessing) {
-      console.log('Cannot process: onStatusChange is undefined or already processing');
-      return;
+  const processEventBatch = async (events: CalendarEvent[], startIndex: number, batchSize: number) => {
+    const endIndex = Math.min(startIndex + batchSize, events.length);
+    const batch = events.slice(startIndex, endIndex);
+    const failedEvents: CalendarEvent[] = [];
+
+    for (const event of batch) {
+      try {
+        if (onStatusChange) {
+          await onStatusChange(event, 'invoiced');
+          setProcessedCount(prev => prev + 1);
+        }
+      } catch (error) {
+        console.error('Failed to update event:', event.id, error);
+        failedEvents.push(event);
+      }
     }
+
+    return {
+      failedEvents,
+      nextIndex: endIndex,
+      isComplete: endIndex >= events.length
+    };
+  };
+
+  const handleConfirmInvoice = async () => {
+    if (!onStatusChange || isProcessing) return;
     
     setIsProcessing(true);
     setProcessedCount(0);
     
-    try {
-      console.log('Starting invoice generation for', invoiceReadyEvents.length, 'events');
-      const batchSize = 2; // Reduced batch size
-      const failedEvents: CalendarEvent[] = [];
+    const batchSize = 2;
+    let currentIndex = 0;
+    const allFailedEvents: CalendarEvent[] = [];
 
-      for (let i = 0; i < invoiceReadyEvents.length; i += batchSize) {
-        const batch = invoiceReadyEvents.slice(i, i + batchSize);
-        console.log('Processing batch', Math.floor(i / batchSize) + 1);
+    try {
+      while (currentIndex < invoiceReadyEvents.length) {
+        const {
+          failedEvents,
+          nextIndex,
+          isComplete
+        } = await processEventBatch(invoiceReadyEvents, currentIndex, batchSize);
         
-        // Process events in current batch sequentially
-        for (const event of batch) {
-          try {
-            console.log('Processing event:', event.id);
-            await onStatusChange(event, 'invoiced');
-            setProcessedCount(prev => prev + 1);
-            console.log('Successfully updated event:', event.id);
-          } catch (error) {
-            console.error('Failed to update event:', event.id, error);
-            failedEvents.push(event);
-          }
-        }
-        
-        // Small delay between batches
-        if (i + batchSize < invoiceReadyEvents.length) {
-          console.log('Waiting between batches...');
-          await new Promise(resolve => setTimeout(resolve, 200));
+        allFailedEvents.push(...failedEvents);
+        currentIndex = nextIndex;
+
+        if (!isComplete) {
+          // Small delay between batches to prevent UI freeze
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
       }
 
-      console.log('Finished processing all events');
-      
       // Refresh the data once at the end
       await queryClient.invalidateQueries({ queryKey: ['events'] });
 
@@ -90,7 +101,7 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
       onClose();
 
       // Show appropriate toast based on results
-      if (failedEvents.length === 0) {
+      if (allFailedEvents.length === 0) {
         toast({
           title: "Invoice Generated",
           description: "All events have been marked as invoiced and sent to Tripletex",
@@ -98,7 +109,7 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
       } else {
         toast({
           title: "Partial Success",
-          description: `${totalEvents - failedEvents.length} events processed. ${failedEvents.length} events failed.`,
+          description: `${totalEvents - allFailedEvents.length} events processed. ${allFailedEvents.length} events failed.`,
           variant: "destructive",
         });
       }
