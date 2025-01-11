@@ -6,7 +6,6 @@ import { useEventTypes } from "@/hooks/useEventTypes";
 import { CalendarDay } from "./CalendarDay";
 import { useCalendarModifiers } from "./CalendarModifiers";
 import { EventDialog } from "./EventDialog";
-import { EventList } from "./EventList";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -87,8 +86,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         eventTypes={eventTypes}
         onUpdateEvent={updateEvent}
       />
-
-      {events && <EventList events={events} />}
     </div>
   );
 }

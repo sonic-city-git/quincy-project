@@ -6,10 +6,13 @@ import { ProjectCalendar } from "@/components/projects/calendar/ProjectCalendar"
 import { CustomerSelect } from "@/components/projects/forms/CustomerSelect";
 import { OwnerSelect } from "@/components/projects/forms/OwnerSelect";
 import { format, parseISO } from "date-fns";
+import { EventList } from "@/components/projects/calendar/EventList";
+import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 
 const ProjectDetail = () => {
   const { id } = useParams();
   const { project, loading } = useProjectDetails(id);
+  const { events } = useCalendarEvents(id || '');
 
   if (loading) {
     return <div className="p-8">Loading...</div>;
@@ -74,8 +77,8 @@ const ProjectDetail = () => {
           </TabsList>
 
           <TabsContent value="general">
-            <Card>
-              <div className="space-y-8">
+            <div className="space-y-8">
+              <Card>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
                   <div className="w-full">
                     <ProjectCalendar projectId={id || ''} />
@@ -115,8 +118,14 @@ const ProjectDetail = () => {
                     </div>
                   </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+
+              {events && (
+                <Card className="p-6">
+                  <EventList events={events} />
+                </Card>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="equipment">

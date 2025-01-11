@@ -12,7 +12,7 @@ export function EventList({ events }: EventListProps) {
   const sortedEvents = [...events].sort((a, b) => a.date.getTime() - b.date.getTime());
 
   return (
-    <div className="space-y-4 mt-8">
+    <div className="space-y-4">
       <h2 className="text-xl font-semibold">Project Events</h2>
       <div className="grid gap-4">
         {sortedEvents.map((event, index) => (
