@@ -1,28 +1,15 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Project } from "@/types/projects";
-import { Checkbox } from "@/components/ui/checkbox";
 
 interface ProjectTableRowProps {
   project: Project;
   index: number;
   colorStyle: React.HTMLAttributes<HTMLDivElement>;
-  isSelected: boolean;
-  onSelect: () => void;
 }
 
-export function ProjectTableRow({ project, index, colorStyle, isSelected, onSelect }: ProjectTableRowProps) {
+export function ProjectTableRow({ project, index, colorStyle }: ProjectTableRowProps) {
   return (
-    <TableRow 
-      className={`group hover:bg-zinc-800/50 ${
-        isSelected ? 'bg-zinc-800/75' : ''
-      }`}
-    >
-      <TableCell className="w-12">
-        <Checkbox 
-          checked={isSelected}
-          onCheckedChange={onSelect}
-        />
-      </TableCell>
+    <TableRow className="group hover:bg-zinc-800/50">
       <TableCell className="text-sm text-muted-foreground">
         {String(index).padStart(4, '0')}
       </TableCell>

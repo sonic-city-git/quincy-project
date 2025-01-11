@@ -1,12 +1,9 @@
 import { ProjectSearchInput } from "./filters/ProjectSearchInput";
-import { ProjectActions } from "./ProjectActions";
 import { ProjectOwnerFilter } from "./filters/ProjectOwnerFilter";
 
 interface ProjectListHeaderProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
-  selectedItem: string | null;
-  onProjectDeleted: () => void;
   ownerFilter: string;
   onOwnerFilterChange: (value: string) => void;
 }
@@ -14,8 +11,6 @@ interface ProjectListHeaderProps {
 export function ProjectListHeader({
   searchQuery,
   onSearchChange,
-  selectedItem,
-  onProjectDeleted,
   ownerFilter,
   onOwnerFilterChange,
 }: ProjectListHeaderProps) {
@@ -31,10 +26,6 @@ export function ProjectListHeader({
           onChange={onOwnerFilterChange}
         />
       </div>
-      <ProjectActions 
-        selectedItems={selectedItem ? [selectedItem] : []} 
-        onProjectDeleted={onProjectDeleted}
-      />
     </div>
   );
 }

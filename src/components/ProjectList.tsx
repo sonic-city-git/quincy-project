@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { Loader2 } from "lucide-react";
@@ -9,7 +8,6 @@ import { useProjectFilters } from "@/hooks/useProjectFilters";
 
 export function ProjectList() {
   const { projects, loading } = useProjects();
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const {
     searchQuery,
     setSearchQuery,
@@ -17,10 +15,6 @@ export function ProjectList() {
     setOwnerFilter,
     filteredProjects
   } = useProjectFilters(projects);
-
-  const handleItemSelect = (id: string) => {
-    setSelectedItem(prev => prev === id ? null : id);
-  };
 
   if (loading) {
     return (
@@ -38,18 +32,12 @@ export function ProjectList() {
             <ProjectListHeader
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
-              selectedItem={selectedItem}
-              onProjectDeleted={() => setSelectedItem(null)}
               ownerFilter={ownerFilter}
               onOwnerFilterChange={setOwnerFilter}
             />
             <Separator className="bg-zinc-800" />
             <div className="rounded-lg overflow-hidden border border-zinc-800">
-              <ProjectTable 
-                projects={filteredProjects} 
-                selectedItem={selectedItem}
-                onItemSelect={handleItemSelect}
-              />
+              <ProjectTable projects={filteredProjects} />
             </div>
           </div>
         </CardContent>

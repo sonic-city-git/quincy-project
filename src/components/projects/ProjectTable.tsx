@@ -4,16 +4,13 @@ import { Project } from "@/types/projects";
 
 interface ProjectTableProps {
   projects: Project[];
-  selectedItem: string | null;
-  onItemSelect: (id: string) => void;
 }
 
-export function ProjectTable({ projects, selectedItem, onItemSelect }: ProjectTableProps) {
+export function ProjectTable({ projects }: ProjectTableProps) {
   return (
     <Table>
       <TableHeader className="bg-zinc-900/50 border-b border-zinc-800">
         <TableRow>
-          <TableHead className="w-12"></TableHead>
           <TableHead className="w-12">Project #</TableHead>
           <TableHead>Name</TableHead>
           <TableHead>Owner</TableHead>
@@ -29,8 +26,6 @@ export function ProjectTable({ projects, selectedItem, onItemSelect }: ProjectTa
             colorStyle={{
               className: `bg-${project.color}-500/10 text-${project.color}-500`
             }}
-            isSelected={selectedItem === project.id}
-            onSelect={() => onItemSelect(project.id)}
           />
         ))}
       </TableBody>
