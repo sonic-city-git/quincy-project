@@ -20,6 +20,7 @@ import { CalendarEvent } from "@/types/events";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { InvoiceSummary } from "./InvoiceSummary";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface InvoiceDialogProps {
   isOpen: boolean;
@@ -30,30 +31,47 @@ interface InvoiceDialogProps {
 
 export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: InvoiceDialogProps) {
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const invoiceReadyEvents = events.filter(event => event.status === 'invoice ready');
 
   const handleGenerateInvoice = () => {
     setShowConfirmation(true);
   };
 
-  const handleConfirmInvoice = () => {
-    // Update all events to 'invoiced' status
-    invoiceReadyEvents.forEach(event => {
-      if (onStatusChange) {
-        onStatusChange(event, 'invoiced');
+  const handleConfirmInvoice = async () => {
+    setIsProcessing(true);
+    try {
+      // Update all events to 'invoiced' status
+      for (const event of invoiceReadyEvents) {
+        if (onStatusChange) {
+          await onStatusChange(event, 'invoiced');
+        }
       }
-    });
 
-    // Close both dialogs
-    setShowConfirmation(false);
-    onClose();
+      // Invalidate queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['events'] });
 
-    // Show success toast
-    toast({
-      title: "Invoice Generated",
-      description: "Events have been marked as invoiced and sent to Tripletex",
-    });
+      // Close both dialogs
+      setShowConfirmation(false);
+      onClose();
+
+      // Show success toast
+      toast({
+        title: "Invoice Generated",
+        description: "Events have been marked as invoiced and sent to Tripletex",
+      });
+    } catch (error) {
+      console.error('Error generating invoice:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate invoice. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -79,10 +97,13 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
           </ScrollArea>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} disabled={isProcessing}>
               Cancel
             </Button>
-            <Button onClick={handleGenerateInvoice} disabled={invoiceReadyEvents.length === 0}>
+            <Button 
+              onClick={handleGenerateInvoice} 
+              disabled={invoiceReadyEvents.length === 0 || isProcessing}
+            >
               Generate Invoice
             </Button>
           </div>
@@ -98,9 +119,12 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmInvoice}>
-              Confirm
+            <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmInvoice}
+              disabled={isProcessing}
+            >
+              {isProcessing ? "Processing..." : "Confirm"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
