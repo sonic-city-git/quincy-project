@@ -6,7 +6,6 @@ import { useEventTypes } from "@/hooks/useEventTypes";
 import { CalendarDay } from "./CalendarDay";
 import { useCalendarModifiers } from "./CalendarModifiers";
 import { EventDialog } from "./EventDialog";
-import { EventList } from "./EventList";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "@/utils/eventQueries";
 
@@ -101,8 +100,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
           return updateEvent(event);
         }}
       />
-
-      <EventList events={events} />
     </div>
   );
 }
