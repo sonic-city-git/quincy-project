@@ -44,11 +44,11 @@ export function EditEquipmentDialog({
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: equipment.Name || "",
-      code: equipment.Code || "",
-      rental_price: equipment.Price?.toString() || "",
-      stock: equipment.Stock?.toString() || "",
-      internal_remark: equipment["Internal remark"] || "",
+      name: equipment.name || "",
+      code: equipment.code || "",
+      rental_price: equipment.rental_price?.toString() || "",
+      stock: equipment.stock?.toString() || "",
+      internal_remark: equipment.internal_remark || "",
     },
   });
 
@@ -81,11 +81,11 @@ export function EditEquipmentDialog({
       const { error } = await supabase
         .from('equipment')
         .update({
-          Name: data.name,
-          Code: data.code || null,
-          Price: data.rental_price ? parseFloat(data.rental_price) : null,
-          Stock: data.stock ? parseInt(data.stock) : null,
-          "Internal remark": data.internal_remark || null,
+          name: data.name,
+          code: data.code || null,
+          rental_price: data.rental_price ? parseFloat(data.rental_price) : null,
+          stock: data.stock ? parseInt(data.stock) : null,
+          internal_remark: data.internal_remark || null,
         })
         .eq('id', equipment.id);
 
@@ -204,7 +204,7 @@ export function EditEquipmentDialog({
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the equipment
-              "{equipment.Name}" and all its associated data.
+              "{equipment.name}" and all its associated data.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

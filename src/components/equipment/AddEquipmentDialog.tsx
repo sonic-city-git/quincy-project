@@ -44,11 +44,11 @@ export function AddEquipmentDialog() {
         .from('equipment')
         .insert([
           {
-            Name: data.name,
-            Code: data.code || null,
-            Price: data.rental_price ? parseFloat(data.rental_price) : null,
-            Stock: data.stock ? parseInt(data.stock) : null,
-            "Internal remark": data.internal_remark || null,
+            name: data.name,
+            code: data.code || null,
+            rental_price: data.rental_price ? parseFloat(data.rental_price) : null,
+            stock: data.stock ? parseInt(data.stock) : null,
+            internal_remark: data.internal_remark || null,
           }
         ]);
 
