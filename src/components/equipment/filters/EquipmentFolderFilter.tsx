@@ -45,19 +45,20 @@ export function EquipmentFolderFilter({
 
   const renderFolderItems = (folder: Folder, level: number = 0) => {
     const subfolders = getSubfolders(folder.id);
+    const paddingLeft = level > 0 ? `${level * 16}px` : undefined;
     
     return (
-      <>
+      <div key={folder.id}>
         <DropdownMenuCheckboxItem
-          key={folder.id}
           checked={selectedFolders.includes(folder.id)}
           onCheckedChange={() => onFolderToggle(folder.id)}
-          className={level > 0 ? "pl-8" : ""}
+          style={{ paddingLeft }}
+          className="relative"
         >
           {folder.name}
         </DropdownMenuCheckboxItem>
         {subfolders.map(subfolder => renderFolderItems(subfolder, level + 1))}
-      </>
+      </div>
     );
   };
 
