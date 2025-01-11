@@ -158,9 +158,6 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
     >
       <div className="text-left">
         <div className="font-medium leading-tight">{item.name}</div>
-        {item.code && (
-          <div className="text-xs text-muted-foreground">{item.code}</div>
-        )}
       </div>
     </Button>
   );

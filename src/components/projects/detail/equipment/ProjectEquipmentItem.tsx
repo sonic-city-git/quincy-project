@@ -14,9 +14,6 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
       <div className="flex items-center justify-between h-full">
         <div>
           <h3 className="font-medium leading-tight">{item.name}</h3>
-          {item.code && (
-            <div className="text-xs text-muted-foreground">{item.code}</div>
-          )}
         </div>
         <div className="flex items-center gap-1">
           <div className="flex items-center gap-1">
