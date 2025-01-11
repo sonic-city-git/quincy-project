@@ -78,10 +78,18 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
         google.maps.event.clearInstanceListeners(autocompleteInstance.current);
       }
 
-      autocompleteInstance.current = new google.maps.places.Autocomplete(inputRef.current, {
+      const options: google.maps.places.AutocompleteOptions = {
         types: ['(cities)'],
         fields: ['formatted_address', 'name'],
-      });
+      };
+
+      autocompleteInstance.current = new google.maps.places.Autocomplete(inputRef.current, options);
+      
+      // Prevent the default behavior that makes the input readonly
+      if (inputRef.current) {
+        inputRef.current.setAttribute('autocomplete', 'off');
+        inputRef.current.style.backgroundColor = 'transparent';
+      }
 
       autocompleteInstance.current.addListener('place_changed', () => {
         const place = autocompleteInstance.current?.getPlace();
@@ -120,7 +128,7 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
         placeholder={error || "Enter location"}
         value={internalValue}
         onChange={handleInputChange}
-        className="pl-8"
+        className="pl-8 bg-background"
         disabled={!!error}
       />
     </div>
