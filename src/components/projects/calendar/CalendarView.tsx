@@ -34,14 +34,13 @@ export function CalendarView({
       onSelect={(dates: Date[] | undefined) => {
         console.log('Calendar onSelect', { dates, selectedDates });
         if (!dates || dates.length === 0) return;
-
         const clickedDate = dates[dates.length - 1];
         console.log('Clicked date:', clickedDate);
         onDragStart(clickedDate);
       }}
       onDayMouseEnter={(date: Date) => {
+        console.log('Day mouse enter', date);
         if (selectedDates.length > 0) {
-          console.log('Day mouse enter', date);
           onDragEnter(date);
         }
       }}
