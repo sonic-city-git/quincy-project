@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
 import { Card } from "@/components/ui/card";
+import { ProjectCalendar } from "@/components/projects/calendar/ProjectCalendar";
 
 const ProjectDetail = () => {
   const { id } = useParams();
@@ -35,13 +36,20 @@ const ProjectDetail = () => {
         </h1>
       </div>
       
-      <Tabs defaultValue="general" className="w-full">
+      <Tabs defaultValue="calendar" className="w-full">
         <TabsList>
+          <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="equipment">Equipment</TabsTrigger>
           <TabsTrigger value="crew">Crew</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="calendar">
+          <Card className="p-6">
+            <ProjectCalendar projectId={id || ''} />
+          </Card>
+        </TabsContent>
 
         <TabsContent value="general">
           <Card className="p-6">
