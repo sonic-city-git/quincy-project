@@ -19,6 +19,7 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
 
   useEffect(() => {
     const fetchApiKey = async () => {
+      console.log('Fetching Google Maps API key...');
       const { data: { GOOGLE_MAPS_API_KEY }, error } = await supabase.functions.invoke('get-secret', {
         body: { secretName: 'GOOGLE_MAPS_API_KEY' }
       });
@@ -29,6 +30,7 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
         return;
       }
 
+      console.log('API key fetched successfully');
       setApiKey(GOOGLE_MAPS_API_KEY);
     };
 
@@ -39,10 +41,12 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
     if (!apiKey) return;
 
     if (document.getElementById(scriptId)) {
+      console.log('Google Maps script already loaded');
       setIsLoaded(true);
       return;
     }
 
+    console.log('Loading Google Maps script...');
     const script = document.createElement('script');
     script.id = scriptId;
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
@@ -54,8 +58,8 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
       setIsLoaded(true);
     };
 
-    script.onerror = () => {
-      console.error('Failed to load Google Maps API');
+    script.onerror = (e) => {
+      console.error('Failed to load Google Maps API:', e);
       setError('Failed to load location search');
       document.head.removeChild(script);
     };
@@ -74,6 +78,7 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
     if (!isLoaded || !inputRef.current || error) return;
 
     try {
+      console.log('Initializing Places Autocomplete...');
       if (autocompleteInstance.current) {
         google.maps.event.clearInstanceListeners(autocompleteInstance.current);
       }
@@ -85,7 +90,6 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
 
       autocompleteInstance.current = new google.maps.places.Autocomplete(inputRef.current, options);
       
-      // Prevent the default behavior that makes the input readonly
       if (inputRef.current) {
         inputRef.current.setAttribute('autocomplete', 'off');
         inputRef.current.style.backgroundColor = 'transparent';
@@ -93,11 +97,14 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
 
       autocompleteInstance.current.addListener('place_changed', () => {
         const place = autocompleteInstance.current?.getPlace();
+        console.log('Place selected:', place);
         if (place?.name) {
           setInternalValue(place.name);
           onChange(place.name);
         }
       });
+
+      console.log('Places Autocomplete initialized successfully');
     } catch (err) {
       console.error('Error initializing Google Places Autocomplete:', err);
       setError('Failed to initialize location search');
@@ -112,6 +119,7 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
+    console.log('Input value changed:', newValue);
     setInternalValue(newValue);
     onChange(newValue);
   };
@@ -130,6 +138,7 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
         onChange={handleInputChange}
         className="pl-8 bg-background"
         disabled={!!error}
+        style={{ backgroundColor: 'transparent' }}
       />
     </div>
   );
