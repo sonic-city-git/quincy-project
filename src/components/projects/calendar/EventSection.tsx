@@ -34,18 +34,6 @@ export function EventSection({ status, events, onStatusChange }: EventSectionPro
     return `${status.charAt(0).toUpperCase()}${status.slice(1)} (${events.length})`;
   };
 
-  const handleConfirmAll = () => {
-    events.forEach(event => {
-      onStatusChange(event, 'confirmed');
-    });
-  };
-
-  const handleInvoiceReadyAll = () => {
-    events.forEach(event => {
-      onStatusChange(event, 'invoice ready');
-    });
-  };
-
   const handleStatusChangeAll = (newStatus: CalendarEvent['status']) => {
     events.forEach(event => {
       onStatusChange(event, newStatus);
@@ -88,69 +76,49 @@ export function EventSection({ status, events, onStatusChange }: EventSectionPro
           {sectionIcon}
           <h3 className="text-lg font-semibold">{getStatusText(status)}</h3>
         </div>
-        <div className="flex items-center gap-2">
-          {status === 'proposed' && events.length > 0 && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleConfirmAll}
-            >
-              Confirm all
-            </Button>
-          )}
-          {status === 'confirmed' && events.length > 0 && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={handleInvoiceReadyAll}
-            >
-              Invoice ready all
-            </Button>
-          )}
-          {events.length > 0 && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  Manage all
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem 
-                  onClick={() => handleStatusChangeAll('proposed')}
-                  className="flex items-center gap-2"
-                >
-                  {getStatusIcon('proposed')}
-                  Proposed
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleStatusChangeAll('confirmed')}
-                  className="flex items-center gap-2"
-                >
-                  {getStatusIcon('confirmed')}
-                  Confirmed
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleStatusChangeAll('invoice ready')}
-                  className="flex items-center gap-2"
-                >
-                  {getStatusIcon('invoice ready')}
-                  Invoice Ready
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => handleStatusChangeAll('cancelled')}
-                  className="flex items-center gap-2"
-                >
-                  {getStatusIcon('cancelled')}
-                  Cancelled
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
-        </div>
+        {events.length > 0 && (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                Manage all
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem 
+                onClick={() => handleStatusChangeAll('proposed')}
+                className="flex items-center gap-2"
+              >
+                {getStatusIcon('proposed')}
+                Proposed
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => handleStatusChangeAll('confirmed')}
+                className="flex items-center gap-2"
+              >
+                {getStatusIcon('confirmed')}
+                Confirmed
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => handleStatusChangeAll('invoice ready')}
+                className="flex items-center gap-2"
+              >
+                {getStatusIcon('invoice ready')}
+                Invoice Ready
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => handleStatusChangeAll('cancelled')}
+                className="flex items-center gap-2"
+              >
+                {getStatusIcon('cancelled')}
+                Cancelled
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
       {content}
     </div>
