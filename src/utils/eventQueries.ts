@@ -56,18 +56,22 @@ export const createEvent = async (
     .limit(1)
     .maybeSingle();
 
-  if (statusError || !statusData) {
-    console.error('Error fetching proposed status:', statusError || 'No status found');
-    throw new Error('Could not find proposed status. Please ensure event statuses are properly configured.');
+  if (!statusData) {
+    console.error('Error: Proposed status not found in database');
+    throw new Error('Required event status "proposed" not found in database');
+  }
+
+  if (statusError) {
+    console.error('Error fetching proposed status:', statusError);
+    throw statusError;
   }
 
   console.log('Adding event:', {
-    project_id: projectId,
+    projectId,
     date: formattedDate,
-    name: eventName,
-    event_type_id: eventType.id,
-    status_id: statusData.id,
-    needs_crew: eventType.needs_crew
+    eventName,
+    eventType,
+    statusId: statusData.id
   });
 
   try {
@@ -131,9 +135,6 @@ export const updateEvent = async (
   projectId: string,
   updatedEvent: CalendarEvent
 ) => {
-  const formattedDate = formatDatabaseDate(updatedEvent.date);
-
-  // Get the status id for the new status
   const { data: statusData, error: statusError } = await supabase
     .from('event_statuses')
     .select('id')
@@ -141,9 +142,14 @@ export const updateEvent = async (
     .limit(1)
     .maybeSingle();
 
-  if (statusError || !statusData) {
-    console.error('Error fetching status:', statusError || 'No status found');
-    throw new Error(`Could not find status '${updatedEvent.status}'. Please ensure event statuses are properly configured.`);
+  if (!statusData) {
+    console.error('Error: Status not found in database:', updatedEvent.status);
+    throw new Error(`Required event status "${updatedEvent.status}" not found in database`);
+  }
+
+  if (statusError) {
+    console.error('Error fetching status:', statusError);
+    throw statusError;
   }
 
   const { error } = await supabase
