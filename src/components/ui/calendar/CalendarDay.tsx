@@ -64,9 +64,9 @@ export function CalendarDay({
         align="center"
         side="top"
         sideOffset={5}
-        className="z-[100] bg-zinc-950 border border-zinc-800 text-white p-3 rounded-md shadow-xl max-w-[300px] w-auto"
+        className="z-[100] bg-zinc-950 border border-zinc-800 text-white p-3 rounded-md shadow-xl w-auto"
       >
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 text-center">
           <p className="font-semibold text-white">{event.name}</p>
           <p className="text-sm text-zinc-300">{event.type.name}</p>
         </div>
