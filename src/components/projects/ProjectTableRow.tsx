@@ -1,6 +1,7 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Project } from "@/types/projects";
 import { format, parseISO } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 interface ProjectTableRowProps {
   project: Project;
@@ -8,6 +9,8 @@ interface ProjectTableRowProps {
 }
 
 export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
+  const navigate = useNavigate();
+
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
     try {
@@ -35,8 +38,9 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
       <TableCell>
         <div className="max-w-[345px]">
           <div 
-            className="px-3.5 py-2 rounded-md text-[15px] font-medium truncate"
+            className="px-3.5 py-2 rounded-md text-[15px] font-medium truncate cursor-pointer"
             style={colorStyles}
+            onClick={() => navigate(`/projects/${project.id}`)}
           >
             {project.name}
           </div>
