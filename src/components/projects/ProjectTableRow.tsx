@@ -29,16 +29,15 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
 
   return (
     <TableRow className="group hover:bg-zinc-800/50">
-      <TableCell className="text-sm text-muted-foreground">
-        {String(index).padStart(4, '0')}
-      </TableCell>
-      <TableCell>
-        <div className="max-w-[300px]">
+      <TableCell className="text-sm">
+        <div className="flex items-center space-x-2">
           <div 
-            className="px-2 py-1 rounded-md text-sm font-medium truncate"
+            className="px-2 py-1 rounded-md text-sm font-medium flex items-center space-x-2"
             style={colorStyles}
           >
-            {project.name}
+            <span>{String(index).padStart(4, '0')}</span>
+            <span className="mx-2">·</span>
+            <span className="truncate">{project.name}</span>
           </div>
         </div>
       </TableCell>
