@@ -21,8 +21,10 @@ export function EventList({ events }: EventListProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   
+  // Create a sorted copy of events for grouping
   const sortedEvents = [...events].sort((a, b) => a.date.getTime() - b.date.getTime());
 
+  // Group events by status
   const groupedEvents = {
     proposed: sortedEvents.filter(event => event.status === 'proposed'),
     confirmed: sortedEvents.filter(event => event.status === 'confirmed'),
@@ -35,15 +37,14 @@ export function EventList({ events }: EventListProps) {
       // Create updated event object
       const updatedEvent = { ...event, status: newStatus };
       
-      // Update local state immediately
-      const currentEvents = [...events];
-      const updatedEvents = currentEvents.map(e => 
+      // Create new events array with the updated event
+      const updatedEvents = events.map(e => 
         e.date.getTime() === event.date.getTime() && e.name === event.name
           ? updatedEvent
           : e
       );
 
-      // Update both queries optimistically
+      // Immediately update the UI with the new data
       queryClient.setQueryData(['events'], updatedEvents);
       queryClient.setQueryData(['calendarEvents'], updatedEvents);
 
@@ -62,14 +63,12 @@ export function EventList({ events }: EventListProps) {
       });
 
       // Refresh queries in the background
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['events'] }),
-        queryClient.invalidateQueries({ queryKey: ['calendarEvents'] })
-      ]);
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
     } catch (error) {
       console.error('Error updating event status:', error);
       
-      // Revert to original data
+      // Revert to original data on error
       queryClient.setQueryData(['events'], events);
       queryClient.setQueryData(['calendarEvents'], events);
       
