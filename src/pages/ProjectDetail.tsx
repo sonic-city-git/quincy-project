@@ -73,74 +73,72 @@ const ProjectDetail = () => {
             <TabsTrigger value="financial">Financial</TabsTrigger>
           </TabsList>
 
-          <div className="flex-1 overflow-auto p-8 pt-4">
-            <TabsContent value="general">
-              <Card className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="w-full">
-                    <ProjectCalendar projectId={id || ''} />
-                  </div>
-                  
+          <TabsContent value="general">
+            <Card>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="w-full">
+                  <ProjectCalendar projectId={id || ''} />
+                </div>
+                
+                <div className="space-y-4 p-6">
                   <div className="space-y-4">
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Customer</label>
-                        <CustomerSelect
-                          value={project.customer_id || ''}
-                          onChange={() => {}}
-                          required={false}
-                        />
-                      </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Customer</label>
+                      <CustomerSelect
+                        value={project.customer_id || ''}
+                        onChange={() => {}}
+                        required={false}
+                      />
+                    </div>
 
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Owner</label>
-                        <OwnerSelect
-                          value={project.owner_id || ''}
-                          onChange={() => {}}
-                          required={false}
-                        />
-                      </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Owner</label>
+                      <OwnerSelect
+                        value={project.owner_id || ''}
+                        onChange={() => {}}
+                        required={false}
+                      />
+                    </div>
 
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">Last Invoiced</label>
-                        <div className="text-sm text-muted-foreground">
-                          {formatDate(project.created_at)}
-                        </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">Last Invoiced</label>
+                      <div className="text-sm text-muted-foreground">
+                        {formatDate(project.created_at)}
                       </div>
+                    </div>
 
-                      <div>
-                        <label className="text-sm font-medium mb-1 block">To be Invoiced</label>
-                        <div className="text-sm text-muted-foreground">
-                          {formatCurrency(project.to_be_invoiced)}
-                        </div>
+                    <div>
+                      <label className="text-sm font-medium mb-1 block">To be Invoiced</label>
+                      <div className="text-sm text-muted-foreground">
+                        {formatCurrency(project.to_be_invoiced)}
                       </div>
                     </div>
                   </div>
                 </div>
-              </Card>
-            </TabsContent>
+              </div>
+            </Card>
+          </TabsContent>
 
-            <TabsContent value="equipment">
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold">Equipment</h2>
-                {/* Equipment content will be implemented in future iterations */}
-              </Card>
-            </TabsContent>
+          <TabsContent value="equipment">
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold">Equipment</h2>
+              {/* Equipment content will be implemented in future iterations */}
+            </Card>
+          </TabsContent>
 
-            <TabsContent value="crew">
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold">Crew</h2>
-                {/* Crew content will be implemented in future iterations */}
-              </Card>
-            </TabsContent>
+          <TabsContent value="crew">
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold">Crew</h2>
+              {/* Crew content will be implemented in future iterations */}
+            </Card>
+          </TabsContent>
 
-            <TabsContent value="financial">
-              <Card className="p-6">
-                <h2 className="text-xl font-semibold">Financial</h2>
-                {/* Financial content will be implemented in future iterations */}
-              </Card>
-            </TabsContent>
-          </div>
+          <TabsContent value="financial">
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold">Financial</h2>
+              {/* Financial content will be implemented in future iterations */}
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
