@@ -5,7 +5,7 @@ import { useFolders } from "@/hooks/useFolders";
 export function useEquipmentFilters() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFolders, setSelectedFolders] = useState<string[]>([]);
-  const { data: folders = [] } = useFolders();
+  const { folders = [] } = useFolders();
 
   const getChildFolderIds = (folderId: string): string[] => {
     const childFolders = folders.filter(folder => folder.parent_id === folderId);

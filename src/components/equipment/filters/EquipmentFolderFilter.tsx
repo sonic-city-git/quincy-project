@@ -47,7 +47,7 @@ export function EquipmentFolderFilter({
   selectedFolders,
   onFolderToggle,
 }: EquipmentFolderFilterProps) {
-  const { data: folders = [] } = useFolders();
+  const { folders = [] } = useFolders();
 
   // Organize folders into a hierarchy and sort them according to the specified order
   const mainFolders = folders
