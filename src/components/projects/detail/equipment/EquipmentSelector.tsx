@@ -113,7 +113,6 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
     >
       <div className="text-left">
         <div className="font-medium">{item.name}</div>
-        <div className="text-sm text-muted-foreground">{item.code || '-'}</div>
       </div>
     </Button>
   );
