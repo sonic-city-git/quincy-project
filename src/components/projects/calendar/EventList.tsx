@@ -1,7 +1,7 @@
 import { CalendarEvent } from "@/types/events";
 import { Card } from "@/components/ui/card";
 import { format } from "date-fns";
-import { Calendar, CheckCircle, HelpCircle, Send, XCircle } from "lucide-react";
+import { Calendar, CheckCircle, HelpCircle, Send, XCircle, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -103,6 +103,8 @@ export function EventList({ events, projectId }: EventListProps) {
         return <CheckCircle className="h-5 w-5 text-green-500" />;
       case 'invoice ready':
         return <Send className="h-5 w-5 text-blue-500" />;
+      case 'invoiced':
+        return <DollarSign className="h-5 w-5 text-emerald-500" />;
       case 'cancelled':
         return <XCircle className="h-5 w-5 text-red-500" />;
       default: // 'proposed'
@@ -115,9 +117,19 @@ export function EventList({ events, projectId }: EventListProps) {
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
+  const formatRevenue = (revenue: number | undefined) => {
+    if (revenue === undefined || revenue === null) return '-';
+    return new Intl.NumberFormat('nb-NO', {
+      style: 'currency',
+      currency: 'NOK',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(revenue);
+  };
+
   const renderEventCard = (event: CalendarEvent) => (
     <Card key={`${event.date}-${event.name}`} className="p-4">
-      <div className="grid grid-cols-[160px_1fr_auto_auto] items-center gap-6">
+      <div className="grid grid-cols-[160px_1fr_auto_auto_auto] items-center gap-6">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
@@ -129,6 +141,9 @@ export function EventList({ events, projectId }: EventListProps) {
           className={`text-sm px-3 py-1 rounded-full ${event.type.color}`}
         >
           {event.type.name}
+        </div>
+        <div className="text-sm text-muted-foreground font-medium">
+          {formatRevenue(event.revenue)}
         </div>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -161,6 +176,13 @@ export function EventList({ events, projectId }: EventListProps) {
             >
               <Send className="h-4 w-4 text-blue-500" />
               Invoice Ready
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => handleStatusChange(event, 'invoiced')}
+              className="flex items-center gap-2"
+            >
+              <DollarSign className="h-4 w-4 text-emerald-500" />
+              Invoiced
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => handleStatusChange(event, 'cancelled')}
