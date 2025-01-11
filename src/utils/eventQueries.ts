@@ -17,7 +17,7 @@ export const fetchEvents = async (projectId: string) => {
         needs_crew,
         crew_rate_multiplier
       ),
-      event_statuses (
+      event_statuses!inner (
         id,
         name
       )
@@ -93,7 +93,7 @@ export const createEvent = async (
           needs_crew,
           crew_rate_multiplier
         ),
-        event_statuses (
+        event_statuses!inner (
           id,
           name
         )
