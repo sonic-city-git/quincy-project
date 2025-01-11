@@ -40,10 +40,10 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
   useEffect(() => {
     if (!apiKey) return;
 
-    if (document.getElementById(scriptId)) {
-      console.log('Google Maps script already loaded');
-      setIsLoaded(true);
-      return;
+    // Remove any existing script first
+    const existingScript = document.getElementById(scriptId);
+    if (existingScript) {
+      document.head.removeChild(existingScript);
     }
 
     console.log('Loading Google Maps script...');
@@ -61,15 +61,17 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
     script.onerror = (e) => {
       console.error('Failed to load Google Maps API:', e);
       setError('Failed to load location search');
-      document.head.removeChild(script);
+      if (script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
     };
 
     document.head.appendChild(script);
 
     return () => {
       const scriptElement = document.getElementById(scriptId);
-      if (scriptElement && scriptElement.parentNode === document.head) {
-        document.head.removeChild(scriptElement);
+      if (scriptElement && scriptElement.parentNode) {
+        scriptElement.parentNode.removeChild(scriptElement);
       }
     };
   }, [apiKey]);
@@ -89,10 +91,10 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
       };
 
       autocompleteInstance.current = new google.maps.places.Autocomplete(inputRef.current, options);
-      
+
+      // Prevent the input from becoming readonly
       if (inputRef.current) {
         inputRef.current.setAttribute('autocomplete', 'off');
-        inputRef.current.style.backgroundColor = 'transparent';
       }
 
       autocompleteInstance.current.addListener('place_changed', () => {
@@ -136,9 +138,8 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
         placeholder={error || "Enter location"}
         value={internalValue}
         onChange={handleInputChange}
-        className="pl-8 bg-background"
+        className="pl-8"
         disabled={!!error}
-        style={{ backgroundColor: 'transparent' }}
       />
     </div>
   );
