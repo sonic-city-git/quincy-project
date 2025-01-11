@@ -6,12 +6,18 @@ export const useEventTypes = () => {
   return useQuery({
     queryKey: ['eventTypes'],
     queryFn: async (): Promise<EventType[]> => {
+      console.log('Fetching event types...');
       const { data, error } = await supabase
         .from('event_types')
         .select('*')
         .order('name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching event types:', error);
+        throw error;
+      }
+      
+      console.log('Fetched event types:', data);
       return data;
     }
   });
