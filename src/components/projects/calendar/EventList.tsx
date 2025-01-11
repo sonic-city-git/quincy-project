@@ -26,7 +26,7 @@ export function EventList({ events, projectId }: EventListProps) {
   const groupedEvents = {
     proposed: events.filter(event => event.status === 'proposed'),
     confirmed: events.filter(event => event.status === 'confirmed'),
-    invoice: events.filter(event => event.status === 'invoice'),
+    invoice_ready: events.filter(event => event.status === 'invoice ready'),
     cancelled: events.filter(event => event.status === 'cancelled'),
   };
 
@@ -101,7 +101,7 @@ export function EventList({ events, projectId }: EventListProps) {
     switch (status) {
       case 'confirmed':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'invoice':
+      case 'invoice ready':
         return <Send className="h-5 w-5 text-blue-500" />;
       case 'cancelled':
         return <XCircle className="h-5 w-5 text-red-500" />;
@@ -111,6 +111,7 @@ export function EventList({ events, projectId }: EventListProps) {
   };
 
   const getStatusText = (status: string) => {
+    if (status === 'invoice_ready') return 'Invoice Ready';
     return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
@@ -155,11 +156,11 @@ export function EventList({ events, projectId }: EventListProps) {
               Confirmed
             </DropdownMenuItem>
             <DropdownMenuItem 
-              onClick={() => handleStatusChange(event, 'invoice')}
+              onClick={() => handleStatusChange(event, 'invoice ready')}
               className="flex items-center gap-2"
             >
               <Send className="h-4 w-4 text-blue-500" />
-              Invoice
+              Invoice Ready
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => handleStatusChange(event, 'cancelled')}
@@ -194,7 +195,7 @@ export function EventList({ events, projectId }: EventListProps) {
     <div className="space-y-8">
       {renderEventSection('proposed', groupedEvents.proposed)}
       {renderEventSection('confirmed', groupedEvents.confirmed)}
-      {renderEventSection('invoice', groupedEvents.invoice)}
+      {renderEventSection('invoice ready', groupedEvents.invoice_ready)}
       {renderEventSection('cancelled', groupedEvents.cancelled)}
     </div>
   );
