@@ -68,13 +68,6 @@ export function EventCard({ event, onStatusChange }: EventCardProps) {
               Invoice Ready
             </DropdownMenuItem>
             <DropdownMenuItem 
-              onClick={() => onStatusChange(event, 'invoiced')}
-              className="flex items-center gap-2"
-            >
-              {getStatusIcon('invoiced')}
-              Invoiced
-            </DropdownMenuItem>
-            <DropdownMenuItem 
               onClick={() => onStatusChange(event, 'cancelled')}
               className="flex items-center gap-2"
             >
