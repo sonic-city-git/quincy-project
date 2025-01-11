@@ -69,6 +69,13 @@ export function Calendar({
     const isCurrentMonth = isSameMonth(date, month);
     const dayIsToday = isToday(date);
 
+    const baseButtonClasses = cn(
+      "h-10 w-full p-0 font-normal relative",
+      !isCurrentMonth && "text-muted-foreground opacity-50",
+      dayIsToday && "border border-blue-500",
+      "hover:bg-zinc-800 rounded-md transition-colors"
+    );
+
     if (!event) {
       return (
         <button
@@ -81,11 +88,8 @@ export function Calendar({
           }}
           onMouseEnter={() => onDayMouseEnter?.(date)}
           className={cn(
-            "h-10 w-full p-0 font-normal relative",
-            !isCurrentMonth && "text-muted-foreground opacity-50",
-            isSelected && "bg-blue-500/50 text-white",
-            dayIsToday && "border border-blue-500",
-            "hover:bg-zinc-800 rounded-md transition-colors"
+            baseButtonClasses,
+            isSelected && "bg-blue-500/30 text-white"
           )}
         >
           <span className="relative z-10">{format(date, 'd')}</span>
@@ -105,13 +109,12 @@ export function Calendar({
             }}
             onMouseEnter={() => onDayMouseEnter?.(date)}
             className={cn(
-              "h-10 w-full p-0 font-normal relative",
-              isSelected && "bg-blue-500/50",
-              dayIsToday && "border border-blue-500",
+              baseButtonClasses,
+              isSelected && "bg-blue-500/30",
               "rounded-md transition-colors"
             )}
             style={{
-              backgroundColor: `${event.type.color}D9`,
+              backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.3)' : `${event.type.color}D9`,
               color: '#FFFFFF'
             }}
           >
