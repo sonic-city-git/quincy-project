@@ -76,50 +76,38 @@ export function Calendar({
       "hover:bg-zinc-800 rounded-md transition-colors"
     );
 
+    const renderDayContent = () => (
+      <button
+        key={date.toString()}
+        onClick={() => {
+          onDayClick?.(date);
+          if (mode === 'multiple') {
+            onSelect?.([...(selected || []), date]);
+          }
+        }}
+        onMouseEnter={() => onDayMouseEnter?.(date)}
+        className={cn(
+          baseButtonClasses,
+          isSelected && !event && "bg-blue-500/30 text-white",
+          event && !isSelected && `bg-opacity-85 text-white`,
+          isSelected && event && "bg-blue-500/30 text-white"
+        )}
+        style={event && !isSelected ? {
+          backgroundColor: `${event.type.color}D9`
+        } : undefined}
+      >
+        <span className="relative z-10">{format(date, 'd')}</span>
+      </button>
+    );
+
     if (!event) {
-      return (
-        <button
-          key={date.toString()}
-          onClick={() => {
-            onDayClick?.(date);
-            if (mode === 'multiple') {
-              onSelect?.([...(selected || []), date]);
-            }
-          }}
-          onMouseEnter={() => onDayMouseEnter?.(date)}
-          className={cn(
-            baseButtonClasses,
-            isSelected && "bg-blue-500/30 text-white"
-          )}
-        >
-          <span className="relative z-10">{format(date, 'd')}</span>
-        </button>
-      );
+      return renderDayContent();
     }
 
     return (
       <HoverCard key={date.toString()} openDelay={100} closeDelay={0}>
         <HoverCardTrigger asChild>
-          <button
-            onClick={() => {
-              onDayClick?.(date);
-              if (mode === 'multiple') {
-                onSelect?.([...(selected || []), date]);
-              }
-            }}
-            onMouseEnter={() => onDayMouseEnter?.(date)}
-            className={cn(
-              baseButtonClasses,
-              isSelected && "bg-blue-500/30",
-              "rounded-md transition-colors"
-            )}
-            style={{
-              backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.3)' : `${event.type.color}D9`,
-              color: '#FFFFFF'
-            }}
-          >
-            <span className="relative z-10">{format(date, 'd')}</span>
-          </button>
+          {renderDayContent()}
         </HoverCardTrigger>
         <HoverCardContent 
           align="center"
