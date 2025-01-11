@@ -12,7 +12,7 @@ export function ProjectTableRow({ project, index, colorStyle }: ProjectTableRowP
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
     try {
-      return format(parseISO(dateString), 'dd.MM.yy HH:mm');
+      return format(parseISO(dateString), 'dd.MM.yy');
     } catch (error) {
       console.error('Error formatting date:', error);
       return '-';
