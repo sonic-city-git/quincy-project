@@ -1,7 +1,7 @@
 import { CalendarEvent } from "@/types/events";
 import { getStatusIcon, getStatusText } from "@/utils/eventFormatters";
 import { EventCard } from "./EventCard";
-import { Brush } from "lucide-react";
+import { Brush, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useState } from "react";
 
@@ -12,7 +12,7 @@ interface EventSectionProps {
 }
 
 export function EventSection({ status, events, onStatusChange }: EventSectionProps) {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false);
   
   if (events.length === 0) return null;
   
@@ -40,8 +40,11 @@ export function EventSection({ status, events, onStatusChange }: EventSectionPro
     return (
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <CollapsibleTrigger className="flex items-center gap-2 w-full group">
-          {sectionIcon}
-          <h3 className="text-lg font-semibold">{getStatusText(status)}</h3>
+          <div className="flex items-center gap-2 flex-1">
+            {sectionIcon}
+            <h3 className="text-lg font-semibold">{getStatusText(status)}</h3>
+          </div>
+          <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-3">
           {content}
