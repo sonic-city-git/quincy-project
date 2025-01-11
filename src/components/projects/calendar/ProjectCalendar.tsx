@@ -8,6 +8,7 @@ import { useCalendarModifiers } from "./CalendarModifiers";
 import { EventDialog } from "./EventDialog";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "@/utils/eventQueries";
+import { useState } from "react";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -28,6 +29,11 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     closeEditDialog,
   } = useEventDialog();
 
+  // Drag selection state
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartDate, setDragStartDate] = useState<Date | null>(null);
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+
   // Use React Query for events to ensure automatic updates
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events', projectId],
@@ -35,7 +41,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     refetchOnWindowFocus: true,
   });
 
-  const { modifiers, modifiersStyles } = useCalendarModifiers(events);
+  const { modifiers, modifiersStyles } = useCalendarModifiers(events, selectedDates);
 
   const handleDayClick = (date: Date) => {
     const normalizedDate = normalizeDate(date);
@@ -48,6 +54,50 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     } else {
       openAddDialog(normalizedDate);
     }
+  };
+
+  const handleDragStart = (date: Date) => {
+    setIsDragging(true);
+    setDragStartDate(normalizeDate(date));
+    setSelectedDates([normalizeDate(date)]);
+  };
+
+  const handleDragEnter = (date: Date) => {
+    if (!isDragging || !dragStartDate) return;
+
+    const normalizedDate = normalizeDate(date);
+    const startTime = dragStartDate.getTime();
+    const currentTime = normalizedDate.getTime();
+
+    // Calculate all dates between start and current
+    const dates: Date[] = [];
+    const direction = currentTime >= startTime ? 1 : -1;
+    let currentDate = new Date(startTime);
+
+    while (
+      direction > 0 ? currentDate.getTime() <= currentTime : currentDate.getTime() >= currentTime
+    ) {
+      dates.push(new Date(currentDate));
+      currentDate.setDate(currentDate.getDate() + direction);
+    }
+
+    setSelectedDates(dates);
+  };
+
+  const handleDragEnd = async () => {
+    if (!isDragging || selectedDates.length === 0) return;
+
+    setIsDragging(false);
+    const firstDate = selectedDates[0];
+    
+    // Open dialog for the first date - when user completes it, we'll create events for all dates
+    openAddDialog(firstDate, async (date: Date, name: string, eventType: any) => {
+      // Create events for all selected dates
+      for (const selectedDate of selectedDates) {
+        await addEvent(selectedDate, name, eventType);
+      }
+      setSelectedDates([]);
+    });
   };
 
   // Create content renderer for each event day
@@ -78,6 +128,19 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         components={modifiersContent}
         className="w-full rounded-md border border-zinc-800 bg-zinc-950"
         selected={undefined}
+        onMouseDown={(e: any) => {
+          if (e.target.closest('[role="gridcell"]')) {
+            const date = new Date(e.target.closest('[role="gridcell"]').getAttribute('data-date'));
+            handleDragStart(date);
+          }
+        }}
+        onMouseEnter={(e: any) => {
+          if (e.target.closest('[role="gridcell"]')) {
+            const date = new Date(e.target.closest('[role="gridcell"]').getAttribute('data-date'));
+            handleDragEnter(date);
+          }
+        }}
+        onMouseUp={() => handleDragEnd()}
       />
 
       <EventDialog
