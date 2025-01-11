@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext } from "react";
 import { Session } from "@supabase/supabase-js";
 
 type AuthContextType = {
@@ -12,27 +12,15 @@ export const useAuth = () => {
   return useContext(AuthContext);
 };
 
-// Generate a unique session ID for development bypass
-const generateDevSessionId = () => {
-  return Math.random().toString(36).substring(2, 15);
-};
+// Development email for bypassing authentication
+const DEV_EMAIL = 'dev@sonicbooking.no';
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [devSessionId] = useState(() => {
-    const stored = localStorage.getItem('dev-session-id');
-    if (!stored) {
-      const newId = generateDevSessionId();
-      localStorage.setItem('dev-session-id', newId);
-      return newId;
-    }
-    return stored;
-  });
-
-  // Create a mock session only for the browser with the matching dev session ID
-  const mockSession = devSessionId === localStorage.getItem('dev-session-id') ? {
+  // Create a mock session only for the development email
+  const mockSession = window.location.hostname === 'localhost' ? {
     user: {
       id: 'dev-user',
-      email: 'dev@example.com',
+      email: DEV_EMAIL,
     },
     // Add other required Session properties
   } as Session : null;
