@@ -6,8 +6,9 @@ import { EventList } from "@/components/projects/calendar/EventList";
 import { format, parseISO } from "date-fns";
 import { Project } from "@/types/projects";
 import { CalendarEvent } from "@/types/events";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchEvents } from "@/utils/eventQueries";
+import { useEffect } from "react";
 
 interface ProjectGeneralTabProps {
   project: Project;
@@ -15,11 +16,24 @@ interface ProjectGeneralTabProps {
 }
 
 export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps) {
-  const { data: events = [], isLoading } = useQuery({
+  const queryClient = useQueryClient();
+  
+  const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ['events', projectId],
     queryFn: () => fetchEvents(projectId),
     enabled: !!projectId
   });
+
+  // Fetch events when component mounts
+  useEffect(() => {
+    if (projectId) {
+      console.log('Fetching events for project:', projectId);
+      refetch();
+      
+      // Also invalidate the calendar events query to ensure consistency
+      queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] });
+    }
+  }, [projectId, refetch, queryClient]);
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
