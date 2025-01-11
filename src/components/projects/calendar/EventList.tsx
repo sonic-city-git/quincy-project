@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { EventSection } from "./EventSection";
-import { format } from "date-fns"; // Add this import
+import { format, isBefore, startOfToday } from "date-fns";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -13,14 +13,26 @@ interface EventListProps {
 export function EventList({ events, projectId }: EventListProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const today = startOfToday();
 
-  // Group events by status
+  // Group active events by status
+  const activeEvents = events.filter(event => !isBefore(event.date, today));
   const groupedEvents = {
-    proposed: events.filter(event => event.status === 'proposed'),
-    confirmed: events.filter(event => event.status === 'confirmed'),
-    invoice_ready: events.filter(event => event.status === 'invoice ready'),
-    cancelled: events.filter(event => event.status === 'cancelled'),
+    proposed: activeEvents.filter(event => event.status === 'proposed'),
+    confirmed: activeEvents.filter(event => event.status === 'confirmed'),
+    invoice_ready: activeEvents.filter(event => event.status === 'invoice ready'),
+    cancelled: activeEvents.filter(event => event.status === 'cancelled'),
   };
+
+  // Get past events for "Done and dusted" section
+  const pastEvents = events.filter(event => 
+    isBefore(event.date, today) && 
+    (
+      event.status === 'cancelled' ||
+      event.status === 'proposed' ||
+      event.status === 'invoiced'
+    )
+  );
 
   const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
     if (!projectId) return;
@@ -107,6 +119,15 @@ export function EventList({ events, projectId }: EventListProps) {
         events={groupedEvents.cancelled}
         onStatusChange={handleStatusChange}
       />
+      {pastEvents.length > 0 && (
+        <div className="border-t pt-8">
+          <EventSection 
+            status="done and dusted"
+            events={pastEvents}
+            onStatusChange={handleStatusChange}
+          />
+        </div>
+      )}
     </div>
   );
 }
