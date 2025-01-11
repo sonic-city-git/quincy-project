@@ -102,7 +102,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   }
 
   return (
-    <div className="space-y-4 w-full">
+    <div className="w-full">
       <Calendar
         mode="single"
         month={currentDate}
