@@ -24,7 +24,7 @@ export function ProjectTableRow({ project, index, colorStyle, isSelected, onSele
         />
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
-        {index}
+        {String(index).padStart(4, '0')}
       </TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
@@ -40,9 +40,6 @@ export function ProjectTableRow({ project, index, colorStyle, isSelected, onSele
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
         {project.lastInvoiced || '-'}
-      </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
-        {project.status}
       </TableCell>
     </TableRow>
   );

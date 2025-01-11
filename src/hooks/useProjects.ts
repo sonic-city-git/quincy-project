@@ -42,9 +42,9 @@ export function useProjects() {
       lastInvoiced: project.created_at || '',
       owner: project.owner?.name || project.customers?.name || 'No Owner',
       owner_id: project.owner_id,
-      status: project.status || 'draft',
       color: 'blue', // Default color for now
-      crew_member_id: project.owner_id
+      crew_member_id: project.owner_id,
+      project_number: project.project_number
     })) as Project[];
   };
 

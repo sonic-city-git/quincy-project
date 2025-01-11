@@ -7,6 +7,7 @@ export interface Project {
   color: string;
   lastInvoiced?: string | null;
   crew_member_id?: string | null;
+  project_number: number;
 }
 
 export interface ProjectData extends Project {

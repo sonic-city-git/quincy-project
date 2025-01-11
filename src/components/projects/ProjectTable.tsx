@@ -14,19 +14,18 @@ export function ProjectTable({ projects, selectedItem, onItemSelect }: ProjectTa
       <TableHeader className="bg-zinc-900/50 border-b border-zinc-800">
         <TableRow>
           <TableHead className="w-12"></TableHead>
-          <TableHead className="w-12">#</TableHead>
+          <TableHead className="w-12">Project #</TableHead>
           <TableHead>Name</TableHead>
           <TableHead>Owner</TableHead>
           <TableHead>Last Invoiced</TableHead>
-          <TableHead>Status</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {projects.map((project, index) => (
+        {projects.map((project) => (
           <ProjectTableRow
             key={project.id}
             project={project}
-            index={index + 1}
+            index={project.project_number}
             colorStyle={{
               className: `bg-${project.color}-500/10 text-${project.color}-500`
             }}
