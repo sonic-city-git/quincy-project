@@ -1,6 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface LocationInputProps {
   value: string;
@@ -12,17 +13,32 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scriptId = 'google-maps-script';
+  const [apiKey, setApiKey] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchApiKey = async () => {
+      const { data: { GOOGLE_MAPS_API_KEY }, error } = await supabase.functions.invoke('get-secret', {
+        body: { secretName: 'GOOGLE_MAPS_API_KEY' }
+      });
+
+      if (error || !GOOGLE_MAPS_API_KEY) {
+        console.error('Error fetching Google Maps API key:', error);
+        setError('Could not load location search');
+        return;
+      }
+
+      setApiKey(GOOGLE_MAPS_API_KEY);
+    };
+
+    fetchApiKey();
+  }, []);
+
+  useEffect(() => {
+    if (!apiKey) return;
+
     // Check if script already exists
     if (document.getElementById(scriptId)) {
       setIsLoaded(true);
-      return;
-    }
-
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    if (!apiKey) {
-      setError('Google Maps API key is not configured');
       return;
     }
 
@@ -39,7 +55,8 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
     };
 
     script.onerror = () => {
-      setError('Failed to load Google Maps API');
+      console.error('Failed to load Google Maps API');
+      setError('Failed to load location search');
       document.head.removeChild(script);
     };
 
@@ -52,7 +69,7 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
         document.head.removeChild(scriptElement);
       }
     };
-  }, []);
+  }, [apiKey]);
 
   useEffect(() => {
     if (isLoaded && inputRef.current && !error) {
