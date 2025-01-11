@@ -24,6 +24,16 @@ export function CalendarView({
 }: CalendarViewProps) {
   console.log('CalendarView render', { selectedDates });
 
+  const handleDayMouseUp = (date: Date) => {
+    console.log('handleDayMouseUp', { date, selectedDatesLength: selectedDates.length });
+    if (selectedDates.length > 0) {
+      // First call onDayClick to handle the selection
+      onDayClick(date);
+      // Then end the drag operation
+      onDragEnd();
+    }
+  };
+
   return (
     <Calendar
       mode="multiple"
@@ -48,13 +58,7 @@ export function CalendarView({
           onDayClick(date);
         }
       }}
-      onDayMouseUp={(date: Date) => {
-        console.log('Calendar onDayMouseUp', { date, selectedDatesLength: selectedDates.length });
-        if (selectedDates.length > 0) {
-          onDragEnd();
-          onDayClick(date);
-        }
-      }}
+      onDayMouseUp={handleDayMouseUp}
       className="w-full rounded-md border border-zinc-800 bg-zinc-950"
     />
   );
