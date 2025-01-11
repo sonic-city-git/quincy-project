@@ -57,6 +57,7 @@ export function CalendarView({
         onDragEnter(normalizedDate);
       }}
       onDayClick={(date: Date) => {
+        console.log('Day clicked:', date);
         const normalizedDate = normalizeDate(date);
         if (!normalizedDate) return;
         
