@@ -43,20 +43,25 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
   };
 
   const handleConfirmInvoice = async () => {
-    if (!onStatusChange || isProcessing) return;
+    if (!onStatusChange || isProcessing) {
+      console.log('Cannot process: onStatusChange is undefined or already processing');
+      return;
+    }
     
     setIsProcessing(true);
     setProcessedCount(0);
     
     try {
-      const batchSize = 3; // Process 3 events at a time
+      console.log('Starting invoice generation for', invoiceReadyEvents.length, 'events');
+      const batchSize = 2; // Reduced batch size
       const failedEvents: CalendarEvent[] = [];
 
       for (let i = 0; i < invoiceReadyEvents.length; i += batchSize) {
         const batch = invoiceReadyEvents.slice(i, i + batchSize);
+        console.log('Processing batch', Math.floor(i / batchSize) + 1);
         
-        // Process batch concurrently
-        const batchPromises = batch.map(async (event) => {
+        // Process events in current batch sequentially
+        for (const event of batch) {
           try {
             console.log('Processing event:', event.id);
             await onStatusChange(event, 'invoiced');
@@ -66,18 +71,18 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
             console.error('Failed to update event:', event.id, error);
             failedEvents.push(event);
           }
-        });
-
-        // Wait for current batch to complete
-        await Promise.all(batchPromises);
+        }
         
-        // Small delay between batches to prevent UI freeze
+        // Small delay between batches
         if (i + batchSize < invoiceReadyEvents.length) {
-          await new Promise(resolve => setTimeout(resolve, 100));
+          console.log('Waiting between batches...');
+          await new Promise(resolve => setTimeout(resolve, 200));
         }
       }
 
-      // Refresh the data
+      console.log('Finished processing all events');
+      
+      // Refresh the data once at the end
       await queryClient.invalidateQueries({ queryKey: ['events'] });
 
       // Close both dialogs
