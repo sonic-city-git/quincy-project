@@ -94,9 +94,7 @@ export function Calendar({
                   onMouseDown={(e) => {
                     console.log('Calendar day mouseDown', { day, event });
                     e.preventDefault();
-                    if (event) {
-                      onDayClick?.(day);
-                    } else if (mode === 'multiple') {
+                    if (!event && mode === 'multiple') {
                       onSelect?.([day]);
                     }
                   }}
@@ -108,7 +106,7 @@ export function Calendar({
                   }}
                   onMouseUp={() => {
                     console.log('Calendar day mouseUp', { day, selected });
-                    if (selected.length > 0 && !event) {
+                    if (!event) {
                       onDayClick?.(day);
                     }
                   }}

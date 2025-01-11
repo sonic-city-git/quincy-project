@@ -53,7 +53,8 @@ export function CalendarView({
           // Only handle click when not dragging
           onDayClick(date);
         } else {
-          // End drag operation
+          // End drag operation and open dialog
+          onDayClick(date);
           onDragEnd();
         }
       }}
