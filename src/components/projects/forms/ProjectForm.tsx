@@ -27,11 +27,12 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" autoComplete="off">
         <div className="space-y-4">
           <div className="space-y-2">
             <Input
               placeholder="Project name"
+              autoComplete="off"
               {...form.register('name')}
             />
           </div>
