@@ -16,6 +16,10 @@ export const fetchEvents = async (projectId: string) => {
         color,
         needs_crew,
         crew_rate_multiplier
+      ),
+      event_statuses (
+        id,
+        name
       )
     `)
     .eq('project_id', projectId);
@@ -31,7 +35,7 @@ export const fetchEvents = async (projectId: string) => {
     date: new Date(event.date),
     name: event.name,
     type: event.event_types,
-    status: event.status as CalendarEvent['status'],
+    status: event.event_statuses.name,
     revenue: event.revenue
   }));
 };
@@ -43,11 +47,25 @@ export const createEvent = async (
   eventType: EventType
 ) => {
   const formattedDate = formatDatabaseDate(date);
+  
+  // First, get the 'proposed' status id
+  const { data: statusData, error: statusError } = await supabase
+    .from('event_statuses')
+    .select('id')
+    .eq('name', 'proposed')
+    .single();
+
+  if (statusError) {
+    console.error('Error fetching proposed status:', statusError);
+    throw statusError;
+  }
+
   console.log('Adding event:', {
     project_id: projectId,
     date: formattedDate,
     name: eventName,
     event_type_id: eventType.id,
+    status_id: statusData.id,
     needs_crew: eventType.needs_crew
   });
 
@@ -59,7 +77,7 @@ export const createEvent = async (
         date: formattedDate,
         name: eventName.trim() || eventType.name,
         event_type_id: eventType.id,
-        status: 'proposed' as const
+        status_id: statusData.id
       })
       .select(`
         *,
@@ -69,6 +87,10 @@ export const createEvent = async (
           color,
           needs_crew,
           crew_rate_multiplier
+        ),
+        event_statuses (
+          id,
+          name
         )
       `)
       .single();
@@ -90,7 +112,10 @@ export const createEvent = async (
       }
     }
 
-    return eventData;
+    return {
+      ...eventData,
+      status: eventData.event_statuses.name
+    };
   } catch (error) {
     console.error('Error in createEvent:', error);
     throw error;
@@ -103,12 +128,24 @@ export const updateEvent = async (
 ) => {
   const formattedDate = formatDatabaseDate(updatedEvent.date);
 
+  // Get the status id for the new status
+  const { data: statusData, error: statusError } = await supabase
+    .from('event_statuses')
+    .select('id')
+    .eq('name', updatedEvent.status)
+    .single();
+
+  if (statusError) {
+    console.error('Error fetching status:', statusError);
+    throw statusError;
+  }
+
   const { error } = await supabase
     .from('project_events')
     .update({
       name: updatedEvent.name.trim() || updatedEvent.type.name,
       event_type_id: updatedEvent.type.id,
-      status: updatedEvent.status
+      status_id: statusData.id
     })
     .eq('project_id', projectId)
     .eq('date', formattedDate);

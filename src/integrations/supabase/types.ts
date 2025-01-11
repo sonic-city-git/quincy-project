@@ -328,6 +328,30 @@ export type Database = {
           },
         ]
       }
+      event_statuses: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_types: {
         Row: {
           allows_discount: boolean | null
@@ -513,7 +537,7 @@ export type Database = {
           name: string
           project_id: string | null
           revenue: number | null
-          status: string
+          status_id: string
           updated_at: string
         }
         Insert: {
@@ -524,7 +548,7 @@ export type Database = {
           name: string
           project_id?: string | null
           revenue?: number | null
-          status?: string
+          status_id: string
           updated_at?: string
         }
         Update: {
@@ -535,7 +559,7 @@ export type Database = {
           name?: string
           project_id?: string | null
           revenue?: number | null
-          status?: string
+          status_id?: string
           updated_at?: string
         }
         Relationships: [
@@ -551,6 +575,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_events_status_id_fkey"
+            columns: ["status_id"]
+            isOneToOne: false
+            referencedRelation: "event_statuses"
             referencedColumns: ["id"]
           },
         ]
