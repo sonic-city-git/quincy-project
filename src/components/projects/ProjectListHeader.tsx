@@ -1,5 +1,6 @@
 import { ProjectSearchInput } from "./filters/ProjectSearchInput";
 import { ProjectOwnerFilter } from "./filters/ProjectOwnerFilter";
+import { ProjectFilterClear } from "./filters/ProjectFilterClear";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useState } from "react";
@@ -20,6 +21,13 @@ export function ProjectListHeader({
 }: ProjectListHeaderProps) {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
 
+  const handleClearFilters = () => {
+    onSearchChange('');
+    onOwnerFilterChange('');
+  };
+
+  const hasActiveFilters = searchQuery || ownerFilter;
+
   return (
     <div className="flex items-center justify-between gap-4 h-10">
       <div className="flex items-center gap-2">
@@ -31,6 +39,9 @@ export function ProjectListHeader({
           value={ownerFilter}
           onChange={onOwnerFilterChange}
         />
+        {hasActiveFilters && (
+          <ProjectFilterClear onClear={handleClearFilters} />
+        )}
       </div>
       <Button
         variant="default"
