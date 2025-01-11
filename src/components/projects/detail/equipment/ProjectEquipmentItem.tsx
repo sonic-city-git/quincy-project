@@ -10,22 +10,22 @@ interface ProjectEquipmentItemProps {
 
 export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemProps) {
   return (
-    <Card className="p-1 h-[56px]">
+    <Card className="p-1 h-[28px]">
       <div className="flex items-center justify-between h-full">
         <div>
-          <h3 className="text-sm font-medium leading-tight">{item.name}</h3>
+          <h3 className="text-sm font-medium leading-none">{item.name}</h3>
         </div>
         <div className="flex items-center gap-0.5">
           <div className="flex items-center gap-0.5">
-            <Button variant="outline" size="icon" className="h-6 w-6">
+            <Button variant="outline" size="icon" className="h-5 w-5">
               <Minus className="h-3 w-3" />
             </Button>
             <span className="w-6 text-center text-sm">{item.quantity}</span>
-            <Button variant="outline" size="icon" className="h-6 w-6">
+            <Button variant="outline" size="icon" className="h-5 w-5">
               <Plus className="h-3 w-3" />
             </Button>
           </div>
-          <Button variant="ghost" size="icon" className="h-6 w-6" onClick={onRemove}>
+          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={onRemove}>
             <X className="h-3 w-3" />
           </Button>
         </div>

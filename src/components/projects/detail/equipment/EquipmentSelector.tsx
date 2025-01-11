@@ -152,12 +152,12 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
     <Button
       key={item.id}
       variant="ghost"
-      className="w-full justify-start h-[56px] py-1"
+      className="w-full justify-start h-[28px] py-0.5"
       onClick={() => onSelect(item)}
       onDoubleClick={() => handleDoubleClick(item)}
     >
       <div className="text-left">
-        <div className="text-sm font-medium leading-tight">{item.name}</div>
+        <div className="text-sm font-medium leading-none">{item.name}</div>
       </div>
     </Button>
   );
