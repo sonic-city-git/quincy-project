@@ -28,7 +28,7 @@ export function EventCard({ event, onStatusChange }: EventCardProps) {
         </div>
         <div className="flex items-center">
           <span 
-            className={`font-medium text-base truncate px-3 py-1 rounded-md ${event.type.color.replace('bg-', 'bg-')} bg-opacity-15`}
+            className={`font-medium text-base truncate px-3 py-1 rounded-md ${event.type.color} bg-opacity-10`}
           >
             {event.name}
           </span>
