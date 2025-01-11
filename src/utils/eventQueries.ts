@@ -35,7 +35,7 @@ export const fetchEvents = async (projectId: string) => {
     date: new Date(event.date),
     name: event.name,
     type: event.event_types,
-    status: event.event_statuses.name,
+    status: event.event_statuses.name as CalendarEvent['status'],
     revenue: event.revenue
   }));
 };
@@ -113,8 +113,12 @@ export const createEvent = async (
     }
 
     return {
-      ...eventData,
-      status: eventData.event_statuses.name
+      id: eventData.id,
+      date: new Date(eventData.date),
+      name: eventData.name,
+      type: eventData.event_types,
+      status: eventData.event_statuses.name as CalendarEvent['status'],
+      revenue: eventData.revenue
     };
   } catch (error) {
     console.error('Error in createEvent:', error);
@@ -147,8 +151,8 @@ export const updateEvent = async (
       event_type_id: updatedEvent.type.id,
       status_id: statusData.id
     })
-    .eq('project_id', projectId)
-    .eq('date', formattedDate);
+    .eq('id', updatedEvent.id)
+    .eq('project_id', projectId);
 
   if (error) {
     console.error('Error updating event:', error);

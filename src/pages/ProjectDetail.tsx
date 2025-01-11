@@ -38,6 +38,15 @@ const ProjectDetail = () => {
     try {
       const updatedEvent = { ...event, status: newStatus };
       
+      // Get the status id for the new status
+      const { data: statusData, error: statusError } = await supabase
+        .from('event_statuses')
+        .select('id')
+        .eq('name', newStatus)
+        .single();
+
+      if (statusError) throw statusError;
+
       // Update all relevant caches optimistically
       queryKeysToUpdate.forEach(queryKey => {
         queryClient.setQueryData(queryKey, (oldData: CalendarEvent[] | undefined) => {
@@ -51,7 +60,7 @@ const ProjectDetail = () => {
       // Update the server
       const { error } = await supabase
         .from('project_events')
-        .update({ status: newStatus })
+        .update({ status_id: statusData.id })
         .eq('id', event.id)
         .eq('project_id', id);
 
