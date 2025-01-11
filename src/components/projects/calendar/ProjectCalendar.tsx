@@ -49,10 +49,17 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   };
 
   const modifiersStyles = {
-    event: {
-      backgroundColor: 'rgb(139, 92, 246)',
-      color: '#FFFFFF',
-      borderRadius: '4px'
+    event: (date: Date) => {
+      if (!events) return {};
+      const event = events.find(event => 
+        event.date.getTime() === normalizeDate(date).getTime()
+      );
+      if (!event) return {};
+      return {
+        backgroundColor: event.type.color,
+        color: '#FFFFFF',
+        borderRadius: '4px'
+      };
     }
   };
 
