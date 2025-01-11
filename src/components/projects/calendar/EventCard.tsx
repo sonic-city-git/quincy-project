@@ -34,7 +34,7 @@ export function EventCard({ event, onStatusChange }: EventCardProps) {
           </span>
         </div>
         <div 
-          className={`text-sm px-3 py-1 rounded-full ${event.type.color}`}
+          className={`text-sm px-3 py-1 rounded-full ${event.type.color} bg-opacity-10`}
         >
           {event.type.name}
         </div>
