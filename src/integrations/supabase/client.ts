@@ -9,7 +9,8 @@ const sanitizedUrl = supabaseUrl.replace(/:$/, '');
 
 export const supabase = createClient(sanitizedUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true,
     autoRefreshToken: true,
-  },
+    persistSession: true,
+    detectSessionInUrl: true
+  }
 });
