@@ -35,6 +35,10 @@ export function CalendarDay({
     !event && isSelected && "bg-blue-500/30"
   );
 
+  const getEventOpacity = (event: CalendarEvent) => {
+    return event.status === 'cancelled' || event.status === 'invoiced' ? '80' : 'D9';
+  };
+
   const renderDayContent = () => {
     return (
       <button
@@ -49,7 +53,7 @@ export function CalendarDay({
           isSelected && event && "text-white"
         )}
         style={event ? {
-          backgroundColor: `${event.type.color}D9`
+          backgroundColor: `${event.type.color}${getEventOpacity(event)}`
         } : undefined}
       >
         <span className="relative z-10">{format(date, 'd')}</span>
