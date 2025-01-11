@@ -20,7 +20,8 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     isLoading,
     findEventOnDate,
     addEvent,
-    updateEvent
+    updateEvent,
+    deleteEvent
   } = useCalendarEvents(projectId);
 
   const {
@@ -84,6 +85,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         event={selectedEvent}
         eventTypes={eventTypes}
         onUpdateEvent={updateEvent}
+        onDeleteEvent={deleteEvent}
       />
     </div>
   );

@@ -18,6 +18,7 @@ import {
 import { CalendarEvent, EventType } from "@/types/events";
 import { useState, useEffect } from "react";
 import { getStatusIcon } from "@/utils/eventFormatters";
+import { Trash2 } from "lucide-react";
 
 interface EventDialogProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ interface EventDialogProps {
   eventTypes: EventType[];
   onAddEvent?: (date: Date, name: string, eventType: EventType) => void;
   onUpdateEvent?: (event: CalendarEvent) => void;
+  onDeleteEvent?: (event: CalendarEvent) => void;
   addEventCallback?: ((date: Date, name: string, eventType: EventType) => void) | null;
 }
 
@@ -40,6 +42,7 @@ export function EventDialog({
   eventTypes,
   onAddEvent,
   onUpdateEvent,
+  onDeleteEvent,
   addEventCallback
 }: EventDialogProps) {
   const [name, setName] = useState(event?.name || "");
@@ -59,7 +62,6 @@ export function EventDialog({
       setSelectedType(event.type.id);
       setStatus(event.status);
     } else {
-      // Reset to default values when adding a new event
       setStatus('proposed');
       setSelectedType(eventTypes[0]?.id || '');
     }
@@ -69,7 +71,7 @@ export function EventDialog({
     e.preventDefault();
     
     if (isNameRequired && !name.trim()) {
-      return; // Don't submit if name is required but empty
+      return;
     }
 
     const eventType = eventTypes.find((type) => type.id === selectedType);
@@ -92,6 +94,13 @@ export function EventDialog({
 
     setName("");
     onClose();
+  };
+
+  const handleDelete = async () => {
+    if (event && onDeleteEvent) {
+      await onDeleteEvent(event);
+      onClose();
+    }
   };
 
   return (
@@ -161,10 +170,24 @@ export function EventDialog({
             </SelectContent>
           </Select>
 
-          <DialogFooter>
-            <Button type="submit">
-              {event ? "Update" : "Add"}
-            </Button>
+          <DialogFooter className="flex justify-between items-center gap-2">
+            {event && onDeleteEvent && (
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="gap-2"
+                onClick={handleDelete}
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </Button>
+            )}
+            <div className="flex justify-end">
+              <Button type="submit">
+                {event ? "Update" : "Add"}
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

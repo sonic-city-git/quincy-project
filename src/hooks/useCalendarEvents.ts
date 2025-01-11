@@ -5,6 +5,7 @@ import { fetchEvents } from '@/utils/eventQueries';
 import { useToast } from '@/hooks/use-toast';
 import { useEventManagement } from './useEventManagement';
 import { compareDates } from '@/utils/dateFormatters';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useCalendarEvents = (projectId: string | undefined) => {
   const { toast } = useToast();
@@ -77,11 +78,39 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     );
   };
 
+  const deleteEvent = async (event: CalendarEvent) => {
+    if (!projectId) return;
+
+    try {
+      const { error } = await supabase
+        .from('project_events')
+        .delete()
+        .eq('id', event.id)
+        .eq('project_id', projectId);
+
+      if (error) throw error;
+
+      queryClient.setQueryData(['events', projectId], (old: CalendarEvent[] | undefined) => 
+        old?.filter(e => e.id !== event.id) || []
+      );
+
+      toast({
+        title: "Event Deleted",
+        description: "The event has been successfully removed",
+      });
+
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete event",
+        variant: "destructive",
+      });
+    }
+  };
+
   const findEventOnDate = useCallback((date: Date) => {
-    return events.find(event => {
-      const eventDate = new Date(event.date);
-      return compareDates(eventDate, date);
-    });
+    return events.find(event => compareDates(event.date, date));
   }, [events]);
 
   return {
@@ -94,6 +123,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     resetSelection,
     findEventOnDate,
     addEvent,
-    updateEvent
+    updateEvent,
+    deleteEvent
   };
 };
