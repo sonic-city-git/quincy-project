@@ -15,6 +15,7 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
   const scriptId = 'google-maps-script';
   const [apiKey, setApiKey] = useState<string | null>(null);
   const autocompleteInstance = useRef<google.maps.places.Autocomplete | null>(null);
+  const [internalValue, setInternalValue] = useState(value);
 
   useEffect(() => {
     const fetchApiKey = async () => {
@@ -37,13 +38,11 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
   useEffect(() => {
     if (!apiKey) return;
 
-    // Check if script already exists
     if (document.getElementById(scriptId)) {
       setIsLoaded(true);
       return;
     }
 
-    // Load Google Maps JavaScript API
     const script = document.createElement('script');
     script.id = scriptId;
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
@@ -64,7 +63,6 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
     document.head.appendChild(script);
 
     return () => {
-      // Only remove the script if it was added by this component
       const scriptElement = document.getElementById(scriptId);
       if (scriptElement && scriptElement.parentNode === document.head) {
         document.head.removeChild(scriptElement);
@@ -76,21 +74,19 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
     if (!isLoaded || !inputRef.current || error) return;
 
     try {
-      // Clean up previous instance if it exists
       if (autocompleteInstance.current) {
         google.maps.event.clearInstanceListeners(autocompleteInstance.current);
       }
 
-      // Initialize new Autocomplete instance
       autocompleteInstance.current = new google.maps.places.Autocomplete(inputRef.current, {
         types: ['(cities)'],
         fields: ['formatted_address', 'name'],
       });
 
-      // Add place_changed listener
       autocompleteInstance.current.addListener('place_changed', () => {
         const place = autocompleteInstance.current?.getPlace();
         if (place?.name) {
+          setInternalValue(place.name);
           onChange(place.name);
         }
       });
@@ -99,7 +95,6 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
       setError('Failed to initialize location search');
     }
 
-    // Cleanup function
     return () => {
       if (autocompleteInstance.current) {
         google.maps.event.clearInstanceListeners(autocompleteInstance.current);
@@ -107,14 +102,24 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
     };
   }, [isLoaded, onChange, error]);
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInternalValue(newValue);
+    onChange(newValue);
+  };
+
+  useEffect(() => {
+    setInternalValue(value);
+  }, [value]);
+
   return (
     <div className="relative">
       <MapPin className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         ref={inputRef}
         placeholder={error || "Enter location"}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        value={internalValue}
+        onChange={handleInputChange}
         className="pl-8"
         disabled={!!error}
       />
