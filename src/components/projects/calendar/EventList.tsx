@@ -20,16 +20,13 @@ interface EventListProps {
 export function EventList({ events }: EventListProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  
-  // Create a sorted copy of events for grouping
-  const sortedEvents = [...events].sort((a, b) => a.date.getTime() - b.date.getTime());
 
   // Group events by status
   const groupedEvents = {
-    proposed: sortedEvents.filter(event => event.status === 'proposed'),
-    confirmed: sortedEvents.filter(event => event.status === 'confirmed'),
-    invoice: sortedEvents.filter(event => event.status === 'invoice'),
-    cancelled: sortedEvents.filter(event => event.status === 'cancelled'),
+    proposed: events.filter(event => event.status === 'proposed'),
+    confirmed: events.filter(event => event.status === 'confirmed'),
+    invoice: events.filter(event => event.status === 'invoice'),
+    cancelled: events.filter(event => event.status === 'cancelled'),
   };
 
   const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
@@ -37,14 +34,17 @@ export function EventList({ events }: EventListProps) {
       // Create updated event object
       const updatedEvent = { ...event, status: newStatus };
       
+      // Get current cached data
+      const currentEvents = queryClient.getQueryData<CalendarEvent[]>(['events']) || [];
+      
       // Create new events array with the updated event
-      const updatedEvents = events.map(e => 
+      const updatedEvents = currentEvents.map(e => 
         e.date.getTime() === event.date.getTime() && e.name === event.name
           ? updatedEvent
           : e
       );
 
-      // Immediately update the UI with the new data
+      // Immediately update the cache
       queryClient.setQueryData(['events'], updatedEvents);
       queryClient.setQueryData(['calendarEvents'], updatedEvents);
 
