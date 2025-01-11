@@ -74,7 +74,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     return {
       ...acc,
       [key]: ({ date }: { date: Date }) => (
-        <TooltipProvider>
+        <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
               <div className="w-full h-full flex items-center justify-center">
@@ -84,7 +84,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
             <TooltipContent 
               side="top" 
               align="center"
-              className="fixed bg-zinc-900 border border-zinc-800 text-white p-3 rounded-md shadow-lg z-[9999]"
+              className="z-[9999] bg-zinc-900/95 border border-zinc-800 text-white p-3 rounded-md shadow-lg"
               sideOffset={5}
             >
               <div className="space-y-1.5">
