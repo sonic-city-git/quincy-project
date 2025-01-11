@@ -17,7 +17,6 @@ export function EquipmentTable({ equipment, selectedItem, onItemSelect }: Equipm
             <TableHead className="w-12"></TableHead>
             <TableHead className="min-w-[200px]">Name</TableHead>
             <TableHead>Code</TableHead>
-            <TableHead>Serial Numbers</TableHead>
             <TableHead>Stock</TableHead>
             <TableHead>Price</TableHead>
           </TableRow>
