@@ -20,8 +20,8 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
 
   const getColorStyles = (color: string) => {
     return {
-      backgroundColor: `${color}20`,
-      color: color
+      backgroundColor: color,
+      color: '#FFFFFF'  // White text
     };
   };
 
