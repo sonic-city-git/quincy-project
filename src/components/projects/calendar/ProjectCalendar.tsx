@@ -54,7 +54,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   }, {} as Record<string, (props: { date: Date }) => JSX.Element>) || {};
 
   if (isLoading || !eventTypes) {
-    return <div>Loading calendar...</div>;
+    return null;
   }
 
   return (
