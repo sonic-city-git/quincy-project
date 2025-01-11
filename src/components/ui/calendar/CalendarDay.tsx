@@ -1,5 +1,5 @@
 import React from 'react';
-import { format, isBefore, isToday, startOfToday } from 'date-fns';
+import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CalendarEvent } from '@/types/events';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
@@ -25,12 +25,6 @@ export function CalendarDay({
   onMouseEnter,
   onMouseUp
 }: CalendarDayProps) {
-  const today = startOfToday();
-  const isDoneAndDusted = event && (
-    event.status === 'invoiced' || 
-    (event.status === 'cancelled' && isBefore(date, today))
-  );
-
   const baseButtonClasses = cn(
     "h-10 w-full p-0 font-normal relative",
     !isCurrentMonth && "text-muted-foreground opacity-50",
@@ -58,8 +52,7 @@ export function CalendarDay({
           baseButtonClasses,
           isSelected && !event && "bg-blue-500/30 text-white",
           event && !isSelected && `bg-opacity-85 text-white`,
-          isSelected && event && "text-white",
-          isDoneAndDusted && "opacity-50"
+          isSelected && event && "text-white"
         )}
         style={event ? {
           backgroundColor: `${event.type.color}D9`
