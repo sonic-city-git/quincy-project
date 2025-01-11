@@ -675,7 +675,7 @@ export type Database = {
           "Name (in database)": string | null
           "Price incl. VAT": string | null
           "Purchase price (Serial number)": string | null
-          "Rental-/Sales price": number | null
+          "rental-price": number | null
           "Serial number (Serial number)": string | null
           "Stock calculation method": string | null
           Weight: number | null
@@ -697,7 +697,7 @@ export type Database = {
           "Name (in database)"?: string | null
           "Price incl. VAT"?: string | null
           "Purchase price (Serial number)"?: string | null
-          "Rental-/Sales price"?: number | null
+          "rental-price"?: number | null
           "Serial number (Serial number)"?: string | null
           "Stock calculation method"?: string | null
           Weight?: number | null
@@ -719,7 +719,7 @@ export type Database = {
           "Name (in database)"?: string | null
           "Price incl. VAT"?: string | null
           "Purchase price (Serial number)"?: string | null
-          "Rental-/Sales price"?: number | null
+          "rental-price"?: number | null
           "Serial number (Serial number)"?: string | null
           "Stock calculation method"?: string | null
           Weight?: number | null
