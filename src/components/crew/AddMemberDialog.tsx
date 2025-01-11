@@ -7,13 +7,13 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useAddMember, AddMemberData } from "@/hooks/useAddMember";
-import { EntitySelect } from "@/components/shared/EntitySelect";
 import { useFolders } from "@/hooks/useFolders";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 import { Loader2, UserPlus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { sortRoles } from "@/utils/roleUtils";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -136,15 +136,24 @@ export function AddMemberDialog() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Folder</FormLabel>
-                  <FormControl>
-                    <EntitySelect
-                      entities={folders.map(f => ({ id: f.id, name: f.name }))}
-                      value={field.value || ""}
-                      onValueChange={field.onChange}
-                      placeholder="Select folder"
-                      isLoading={foldersLoading}
-                    />
-                  </FormControl>
+                  <Select 
+                    value={field.value} 
+                    onValueChange={field.onChange}
+                    disabled={foldersLoading}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select folder" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {folders.map(folder => (
+                        <SelectItem key={folder.id} value={folder.id}>
+                          {folder.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

@@ -3,11 +3,11 @@ import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { EntitySelect } from "@/components/shared/EntitySelect";
 import { useCustomers } from "@/hooks/useCustomers";
 import { useCrew } from "@/hooks/useCrew";
 import { useAddProject } from "@/hooks/useAddProject";
 import { useFolders } from "@/hooks/useFolders";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AddProjectFormData {
   name: string;
@@ -21,7 +21,7 @@ interface AddProjectDialogProps {
 }
 
 export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) {
-  const { customers, loading: customersLoading } = useCustomers(open); // Only fetch when dialog is open
+  const { customers, loading: customersLoading } = useCustomers(open);
   const { crew, loading: crewLoading } = useCrew();
   const { folders } = useFolders();
   const addProject = useAddProject();
@@ -50,19 +50,6 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
   // Filter crew members to only show those in Sonic City folder
   const filteredCrew = crew.filter(member => member.folder_id === sonicCityFolder?.id);
 
-  const customerEntities = customers.map(customer => ({
-    id: customer.id,
-    name: customer.name
-  }));
-
-  const crewEntities = filteredCrew.map(member => ({
-    id: member.id,
-    name: member.name
-  }));
-
-  console.log('Customers:', customers);
-  console.log('Customer entities:', customerEntities);
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -84,23 +71,41 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
               </div>
 
               <div className="space-y-2">
-                <EntitySelect
-                  entities={customerEntities}
-                  value={form.watch('customer_id') ?? ''}
+                <Select
+                  value={form.watch('customer_id')}
                   onValueChange={(value) => form.setValue('customer_id', value)}
-                  placeholder="Select customer"
-                  isLoading={customersLoading}
-                />
+                  disabled={customersLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select customer" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {customers.map(customer => (
+                      <SelectItem key={customer.id} value={customer.id}>
+                        {customer.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
-                <EntitySelect
-                  entities={crewEntities}
-                  value={form.watch('crew_member_id') ?? ''}
+                <Select
+                  value={form.watch('crew_member_id')}
                   onValueChange={(value) => form.setValue('crew_member_id', value)}
-                  placeholder="Select owner"
-                  isLoading={crewLoading}
-                />
+                  disabled={crewLoading}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select owner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredCrew.map(member => (
+                      <SelectItem key={member.id} value={member.id}>
+                        {member.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

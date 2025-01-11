@@ -1,13 +1,13 @@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { EntitySelect } from "@/components/shared/EntitySelect";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
 import { CrewRole } from "@/hooks/useCrewRoles";
 import { sortRoles } from "@/utils/roleUtils";
 import { UseFormReturn } from "react-hook-form";
 import { Folder } from "@/types/folders";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface EditMemberFormProps {
   form: UseFormReturn<any>;
@@ -80,15 +80,24 @@ export function EditMemberForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Folder</FormLabel>
-              <FormControl>
-                <EntitySelect
-                  entities={folders.map(f => ({ id: f.id, name: f.name }))}
-                  value={field.value || ""}
-                  onValueChange={field.onChange}
-                  placeholder="Select folder"
-                  isLoading={foldersLoading}
-                />
-              </FormControl>
+              <Select 
+                value={field.value} 
+                onValueChange={field.onChange}
+                disabled={foldersLoading}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select folder" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {folders.map(folder => (
+                    <SelectItem key={folder.id} value={folder.id}>
+                      {folder.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}
