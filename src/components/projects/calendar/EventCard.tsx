@@ -19,7 +19,7 @@ interface EventCardProps {
 export function EventCard({ event, onStatusChange }: EventCardProps) {
   const getColorStyles = (color: string) => {
     return {
-      backgroundColor: `${color}80`,  // 80 in hex is 50% opacity
+      backgroundColor: `${color}66`,  // 66 in hex is 40% opacity
       color: '#FFFFFF'  // White text, fully opaque
     };
   };
@@ -43,7 +43,7 @@ export function EventCard({ event, onStatusChange }: EventCardProps) {
         </div>
         <div>
           <span 
-            className="text-sm px-3 py-1 rounded-full"
+            className="text-sm px-3 py-1 rounded-md"
             style={getColorStyles(event.type.color)}
           >
             {event.type.name}
