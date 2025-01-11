@@ -28,7 +28,7 @@ export function EquipmentListHeader({
   return (
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-4 flex-1">
-        <div className="w-[280px]">
+        <div className="w-[200px]">
           <EquipmentSearchInput 
             value={searchQuery}
             onChange={onSearchChange}
