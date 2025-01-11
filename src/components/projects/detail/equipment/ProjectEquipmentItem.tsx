@@ -10,26 +10,26 @@ interface ProjectEquipmentItemProps {
 
 export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemProps) {
   return (
-    <Card className="p-4 h-[72px]">
+    <Card className="p-2 h-[64px]">
       <div className="flex items-center justify-between h-full">
         <div>
-          <h3 className="font-medium">{item.name}</h3>
+          <h3 className="font-medium leading-tight">{item.name}</h3>
           {item.code && (
-            <div className="text-sm text-muted-foreground">{item.code}</div>
+            <div className="text-xs text-muted-foreground">{item.code}</div>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <div className="flex items-center gap-1">
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              <Minus className="h-4 w-4" />
+            <Button variant="outline" size="icon" className="h-7 w-7">
+              <Minus className="h-3 w-3" />
             </Button>
-            <span className="w-12 text-center">{item.quantity}</span>
-            <Button variant="outline" size="icon" className="h-8 w-8">
-              <Plus className="h-4 w-4" />
+            <span className="w-8 text-center text-sm">{item.quantity}</span>
+            <Button variant="outline" size="icon" className="h-7 w-7">
+              <Plus className="h-3 w-3" />
             </Button>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onRemove}>
-            <X className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onRemove}>
+            <X className="h-3 w-3" />
           </Button>
         </div>
       </div>

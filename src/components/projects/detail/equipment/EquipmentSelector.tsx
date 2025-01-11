@@ -152,14 +152,14 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
     <Button
       key={item.id}
       variant="ghost"
-      className="w-full justify-start h-[72px] py-2"
+      className="w-full justify-start h-[64px] py-1"
       onClick={() => onSelect(item)}
       onDoubleClick={() => handleDoubleClick(item)}
     >
       <div className="text-left">
-        <div className="font-medium">{item.name}</div>
+        <div className="font-medium leading-tight">{item.name}</div>
         {item.code && (
-          <div className="text-sm text-muted-foreground">{item.code}</div>
+          <div className="text-xs text-muted-foreground">{item.code}</div>
         )}
       </div>
     </Button>
