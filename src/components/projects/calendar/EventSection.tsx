@@ -34,6 +34,12 @@ export function EventSection({ status, events, onStatusChange }: EventSectionPro
     });
   };
 
+  const handleInvoiceReadyAll = () => {
+    events.forEach(event => {
+      onStatusChange(event, 'invoice ready');
+    });
+  };
+
   const content = (
     <div className="space-y-2">
       {events.map((event) => (
@@ -77,6 +83,15 @@ export function EventSection({ status, events, onStatusChange }: EventSectionPro
             onClick={handleConfirmAll}
           >
             Confirm all
+          </Button>
+        )}
+        {status === 'confirmed' && events.length > 0 && (
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleInvoiceReadyAll}
+          >
+            Invoice ready all
           </Button>
         )}
       </div>
