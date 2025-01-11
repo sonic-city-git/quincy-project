@@ -41,25 +41,26 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
   const modifiers = {
     event: (date: Date) => {
-      if (!events || events.length === 0) return false;
+      if (!events) return false;
+      const normalizedDate = normalizeDate(date);
       return events.some(event => 
-        event.date.getTime() === normalizeDate(date).getTime()
+        event.date.getTime() === normalizedDate.getTime()
       );
     }
   };
 
   const modifiersStyles = {
-    event: (date: Date) => {
-      if (!events) return {};
-      const event = events.find(event => 
-        event.date.getTime() === normalizeDate(date).getTime()
-      );
-      if (!event) return {};
-      return {
-        backgroundColor: event.type.color,
-        color: '#FFFFFF',
-        borderRadius: '4px'
-      };
+    event: {
+      backgroundColor: (date: Date) => {
+        if (!events) return undefined;
+        const normalizedDate = normalizeDate(date);
+        const event = events.find(event => 
+          event.date.getTime() === normalizedDate.getTime()
+        );
+        return event?.type.color;
+      },
+      color: '#FFFFFF',
+      borderRadius: '4px'
     }
   };
 
