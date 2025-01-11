@@ -20,7 +20,14 @@ export function CalendarView({
   const handleDayClick = (date: Date) => {
     const normalizedDate = normalizeDate(date);
     if (!normalizedDate) return;
-    console.log('Triggering click for date:', normalizedDate);
+    
+    // Find if there's an event on this date
+    const eventOnDate = events.find(event => {
+      const eventDate = new Date(event.date);
+      return normalizeDate(eventDate).getTime() === normalizedDate.getTime();
+    });
+
+    console.log('Triggering click for date:', normalizedDate, 'Event:', eventOnDate);
     onDayClick(normalizedDate);
   };
 

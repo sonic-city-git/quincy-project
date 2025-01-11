@@ -34,10 +34,9 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   } = useEventDialog();
 
   const handleDayClick = useCallback((date: Date) => {
-    console.log('Calendar day clicked', { date });
     const normalizedDate = normalizeDate(date);
     const existingEvent = findEventOnDate(normalizedDate);
-    console.log('Existing event:', existingEvent);
+    console.log('Calendar day clicked', { date, existingEvent });
 
     if (existingEvent) {
       console.log('Opening edit dialog for event:', existingEvent);
