@@ -1,4 +1,4 @@
-import { CustomCalendar } from "@/components/ui/custom-calendar";
+import { Calendar } from "@/components/ui/calendar/Calendar";
 import { CalendarEvent } from "@/types/events";
 
 interface CalendarViewProps {
@@ -23,7 +23,7 @@ export function CalendarView({
   onDragEnd
 }: CalendarViewProps) {
   return (
-    <CustomCalendar
+    <Calendar
       mode="multiple"
       month={currentDate}
       onMonthChange={setCurrentDate}
