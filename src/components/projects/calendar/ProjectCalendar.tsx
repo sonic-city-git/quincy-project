@@ -107,7 +107,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   }
 
   return (
-    <div className="w-[800px] h-[600px]">
+    <div className="w-full">
       <Calendar
         mode="single"
         month={currentDate}
@@ -116,7 +116,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         modifiers={modifiers}
         modifiersStyles={modifiersStyles}
         components={modifiersContent}
-        className="w-full h-full rounded-md border border-zinc-800 bg-zinc-950"
+        className="w-full rounded-md border border-zinc-800 bg-zinc-950"
       />
 
       <AddEventDialog
