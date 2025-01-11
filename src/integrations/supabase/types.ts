@@ -589,7 +589,6 @@ export type Database = {
           name: string
           owner_id: string | null
           project_number: string | null
-          status: string
           updated_at: string
         }
         Insert: {
@@ -599,7 +598,6 @@ export type Database = {
           name: string
           owner_id?: string | null
           project_number?: string | null
-          status?: string
           updated_at?: string
         }
         Update: {
@@ -609,7 +607,6 @@ export type Database = {
           name?: string
           owner_id?: string | null
           project_number?: string | null
-          status?: string
           updated_at?: string
         }
         Relationships: [
