@@ -22,6 +22,8 @@ export function CalendarView({
   onDayClick,
   onDragEnd
 }: CalendarViewProps) {
+  console.log('CalendarView render', { selectedDates });
+
   return (
     <Calendar
       mode="multiple"
@@ -30,23 +32,28 @@ export function CalendarView({
       events={events}
       selected={selectedDates}
       onSelect={(dates: Date[] | undefined) => {
-        if (dates && dates.length > 0) {
-          const lastDate = dates[dates.length - 1];
-          if (selectedDates.length === 0) {
-            // If no dates are selected, treat as a click
-            onDayClick(lastDate);
-          } else {
-            // Otherwise, treat as drag start
-            onDragStart(lastDate);
-          }
+        console.log('Calendar onSelect', { dates, selectedDates });
+        if (!dates || dates.length === 0) return;
+
+        const clickedDate = dates[dates.length - 1];
+        console.log('Clicked date:', clickedDate);
+
+        if (selectedDates.length === 0) {
+          console.log('Treating as click');
+          onDayClick(clickedDate);
+        } else {
+          console.log('Treating as drag start');
+          onDragStart(clickedDate);
         }
       }}
       onDayMouseEnter={(date: Date) => {
         if (selectedDates.length > 0) {
+          console.log('Day mouse enter', date);
           onDragEnter(date);
         }
       }}
       onDayClick={(date: Date) => {
+        console.log('Calendar onDayClick', { date, selectedDatesLength: selectedDates.length });
         if (selectedDates.length === 0) {
           onDayClick(date);
         } else {
