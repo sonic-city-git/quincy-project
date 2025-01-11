@@ -1,25 +1,26 @@
 import { Calendar } from "@/components/ui/calendar/Calendar";
 import { CalendarEvent, EventType } from "@/types/events";
 import { useState } from "react";
+import { MultiEventDialog } from "./MultiEventDialog";
 
 interface CalendarViewProps {
   currentDate: Date;
   setCurrentDate: (date: Date) => void;
   events: CalendarEvent[];
-  onDayClick: (date: Date, callback?: (date: Date, name: string, eventType: EventType) => void) => void;
+  onDayClick: (date: Date) => void;
+  eventTypes?: EventType[];
 }
-
-// Event types that can be used for drag-select
-const DRAGGABLE_EVENT_TYPES = ['Preprod', 'INT Storage', 'EXT Storage', 'Hours'];
 
 export function CalendarView({
   currentDate,
   setCurrentDate,
   events,
-  onDayClick
+  onDayClick,
+  eventTypes = []
 }: CalendarViewProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+  const [isMultiEventDialogOpen, setIsMultiEventDialogOpen] = useState(false);
 
   const handleDayClick = (date: Date) => {
     // Find if there's an event on this date by comparing just the date parts
@@ -87,39 +88,46 @@ export function CalendarView({
 
   const handleDragEnd = () => {
     if (selectedDates.length > 0) {
-      // Sort dates to ensure chronological order
-      const sortedDates = [...selectedDates].sort((a, b) => a.getTime() - b.getTime());
-      // Open add dialog with the first selected date and a callback to create events for all dates
-      onDayClick(sortedDates[0], (date: Date, name: string, eventType: EventType) => {
-        // Only proceed if the event type is allowed for drag-select
-        if (DRAGGABLE_EVENT_TYPES.includes(eventType.name)) {
-          // Create events for all selected dates
-          return Promise.all(sortedDates.map(selectedDate => {
-            // Create a new event for each date
-            return onDayClick(selectedDate, undefined);
-          }));
-        } else {
-          console.log('Event type not allowed for drag-select:', eventType.name);
-          return Promise.resolve();
-        }
-      });
+      setIsMultiEventDialogOpen(true);
     }
     setIsDragging(false);
-    setSelectedDates([]);
+  };
+
+  const handleAddMultipleEvents = (name: string, eventType: EventType) => {
+    // Create events for all selected dates
+    Promise.all(selectedDates.map(date => 
+      onDayClick(date)
+    )).then(() => {
+      setSelectedDates([]);
+      setIsMultiEventDialogOpen(false);
+    });
   };
 
   return (
-    <Calendar
-      mode="single"
-      month={currentDate}
-      onMonthChange={setCurrentDate}
-      events={events}
-      onDayClick={handleDayClick}
-      selectedDates={selectedDates}
-      onDragStart={handleDragStart}
-      onDragEnter={handleDragEnter}
-      onDragEnd={handleDragEnd}
-      className="w-full rounded-md border border-zinc-800 bg-zinc-950"
-    />
+    <>
+      <Calendar
+        mode="single"
+        month={currentDate}
+        onMonthChange={setCurrentDate}
+        events={events}
+        onDayClick={handleDayClick}
+        selectedDates={selectedDates}
+        onDragStart={handleDragStart}
+        onDragEnter={handleDragEnter}
+        onDragEnd={handleDragEnd}
+        className="w-full rounded-md border border-zinc-800 bg-zinc-950"
+      />
+
+      <MultiEventDialog
+        isOpen={isMultiEventDialogOpen}
+        onClose={() => {
+          setIsMultiEventDialogOpen(false);
+          setSelectedDates([]);
+        }}
+        dates={selectedDates}
+        eventTypes={eventTypes || []}
+        onAddEvents={handleAddMultipleEvents}
+      />
+    </>
   );
 }

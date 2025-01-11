@@ -6,7 +6,6 @@ import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useCallback } from "react";
 import { CalendarView } from "./CalendarView";
 import { Card } from "@/components/ui/card";
-import { compareDates } from "@/utils/dateFormatters";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -69,6 +68,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         setCurrentDate={setCurrentDate}
         events={events || []}
         onDayClick={handleDayClick}
+        eventTypes={eventTypes}
       />
 
       <EventDialog
