@@ -164,9 +164,11 @@ export function EventDialog({
                 </SelectTrigger>
                 <SelectContent>
                   {statuses.map((status) => (
-                    <SelectItem key={status} value={status} className="flex items-center gap-2">
-                      {getStatusIcon(status)}
-                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    <SelectItem key={status} value={status} className="flex items-center gap-2 whitespace-nowrap">
+                      <span className="flex items-center gap-2">
+                        {getStatusIcon(status)}
+                        <span>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>
