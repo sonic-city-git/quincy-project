@@ -63,7 +63,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         backgroundColor,
         color: '#FFFFFF',
         borderRadius: '4px',
-        position: 'relative'
+        position: 'relative' as const
       }
     };
   }, {} as Record<string, React.CSSProperties>) || {};
@@ -78,11 +78,14 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="w-full h-full flex items-center justify-center cursor-default relative z-10">
+              <div className="w-full h-full flex items-center justify-center cursor-pointer">
                 {date.getDate()}
               </div>
             </TooltipTrigger>
-            <TooltipContent side="top" className="z-50">
+            <TooltipContent 
+              side="top" 
+              className="z-[100] bg-popover text-popover-foreground shadow-lg"
+            >
               <p className="font-medium">{event.name}</p>
               <p className="text-sm text-muted-foreground">{event.type.name}</p>
             </TooltipContent>
