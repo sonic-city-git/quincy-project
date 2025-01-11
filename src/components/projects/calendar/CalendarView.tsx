@@ -28,7 +28,7 @@ export function CalendarView({
     console.log('handleDayMouseUp', { date, selectedDatesLength: selectedDates.length });
     if (selectedDates.length > 0) {
       // First call onDayClick to handle the selection
-      onDayClick(date);
+      onDayClick(selectedDates[0]);
       // Then end the drag operation
       onDragEnd();
     }
