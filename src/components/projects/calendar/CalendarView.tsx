@@ -41,19 +41,32 @@ export function CalendarView({
   };
 
   const handleDragStart = (date: Date) => {
-    setIsDragging(true);
-    setSelectedDates([date]);
+    const normalizedDate = normalizeDate(date);
+    if (!normalizedDate) return;
+
+    // Check if there's an event on this date
+    const hasEvent = events.some(event => 
+      normalizeDate(new Date(event.date)).getTime() === normalizedDate.getTime()
+    );
+
+    if (!hasEvent) {
+      setIsDragging(true);
+      setSelectedDates([normalizedDate]);
+    }
   };
 
   const handleDragEnter = (date: Date) => {
     if (!isDragging) return;
 
+    const normalizedDate = normalizeDate(date);
+    if (!normalizedDate) return;
+
     const startDate = selectedDates[0];
     const dates: Date[] = [];
     
     // Calculate the range of dates
-    const start = new Date(Math.min(startDate.getTime(), date.getTime()));
-    const end = new Date(Math.max(startDate.getTime(), date.getTime()));
+    const start = new Date(Math.min(startDate.getTime(), normalizedDate.getTime()));
+    const end = new Date(Math.max(startDate.getTime(), normalizedDate.getTime()));
     
     let current = new Date(start);
     while (current <= end) {
@@ -73,8 +86,10 @@ export function CalendarView({
 
   const handleDragEnd = () => {
     if (selectedDates.length > 0) {
+      // Sort dates to ensure we're using the first date chronologically
+      const sortedDates = [...selectedDates].sort((a, b) => a.getTime() - b.getTime());
       // Open add dialog with the first selected date
-      onDayClick(selectedDates[0]);
+      onDayClick(sortedDates[0]);
     }
     setIsDragging(false);
     setSelectedDates([]);
