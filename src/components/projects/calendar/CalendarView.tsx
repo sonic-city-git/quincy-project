@@ -9,6 +9,7 @@ interface CalendarViewProps {
   events: CalendarEvent[];
   onDayClick: (date: Date) => void;
   eventTypes?: EventType[];
+  onAddMultipleEvents: (dates: Date[], name: string, eventType: EventType) => void;
 }
 
 export function CalendarView({
@@ -16,7 +17,8 @@ export function CalendarView({
   setCurrentDate,
   events,
   onDayClick,
-  eventTypes = []
+  eventTypes = [],
+  onAddMultipleEvents
 }: CalendarViewProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
@@ -94,13 +96,9 @@ export function CalendarView({
   };
 
   const handleAddMultipleEvents = (name: string, eventType: EventType) => {
-    // Create events for all selected dates
-    Promise.all(selectedDates.map(date => 
-      onDayClick(date)
-    )).then(() => {
-      setSelectedDates([]);
-      setIsMultiEventDialogOpen(false);
-    });
+    onAddMultipleEvents(selectedDates, name, eventType);
+    setSelectedDates([]);
+    setIsMultiEventDialogOpen(false);
   };
 
   return (
