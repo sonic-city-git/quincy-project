@@ -45,6 +45,7 @@ const Auth = () => {
           redirectTo={window.location.origin}
           view="sign_in"
           showLinks={false}
+          onlyThirdPartyProviders={true}
         />
       </Card>
     </div>
