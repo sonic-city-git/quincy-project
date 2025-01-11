@@ -27,18 +27,22 @@ export function EquipmentListHeader({
 
   return (
     <div className="flex items-center gap-4">
-      <div className="flex items-center gap-2 flex-1">
-        <EquipmentSearchInput 
-          value={searchQuery}
-          onChange={onSearchChange}
-        />
-        <EquipmentFolderFilter
-          selectedFolders={selectedFolders}
-          onFolderToggle={onFolderToggle}
-        />
-        {hasActiveFilters && (
-          <EquipmentFilterClear onClear={onClearFilters} />
-        )}
+      <div className="flex items-center gap-4 flex-1">
+        <div className="w-[460px]">
+          <EquipmentSearchInput 
+            value={searchQuery}
+            onChange={onSearchChange}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <EquipmentFolderFilter
+            selectedFolders={selectedFolders}
+            onFolderToggle={onFolderToggle}
+          />
+          {hasActiveFilters && (
+            <EquipmentFilterClear onClear={onClearFilters} />
+          )}
+        </div>
       </div>
       <EquipmentActions 
         selectedItems={selectedItem ? [selectedItem] : []} 
