@@ -1,10 +1,13 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CalendarDays, Users, Package } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Users, Package, LogOut } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   const isActive = (path: string) => {
@@ -13,6 +16,15 @@ export function Sidebar() {
 
   const handleProjectsClick = () => {
     queryClient.invalidateQueries({ queryKey: ['projects'] });
+  };
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/auth');
+    } catch (error) {
+      toast.error("Failed to sign out");
+    }
   };
 
   const links = [
@@ -59,7 +71,7 @@ export function Sidebar() {
           </h1>
         </div>
       </div>
-      <div className="space-y-4 py-4">
+      <div className="space-y-4 py-4 flex flex-col h-[calc(100%-120px)]">
         <div className="px-3 py-2">
           <div className="space-y-1">
             {links.map((link) => (
@@ -79,6 +91,15 @@ export function Sidebar() {
               </Link>
             ))}
           </div>
+        </div>
+        <div className="mt-auto px-3 py-2">
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all hover:bg-red-500/10 hover:text-red-500"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </button>
         </div>
       </div>
     </div>
