@@ -39,7 +39,7 @@ export function CalendarHeader({ month, onMonthChange }: CalendarHeaderProps) {
 
       <Button
         variant="ghost"
-        className="absolute right-0 h-10 w-10 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full"
+        className="absolute -top-2 right-0 h-10 w-10 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full"
         onClick={handleResetMonth}
         title="Reset to current month"
       >
