@@ -1,17 +1,8 @@
 import { CalendarEvent } from "@/types/events";
-import { Card } from "@/components/ui/card";
-import { format } from "date-fns";
-import { Calendar, CheckCircle, HelpCircle, Send, XCircle, DollarSign } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { EventSection } from "./EventSection";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -33,7 +24,6 @@ export function EventList({ events, projectId }: EventListProps) {
   const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
     if (!projectId) return;
 
-    // Define query keys outside try block so they're accessible in catch block
     const queryKeysToUpdate = [
       ['events', projectId],
       ['calendar-events', projectId]
@@ -69,12 +59,10 @@ export function EventList({ events, projectId }: EventListProps) {
         description: `Event status changed to ${newStatus}`,
       });
 
-      // Automatically dismiss the toast after 0.6 seconds
       setTimeout(() => {
         dismiss();
       }, 600);
 
-      // Refresh all relevant queries in the background
       await Promise.all(
         queryKeysToUpdate.map(queryKey =>
           queryClient.invalidateQueries({ queryKey })
@@ -84,7 +72,6 @@ export function EventList({ events, projectId }: EventListProps) {
     } catch (error) {
       console.error('Error updating event status:', error);
       
-      // Revert all caches on error
       queryKeysToUpdate.forEach(queryKey => {
         queryClient.invalidateQueries({ queryKey });
       });
@@ -97,128 +84,28 @@ export function EventList({ events, projectId }: EventListProps) {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'invoice ready':
-        return <Send className="h-5 w-5 text-blue-500" />;
-      case 'invoiced':
-        return <DollarSign className="h-5 w-5 text-emerald-500" />;
-      case 'cancelled':
-        return <XCircle className="h-5 w-5 text-red-500" />;
-      default: // 'proposed'
-        return <HelpCircle className="h-5 w-5 text-yellow-500" />;
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    if (status === 'invoice_ready') return 'Invoice Ready';
-    return status.charAt(0).toUpperCase() + status.slice(1);
-  };
-
-  const formatRevenue = (revenue: number | undefined) => {
-    if (revenue === undefined || revenue === null) return '-';
-    return new Intl.NumberFormat('nb-NO', {
-      style: 'currency',
-      currency: 'NOK',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(revenue);
-  };
-
-  const renderEventCard = (event: CalendarEvent) => (
-    <Card key={`${event.date}-${event.name}`} className="p-4">
-      <div className="grid grid-cols-[160px_1fr_auto_auto_auto] items-center gap-6">
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">
-            {format(event.date, 'dd.MM.yyyy')}
-          </span>
-        </div>
-        <h3 className="font-medium text-base truncate">{event.name}</h3>
-        <div 
-          className={`text-sm px-3 py-1 rounded-full ${event.type.color}`}
-        >
-          {event.type.name}
-        </div>
-        <div className="text-sm text-muted-foreground font-medium">
-          {formatRevenue(event.revenue)}
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="flex items-center gap-2"
-            >
-              {getStatusIcon(event.status)}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem 
-              onClick={() => handleStatusChange(event, 'proposed')}
-              className="flex items-center gap-2"
-            >
-              <HelpCircle className="h-4 w-4 text-yellow-500" />
-              Proposed
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => handleStatusChange(event, 'confirmed')}
-              className="flex items-center gap-2"
-            >
-              <CheckCircle className="h-4 w-4 text-green-500" />
-              Confirmed
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => handleStatusChange(event, 'invoice ready')}
-              className="flex items-center gap-2"
-            >
-              <Send className="h-4 w-4 text-blue-500" />
-              Invoice Ready
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => handleStatusChange(event, 'invoiced')}
-              className="flex items-center gap-2"
-            >
-              <DollarSign className="h-4 w-4 text-emerald-500" />
-              Invoiced
-            </DropdownMenuItem>
-            <DropdownMenuItem 
-              onClick={() => handleStatusChange(event, 'cancelled')}
-              className="flex items-center gap-2"
-            >
-              <XCircle className="h-4 w-4 text-red-500" />
-              Cancelled
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </Card>
-  );
-
-  const renderEventSection = (status: string, events: CalendarEvent[]) => {
-    if (events.length === 0) return null;
-    
-    return (
-      <div key={status} className="space-y-3">
-        <div className="flex items-center gap-2">
-          {getStatusIcon(status)}
-          <h3 className="text-lg font-semibold">{getStatusText(status)}</h3>
-        </div>
-        <div className="grid gap-3">
-          {events.map(renderEventCard)}
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="space-y-8">
-      {renderEventSection('proposed', groupedEvents.proposed)}
-      {renderEventSection('confirmed', groupedEvents.confirmed)}
-      {renderEventSection('invoice ready', groupedEvents.invoice_ready)}
-      {renderEventSection('cancelled', groupedEvents.cancelled)}
+      <EventSection 
+        status="proposed"
+        events={groupedEvents.proposed}
+        onStatusChange={handleStatusChange}
+      />
+      <EventSection 
+        status="confirmed"
+        events={groupedEvents.confirmed}
+        onStatusChange={handleStatusChange}
+      />
+      <EventSection 
+        status="invoice ready"
+        events={groupedEvents.invoice_ready}
+        onStatusChange={handleStatusChange}
+      />
+      <EventSection 
+        status="cancelled"
+        events={groupedEvents.cancelled}
+        onStatusChange={handleStatusChange}
+      />
     </div>
   );
 }
