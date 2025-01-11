@@ -93,9 +93,8 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
     setIsDragging(false);
     setDragStartDate(null);
-    const firstDate = selectedDates[0];
     
-    openAddDialog(firstDate, async (date: Date, name: string, eventType: any) => {
+    openAddDialog(selectedDates[0], async (date: Date, name: string, eventType: any) => {
       for (const selectedDate of selectedDates) {
         await addEvent(selectedDate, name, eventType);
       }
@@ -132,6 +131,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onSelect={handleDragStart}
         onDayMouseEnter={handleDragEnter}
         onDayClick={handleDayClick}
+        onDayMouseUp={handleDragEnd}
       />
 
       <EventDialog
