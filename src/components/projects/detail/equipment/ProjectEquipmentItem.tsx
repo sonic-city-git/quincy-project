@@ -13,7 +13,7 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
     <Card className="p-2 h-[64px]">
       <div className="flex items-center justify-between h-full">
         <div>
-          <h3 className="font-medium leading-tight">{item.name}</h3>
+          <h3 className="text-sm font-medium leading-tight">{item.name}</h3>
         </div>
         <div className="flex items-center gap-1">
           <div className="flex items-center gap-1">

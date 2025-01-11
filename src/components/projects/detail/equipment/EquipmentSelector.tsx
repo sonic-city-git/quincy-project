@@ -157,7 +157,7 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
       onDoubleClick={() => handleDoubleClick(item)}
     >
       <div className="text-left">
-        <div className="font-medium leading-tight">{item.name}</div>
+        <div className="text-sm font-medium leading-tight">{item.name}</div>
       </div>
     </Button>
   );
