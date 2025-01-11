@@ -52,12 +52,21 @@ export function EquipmentFolderFilter({
         <DropdownMenuCheckboxItem
           checked={selectedFolders.includes(folder.id)}
           onCheckedChange={() => onFolderToggle(folder.id)}
-          style={{ paddingLeft }}
           className="relative"
         >
           {folder.name}
         </DropdownMenuCheckboxItem>
-        {subfolders.map(subfolder => renderFolderItems(subfolder, level + 1))}
+        {subfolders.map(subfolder => (
+          <DropdownMenuCheckboxItem
+            key={subfolder.id}
+            checked={selectedFolders.includes(subfolder.id)}
+            onCheckedChange={() => onFolderToggle(subfolder.id)}
+            style={{ paddingLeft: '16px' }}
+            className="relative"
+          >
+            {subfolder.name}
+          </DropdownMenuCheckboxItem>
+        ))}
       </div>
     );
   };
