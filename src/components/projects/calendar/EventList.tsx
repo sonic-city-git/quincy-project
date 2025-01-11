@@ -15,15 +15,18 @@ export function EventList({ events, projectId }: EventListProps) {
   const { toast } = useToast();
   const today = startOfToday();
 
-  // Group events by status without filtering out past proposed events
+  // Group events by status, filtering cancelled events to only show future dates
   const groupedEvents = {
     proposed: events.filter(event => event.status === 'proposed'),
     confirmed: events.filter(event => event.status === 'confirmed'),
     invoice_ready: events.filter(event => event.status === 'invoice ready'),
-    cancelled: events.filter(event => event.status === 'cancelled'),
+    cancelled: events.filter(event => 
+      event.status === 'cancelled' && 
+      !isBefore(event.date, today)
+    ),
   };
 
-  // Get past events for "Done and dusted" section - only cancelled and invoiced events
+  // Get past events for "Done and dusted" section - cancelled and invoiced events
   const pastEvents = events.filter(event => 
     isBefore(event.date, today) && 
     (event.status === 'cancelled' || event.status === 'invoiced')
