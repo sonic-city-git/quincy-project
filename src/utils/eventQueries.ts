@@ -16,10 +16,6 @@ export const fetchEvents = async (projectId: string) => {
         color,
         needs_crew,
         crew_rate_multiplier
-      ),
-      event_statuses!inner (
-        id,
-        name
       )
     `)
     .eq('project_id', projectId);
@@ -35,7 +31,7 @@ export const fetchEvents = async (projectId: string) => {
     date: new Date(event.date),
     name: event.name,
     type: event.event_types,
-    status: event.event_statuses.name as CalendarEvent['status'],
+    status: event.status as CalendarEvent['status'],
     revenue: event.revenue
   }));
 };
@@ -48,30 +44,11 @@ export const createEvent = async (
 ) => {
   const formattedDate = formatDatabaseDate(date);
   
-  // Get the 'proposed' status id with proper error handling
-  const { data: statusData, error: statusError } = await supabase
-    .from('event_statuses')
-    .select('id')
-    .eq('name', 'proposed')
-    .limit(1)
-    .maybeSingle();
-
-  if (!statusData) {
-    console.error('Error: Proposed status not found in database');
-    throw new Error('Required event status "proposed" not found in database');
-  }
-
-  if (statusError) {
-    console.error('Error fetching proposed status:', statusError);
-    throw statusError;
-  }
-
   console.log('Adding event:', {
     projectId,
     date: formattedDate,
     eventName,
-    eventType,
-    statusId: statusData.id
+    eventType
   });
 
   try {
@@ -82,7 +59,7 @@ export const createEvent = async (
         date: formattedDate,
         name: eventName.trim() || eventType.name,
         event_type_id: eventType.id,
-        status_id: statusData.id
+        status: 'proposed'
       })
       .select(`
         *,
@@ -92,10 +69,6 @@ export const createEvent = async (
           color,
           needs_crew,
           crew_rate_multiplier
-        ),
-        event_statuses!inner (
-          id,
-          name
         )
       `)
       .single();
@@ -122,7 +95,7 @@ export const createEvent = async (
       date: new Date(eventData.date),
       name: eventData.name,
       type: eventData.event_types,
-      status: eventData.event_statuses.name as CalendarEvent['status'],
+      status: eventData.status as CalendarEvent['status'],
       revenue: eventData.revenue
     };
   } catch (error) {
@@ -135,29 +108,12 @@ export const updateEvent = async (
   projectId: string,
   updatedEvent: CalendarEvent
 ) => {
-  const { data: statusData, error: statusError } = await supabase
-    .from('event_statuses')
-    .select('id')
-    .eq('name', updatedEvent.status)
-    .limit(1)
-    .maybeSingle();
-
-  if (!statusData) {
-    console.error('Error: Status not found in database:', updatedEvent.status);
-    throw new Error(`Required event status "${updatedEvent.status}" not found in database`);
-  }
-
-  if (statusError) {
-    console.error('Error fetching status:', statusError);
-    throw statusError;
-  }
-
   const { error } = await supabase
     .from('project_events')
     .update({
       name: updatedEvent.name.trim() || updatedEvent.type.name,
       event_type_id: updatedEvent.type.id,
-      status_id: statusData.id
+      status: updatedEvent.status
     })
     .eq('id', updatedEvent.id)
     .eq('project_id', projectId);

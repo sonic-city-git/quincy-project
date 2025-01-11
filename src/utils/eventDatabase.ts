@@ -11,10 +11,6 @@ export const fetchProjectEvents = async (projectId: string) => {
         id,
         name,
         color
-      ),
-      event_statuses (
-        id,
-        name
       )
     `)
     .eq('project_id', projectId);
@@ -29,7 +25,7 @@ export const fetchProjectEvents = async (projectId: string) => {
     date: new Date(event.date),
     name: event.name,
     type: event.event_types,
-    status: event.event_statuses.name as CalendarEvent['status'],
+    status: event.status as CalendarEvent['status'],
     revenue: event.revenue
   })) || [];
 };
@@ -42,24 +38,12 @@ export const insertEvent = async (
 ) => {
   const formattedDate = formatDatabaseDate(date);
   
-  // Get the 'proposed' status id
-  const { data: statusData, error: statusError } = await supabase
-    .from('event_statuses')
-    .select('id')
-    .eq('name', 'proposed')
-    .single();
-
-  if (statusError) {
-    console.error('Error fetching proposed status:', statusError);
-    throw statusError;
-  }
-  
   console.log('Adding event:', {
     project_id: projectId,
     date: formattedDate,
     name: eventName,
     event_type_id: eventType.id,
-    status_id: statusData.id
+    status: 'proposed'
   });
 
   const { data, error } = await supabase
@@ -69,7 +53,7 @@ export const insertEvent = async (
       date: formattedDate,
       name: eventName.trim() || eventType.name,
       event_type_id: eventType.id,
-      status_id: statusData.id
+      status: 'proposed'
     })
     .select(`
       *,
@@ -77,10 +61,6 @@ export const insertEvent = async (
         id,
         name,
         color
-      ),
-      event_statuses (
-        id,
-        name
       )
     `)
     .single();
@@ -96,7 +76,7 @@ export const insertEvent = async (
     date: new Date(data.date),
     name: data.name,
     type: data.event_types,
-    status: data.event_statuses.name as CalendarEvent['status'],
+    status: data.status as CalendarEvent['status'],
     revenue: data.revenue
   };
 };
@@ -105,26 +85,12 @@ export const updateEventInDb = async (
   projectId: string,
   updatedEvent: CalendarEvent
 ) => {
-  const formattedDate = formatDatabaseDate(updatedEvent.date);
-
-  // Get the status id for the status
-  const { data: statusData, error: statusError } = await supabase
-    .from('event_statuses')
-    .select('id')
-    .eq('name', updatedEvent.status)
-    .single();
-
-  if (statusError) {
-    console.error('Error fetching status:', statusError);
-    throw statusError;
-  }
-
   const { error } = await supabase
     .from('project_events')
     .update({
       name: updatedEvent.name.trim() || updatedEvent.type.name,
       event_type_id: updatedEvent.type.id,
-      status_id: statusData.id
+      status: updatedEvent.status
     })
     .eq('id', updatedEvent.id)
     .eq('project_id', projectId);
