@@ -122,7 +122,7 @@ const ProjectDetail = () => {
 
               {events && (
                 <Card className="p-6">
-                  <EventList events={events} />
+                  <EventList events={events} projectId={id} />
                 </Card>
               )}
             </div>
