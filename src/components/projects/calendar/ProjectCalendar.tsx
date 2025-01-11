@@ -3,6 +3,7 @@ import { useCalendarDate } from "@/hooks/useCalendarDate";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { AddEventDialog } from "./AddEventDialog";
 import { EditEventDialog } from "./EditEventDialog";
 
@@ -67,6 +68,28 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     };
   }, {} as Record<string, React.CSSProperties>) || {};
 
+  // Create tooltips for each event
+  const modifiersContent = events?.reduce((acc, event) => {
+    const eventDate = new Date(event.date);
+    const key = `event-${eventDate.getTime()}`;
+    return {
+      ...acc,
+      [key]: ({ date }: { date: Date }) => (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="w-full h-full">{date.getDate()}</div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="font-medium">{event.name}</p>
+              <p className="text-sm text-muted-foreground">{event.type.name}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )
+    };
+  }, {} as Record<string, (props: { date: Date }) => JSX.Element>) || {};
+
   if (isLoading || !eventTypes) {
     return <div>Loading calendar...</div>;
   }
@@ -80,6 +103,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onDayClick={handleDayClick}
         modifiers={modifiers}
         modifiersStyles={modifiersStyles}
+        components={modifiersContent}
         className="rounded-md border"
       />
 
