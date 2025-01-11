@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import { CalendarEvent, EventType } from "@/types/events";
+import { CalendarEvent } from "@/types/events";
 import { useToast } from "@/hooks/use-toast";
-import { fetchEvents, createEvent, updateEvent } from "@/utils/eventQueries";
-import { createRoleAssignments } from "@/utils/roleAssignments";
+import { fetchEvents } from "@/utils/eventQueries";
+import { useEventManagement } from "./useEventManagement";
 
 export const useCalendarEvents = (projectId: string | undefined) => {
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [events, setEvents] = useState<CalendarEvent[]>();
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { addEvent: addEventHandler, updateEvent: updateEventHandler } = useEventManagement(projectId || '');
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -39,54 +40,24 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   }, [projectId, toast]);
 
   const addEvent = async (date: Date, eventName: string, eventType: EventType) => {
-    if (!projectId) {
-      console.error('No project ID provided for adding event');
-      throw new Error('Project ID is missing');
-    }
-
-    try {
-      console.log('Adding event:', { projectId, date, eventName, eventType });
-      const eventData = await createEvent(projectId, date, eventName, eventType);
-      
-      if (eventType.needs_crew) {
-        console.log('Event needs crew, creating role assignments');
-        await createRoleAssignments(projectId, eventData.id);
-      }
-
-      const newEvent: CalendarEvent = {
-        date: new Date(eventData.date),
-        name: eventData.name,
-        type: eventData.event_types
-      };
-
-      setEvents(prev => [...prev, newEvent]);
-      return newEvent;
-    } catch (error) {
-      console.error('Error adding event:', error);
-      throw error;
-    }
+    const newEvent = await addEventHandler(date, eventName, eventType);
+    setEvents(prev => [...(prev || []), newEvent]);
+    return newEvent;
   };
 
-  const updateEventHandler = async (updatedEvent: CalendarEvent) => {
-    if (!projectId) throw new Error('Project ID is missing');
-
-    try {
-      await updateEvent(projectId, updatedEvent);
-      setEvents(prev => 
-        prev.map(event => 
-          event.date.getTime() === updatedEvent.date.getTime()
-            ? updatedEvent
-            : event
-        )
-      );
-    } catch (error) {
-      console.error('Error updating event:', error);
-      throw error;
-    }
+  const updateEvent = async (updatedEvent: CalendarEvent) => {
+    const updated = await updateEventHandler(updatedEvent);
+    setEvents(prev => 
+      prev?.map(event => 
+        event.date.getTime() === updated.date.getTime()
+          ? updated
+          : event
+      )
+    );
   };
 
   const findEvent = (date: Date) => {
-    return events.find(event => 
+    return events?.find(event => 
       event.date.getTime() === date.getTime()
     );
   };
@@ -95,7 +66,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     events,
     isLoading,
     addEvent,
-    updateEvent: updateEventHandler,
+    updateEvent,
     findEvent
   };
 };
