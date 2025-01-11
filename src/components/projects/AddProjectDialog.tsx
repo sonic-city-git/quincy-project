@@ -8,6 +8,7 @@ import { useCrew } from "@/hooks/useCrew";
 import { useAddProject } from "@/hooks/useAddProject";
 import { useFolders } from "@/hooks/useFolders";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface AddProjectFormData {
   name: string;
@@ -79,12 +80,18 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
                   <SelectTrigger>
                     <SelectValue placeholder="Select customer" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {customers.map(customer => (
-                      <SelectItem key={customer.id} value={customer.id}>
-                        {customer.name}
-                      </SelectItem>
-                    ))}
+                  <SelectContent className="h-[200px] overflow-hidden">
+                    <ScrollArea className="h-full">
+                      {customers.map(customer => (
+                        <SelectItem 
+                          key={customer.id} 
+                          value={customer.id}
+                          className="cursor-pointer"
+                        >
+                          {customer.name}
+                        </SelectItem>
+                      ))}
+                    </ScrollArea>
                   </SelectContent>
                 </Select>
               </div>
@@ -98,12 +105,18 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
                   <SelectTrigger>
                     <SelectValue placeholder="Select owner" />
                   </SelectTrigger>
-                  <SelectContent>
-                    {filteredCrew.map(member => (
-                      <SelectItem key={member.id} value={member.id}>
-                        {member.name}
-                      </SelectItem>
-                    ))}
+                  <SelectContent className="h-[200px] overflow-hidden">
+                    <ScrollArea className="h-full">
+                      {filteredCrew.map(member => (
+                        <SelectItem 
+                          key={member.id} 
+                          value={member.id}
+                          className="cursor-pointer"
+                        >
+                          {member.name}
+                        </SelectItem>
+                      ))}
+                    </ScrollArea>
                   </SelectContent>
                 </Select>
               </div>
