@@ -118,8 +118,8 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
   );
 
   return (
-    <div className={cn("space-y-4", className)}>
-      <div className="relative">
+    <div className={cn("flex flex-col h-full", className)}>
+      <div className="relative mb-4">
         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Search equipment..."

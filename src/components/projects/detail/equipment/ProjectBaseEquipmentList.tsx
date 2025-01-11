@@ -10,7 +10,7 @@ export function ProjectBaseEquipmentList({ projectId }: ProjectBaseEquipmentList
   const { equipment, loading, removeEquipment } = useProjectEquipment(projectId);
 
   return (
-    <ScrollArea className="h-[600px]">
+    <ScrollArea className="h-full">
       <div className="space-y-2 pr-4">
         {loading ? (
           <div className="text-sm text-muted-foreground">Loading equipment...</div>
