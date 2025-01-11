@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CalendarDays, Users } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Users, Package } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 
 export function Sidebar() {
@@ -12,7 +12,6 @@ export function Sidebar() {
   };
 
   const handleProjectsClick = () => {
-    // Invalidate and refetch projects query
     queryClient.invalidateQueries({ queryKey: ['projects'] });
   };
 
@@ -22,24 +21,32 @@ export function Sidebar() {
       label: "Dashboard", 
       icon: LayoutDashboard,
       isActive: isActive("/"),
-      bgColor: "hover:bg-[#9b87f5]/10", // Primary purple hover
-      onClick: () => {} // No special action
+      bgColor: "hover:bg-[#9b87f5]/10",
+      onClick: () => {}
     },
     { 
       href: "/projects", 
       label: "Projects", 
       icon: CalendarDays,
       isActive: isActive("/projects"),
-      bgColor: "hover:bg-[#7E69AB]/10", // Secondary purple hover
-      onClick: handleProjectsClick // Refresh projects on click
+      bgColor: "hover:bg-[#7E69AB]/10",
+      onClick: handleProjectsClick
     },
     { 
       href: "/crew", 
       label: "Crew", 
       icon: Users,
       isActive: isActive("/crew"),
-      bgColor: "hover:bg-[#F97316]/10", // Accent orange hover
-      onClick: () => {} // No special action
+      bgColor: "hover:bg-[#F97316]/10",
+      onClick: () => {}
+    },
+    { 
+      href: "/equipment", 
+      label: "Equipment", 
+      icon: Package,
+      isActive: isActive("/equipment"),
+      bgColor: "hover:bg-[#22c55e]/10",
+      onClick: () => {}
     }
   ];
 

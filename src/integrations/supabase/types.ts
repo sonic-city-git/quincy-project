@@ -647,45 +647,6 @@ export type Database = {
         }
         Relationships: []
       }
-      temp_equipment_copy: {
-        Row: {
-          code: string | null
-          created: string | null
-          equipment_folder: string | null
-          internal_remark: string | null
-          name: string | null
-          rental_price: number | null
-          serial_number: string | null
-          stock: number | null
-          stock_calculation: string | null
-          weight: number | null
-        }
-        Insert: {
-          code?: string | null
-          created?: string | null
-          equipment_folder?: string | null
-          internal_remark?: string | null
-          name?: string | null
-          rental_price?: number | null
-          serial_number?: string | null
-          stock?: number | null
-          stock_calculation?: string | null
-          weight?: number | null
-        }
-        Update: {
-          code?: string | null
-          created?: string | null
-          equipment_folder?: string | null
-          internal_remark?: string | null
-          name?: string | null
-          rental_price?: number | null
-          serial_number?: string | null
-          stock?: number | null
-          stock_calculation?: string | null
-          weight?: number | null
-        }
-        Relationships: []
-      }
     }
     Views: {
       [_ in never]: never
