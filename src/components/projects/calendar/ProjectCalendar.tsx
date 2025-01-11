@@ -3,7 +3,6 @@ import { useCalendarDate } from "@/hooks/useCalendarDate";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
-import { CalendarEvent } from "@/types/events";
 import { AddEventDialog } from "./AddEventDialog";
 import { EditEventDialog } from "./EditEventDialog";
 
@@ -52,14 +51,16 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     };
   }, {} as Record<string, (date: Date) => boolean>) || {};
 
-  // Create styles for each event using their specific class names
+  // Create styles for each event using their specific class names with reduced opacity
   const modifiersStyles = events?.reduce((acc, event) => {
     const eventDate = new Date(event.date);
     const key = `event-${eventDate.getTime()}`;
+    // Add opacity to the background color to dampen it
+    const backgroundColor = event.type.color.replace(')', ', 0.8)').replace('rgb', 'rgba');
     return {
       ...acc,
       [key]: {
-        backgroundColor: event.type.color,
+        backgroundColor,
         color: '#FFFFFF',
         borderRadius: '4px'
       }
