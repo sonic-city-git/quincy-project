@@ -63,6 +63,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         color: '#FFFFFF',
         borderRadius: '4px',
         cursor: 'pointer',
+        position: 'relative',
       }
     };
   }, {} as Record<string, React.CSSProperties>) || {};
@@ -74,24 +75,25 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     return {
       ...acc,
       [key]: ({ date }: { date: Date }) => (
-        <HoverCard openDelay={0} closeDelay={0}>
-          <HoverCardTrigger asChild>
-            <div className="w-full h-full flex items-center justify-center cursor-pointer">
-              <span>{date.getDate()}</span>
-            </div>
-          </HoverCardTrigger>
-          <HoverCardContent 
-            side="top" 
-            align="center"
-            className="w-auto bg-black/90 border border-zinc-700 text-white p-3 rounded-md shadow-xl z-[999999]"
-            sideOffset={5}
-          >
-            <div className="space-y-1.5">
-              <p className="font-semibold text-white">{event.name}</p>
-              <p className="text-sm text-zinc-300">{event.type.name}</p>
-            </div>
-          </HoverCardContent>
-        </HoverCard>
+        <div className="relative w-full h-full">
+          <HoverCard>
+            <HoverCardTrigger asChild>
+              <div className="w-full h-full flex items-center justify-center cursor-pointer">
+                <span>{date.getDate()}</span>
+              </div>
+            </HoverCardTrigger>
+            <HoverCardContent 
+              className="fixed bg-zinc-950 border border-zinc-800 text-white p-3 rounded-md shadow-xl"
+              style={{ zIndex: 999999 }}
+              sideOffset={5}
+            >
+              <div className="space-y-1.5">
+                <p className="font-semibold text-white">{event.name}</p>
+                <p className="text-sm text-zinc-300">{event.type.name}</p>
+              </div>
+            </HoverCardContent>
+          </HoverCard>
+        </div>
       )
     };
   }, {} as Record<string, (props: { date: Date }) => JSX.Element>) || {};
