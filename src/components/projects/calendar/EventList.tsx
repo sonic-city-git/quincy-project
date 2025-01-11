@@ -24,7 +24,7 @@ export function EventList({ events }: EventListProps) {
                   {format(event.date, 'dd.MM.yyyy')}
                 </span>
               </div>
-              <h3 className="font-medium text-sm truncate">{event.name}</h3>
+              <h3 className="font-medium text-sm truncate text-left">{event.name}</h3>
               <div 
                 className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${event.type.color}`}
               >
