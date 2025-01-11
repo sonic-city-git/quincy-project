@@ -53,11 +53,16 @@ export const createEvent = async (
     .from('event_statuses')
     .select('id')
     .eq('name', 'proposed')
-    .single();
+    .maybeSingle();
 
   if (statusError) {
     console.error('Error fetching proposed status:', statusError);
     throw statusError;
+  }
+
+  if (!statusData) {
+    console.error('No proposed status found in event_statuses table');
+    throw new Error('Required event status "proposed" not found in database');
   }
 
   console.log('Adding event:', {
@@ -137,11 +142,16 @@ export const updateEvent = async (
     .from('event_statuses')
     .select('id')
     .eq('name', updatedEvent.status)
-    .single();
+    .maybeSingle();
 
   if (statusError) {
     console.error('Error fetching status:', statusError);
     throw statusError;
+  }
+
+  if (!statusData) {
+    console.error(`No status found for name: ${updatedEvent.status}`);
+    throw new Error(`Required event status "${updatedEvent.status}" not found in database`);
   }
 
   const { error } = await supabase
