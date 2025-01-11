@@ -47,10 +47,10 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
         </div>
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
-        {project.owner}
+        {project.owner?.name || 'No Owner'}
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
-        {formatDate(project.lastInvoiced)}
+        {formatDate(project.created_at)}
       </TableCell>
     </TableRow>
   );

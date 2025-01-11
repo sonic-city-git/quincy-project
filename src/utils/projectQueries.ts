@@ -17,10 +17,12 @@ export const transformProjectData = (project: any): Project => ({
   id: project.id,
   name: project.name,
   customer_id: project.customer_id,
-  lastInvoiced: project.created_at || '',
-  owner: project.owner?.name || project.customers?.name || 'No Owner',
   owner_id: project.owner_id,
   color: project.color || 'violet',
-  crew_member_id: project.owner_id,
-  project_number: project.project_number
+  project_number: project.project_number,
+  created_at: project.created_at,
+  updated_at: project.updated_at,
+  to_be_invoiced: project.to_be_invoiced,
+  customer: project.customers,
+  owner: project.owner
 });
