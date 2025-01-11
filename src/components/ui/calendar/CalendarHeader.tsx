@@ -15,7 +15,7 @@ export function CalendarHeader({ month, onMonthChange }: CalendarHeaderProps) {
 
   return (
     <div className="flex items-center justify-center relative pt-1">
-      <div className="flex items-center gap-1">
+      <div className="flex items-center min-w-[280px] justify-between">
         <Button
           variant="ghost"
           className="h-10 w-10 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full"
@@ -24,7 +24,7 @@ export function CalendarHeader({ month, onMonthChange }: CalendarHeaderProps) {
           <ChevronLeft className="h-4 w-4" />
         </Button>
         
-        <div className="text-xl font-medium px-2">
+        <div className="text-xl font-medium min-w-[160px] text-center">
           {format(month, 'MMMM yyyy')}
         </div>
 
