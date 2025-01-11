@@ -7,8 +7,8 @@ import { useForm } from "react-hook-form";
 
 interface ProjectFormData {
   name: string;
-  customer_id?: string;
-  crew_member_id?: string;
+  customer_id: string;
+  crew_member_id: string;
 }
 
 interface ProjectFormProps {
@@ -20,9 +20,11 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
   const form = useForm<ProjectFormData>({
     defaultValues: {
       name: '',
-      customer_id: undefined,
-      crew_member_id: undefined
-    }
+      customer_id: '',
+      crew_member_id: ''
+    },
+    // Add required validation for all fields
+    mode: 'onBlur'
   });
 
   return (
@@ -33,19 +35,36 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
             <Input
               placeholder="Project name"
               autoComplete="off"
-              {...form.register('name')}
+              {...form.register('name', { required: "Project name is required" })}
             />
+            {form.formState.errors.name && (
+              <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
+            )}
           </div>
 
-          <CustomerSelect
-            value={form.watch('customer_id')}
-            onChange={(value) => form.setValue('customer_id', value)}
-          />
+          <div className="space-y-2">
+            <CustomerSelect
+              value={form.watch('customer_id')}
+              onChange={(value) => form.setValue('customer_id', value)}
+              error={form.formState.errors.customer_id?.message}
+              required
+            />
+            {form.formState.errors.customer_id && (
+              <p className="text-sm text-red-500">Customer is required</p>
+            )}
+          </div>
 
-          <OwnerSelect
-            value={form.watch('crew_member_id')}
-            onChange={(value) => form.setValue('crew_member_id', value)}
-          />
+          <div className="space-y-2">
+            <OwnerSelect
+              value={form.watch('crew_member_id')}
+              onChange={(value) => form.setValue('crew_member_id', value)}
+              error={form.formState.errors.crew_member_id?.message}
+              required
+            />
+            {form.formState.errors.crew_member_id && (
+              <p className="text-sm text-red-500">Owner is required</p>
+            )}
+          </div>
         </div>
 
         <div className="flex justify-end gap-2">

@@ -6,9 +6,11 @@ import { useFolders } from "@/hooks/useFolders";
 interface OwnerSelectProps {
   value?: string;
   onChange: (value: string) => void;
+  error?: string;
+  required?: boolean;
 }
 
-export function OwnerSelect({ value, onChange }: OwnerSelectProps) {
+export function OwnerSelect({ value, onChange, error, required }: OwnerSelectProps) {
   const { crew, loading } = useCrew();
   const { folders } = useFolders();
   
@@ -21,8 +23,9 @@ export function OwnerSelect({ value, onChange }: OwnerSelectProps) {
         value={value}
         onValueChange={onChange}
         disabled={loading}
+        required={required}
       >
-        <SelectTrigger>
+        <SelectTrigger className={error ? "border-red-500" : ""}>
           <SelectValue placeholder="Select owner" />
         </SelectTrigger>
         <SelectContent>

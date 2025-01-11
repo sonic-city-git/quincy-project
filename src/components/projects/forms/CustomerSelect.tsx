@@ -5,9 +5,11 @@ import { useCustomers } from "@/hooks/useCustomers";
 interface CustomerSelectProps {
   value?: string;
   onChange: (value: string) => void;
+  error?: string;
+  required?: boolean;
 }
 
-export function CustomerSelect({ value, onChange }: CustomerSelectProps) {
+export function CustomerSelect({ value, onChange, error, required }: CustomerSelectProps) {
   const { customers, loading } = useCustomers(true);
 
   return (
@@ -16,8 +18,9 @@ export function CustomerSelect({ value, onChange }: CustomerSelectProps) {
         value={value}
         onValueChange={onChange}
         disabled={loading}
+        required={required}
       >
-        <SelectTrigger>
+        <SelectTrigger className={error ? "border-red-500" : ""}>
           <SelectValue placeholder="Select customer" />
         </SelectTrigger>
         <SelectContent>
