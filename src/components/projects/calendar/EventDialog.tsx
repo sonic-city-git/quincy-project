@@ -7,19 +7,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { CalendarEvent, EventType } from "@/types/events";
 import { useState, useEffect } from "react";
-import { getStatusIcon } from "@/utils/eventFormatters";
 import { Trash2 } from "lucide-react";
-import { LocationInput } from "./LocationInput";
+import { EventForm } from "./EventForm";
 
 interface EventDialogProps {
   isOpen: boolean;
@@ -32,8 +23,6 @@ interface EventDialogProps {
   onDeleteEvent?: (event: CalendarEvent) => void;
   addEventCallback?: ((date: Date, name: string, eventType: EventType) => void) | null;
 }
-
-const EVENT_STATUSES = ['proposed', 'confirmed', 'invoice ready', 'cancelled'] as const;
 
 export function EventDialog({
   isOpen,
@@ -125,60 +114,18 @@ export function EventDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Input
-              placeholder={isNameRequired ? "Event name (required)" : "Event name"}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required={isNameRequired}
-            />
-          </div>
-
-          <LocationInput 
-            value={location}
-            onChange={setLocation}
+          <EventForm
+            name={name}
+            setName={setName}
+            selectedType={selectedType}
+            setSelectedType={setSelectedType}
+            status={status}
+            setStatus={setStatus}
+            location={location}
+            setLocation={setLocation}
+            eventTypes={eventTypes}
+            isNameRequired={isNameRequired}
           />
-
-          <Select
-            value={selectedType}
-            onValueChange={(value) => setSelectedType(value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select event type" />
-            </SelectTrigger>
-            <SelectContent>
-              {eventTypes.map((type) => (
-                <SelectItem key={type.id} value={type.id}>
-                  {type.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          <Select
-            value={status}
-            onValueChange={(value) => setStatus(value as CalendarEvent['status'])}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              {EVENT_STATUSES.map((statusOption) => (
-                <SelectItem 
-                  key={statusOption} 
-                  value={statusOption}
-                  className="flex items-center gap-2 w-full"
-                >
-                  <div className="flex items-center gap-2 min-w-0">
-                    {getStatusIcon(statusOption)}
-                    <span className="truncate">
-                      {statusOption.charAt(0).toUpperCase() + statusOption.slice(1)}
-                    </span>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
 
           <div className="flex justify-between items-center pt-4">
             <div>
