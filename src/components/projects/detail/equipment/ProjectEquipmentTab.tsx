@@ -19,7 +19,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
               <h2 className="text-lg font-semibold">Available Equipment</h2>
             </div>
             <div className="flex-1 overflow-hidden">
-              <EquipmentSelector onSelect={() => {}} />
+              <EquipmentSelector onSelect={() => {}} projectId={projectId} />
             </div>
           </div>
 

@@ -8,10 +8,12 @@ import { Search, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFolders } from "@/hooks/useFolders";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 
 interface EquipmentSelectorProps {
   onSelect: (equipment: Equipment) => void;
   className?: string;
+  projectId: string;
 }
 
 interface FolderStructure {
@@ -27,12 +29,13 @@ interface FolderStructure {
   }
 }
 
-export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProps) {
+export function EquipmentSelector({ onSelect, className, projectId }: EquipmentSelectorProps) {
   const [search, setSearch] = useState("");
   const { equipment = [], loading } = useEquipment();
   const { folders = [] } = useFolders();
   const [openFolders, setOpenFolders] = useState<string[]>([]);
   const [openSubfolders, setOpenSubfolders] = useState<string[]>([]);
+  const { addEquipment } = useProjectEquipment(projectId);
 
   // Filter equipment based on search
   const filteredEquipment = equipment.filter(item => 
@@ -104,12 +107,17 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
     );
   };
 
+  const handleDoubleClick = async (item: Equipment) => {
+    await addEquipment(item);
+  };
+
   const renderEquipmentItem = (item: Equipment) => (
     <Button
       key={item.id}
       variant="ghost"
       className="w-full justify-start h-auto py-2"
       onClick={() => onSelect(item)}
+      onDoubleClick={() => handleDoubleClick(item)}
     >
       <div className="text-left">
         <div className="font-medium">{item.name}</div>
