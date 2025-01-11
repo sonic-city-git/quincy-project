@@ -1,5 +1,6 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Project } from "@/types/projects";
+import { format, parseISO } from "date-fns";
 
 interface ProjectTableRowProps {
   project: Project;
@@ -8,6 +9,16 @@ interface ProjectTableRowProps {
 }
 
 export function ProjectTableRow({ project, index, colorStyle }: ProjectTableRowProps) {
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '-';
+    try {
+      return format(parseISO(dateString), 'dd.MM.yy HH:mm');
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return '-';
+    }
+  };
+
   return (
     <TableRow className="group hover:bg-zinc-800/50">
       <TableCell className="text-sm text-muted-foreground">
@@ -26,7 +37,7 @@ export function ProjectTableRow({ project, index, colorStyle }: ProjectTableRowP
         {project.owner}
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
-        {project.lastInvoiced || '-'}
+        {formatDate(project.lastInvoiced)}
       </TableCell>
     </TableRow>
   );
