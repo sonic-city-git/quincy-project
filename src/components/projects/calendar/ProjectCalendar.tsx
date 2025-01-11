@@ -12,7 +12,7 @@ interface ProjectCalendarProps {
 }
 
 export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
-  const { currentDate, nextMonth, previousMonth, normalizeDate } = useCalendarDate();
+  const { currentDate, setCurrentDate, normalizeDate } = useCalendarDate();
   const { events, isLoading, addEvent, updateEvent } = useCalendarEvents(projectId);
   const { data: eventTypes } = useEventTypes();
   const {
@@ -75,6 +75,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
       <Calendar
         mode="single"
         month={currentDate}
+        onMonthChange={setCurrentDate}
         onDayClick={handleDayClick}
         modifiers={modifiers}
         modifiersStyles={modifiersStyles}

@@ -22,6 +22,7 @@ export const useCalendarDate = () => {
 
   return {
     currentDate,
+    setCurrentDate,
     normalizeDate,
     nextMonth,
     previousMonth
