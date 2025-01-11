@@ -72,62 +72,57 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="pb-12 w-64 bg-zinc-900">
+    <div className="flex flex-col h-screen w-64 bg-zinc-900">
       <div className="px-3 py-4 border-b border-zinc-800">
         <h1 className="text-5xl font-bold text-accent px-3">
           QUINCY
         </h1>
       </div>
-      <div className="flex flex-col h-[calc(100vh-120px)]">
-        <div className="px-3 py-2 flex-1">
-          <div className="space-y-1">
-            {links.map((link) => (
-              <Link
-                key={link.href}
-                to={link.href}
-                onClick={link.onClick}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all",
-                  link.bgColor,
-                  "hover:text-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100",
-                  link.isActive && "bg-zinc-800 text-zinc-100"
-                )}
-              >
-                <link.icon className="h-4 w-4" />
-                {link.label}
-              </Link>
-            ))}
-          </div>
+      <div className="px-3 py-2 flex-1">
+        <div className="space-y-1">
+          {links.map((link) => (
+            <Link
+              key={link.href}
+              to={link.href}
+              onClick={link.onClick}
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all",
+                link.bgColor,
+                "hover:text-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100",
+                link.isActive && "bg-zinc-800 text-zinc-100"
+              )}
+            >
+              <link.icon className="h-4 w-4" />
+              {link.label}
+            </Link>
+          ))}
         </div>
-        <div className="px-3 py-2 mt-auto">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button className="w-full flex items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all hover:bg-zinc-800">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage 
-                    src={session?.user?.user_metadata?.avatar_url} 
-                    alt={session?.user?.email || 'User avatar'} 
-                  />
-                  <AvatarFallback className="bg-zinc-800 text-zinc-400">
-                    {session?.user?.email?.charAt(0).toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="flex-1 text-left">
-                  {session?.user?.email}
-                </span>
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[200px]">
-              <DropdownMenuItem 
-                onClick={handleLogout}
-                className="text-red-500 focus:text-red-500 focus:bg-red-500/10"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Sign Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+      </div>
+      <div className="p-3 border-t border-zinc-800">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="w-full flex justify-center rounded-lg p-2 text-zinc-400 transition-all hover:bg-zinc-800">
+              <Avatar className="h-8 w-8">
+                <AvatarImage 
+                  src={session?.user?.user_metadata?.avatar_url} 
+                  alt={session?.user?.email || 'User avatar'} 
+                />
+                <AvatarFallback className="bg-zinc-800 text-zinc-400">
+                  {session?.user?.email?.charAt(0).toUpperCase() || 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-[200px]">
+            <DropdownMenuItem 
+              onClick={handleLogout}
+              className="text-red-500 focus:text-red-500 focus:bg-red-500/10"
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
