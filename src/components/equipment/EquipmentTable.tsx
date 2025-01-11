@@ -1,8 +1,9 @@
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { EquipmentTableRow } from "./EquipmentTableRow";
+import { Equipment } from "@/integrations/supabase/types/equipment";
 
 interface EquipmentTableProps {
-  equipment: any[];
+  equipment: Equipment[];
   selectedItem: string | null;
   onItemSelect: (id: string) => void;
 }

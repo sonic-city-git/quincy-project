@@ -8,7 +8,6 @@ export type Equipment = {
   folder: string | null;
   created_at: string;
   updated_at: string;
-  serial_number: string | null;
   weight: number | null;
   stock_calculation: string | null;
   equipment_serial_numbers?: EquipmentSerialNumber[];
@@ -31,7 +30,6 @@ export type EquipmentInsert = {
   stock?: number | null;
   internal_remark?: string | null;
   folder?: string | null;
-  serial_number?: string | null;
   weight?: number | null;
   stock_calculation?: string | null;
 };
@@ -43,7 +41,6 @@ export type EquipmentUpdate = {
   stock?: number | null;
   internal_remark?: string | null;
   folder?: string | null;
-  serial_number?: string | null;
   weight?: number | null;
   stock_calculation?: string | null;
 };
