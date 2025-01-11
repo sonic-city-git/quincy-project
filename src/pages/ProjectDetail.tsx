@@ -18,20 +18,20 @@ const ProjectDetail = () => {
 
   const getColorStyles = (color: string) => {
     return {
-      backgroundColor: `${color}20`,  // Changed from 80 to 20 for better visibility
-      color: '#FFFFFF'
+      backgroundColor: color,
+      color: '#FFFFFF',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
     };
   };
 
-  const colorStyles = getColorStyles(project.color);
   const formattedProjectNumber = String(project.project_number).padStart(4, '0');
 
   return (
     <div className="p-8 space-y-6">
       <div className="w-fit">
         <h1 
-          className="text-3xl font-bold px-3.5 py-2 rounded-md"
-          style={colorStyles}
+          className="text-3xl font-bold px-3.5 py-2 rounded-md bg-opacity-90 transition-all hover:bg-opacity-100"
+          style={getColorStyles(project.color)}
         >
           {project.name} <span className="ml-2 opacity-75 text-lg">{formattedProjectNumber}</span>
         </h1>
