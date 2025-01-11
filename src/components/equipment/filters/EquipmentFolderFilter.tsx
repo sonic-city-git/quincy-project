@@ -43,9 +43,8 @@ export function EquipmentFolderFilter({
   const getSubfolders = (parentId: string) => 
     folders.filter(folder => folder.parent_id === parentId);
 
-  const renderFolderItems = (folder: Folder, level: number = 0) => {
+  const renderFolderItems = (folder: Folder) => {
     const subfolders = getSubfolders(folder.id);
-    const paddingLeft = level > 0 ? `${level * 16}px` : undefined;
     
     return (
       <div key={folder.id}>
@@ -61,7 +60,6 @@ export function EquipmentFolderFilter({
             key={subfolder.id}
             checked={selectedFolders.includes(subfolder.id)}
             onCheckedChange={() => onFolderToggle(subfolder.id)}
-            style={{ paddingLeft: '16px' }}
             className="relative"
           >
             {subfolder.name}
