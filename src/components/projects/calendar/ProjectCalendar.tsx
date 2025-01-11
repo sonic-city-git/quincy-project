@@ -117,6 +117,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         modifiersStyles={modifiersStyles}
         components={modifiersContent}
         className="w-full rounded-md border border-zinc-800 bg-zinc-950"
+        selected={undefined}
       />
 
       <AddEventDialog
