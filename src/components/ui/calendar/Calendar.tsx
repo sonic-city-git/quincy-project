@@ -108,9 +108,7 @@ export function Calendar({
                   }}
                   onMouseUp={() => {
                     console.log('Calendar day mouseUp', { day, selected });
-                    if (!event && selected.length === 0) {
-                      onDayClick?.(day);
-                    } else if (selected.length > 0 && !event) {
+                    if (selected.length > 0 && !event) {
                       onDayClick?.(day);
                     }
                   }}
