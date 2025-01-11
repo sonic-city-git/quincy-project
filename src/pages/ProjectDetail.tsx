@@ -18,9 +18,8 @@ const ProjectDetail = () => {
 
   const getColorStyles = (color: string) => {
     return {
-      backgroundColor: color,
-      color: '#FFFFFF',
-      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+      backgroundColor: `${color}80`,  // 80 in hex is 50% opacity
+      color: '#FFFFFF'  // White text, fully opaque
     };
   };
 
@@ -28,13 +27,13 @@ const ProjectDetail = () => {
 
   return (
     <div className="p-8 space-y-6">
-      <div className="w-fit">
-        <h1 
-          className="text-3xl font-bold px-3.5 py-2 rounded-md bg-opacity-90 transition-all hover:bg-opacity-100 antialiased"
+      <div className="max-w-[345px]">
+        <div 
+          className="px-3.5 py-2 rounded-md text-[15px] font-medium"
           style={getColorStyles(project.color)}
         >
-          {project.name} <span className="ml-2 opacity-75 text-lg font-medium">{formattedProjectNumber}</span>
-        </h1>
+          {project.name} <span className="ml-2 opacity-75">{formattedProjectNumber}</span>
+        </div>
       </div>
       
       <Tabs defaultValue="general" className="w-full">
