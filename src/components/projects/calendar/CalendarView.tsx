@@ -29,9 +29,11 @@ export function CalendarView({
     const normalizedDate = normalizeDate(date);
     if (!normalizedDate) return;
 
+    // If we have selected dates, it means we were dragging
     if (selectedDates.length > 0) {
       onDragEnd();
     } else {
+      // If no selected dates, it was a click
       onDayClick(normalizedDate);
     }
   };
@@ -60,7 +62,11 @@ export function CalendarView({
       onDayClick={(date: Date) => {
         const normalizedDate = normalizeDate(date);
         if (!normalizedDate) return;
-        onDayClick(normalizedDate);
+        
+        // Only trigger click if we're not dragging
+        if (selectedDates.length === 0) {
+          onDayClick(normalizedDate);
+        }
       }}
       onDayMouseUp={handleDayMouseUp}
       className="w-full rounded-md border border-zinc-800 bg-zinc-950"
