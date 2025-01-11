@@ -64,10 +64,15 @@ export function EventList({ events, projectId }: EventListProps) {
 
       if (error) throw error;
 
-      toast({
+      const { dismiss } = toast({
         title: "Status Updated",
         description: `Event status changed to ${newStatus}`,
       });
+
+      // Automatically dismiss the toast after 0.6 seconds
+      setTimeout(() => {
+        dismiss();
+      }, 600);
 
       // Refresh all relevant queries in the background
       await Promise.all(
