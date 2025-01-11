@@ -1,12 +1,17 @@
 import { Navigate, useLocation } from "react-router-dom";
-import { useEffect } from "react";
 import { useAuth } from "./AuthProvider";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { session } = useAuth();
+  const { session, loading } = useAuth();
   const location = useLocation();
+
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-zinc-950">
+        <div className="text-white">Loading...</div>
+      </div>
+    );
+  }
 
   if (!session) {
     return <Navigate to="/auth" state={{ from: location }} replace />;
