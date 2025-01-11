@@ -52,7 +52,6 @@ const ProjectDetail = () => {
               </div>
               
               <div>
-                <h2 className="text-xl font-semibold mb-4">General Information</h2>
                 <div className="space-y-2">
                   <p><span className="font-medium">Project Number:</span> {project.project_number}</p>
                   <p><span className="font-medium">Owner:</span> {project.crew_members?.name || 'No owner assigned'}</p>
