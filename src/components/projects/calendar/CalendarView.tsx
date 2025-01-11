@@ -50,7 +50,7 @@ export function CalendarView({
       onSelect={onDragStart}
       onDayMouseEnter={onDragEnter}
       onDayClick={onDayClick}
-      onMouseUp={onDragEnd}
+      onDayMouseUp={onDragEnd}
     />
   );
 }
