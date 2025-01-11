@@ -1,15 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl) {
-  throw new Error('VITE_SUPABASE_URL environment variable is required');
-}
-
-if (!supabaseAnonKey) {
-  throw new Error('VITE_SUPABASE_ANON_KEY environment variable is required');
-}
+// Use the project ID from the Supabase configuration
+const supabaseUrl = 'https://dlspsnjhpmzwxfjajsoa.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsc3BzbmpocG16d3hmamFqc29hIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDY4NzI5ODAsImV4cCI6MjAyMjQ0ODk4MH0.0oEzfVhPYPH9WxEzGPaVRrqZtHKQ-0fZa4Y5yxvZhVY';
 
 // Remove any trailing colons from the URL
 const sanitizedUrl = supabaseUrl.replace(/:$/, '');
