@@ -5,7 +5,7 @@ export type Equipment = {
   rental_price: number | null;
   stock: number | null;
   internal_remark: string | null;
-  folder: string | null;
+  folder_id: string | null;
   created_at: string;
   updated_at: string;
   weight: number | null;
@@ -29,7 +29,7 @@ export type EquipmentInsert = {
   rental_price?: number | null;
   stock?: number | null;
   internal_remark?: string | null;
-  folder?: string | null;
+  folder_id?: string | null;
   weight?: number | null;
   stock_calculation?: string | null;
 };
@@ -40,7 +40,7 @@ export type EquipmentUpdate = {
   rental_price?: number | null;
   stock?: number | null;
   internal_remark?: string | null;
-  folder?: string | null;
+  folder_id?: string | null;
   weight?: number | null;
   stock_calculation?: string | null;
 };

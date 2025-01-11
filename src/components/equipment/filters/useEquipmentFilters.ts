@@ -21,7 +21,7 @@ export function useEquipmentFilters() {
 
   const filterEquipment = (equipment: Equipment[]) => {
     return equipment.filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      const matchesSearch = item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (item.code && item.code.toLowerCase().includes(searchQuery.toLowerCase()));
 
       const matchesFolders = selectedFolders.length === 0 || 
