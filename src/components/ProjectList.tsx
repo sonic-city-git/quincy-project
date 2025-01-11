@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { Loader2 } from "lucide-react";
@@ -6,11 +6,8 @@ import { useProjects } from "@/hooks/useProjects";
 import { ProjectTable } from "./projects/ProjectTable";
 import { ProjectListHeader } from "./projects/ProjectListHeader";
 import { useProjectFilters } from "@/hooks/useProjectFilters";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 
 export function ProjectList() {
-  const navigate = useNavigate();
   const { projects, loading } = useProjects();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const {
@@ -20,25 +17,6 @@ export function ProjectList() {
     setOwnerFilter,
     filteredProjects
   } = useProjectFilters(projects);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        navigate('/login');
-      }
-    };
-    
-    checkAuth();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_OUT' || !session) {
-        navigate('/login');
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
 
   const handleItemSelect = (id: string) => {
     setSelectedItem(prev => prev === id ? null : id);
