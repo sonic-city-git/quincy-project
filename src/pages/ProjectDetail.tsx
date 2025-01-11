@@ -75,12 +75,12 @@ const ProjectDetail = () => {
 
           <TabsContent value="general">
             <Card>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="w-full">
-                  <ProjectCalendar projectId={id || ''} />
-                </div>
-                
-                <div className="space-y-4 p-6">
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
+                  <div className="w-full">
+                    <ProjectCalendar projectId={id || ''} />
+                  </div>
+                  
                   <div className="space-y-4">
                     <div>
                       <label className="text-sm font-medium mb-1 block">Customer</label>
