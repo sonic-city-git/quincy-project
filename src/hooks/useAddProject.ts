@@ -2,6 +2,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+const PROJECT_COLORS = [
+  'violet',
+  'blue',
+  'green',
+  'yellow',
+  'orange',
+  'red',
+  'pink',
+  'purple'
+];
+
+const getRandomColor = () => {
+  const randomIndex = Math.floor(Math.random() * PROJECT_COLORS.length);
+  return PROJECT_COLORS[randomIndex];
+};
+
 interface AddProjectData {
   name: string;
   customer_id?: string;
@@ -20,7 +36,8 @@ export function useAddProject() {
         .insert([{
           name: data.name,
           customer_id: data.customer_id || null,
-          owner_id: data.crew_member_id || null, // Map crew_member_id to owner_id
+          owner_id: data.crew_member_id || null,
+          color: getRandomColor(), // Add random color when creating project
         }])
         .select()
         .single();
