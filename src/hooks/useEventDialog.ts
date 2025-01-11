@@ -9,6 +9,7 @@ export const useEventDialog = () => {
   const [addEventCallback, setAddEventCallback] = useState<((date: Date, name: string, eventType: EventType) => void) | null>(null);
 
   const openAddDialog = (date: Date, callback?: (date: Date, name: string, eventType: EventType) => void) => {
+    console.log('Opening add dialog for date:', date);
     setSelectedDate(date);
     setIsAddDialogOpen(true);
     if (callback) {
@@ -19,17 +20,20 @@ export const useEventDialog = () => {
   };
 
   const closeAddDialog = () => {
+    console.log('Closing add dialog');
     setSelectedDate(null);
     setIsAddDialogOpen(false);
     setAddEventCallback(null);
   };
 
   const openEditDialog = (event: CalendarEvent) => {
+    console.log('Opening edit dialog for event:', event);
     setSelectedEvent(event);
     setIsEditDialogOpen(true);
   };
 
   const closeEditDialog = () => {
+    console.log('Closing edit dialog');
     setSelectedEvent(null);
     setIsEditDialogOpen(false);
   };
