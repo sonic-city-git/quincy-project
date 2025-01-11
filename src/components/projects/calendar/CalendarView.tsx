@@ -1,5 +1,6 @@
 import { Calendar } from "@/components/ui/calendar/Calendar";
 import { CalendarEvent } from "@/types/events";
+import { normalizeDate } from "@/utils/calendarUtils";
 
 interface CalendarViewProps {
   currentDate: Date;
@@ -27,10 +28,13 @@ export function CalendarView({
   const handleDayMouseUp = (date: Date) => {
     console.log('handleDayMouseUp', { date, selectedDatesLength: selectedDates.length });
     if (selectedDates.length > 0) {
-      const startDate = selectedDates[0];
-      console.log('Processing selection', { startDate, endDate: date });
-      // Call onDayClick with the start date before ending the drag
+      const startDate = normalizeDate(selectedDates[0]);
+      const endDate = normalizeDate(date);
+      console.log('Processing selection', { startDate, endDate });
+      
+      // Call onDayClick with the normalized start date before ending the drag
       onDayClick(startDate);
+      
       // End the drag operation after handling the click
       setTimeout(() => {
         onDragEnd();
@@ -48,18 +52,18 @@ export function CalendarView({
       onSelect={(dates: Date[] | undefined) => {
         console.log('Calendar onSelect', { dates, selectedDates });
         if (!dates || dates.length === 0) return;
-        const clickedDate = dates[dates.length - 1];
+        const clickedDate = normalizeDate(dates[dates.length - 1]);
         console.log('Starting drag with date:', clickedDate);
         onDragStart(clickedDate);
       }}
       onDayMouseEnter={(date: Date) => {
         console.log('Day mouse enter', date);
-        onDragEnter(date);
+        onDragEnter(normalizeDate(date));
       }}
       onDayClick={(date: Date) => {
         console.log('Calendar onDayClick', { date, selectedDatesLength: selectedDates.length });
         if (selectedDates.length === 0) {
-          onDayClick(date);
+          onDayClick(normalizeDate(date));
         }
       }}
       onDayMouseUp={handleDayMouseUp}
