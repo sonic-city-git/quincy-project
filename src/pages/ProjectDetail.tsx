@@ -18,8 +18,8 @@ const ProjectDetail = () => {
 
   const getColorStyles = (color: string) => {
     return {
-      backgroundColor: `${color}80`,  // 80 in hex is 50% opacity
-      color: '#FFFFFF'  // White text, fully opaque
+      backgroundColor: `${color}20`,  // Changed from 80 to 20 for better visibility
+      color: '#FFFFFF'
     };
   };
 
