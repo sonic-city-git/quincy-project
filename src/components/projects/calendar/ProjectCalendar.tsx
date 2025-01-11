@@ -45,6 +45,11 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   const { modifiers, modifiersStyles } = useCalendarModifiers(events, selectedDates);
 
   const handleDayClick = (date: Date) => {
+    if (isDragging) {
+      handleDragEnd();
+      return;
+    }
+
     const normalizedDate = normalizeDate(date);
     const existingEvent = events?.find(event => 
       event.date.getTime() === normalizedDate.getTime()
@@ -123,7 +128,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         mode="single"
         month={currentDate}
         onMonthChange={setCurrentDate}
-        onDayClick={handleDayClick}
         modifiers={modifiers}
         modifiersStyles={modifiersStyles}
         components={modifiersContent}
@@ -134,7 +138,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
           handleDragStart(date);
         }}
         onDayMouseEnter={(date: Date) => handleDragEnter(date)}
-        onDayClick={() => handleDragEnd()}
+        onDayClick={handleDayClick}
       />
 
       <EventDialog
