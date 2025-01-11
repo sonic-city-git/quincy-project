@@ -24,9 +24,10 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     isEditDialogOpen,
     selectedEvent,
     openAddDialog,
-    openEditDialog,
     closeAddDialog,
     closeEditDialog,
+    openEditDialog,
+    addEventCallback
   } = useEventDialog();
 
   // Drag selection state
@@ -128,19 +129,18 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         components={modifiersContent}
         className="w-full rounded-md border border-zinc-800 bg-zinc-950"
         selected={undefined}
-        onMouseDown={(e: any) => {
-          if (e.target.closest('[role="gridcell"]')) {
-            const date = new Date(e.target.closest('[role="gridcell"]').getAttribute('data-date'));
+        onSelect={(date: Date | undefined) => {
+          if (!date) return;
+          if (!isDragging) {
             handleDragStart(date);
           }
         }}
-        onMouseEnter={(e: any) => {
-          if (e.target.closest('[role="gridcell"]')) {
-            const date = new Date(e.target.closest('[role="gridcell"]').getAttribute('data-date'));
+        onDayMouseEnter={(date: Date) => {
+          if (isDragging) {
             handleDragEnter(date);
           }
         }}
-        onMouseUp={() => handleDragEnd()}
+        onDayMouseUp={() => handleDragEnd()}
       />
 
       <EventDialog
@@ -149,6 +149,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         date={selectedDate}
         eventTypes={eventTypes}
         onAddEvent={addEvent}
+        addEventCallback={addEventCallback}
       />
 
       <EventDialog

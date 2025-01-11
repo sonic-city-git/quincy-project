@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -14,18 +15,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { CalendarEvent, EventType } from "@/types/events";
-import { useState, useEffect } from "react";
-import { format } from "date-fns";
-import { getStatusIcon } from "@/utils/eventFormatters";
+import { useState } from "react";
 
 interface EventDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  date?: Date;
-  event?: CalendarEvent;
+  date?: Date | null;
+  event?: CalendarEvent | null;
   eventTypes: EventType[];
-  onAddEvent?: (date: Date, name: string, eventType: EventType) => Promise<CalendarEvent>;
-  onUpdateEvent?: (event: CalendarEvent) => Promise<void>;
+  onAddEvent?: (date: Date, name: string, eventType: EventType) => void;
+  onUpdateEvent?: (event: CalendarEvent) => void;
+  addEventCallback?: ((date: Date, name: string, eventType: EventType) => void) | null;
 }
 
 export function EventDialog({
@@ -36,157 +36,73 @@ export function EventDialog({
   eventTypes,
   onAddEvent,
   onUpdateEvent,
+  addEventCallback
 }: EventDialogProps) {
-  const [name, setName] = useState("");
-  const [selectedEventType, setSelectedEventType] = useState<string>("");
-  const [selectedStatus, setSelectedStatus] = useState<CalendarEvent['status']>("proposed");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const isEditMode = !!event;
-
-  useEffect(() => {
-    if (event) {
-      setName(event.name);
-      setSelectedEventType(event.type.id);
-      setSelectedStatus(event.status);
-    } else {
-      setSelectedStatus("proposed");
-    }
-  }, [event]);
+  const [name, setName] = useState(event?.name || "");
+  const [selectedType, setSelectedType] = useState<string>(
+    event?.type.id || eventTypes[0]?.id
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedEventType) return;
-    if (!isEditMode && !date) return;
-
-    const eventType = eventTypes.find(type => type.id === selectedEventType);
+    const eventType = eventTypes.find((type) => type.id === selectedType);
     if (!eventType) return;
 
-    setIsSubmitting(true);
-    try {
-      if (isEditMode && event && onUpdateEvent) {
-        const updatedEvent: CalendarEvent = {
-          ...event,
-          name: name.trim() || eventType.name,
-          type: eventType,
-          status: selectedStatus,
-        };
-        await onUpdateEvent(updatedEvent);
-      } else if (!isEditMode && date && onAddEvent) {
-        const eventName = (eventType.name === 'Show' || eventType.name === 'Double Show')
-          ? name
-          : (name.trim() || eventType.name);
-        await onAddEvent(date, eventName, eventType);
+    if (event && onUpdateEvent) {
+      await onUpdateEvent({
+        ...event,
+        name,
+        type: eventType,
+      });
+    } else if (date && onAddEvent) {
+      if (addEventCallback) {
+        await addEventCallback(date, name, eventType);
+      } else {
+        await onAddEvent(date, name, eventType);
       }
-      handleClose();
-    } catch (error) {
-      console.error(`Error ${isEditMode ? 'updating' : 'adding'} event:`, error);
-    } finally {
-      setIsSubmitting(false);
     }
-  };
 
-  const handleClose = () => {
     setName("");
-    setSelectedEventType("");
-    setSelectedStatus("proposed");
     onClose();
   };
 
-  const selectedType = eventTypes.find(type => type.id === selectedEventType);
-  const isNameRequired = selectedType?.name === 'Show' || selectedType?.name === 'Double Show';
-  const displayDate = event?.date || date;
-
-  if (!displayDate) return null;
-
-  const statuses: CalendarEvent['status'][] = [
-    'proposed',
-    'confirmed',
-    'invoice ready',
-    'cancelled'
-  ];
-
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpen} onOpenChange={() => {
+      setName("");
+      onClose();
+    }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {isEditMode ? 'Edit' : 'Add'} Event for {format(displayDate, 'dd.MM.yyyy')}
+            {event ? "Edit Event" : "Add Event"}
           </DialogTitle>
         </DialogHeader>
-
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="type" className="text-sm font-medium">
-              Event Type
-            </label>
-            <Select
-              value={selectedEventType}
-              onValueChange={setSelectedEventType}
-              required
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select event type" />
-              </SelectTrigger>
-              <SelectContent>
-                {eventTypes.map((type) => (
-                  <SelectItem key={type.id} value={type.id}>
-                    {type.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
-              Event Name {isNameRequired && <span className="text-red-500">*</span>}
-            </label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter event name"
-              required={isNameRequired}
-            />
-          </div>
-
-          {isEditMode && (
-            <div className="space-y-2">
-              <label htmlFor="status" className="text-sm font-medium">
-                Status
-              </label>
-              <Select
-                value={selectedStatus}
-                onValueChange={(value) => setSelectedStatus(value as CalendarEvent['status'])}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {statuses.map((status) => (
-                    <SelectItem key={status} value={status} className="flex items-center gap-2 whitespace-nowrap">
-                      <span className="flex items-center gap-2">
-                        {getStatusIcon(status)}
-                        <span>{status.charAt(0).toUpperCase() + status.slice(1)}</span>
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
-
-          <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={handleClose} type="button">
-              Cancel
+          <Input
+            placeholder="Event name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <Select
+            value={selectedType}
+            onValueChange={(value) => setSelectedType(value)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select event type" />
+            </SelectTrigger>
+            <SelectContent>
+              {eventTypes.map((type) => (
+                <SelectItem key={type.id} value={type.id}>
+                  {type.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <DialogFooter>
+            <Button type="submit">
+              {event ? "Update" : "Add"}
             </Button>
-            <Button 
-              type="submit" 
-              disabled={isSubmitting || !selectedEventType || (isNameRequired && !name.trim())}
-            >
-              {isSubmitting ? (isEditMode ? "Saving..." : "Adding...") : (isEditMode ? "Save Changes" : "Add Event")}
-            </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
