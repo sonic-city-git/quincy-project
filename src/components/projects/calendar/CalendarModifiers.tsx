@@ -58,7 +58,8 @@ export function useCalendarModifiers(events: CalendarEvent[] | undefined, select
       backgroundColor: '#3b82f680',
       color: '#FFFFFF',
       borderRadius: '8px',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      transition: 'background-color 0.2s ease-in-out'
     }
   };
 
