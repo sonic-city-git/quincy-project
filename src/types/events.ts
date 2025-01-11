@@ -10,5 +10,5 @@ export interface CalendarEvent {
   date: Date;
   name: string;
   type: EventType;
-  status: 'proposed' | 'confirmed' | 'invoice ready' | 'cancelled';
+  status: 'proposed' | 'confirmed' | 'invoice ready' | 'invoiced' | 'cancelled';
 }
