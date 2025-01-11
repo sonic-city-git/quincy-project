@@ -143,12 +143,14 @@ export function EventDialog({
                 <SelectItem 
                   key={statusOption} 
                   value={statusOption}
-                  className="flex items-center gap-2 whitespace-nowrap overflow-hidden"
+                  className="flex items-center gap-2 w-full"
                 >
-                  {getStatusIcon(statusOption)}
-                  <span className="truncate">
-                    {statusOption.charAt(0).toUpperCase() + statusOption.slice(1)}
-                  </span>
+                  <div className="flex items-center gap-2 min-w-0">
+                    {getStatusIcon(statusOption)}
+                    <span className="truncate">
+                      {statusOption.charAt(0).toUpperCase() + statusOption.slice(1)}
+                    </span>
+                  </div>
                 </SelectItem>
               ))}
             </SelectContent>
