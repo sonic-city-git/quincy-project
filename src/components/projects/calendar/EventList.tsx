@@ -166,6 +166,38 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
     }
   };
 
+  const handleDeleteEvent = async (event: CalendarEvent) => {
+    if (!projectId) return;
+
+    try {
+      const { error } = await supabase
+        .from('project_events')
+        .delete()
+        .eq('id', event.id)
+        .eq('project_id', projectId);
+
+      if (error) throw error;
+
+      // Invalidate and refetch
+      await queryClient.invalidateQueries({ queryKey: ['events', projectId] });
+      await queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] });
+
+      toast({
+        title: "Event Deleted",
+        description: "The event has been successfully deleted",
+      });
+
+      closeEditDialog();
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete event",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="space-y-8">
       <EventSection 
@@ -209,6 +241,7 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
         event={selectedEvent}
         eventTypes={eventTypes}
         onUpdateEvent={handleUpdateEvent}
+        onDeleteEvent={handleDeleteEvent}
       />
 
       <InvoiceDialog 
