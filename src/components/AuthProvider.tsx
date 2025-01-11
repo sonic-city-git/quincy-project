@@ -13,9 +13,18 @@ export const useAuth = () => {
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Provide a mock session context that always indicates authenticated
+  // Create a mock session for development mode
+  const isDevelopment = import.meta.env.DEV;
+  const mockSession = isDevelopment ? {
+    user: {
+      id: 'dev-user',
+      email: 'dev@example.com',
+    },
+    // Add other required Session properties
+  } as Session : null;
+
   return (
-    <AuthContext.Provider value={{ session: {} as Session, loading: false }}>
+    <AuthContext.Provider value={{ session: mockSession, loading: false }}>
       {children}
     </AuthContext.Provider>
   );
