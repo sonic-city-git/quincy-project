@@ -25,12 +25,12 @@ export function EventList({ events }: EventListProps) {
                     {format(event.date, 'dd.MM.yyyy')}
                   </span>
                 </div>
-                <h3 className="font-medium">{event.name}</h3>
                 <div 
                   className={`text-xs px-2 py-1 rounded-full w-fit ${event.type.color}`}
                 >
                   {event.type.name}
                 </div>
+                <h3 className="font-medium truncate">{event.name}</h3>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground opacity-50">
                 <Clock className="h-4 w-4" />
