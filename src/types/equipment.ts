@@ -6,5 +6,4 @@ export interface ProjectEquipment {
   quantity: number;
   rental_price: number | null;
   group_id: string | null;
-  group_name?: string;
 }
