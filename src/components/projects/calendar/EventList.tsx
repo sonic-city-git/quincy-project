@@ -6,6 +6,7 @@ import { EventSection } from "./EventSection";
 import { format, isBefore, startOfToday } from "date-fns";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
+import { EventDialog } from "./EventDialog";
 
 interface EventListProps {
   events: CalendarEvent[];
