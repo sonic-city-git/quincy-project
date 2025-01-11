@@ -48,7 +48,6 @@ const ProjectDetail = () => {
           <Card className="p-6">
             <div className="grid grid-cols-2 gap-8">
               <div>
-                <h3 className="text-lg font-semibold mb-4">Calendar</h3>
                 <ProjectCalendar projectId={id || ''} />
               </div>
               
