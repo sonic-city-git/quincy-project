@@ -34,19 +34,20 @@ export function EventList({ events }: EventListProps) {
       // Create updated event object
       const updatedEvent = { ...event, status: newStatus };
       
-      // Get current cached data
-      const currentEvents = queryClient.getQueryData<CalendarEvent[]>(['events']) || [];
+      // Get all query keys that need to be updated
+      const queryKeys = ['events', ['events', event.project_id], 'calendarEvents'];
       
-      // Create new events array with the updated event
-      const updatedEvents = currentEvents.map(e => 
-        e.date.getTime() === event.date.getTime() && e.name === event.name
-          ? updatedEvent
-          : e
-      );
-
-      // Immediately update the cache
-      queryClient.setQueryData(['events'], updatedEvents);
-      queryClient.setQueryData(['calendarEvents'], updatedEvents);
+      // Update all relevant queries in the cache immediately
+      queryKeys.forEach(queryKey => {
+        queryClient.setQueryData(queryKey, (oldData: CalendarEvent[] | undefined) => {
+          if (!oldData) return [updatedEvent];
+          return oldData.map(e => 
+            e.date.getTime() === event.date.getTime() && e.name === event.name
+              ? updatedEvent
+              : e
+          );
+        });
+      });
 
       // Update the server
       const { error } = await supabase
@@ -63,12 +64,15 @@ export function EventList({ events }: EventListProps) {
       });
 
       // Refresh queries in the background
-      queryClient.invalidateQueries({ queryKey: ['events'] });
-      queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
+      await Promise.all(
+        queryKeys.map(queryKey => 
+          queryClient.invalidateQueries({ queryKey })
+        )
+      );
     } catch (error) {
       console.error('Error updating event status:', error);
       
-      // Revert to original data on error
+      // Revert cache to original data on error
       queryClient.setQueryData(['events'], events);
       queryClient.setQueryData(['calendarEvents'], events);
       
