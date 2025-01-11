@@ -3,7 +3,6 @@ import { EquipmentFilterClear } from "./filters/EquipmentFilterClear";
 import { EquipmentActions } from "./EquipmentActions";
 import { AddEquipmentDialog } from "./AddEquipmentDialog";
 import { EquipmentFolderFilter } from "./filters/EquipmentFolderFilter";
-import { Separator } from "../ui/separator";
 
 interface EquipmentListHeaderProps {
   searchQuery: string;
@@ -27,28 +26,25 @@ export function EquipmentListHeader({
   const hasActiveFilters = searchQuery.length > 0 || selectedFolders.length > 0;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2 flex-1">
-          <EquipmentSearchInput 
-            value={searchQuery}
-            onChange={onSearchChange}
-          />
-          {hasActiveFilters && (
-            <EquipmentFilterClear onClear={onClearFilters} />
-          )}
-        </div>
-        <EquipmentActions 
-          selectedItems={selectedItem ? [selectedItem] : []} 
-          onEquipmentDeleted={onEquipmentDeleted}
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 flex-1">
+        <EquipmentSearchInput 
+          value={searchQuery}
+          onChange={onSearchChange}
         />
-        <AddEquipmentDialog />
+        <EquipmentFolderFilter
+          selectedFolders={selectedFolders}
+          onFolderToggle={onFolderToggle}
+        />
+        {hasActiveFilters && (
+          <EquipmentFilterClear onClear={onClearFilters} />
+        )}
       </div>
-      <Separator className="bg-zinc-800" />
-      <EquipmentFolderFilter
-        selectedFolders={selectedFolders}
-        onFolderToggle={onFolderToggle}
+      <EquipmentActions 
+        selectedItems={selectedItem ? [selectedItem] : []} 
+        onEquipmentDeleted={onEquipmentDeleted}
       />
+      <AddEquipmentDialog />
     </div>
   );
 }

@@ -1,7 +1,12 @@
-import { Check } from "lucide-react";
+import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -38,41 +43,44 @@ export function EquipmentFolderFilter({
   const getSubfolders = (parentId: string) => 
     folders.filter(folder => folder.parent_id === parentId);
 
-  const renderFolder = (folder: Folder, level: number = 0) => {
+  const renderFolderItems = (folder: Folder, level: number = 0) => {
     const subfolders = getSubfolders(folder.id);
-    const isSelected = selectedFolders.includes(folder.id);
-
+    
     return (
-      <div key={folder.id} className="space-y-1">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onFolderToggle(folder.id)}
-          className={cn(
-            "w-full justify-start gap-2",
-            level > 0 && "pl-8",
-            isSelected && "bg-accent"
-          )}
+      <>
+        <DropdownMenuCheckboxItem
+          key={folder.id}
+          checked={selectedFolders.includes(folder.id)}
+          onCheckedChange={() => onFolderToggle(folder.id)}
+          className={level > 0 ? "pl-8" : ""}
         >
-          <div className="h-4 w-4 shrink-0">
-            {isSelected && <Check className="h-4 w-4" />}
-          </div>
           {folder.name}
-        </Button>
-        {subfolders.length > 0 && (
-          <div className="pl-2">
-            {subfolders.map(subfolder => renderFolder(subfolder, level + 1))}
-          </div>
-        )}
-      </div>
+        </DropdownMenuCheckboxItem>
+        {subfolders.map(subfolder => renderFolderItems(subfolder, level + 1))}
+      </>
     );
   };
 
   return (
-    <ScrollArea className="h-[300px] rounded-md border">
-      <div className="p-2">
-        {mainFolders.map(folder => renderFolder(folder))}
-      </div>
-    </ScrollArea>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="gap-2 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <Filter className="h-4 w-4" />
+          Filter
+          {selectedFolders.length > 0 && (
+            <Badge variant="secondary" className="ml-1">
+              {selectedFolders.length}
+            </Badge>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-56">
+        {mainFolders.map(folder => renderFolderItems(folder))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
