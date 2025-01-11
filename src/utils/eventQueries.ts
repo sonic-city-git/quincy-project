@@ -48,21 +48,16 @@ export const createEvent = async (
 ) => {
   const formattedDate = formatDatabaseDate(date);
   
-  // First, get the 'proposed' status id
+  // Get the 'proposed' status id with proper error handling
   const { data: statusData, error: statusError } = await supabase
     .from('event_statuses')
     .select('id')
     .eq('name', 'proposed')
-    .maybeSingle();
+    .single();
 
   if (statusError) {
     console.error('Error fetching proposed status:', statusError);
-    throw statusError;
-  }
-
-  if (!statusData) {
-    console.error('No proposed status found in event_statuses table');
-    throw new Error('Required event status "proposed" not found in database');
+    throw new Error(`Could not find 'proposed' status: ${statusError.message}`);
   }
 
   console.log('Adding event:', {
@@ -142,16 +137,11 @@ export const updateEvent = async (
     .from('event_statuses')
     .select('id')
     .eq('name', updatedEvent.status)
-    .maybeSingle();
+    .single();
 
   if (statusError) {
     console.error('Error fetching status:', statusError);
-    throw statusError;
-  }
-
-  if (!statusData) {
-    console.error(`No status found for name: ${updatedEvent.status}`);
-    throw new Error(`Required event status "${updatedEvent.status}" not found in database`);
+    throw new Error(`Could not find status '${updatedEvent.status}': ${statusError.message}`);
   }
 
   const { error } = await supabase
