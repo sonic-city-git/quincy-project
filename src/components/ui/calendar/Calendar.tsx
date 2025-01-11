@@ -81,12 +81,14 @@ export function Calendar({
         key={date.toString()}
         onMouseDown={(e) => {
           e.preventDefault();
-          if (mode === 'multiple') {
+          // Only allow selection if there's no event on this date
+          if (mode === 'multiple' && !event) {
             onSelect?.([date]);
           }
         }}
         onMouseEnter={() => {
-          if (selected.length > 0) {
+          // Only trigger mouse enter if there's no event on this date
+          if (selected.length > 0 && !event) {
             onDayMouseEnter?.(date);
           }
         }}
