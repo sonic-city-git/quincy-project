@@ -659,67 +659,40 @@ export type Database = {
       }
       temp_equipment: {
         Row: {
-          Code: string | null
-          "Created on": string | null
-          "Created on (Serial number)": string | null
-          "Current book value (Serial number)": string | null
-          "Current quantity": number | null
-          "Date of purchase (Serial number)": string | null
-          "Display name (Serial number)": string | null
-          "Folder (Folder)": string | null
-          "Internal reference (Serial number)": string | null
-          "Internal remark": string | null
-          "Last change": string | null
-          "Last change (Serial number)": string | null
-          "List price": number | null
-          "Name (in database)": string | null
-          "Purchase price (Serial number)": string | null
-          "rental-price": number | null
-          "Serial number (Serial number)": string | null
-          "Stock calculation method": string | null
-          Weight: number | null
+          code: string | null
+          created: string | null
+          equipment_folder: string | null
+          internal_remark: string | null
+          name: string | null
+          rental_price: number | null
+          serial_number: string | null
+          stock: number | null
+          stock_calculation: string | null
+          weight: number | null
         }
         Insert: {
-          Code?: string | null
-          "Created on"?: string | null
-          "Created on (Serial number)"?: string | null
-          "Current book value (Serial number)"?: string | null
-          "Current quantity"?: number | null
-          "Date of purchase (Serial number)"?: string | null
-          "Display name (Serial number)"?: string | null
-          "Folder (Folder)"?: string | null
-          "Internal reference (Serial number)"?: string | null
-          "Internal remark"?: string | null
-          "Last change"?: string | null
-          "Last change (Serial number)"?: string | null
-          "List price"?: number | null
-          "Name (in database)"?: string | null
-          "Purchase price (Serial number)"?: string | null
-          "rental-price"?: number | null
-          "Serial number (Serial number)"?: string | null
-          "Stock calculation method"?: string | null
-          Weight?: number | null
+          code?: string | null
+          created?: string | null
+          equipment_folder?: string | null
+          internal_remark?: string | null
+          name?: string | null
+          rental_price?: number | null
+          serial_number?: string | null
+          stock?: number | null
+          stock_calculation?: string | null
+          weight?: number | null
         }
         Update: {
-          Code?: string | null
-          "Created on"?: string | null
-          "Created on (Serial number)"?: string | null
-          "Current book value (Serial number)"?: string | null
-          "Current quantity"?: number | null
-          "Date of purchase (Serial number)"?: string | null
-          "Display name (Serial number)"?: string | null
-          "Folder (Folder)"?: string | null
-          "Internal reference (Serial number)"?: string | null
-          "Internal remark"?: string | null
-          "Last change"?: string | null
-          "Last change (Serial number)"?: string | null
-          "List price"?: number | null
-          "Name (in database)"?: string | null
-          "Purchase price (Serial number)"?: string | null
-          "rental-price"?: number | null
-          "Serial number (Serial number)"?: string | null
-          "Stock calculation method"?: string | null
-          Weight?: number | null
+          code?: string | null
+          created?: string | null
+          equipment_folder?: string | null
+          internal_remark?: string | null
+          name?: string | null
+          rental_price?: number | null
+          serial_number?: string | null
+          stock?: number | null
+          stock_calculation?: string | null
+          weight?: number | null
         }
         Relationships: []
       }
