@@ -27,7 +27,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
   return (
     <Card key={`${event.date}-${event.name}`} className="p-4">
-      <div className="grid grid-cols-[160px_1fr_auto_auto_auto_auto] items-center gap-6">
+      <div className="grid grid-cols-[160px_1fr_auto_auto_auto_auto] items-center gap-3">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
