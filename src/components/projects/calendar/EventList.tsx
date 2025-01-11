@@ -6,6 +6,12 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -26,18 +32,7 @@ export function EventList({ events }: EventListProps) {
     cancelled: sortedEvents.filter(event => event.status === 'cancelled'),
   };
 
-  const getNextStatus = (currentStatus: CalendarEvent['status']): CalendarEvent['status'] => {
-    const statusFlow = {
-      proposed: 'confirmed',
-      confirmed: 'invoice',
-      invoice: 'cancelled',
-      cancelled: 'proposed'
-    } as const;
-    return statusFlow[currentStatus];
-  };
-
-  const handleStatusChange = async (event: CalendarEvent) => {
-    const newStatus = getNextStatus(event.status);
+  const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
     try {
       const { error } = await supabase
         .from('project_events')
@@ -96,14 +91,47 @@ export function EventList({ events }: EventListProps) {
         >
           {event.type.name}
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => handleStatusChange(event)}
-          className="flex items-center gap-2"
-        >
-          {getStatusIcon(event.status)}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="flex items-center gap-2"
+            >
+              {getStatusIcon(event.status)}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem 
+              onClick={() => handleStatusChange(event, 'proposed')}
+              className="flex items-center gap-2"
+            >
+              <HelpCircle className="h-4 w-4 text-yellow-500" />
+              Proposed
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => handleStatusChange(event, 'confirmed')}
+              className="flex items-center gap-2"
+            >
+              <CheckCircle className="h-4 w-4 text-green-500" />
+              Confirmed
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => handleStatusChange(event, 'invoice')}
+              className="flex items-center gap-2"
+            >
+              <Send className="h-4 w-4 text-blue-500" />
+              Invoice
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => handleStatusChange(event, 'cancelled')}
+              className="flex items-center gap-2"
+            >
+              <XCircle className="h-4 w-4 text-red-500" />
+              Cancelled
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </Card>
   );
