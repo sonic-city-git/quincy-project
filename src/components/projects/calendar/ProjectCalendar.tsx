@@ -1,12 +1,9 @@
 import { useCalendarDate } from "@/hooks/useCalendarDate";
-import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import { EventDialog } from "./EventDialog";
-import { useQuery } from "@tanstack/react-query";
-import { fetchEvents } from "@/utils/eventQueries";
+import { useCalendarEvents as useProjectEvents } from "@/hooks/useCalendarEvents";
 import { useCallback } from "react";
-import { useCalendarDrag } from "@/hooks/useCalendarDrag";
 import { CalendarView } from "./CalendarView";
 
 interface ProjectCalendarProps {
@@ -16,7 +13,6 @@ interface ProjectCalendarProps {
 export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   const { currentDate, setCurrentDate, normalizeDate } = useCalendarDate();
   const { data: eventTypes } = useEventTypes();
-  const { addEvent, updateEvent } = useCalendarEvents(projectId);
   const {
     selectedDate,
     isAddDialogOpen,
@@ -29,31 +25,22 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     addEventCallback
   } = useEventDialog();
 
-  const { data: events = [], isLoading } = useQuery({
-    queryKey: ['events', projectId],
-    queryFn: () => fetchEvents(projectId),
-    refetchOnWindowFocus: true,
-  });
-
   const {
+    events,
+    isLoading,
     isDragging,
     selectedDates,
     handleDragStart,
     handleDragEnter,
-    handleDragEnd,
-    resetSelection
-  } = useCalendarDrag(openAddDialog, addEvent);
+    resetSelection,
+    findEventOnDate
+  } = useProjectEvents(projectId);
 
   const handleDayClick = useCallback((date: Date) => {
     const normalizedDate = normalizeDate(date);
     console.log('Handling day click:', { date: normalizedDate });
     
-    // Find an existing event on this date
-    const existingEvent = events.find(event => {
-      const eventDate = new Date(event.date);
-      return normalizeDate(eventDate).getTime() === normalizedDate.getTime();
-    });
-    
+    const existingEvent = findEventOnDate(normalizedDate);
     console.log('Existing event found:', existingEvent);
 
     if (existingEvent) {
@@ -63,7 +50,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
       console.log('Opening add dialog for date:', normalizedDate);
       openAddDialog(normalizedDate);
     }
-  }, [events, normalizeDate, openEditDialog, openAddDialog, isDragging]);
+  }, [normalizeDate, findEventOnDate, isDragging, openEditDialog, openAddDialog]);
 
   const handleCloseAddDialog = useCallback(() => {
     closeAddDialog();
@@ -84,7 +71,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onDragStart={handleDragStart}
         onDragEnter={handleDragEnter}
         onDayClick={handleDayClick}
-        onDragEnd={handleDragEnd}
+        onDragEnd={resetSelection}
       />
 
       <EventDialog
@@ -92,7 +79,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onClose={handleCloseAddDialog}
         date={selectedDate}
         eventTypes={eventTypes}
-        onAddEvent={addEvent}
         addEventCallback={addEventCallback}
       />
 
@@ -101,7 +87,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onClose={closeEditDialog}
         event={selectedEvent}
         eventTypes={eventTypes}
-        onUpdateEvent={updateEvent}
       />
     </div>
   );

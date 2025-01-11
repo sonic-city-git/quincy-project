@@ -41,7 +41,6 @@ export function CalendarView({
         }
       }}
       onDayClick={(date: Date) => {
-        console.log('Day clicked in CalendarView:', date);
         if (selectedDates.length === 0) {
           onDayClick(date);
         } else {
