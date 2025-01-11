@@ -127,7 +127,10 @@ export function EquipmentFolderFilter({
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56">
+      <DropdownMenuContent 
+        align="start" 
+        className="w-[200px] max-h-[300px] overflow-y-auto"
+      >
         {mainFolders.map(folder => renderFolderItems(folder))}
       </DropdownMenuContent>
     </DropdownMenu>
