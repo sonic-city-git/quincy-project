@@ -31,7 +31,8 @@ export const fetchEvents = async (projectId: string) => {
     date: new Date(event.date),
     name: event.name,
     type: event.event_types,
-    status: event.status as CalendarEvent['status']
+    status: event.status as CalendarEvent['status'],
+    revenue: event.revenue
   }));
 };
 
@@ -58,7 +59,7 @@ export const createEvent = async (
         date: formattedDate,
         name: eventName.trim() || eventType.name,
         event_type_id: eventType.id,
-        status: 'proposed' as const // Explicitly type as literal
+        status: 'proposed' as const
       })
       .select(`
         *,

@@ -25,10 +25,12 @@ export const useEventManagement = (projectId: string) => {
       }
 
       const newEvent: CalendarEvent = {
+        id: eventData.id,
         date: new Date(eventData.date),
         name: eventData.name,
         type: eventData.event_types,
-        status: eventData.status as CalendarEvent['status']
+        status: eventData.status as CalendarEvent['status'],
+        revenue: eventData.revenue
       };
 
       return newEvent;
