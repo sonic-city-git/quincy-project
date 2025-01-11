@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster";
 import { Sidebar } from "@/components/Sidebar";
+import Index from "@/pages/Index";
 import ProjectList from "@/pages/ProjectList";
 import CrewList from "@/pages/CrewList";
 import ProjectDetail from "@/pages/ProjectDetail";
@@ -12,7 +13,7 @@ function App() {
       <Sidebar />
       <main className="flex-1 overflow-auto">
         <Routes>
-          <Route path="/" element={<ProjectList />} />
+          <Route path="/" element={<Index />} />
           <Route path="/projects" element={<ProjectList />} />
           <Route path="/projects/:id" element={<ProjectDetail />} />
           <Route path="/crew" element={<CrewList />} />
