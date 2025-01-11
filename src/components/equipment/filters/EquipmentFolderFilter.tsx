@@ -51,7 +51,7 @@ export function EquipmentFolderFilter({
         <DropdownMenuCheckboxItem
           checked={selectedFolders.includes(folder.id)}
           onCheckedChange={() => onFolderToggle(folder.id)}
-          className="relative"
+          className="relative pl-2"
         >
           {folder.name}
         </DropdownMenuCheckboxItem>
@@ -60,7 +60,7 @@ export function EquipmentFolderFilter({
             key={subfolder.id}
             checked={selectedFolders.includes(subfolder.id)}
             onCheckedChange={() => onFolderToggle(subfolder.id)}
-            className="relative"
+            className="relative pl-2"
           >
             {subfolder.name}
           </DropdownMenuCheckboxItem>
