@@ -19,7 +19,7 @@ interface EventCardProps {
 export function EventCard({ event, onStatusChange }: EventCardProps) {
   const getColorStyles = (color: string) => {
     return {
-      backgroundColor: `${color}99`,  // 99 in hex is 60% opacity
+      backgroundColor: `${color}B3`,  // B3 in hex is 70% opacity
       color: '#FFFFFF'  // White text, fully opaque
     };
   };
