@@ -25,9 +25,14 @@ export function useCalendarModifiers(events: CalendarEvent[] | undefined, select
         date.getMonth(),
         date.getDate()
       ));
-      return selectedDates.some(selectedDate => 
-        selectedDate.getTime() === normalizedDate.getTime()
-      );
+      return selectedDates.some(selectedDate => {
+        const normalizedSelectedDate = new Date(Date.UTC(
+          selectedDate.getFullYear(),
+          selectedDate.getMonth(),
+          selectedDate.getDate()
+        ));
+        return normalizedSelectedDate.getTime() === normalizedDate.getTime();
+      });
     }
   };
 

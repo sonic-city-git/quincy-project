@@ -8,7 +8,7 @@ import { useCalendarModifiers } from "./CalendarModifiers";
 import { EventDialog } from "./EventDialog";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "@/utils/eventQueries";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -35,7 +35,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   const [dragStartDate, setDragStartDate] = useState<Date | null>(null);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
 
-  // Use React Query for events to ensure automatic updates
   const { data: events = [], isLoading } = useQuery({
     queryKey: ['events', projectId],
     queryFn: () => fetchEvents(projectId),
@@ -44,7 +43,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
   const { modifiers, modifiersStyles } = useCalendarModifiers(events, selectedDates);
 
-  const handleDayClick = (date: Date) => {
+  const handleDayClick = useCallback((date: Date) => {
     if (isDragging) {
       handleDragEnd();
       return;
@@ -60,15 +59,16 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     } else {
       openAddDialog(normalizedDate);
     }
-  };
+  }, [isDragging, events, normalizeDate, openEditDialog, openAddDialog]);
 
-  const handleDragStart = (date: Date) => {
+  const handleDragStart = useCallback((date: Date) => {
     setIsDragging(true);
-    setDragStartDate(normalizeDate(date));
-    setSelectedDates([normalizeDate(date)]);
-  };
+    const normalizedDate = normalizeDate(date);
+    setDragStartDate(normalizedDate);
+    setSelectedDates([normalizedDate]);
+  }, [normalizeDate]);
 
-  const handleDragEnter = (date: Date) => {
+  const handleDragEnter = useCallback((date: Date) => {
     if (!isDragging || !dragStartDate) return;
 
     const normalizedDate = normalizeDate(date);
@@ -88,12 +88,13 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     }
 
     setSelectedDates(dates);
-  };
+  }, [isDragging, dragStartDate, normalizeDate]);
 
-  const handleDragEnd = async () => {
+  const handleDragEnd = useCallback(async () => {
     if (!isDragging || selectedDates.length === 0) return;
 
     setIsDragging(false);
+    setDragStartDate(null);
     const firstDate = selectedDates[0];
     
     // Open dialog for the first date - when user completes it, we'll create events for all dates
@@ -104,7 +105,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
       }
       setSelectedDates([]);
     });
-  };
+  }, [isDragging, selectedDates, openAddDialog, addEvent]);
 
   // Create content renderer for each event day
   const modifiersContent = events?.reduce((acc, event) => {
