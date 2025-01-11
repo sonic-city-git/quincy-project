@@ -7,8 +7,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useFolders } from "@/hooks/useFolders";
 
 interface EquipmentFolderFilterProps {
   selectedFolders: string[];
@@ -48,18 +47,7 @@ export function EquipmentFolderFilter({
   selectedFolders,
   onFolderToggle,
 }: EquipmentFolderFilterProps) {
-  const { data: folders = [] } = useQuery({
-    queryKey: ['equipment-folders'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('equipment_folders')
-        .select('*')
-        .order('name');
-      
-      if (error) throw error;
-      return data as Folder[];
-    },
-  });
+  const { data: folders = [] } = useFolders();
 
   // Organize folders into a hierarchy and sort them according to the specified order
   const mainFolders = folders

@@ -2,19 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export function useFolders() {
-  const { data: folders = [], isLoading: loading } = useQuery({
-    queryKey: ['folders'],
+  return useQuery({
+    queryKey: ['equipment-folders'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('crew_folders')
-        .select('id, name, created_at, updated_at')
-        .order('name');
-
+        .from('equipment_folders')
+        .select('*');
       if (error) throw error;
-      return data || [];
+      return data;
     },
-    refetchOnMount: true
   });
-
-  return { folders, loading };
 }

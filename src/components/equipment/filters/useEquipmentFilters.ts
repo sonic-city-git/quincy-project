@@ -1,23 +1,11 @@
 import { useState } from "react";
 import { Equipment } from "@/integrations/supabase/types/equipment";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useFolders } from "@/hooks/useFolders";
 
 export function useEquipmentFilters() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFolders, setSelectedFolders] = useState<string[]>([]);
-
-  // Fetch all folders to build parent-child relationships
-  const { data: folders = [] } = useQuery({
-    queryKey: ['equipment-folders'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('equipment_folders')
-        .select('*');
-      if (error) throw error;
-      return data;
-    },
-  });
+  const { data: folders = [] } = useFolders();
 
   const getChildFolderIds = (folderId: string): string[] => {
     const childFolders = folders.filter(folder => folder.parent_id === folderId);
