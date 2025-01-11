@@ -37,7 +37,7 @@ const ProjectDetail = () => {
           </div>
         </div>
         <div className="text-lg text-muted-foreground ml-1">
-          #{formattedProjectNumber}
+          {formattedProjectNumber}
         </div>
       </div>
       
