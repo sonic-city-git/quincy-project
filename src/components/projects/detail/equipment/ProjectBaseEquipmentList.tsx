@@ -6,20 +6,31 @@ import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { ProjectEquipmentGroup } from "./ProjectEquipmentGroup";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
 }
 
+const GROUP_TEMPLATES = [
+  { id: 'audio', name: 'Audio Template' },
+  { id: 'lighting', name: 'Lighting Template' },
+  { id: 'video', name: 'Video Template' },
+  { id: 'custom', name: 'Custom Template' },
+];
+
 export function ProjectBaseEquipmentList({ projectId }: ProjectBaseEquipmentListProps) {
   const { equipment, loading, removeEquipment } = useProjectEquipment(projectId);
   const [isAddingGroup, setIsAddingGroup] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState<string>("");
 
   const handleAddGroup = () => {
     if (newGroupName.trim()) {
-      // TODO: Add group creation logic
+      // TODO: Add group creation logic with selected template
+      console.log('Creating group with name:', newGroupName, 'and template:', selectedTemplate);
       setNewGroupName("");
+      setSelectedTemplate("");
       setIsAddingGroup(false);
     }
   };
@@ -38,32 +49,50 @@ export function ProjectBaseEquipmentList({ projectId }: ProjectBaseEquipmentList
       <div className="space-y-4 pr-4">
         <div className="flex items-center gap-2">
           {isAddingGroup ? (
-            <div className="flex items-center gap-2 w-full">
+            <div className="flex flex-col gap-2 w-full">
               <Input
                 value={newGroupName}
                 onChange={(e) => setNewGroupName(e.target.value)}
                 placeholder="Group name"
                 className="h-7"
               />
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7"
-                onClick={handleAddGroup}
+              <Select
+                value={selectedTemplate}
+                onValueChange={setSelectedTemplate}
               >
-                Add
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7"
-                onClick={() => {
-                  setIsAddingGroup(false);
-                  setNewGroupName("");
-                }}
-              >
-                Cancel
-              </Button>
+                <SelectTrigger className="h-7">
+                  <SelectValue placeholder="Select a template" />
+                </SelectTrigger>
+                <SelectContent>
+                  {GROUP_TEMPLATES.map((template) => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <div className="flex gap-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7"
+                  onClick={handleAddGroup}
+                >
+                  Add
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7"
+                  onClick={() => {
+                    setIsAddingGroup(false);
+                    setNewGroupName("");
+                    setSelectedTemplate("");
+                  }}
+                >
+                  Cancel
+                </Button>
+              </div>
             </div>
           ) : (
             <Button
