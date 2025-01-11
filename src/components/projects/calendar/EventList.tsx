@@ -7,6 +7,7 @@ import { format, isBefore, startOfToday } from "date-fns";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import { EventDialog } from "./EventDialog";
+import { InvoiceDialog } from "../invoice/InvoiceDialog";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -24,6 +25,7 @@ export function EventList({ events, projectId }: EventListProps) {
     openEditDialog,
     closeEditDialog
   } = useEventDialog();
+  const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
 
   // Sort function for events
   const sortByDate = (a: CalendarEvent, b: CalendarEvent) => {
@@ -63,9 +65,7 @@ export function EventList({ events, projectId }: EventListProps) {
         queryClient.setQueryData(queryKey, (oldData: CalendarEvent[] | undefined) => {
           if (!oldData) return [updatedEvent];
           return oldData.map(e => 
-            e.date.getTime() === event.date.getTime() && e.name === event.name
-              ? updatedEvent
-              : e
+            e.id === event.id ? updatedEvent : e
           );
         });
       });
@@ -74,8 +74,7 @@ export function EventList({ events, projectId }: EventListProps) {
       const { error } = await supabase
         .from('project_events')
         .update({ status: newStatus })
-        .eq('date', format(event.date, 'yyyy-MM-dd'))
-        .eq('name', event.name)
+        .eq('id', event.id)
         .eq('project_id', projectId);
 
       if (error) throw error;
@@ -121,7 +120,7 @@ export function EventList({ events, projectId }: EventListProps) {
           event_type_id: updatedEvent.type.id,
           status: updatedEvent.status
         })
-        .eq('date', format(updatedEvent.date, 'yyyy-MM-dd'))
+        .eq('id', updatedEvent.id)
         .eq('project_id', projectId);
 
       if (error) throw error;
@@ -187,6 +186,13 @@ export function EventList({ events, projectId }: EventListProps) {
         event={selectedEvent}
         eventTypes={eventTypes}
         onUpdateEvent={handleUpdateEvent}
+      />
+
+      <InvoiceDialog 
+        isOpen={isInvoiceDialogOpen}
+        onClose={() => setIsInvoiceDialogOpen(false)}
+        events={events}
+        onStatusChange={handleStatusChange}
       />
     </div>
   );
