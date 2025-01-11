@@ -88,7 +88,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     setSelectedDates(dates);
   }, [isDragging, dragStartDate, normalizeDate]);
 
-  const handleDragEnd = useCallback(async () => {
+  const handleDragEnd = useCallback(() => {
     if (!isDragging || selectedDates.length === 0) return;
 
     setIsDragging(false);
@@ -129,11 +129,8 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         components={modifiersContent}
         className="w-full rounded-md border border-zinc-800 bg-zinc-950"
         selected={undefined}
-        onSelect={(date: Date | undefined) => {
-          if (!date) return;
-          handleDragStart(date);
-        }}
-        onDayMouseEnter={(date: Date) => handleDragEnter(date)}
+        onSelect={handleDragStart}
+        onDayMouseEnter={handleDragEnter}
         onDayClick={handleDayClick}
       />
 

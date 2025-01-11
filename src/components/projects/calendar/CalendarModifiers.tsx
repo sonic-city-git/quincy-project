@@ -18,12 +18,12 @@ export function useCalendarModifiers(events: CalendarEvent[] | undefined, select
       };
     }, {} as Record<string, (date: Date) => boolean>),
     selected: (date: Date) => {
-      const normalizedDate = new Date(Date.UTC(
-        date.getFullYear(),
-        date.getMonth(),
-        date.getDate()
-      ));
       return selectedDates.some(selectedDate => {
+        const normalizedDate = new Date(Date.UTC(
+          date.getFullYear(),
+          date.getMonth(),
+          date.getDate()
+        ));
         const normalizedSelectedDate = new Date(Date.UTC(
           selectedDate.getFullYear(),
           selectedDate.getMonth(),
