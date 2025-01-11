@@ -74,7 +74,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     <div className="space-y-4">
       <Calendar
         mode="single"
-        selected={currentDate}
         month={currentDate}
         onDayClick={handleDayClick}
         modifiers={modifiers}
