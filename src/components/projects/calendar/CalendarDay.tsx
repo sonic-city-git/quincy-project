@@ -14,7 +14,13 @@ export function CalendarDay({ date, event }: CalendarDayProps) {
   return (
     <HoverCard>
       <HoverCardTrigger asChild>
-        <div className="w-full h-full flex items-center justify-center relative">
+        <div 
+          className="w-full h-full flex items-center justify-center relative"
+          style={{
+            backgroundColor: `${event.type.color}B3`, // B3 in hex is 70% opacity
+            color: '#FFFFFF' // White text, fully opaque
+          }}
+        >
           {date.getDate()}
         </div>
       </HoverCardTrigger>
