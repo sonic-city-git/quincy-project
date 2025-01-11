@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/select";
 import { CalendarEvent, EventType } from "@/types/events";
 import { useState, useEffect } from "react";
+import { getStatusIcon } from "@/utils/eventFormatters";
 
 interface EventDialogProps {
   isOpen: boolean;
@@ -139,7 +140,12 @@ export function EventDialog({
             </SelectTrigger>
             <SelectContent>
               {EVENT_STATUSES.map((statusOption) => (
-                <SelectItem key={statusOption} value={statusOption}>
+                <SelectItem 
+                  key={statusOption} 
+                  value={statusOption}
+                  className="flex items-center gap-2"
+                >
+                  {getStatusIcon(statusOption)}
                   {statusOption.charAt(0).toUpperCase() + statusOption.slice(1)}
                 </SelectItem>
               ))}
