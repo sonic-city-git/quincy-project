@@ -110,6 +110,8 @@ export function Calendar({
                     console.log('Calendar day mouseUp', { day, selected });
                     if (selected.length > 0 && !event) {
                       onDayClick?.(day);
+                    } else if (!event && selected.length === 0) {
+                      onSelect?.([day]);
                     }
                   }}
                 />
