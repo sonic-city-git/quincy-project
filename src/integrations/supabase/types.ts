@@ -156,6 +156,7 @@ export type Database = {
         Row: {
           code: string | null
           created_at: string
+          folder: string | null
           id: string
           internal_remark: string | null
           name: string
@@ -169,6 +170,7 @@ export type Database = {
         Insert: {
           code?: string | null
           created_at?: string
+          folder?: string | null
           id?: string
           internal_remark?: string | null
           name: string
@@ -182,6 +184,7 @@ export type Database = {
         Update: {
           code?: string | null
           created_at?: string
+          folder?: string | null
           id?: string
           internal_remark?: string | null
           name?: string
