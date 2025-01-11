@@ -29,14 +29,10 @@ export function CalendarView({
     const normalizedDate = normalizeDate(date);
     if (!normalizedDate) return;
 
-    // If no drag was initiated, treat as a single click
-    if (selectedDates.length === 0) {
-      onDayClick(normalizedDate);
-      return;
-    }
-
-    // For drag operations or single clicks that initiated a drag
-    onDayClick(selectedDates[0]);
+    // For single clicks or drag operations
+    onDayClick(normalizedDate);
+    
+    // Always clean up the drag state
     onDragEnd();
   };
 
@@ -62,11 +58,9 @@ export function CalendarView({
         onDragEnter(normalizedDate);
       }}
       onDayClick={(date: Date) => {
-        if (selectedDates.length === 0) {
-          const normalizedDate = normalizeDate(date);
-          if (!normalizedDate) return;
-          onDayClick(normalizedDate);
-        }
+        const normalizedDate = normalizeDate(date);
+        if (!normalizedDate) return;
+        onDayClick(normalizedDate);
       }}
       onDayMouseUp={handleDayMouseUp}
       className="w-full rounded-md border border-zinc-800 bg-zinc-950"
