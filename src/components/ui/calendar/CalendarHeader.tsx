@@ -1,7 +1,6 @@
-import React from 'react';
-import { format } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { format } from "date-fns";
 
 interface CalendarHeaderProps {
   month: Date;
@@ -38,7 +37,7 @@ export function CalendarHeader({ month, onMonthChange }: CalendarHeaderProps) {
         
         <button
           onClick={handleResetMonth}
-          className="text-xl font-medium min-w-[160px] text-center text-primary/50 hover:text-primary transition-colors"
+          className="text-xl font-medium min-w-[160px] text-center hover:text-primary transition-colors"
         >
           {format(month, 'MMMM yyyy')}
         </button>
