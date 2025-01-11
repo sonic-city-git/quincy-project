@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { ProjectCalendar } from "@/components/projects/calendar/ProjectCalendar";
 import { CustomerSelect } from "@/components/projects/forms/CustomerSelect";
 import { OwnerSelect } from "@/components/projects/forms/OwnerSelect";
+import { Separator } from "@/components/ui/separator";
 import { format, parseISO } from "date-fns";
 
 const ProjectDetail = () => {
@@ -79,6 +80,8 @@ const ProjectDetail = () => {
                 <div className="w-full">
                   <ProjectCalendar projectId={id || ''} />
                 </div>
+                
+                <Separator orientation="vertical" className="hidden md:block" />
                 
                 <div className="space-y-4 p-6">
                   <div className="space-y-4">
