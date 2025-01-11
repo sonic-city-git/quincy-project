@@ -4,6 +4,8 @@ import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import { CalendarEvent } from "@/types/events";
+import { AddEventDialog } from "./AddEventDialog";
+import { EditEventDialog } from "./EditEventDialog";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -48,7 +50,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         return event.date.getTime() === normalizedDate.getTime();
       }
     };
-  }, {}) || {};
+  }, {} as Record<string, (date: Date) => boolean>) || {};
 
   // Create styles for each event using their specific class names
   const modifiersStyles = events?.reduce((acc, event) => {
@@ -57,12 +59,12 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     return {
       ...acc,
       [key]: {
-        backgroundColor: event.event_types?.color || '#000000',
+        backgroundColor: event.type.color,
         color: '#FFFFFF',
         borderRadius: '4px'
       }
     };
-  }, {}) || {};
+  }, {} as Record<string, React.CSSProperties>) || {};
 
   if (isLoading || !eventTypes) {
     return <div>Loading calendar...</div>;
