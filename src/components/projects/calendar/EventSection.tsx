@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { CalendarEvent } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventCard } from "./EventCard";
@@ -9,12 +8,7 @@ import {
 } from "@/components/ui/collapsible";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { EventStatusManager } from "./EventStatusManager";
 
 interface EventSectionProps {
   status: CalendarEvent['status'] | 'done and dusted';
@@ -34,12 +28,6 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
 
   const getStatusText = (status: string) => {
     return `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
-  };
-
-  const handleStatusChangeAll = (newStatus: CalendarEvent['status']) => {
-    events.forEach(event => {
-      onStatusChange(event, newStatus);
-    });
   };
 
   const content = (
@@ -79,49 +67,12 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
           {sectionIcon}
           <h3 className="text-lg font-semibold">{getStatusText(status)}</h3>
         </div>
-        {events.length > 0 && !isCancelled && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
-              >
-                Manage all
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem 
-                onClick={() => handleStatusChangeAll('proposed')}
-                className="flex items-center gap-2"
-              >
-                {getStatusIcon('proposed')}
-                Proposed
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => handleStatusChangeAll('confirmed')}
-                className="flex items-center gap-2"
-              >
-                {getStatusIcon('confirmed')}
-                Confirmed
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => handleStatusChangeAll('invoice ready')}
-                className="flex items-center gap-2"
-              >
-                {getStatusIcon('invoice ready')}
-                Invoice Ready
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => handleStatusChangeAll('cancelled')}
-                className="flex items-center gap-2"
-              >
-                {getStatusIcon('cancelled')}
-                Cancelled
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+        <EventStatusManager
+          status={status}
+          events={events}
+          onStatusChange={onStatusChange}
+          isCancelled={isCancelled}
+        />
       </div>
       {content}
     </div>
