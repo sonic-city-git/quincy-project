@@ -152,7 +152,7 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
     <Button
       key={item.id}
       variant="ghost"
-      className="w-full justify-start h-[64px] py-1"
+      className="w-full justify-start h-[56px] py-1"
       onClick={() => onSelect(item)}
       onDoubleClick={() => handleDoubleClick(item)}
     >
