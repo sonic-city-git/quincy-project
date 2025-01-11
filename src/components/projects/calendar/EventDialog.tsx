@@ -170,23 +170,25 @@ export function EventDialog({
             </SelectContent>
           </Select>
 
-          <DialogFooter className="flex justify-between items-center">
-            {event && onDeleteEvent && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                className="gap-2"
-                onClick={handleDelete}
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete
-              </Button>
-            )}
+          <div className="flex justify-between items-center pt-4">
+            <div>
+              {event && onDeleteEvent && (
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="gap-2"
+                  onClick={handleDelete}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </Button>
+              )}
+            </div>
             <Button type="submit">
               {event ? "Update" : "Add"}
             </Button>
-          </DialogFooter>
+          </div>
         </form>
       </DialogContent>
     </Dialog>
