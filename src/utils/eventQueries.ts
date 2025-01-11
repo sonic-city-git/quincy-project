@@ -53,11 +53,12 @@ export const createEvent = async (
     .from('event_statuses')
     .select('id')
     .eq('name', 'proposed')
-    .single();
+    .limit(1)
+    .maybeSingle();
 
-  if (statusError) {
-    console.error('Error fetching proposed status:', statusError);
-    throw new Error(`Could not find 'proposed' status: ${statusError.message}`);
+  if (statusError || !statusData) {
+    console.error('Error fetching proposed status:', statusError || 'No status found');
+    throw new Error('Could not find proposed status. Please ensure event statuses are properly configured.');
   }
 
   console.log('Adding event:', {
@@ -137,11 +138,12 @@ export const updateEvent = async (
     .from('event_statuses')
     .select('id')
     .eq('name', updatedEvent.status)
-    .single();
+    .limit(1)
+    .maybeSingle();
 
-  if (statusError) {
-    console.error('Error fetching status:', statusError);
-    throw new Error(`Could not find status '${updatedEvent.status}': ${statusError.message}`);
+  if (statusError || !statusData) {
+    console.error('Error fetching status:', statusError || 'No status found');
+    throw new Error(`Could not find status '${updatedEvent.status}'. Please ensure event statuses are properly configured.`);
   }
 
   const { error } = await supabase
