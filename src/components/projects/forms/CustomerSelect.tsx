@@ -20,17 +20,19 @@ export function CustomerSelect({ value, onChange }: CustomerSelectProps) {
         <SelectTrigger>
           <SelectValue placeholder="Select customer" />
         </SelectTrigger>
-        <SelectContent className="h-[200px] overflow-hidden">
-          <ScrollArea className="h-full">
-            {customers.map(customer => (
-              <SelectItem 
-                key={customer.id} 
-                value={customer.id}
-                className="cursor-pointer"
-              >
-                {customer.name}
-              </SelectItem>
-            ))}
+        <SelectContent className="h-[200px]">
+          <ScrollArea className="h-full w-full">
+            <div className="p-1">
+              {customers.map(customer => (
+                <SelectItem 
+                  key={customer.id} 
+                  value={customer.id}
+                  className="cursor-pointer rounded-sm hover:bg-accent"
+                >
+                  {customer.name}
+                </SelectItem>
+              ))}
+            </div>
           </ScrollArea>
         </SelectContent>
       </Select>

@@ -25,17 +25,19 @@ export function OwnerSelect({ value, onChange }: OwnerSelectProps) {
         <SelectTrigger>
           <SelectValue placeholder="Select owner" />
         </SelectTrigger>
-        <SelectContent className="h-[200px] overflow-hidden">
-          <ScrollArea className="h-full">
-            {filteredCrew.map(member => (
-              <SelectItem 
-                key={member.id} 
-                value={member.id}
-                className="cursor-pointer"
-              >
-                {member.name}
-              </SelectItem>
-            ))}
+        <SelectContent className="h-[200px]">
+          <ScrollArea className="h-full w-full">
+            <div className="p-1">
+              {filteredCrew.map(member => (
+                <SelectItem 
+                  key={member.id} 
+                  value={member.id}
+                  className="cursor-pointer rounded-sm hover:bg-accent"
+                >
+                  {member.name}
+                </SelectItem>
+              ))}
+            </div>
           </ScrollArea>
         </SelectContent>
       </Select>
