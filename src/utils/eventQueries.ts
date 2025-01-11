@@ -29,7 +29,8 @@ export const fetchEvents = async (projectId: string) => {
   return (data || []).map(event => ({
     date: new Date(event.date),
     name: event.name,
-    type: event.event_types
+    type: event.event_types,
+    status: event.status
   }));
 };
 
@@ -56,7 +57,8 @@ export const createEvent = async (
         project_id: projectId,
         date: formattedDate,
         name: eventName.trim() || eventType.name,
-        event_type_id: eventType.id
+        event_type_id: eventType.id,
+        status: 'proposed'
       })
       .select(`
         *,
@@ -85,8 +87,6 @@ export const createEvent = async (
         console.log('Created role assignments:', roleAssignments);
       } catch (roleError) {
         console.error('Error creating role assignments:', roleError);
-        // We might want to delete the event if role assignments fail
-        // For now, we'll just log the error and continue
       }
     }
 
@@ -107,7 +107,8 @@ export const updateEvent = async (
     .from('project_events')
     .update({
       name: updatedEvent.name.trim() || updatedEvent.type.name,
-      event_type_id: updatedEvent.type.id
+      event_type_id: updatedEvent.type.id,
+      status: updatedEvent.status
     })
     .eq('project_id', projectId)
     .eq('date', formattedDate);
