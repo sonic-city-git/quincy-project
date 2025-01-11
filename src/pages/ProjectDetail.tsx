@@ -36,27 +36,27 @@ const ProjectDetail = () => {
         </h1>
       </div>
       
-      <Tabs defaultValue="calendar" className="w-full">
+      <Tabs defaultValue="general" className="w-full">
         <TabsList>
-          <TabsTrigger value="calendar">Calendar</TabsTrigger>
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="equipment">Equipment</TabsTrigger>
           <TabsTrigger value="crew">Crew</TabsTrigger>
           <TabsTrigger value="financial">Financial</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="calendar">
-          <Card className="p-6">
-            <ProjectCalendar projectId={id || ''} />
-          </Card>
-        </TabsContent>
-
         <TabsContent value="general">
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">General Information</h2>
-            <div className="space-y-2">
-              <p><span className="font-medium">Project Number:</span> {project.project_number}</p>
-              <p><span className="font-medium">Owner:</span> {project.crew_members?.name || 'No owner assigned'}</p>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <p><span className="font-medium">Project Number:</span> {project.project_number}</p>
+                <p><span className="font-medium">Owner:</span> {project.crew_members?.name || 'No owner assigned'}</p>
+              </div>
+              
+              <div className="mt-8">
+                <h3 className="text-lg font-semibold mb-4">Calendar</h3>
+                <ProjectCalendar projectId={id || ''} />
+              </div>
             </div>
           </Card>
         </TabsContent>
