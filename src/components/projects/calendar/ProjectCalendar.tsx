@@ -79,7 +79,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
       [key]: ({ date }: { date: Date }) => (
         <HoverCard>
           <HoverCardTrigger asChild>
-            <div className="w-10 h-10 flex items-center justify-center cursor-pointer">
+            <div className="w-full h-full flex items-center justify-center cursor-pointer">
               <span>{date.getDate()}</span>
             </div>
           </HoverCardTrigger>
@@ -102,7 +102,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full">
       <Calendar
         mode="single"
         month={currentDate}
@@ -111,7 +111,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         modifiers={modifiers}
         modifiersStyles={modifiersStyles}
         components={modifiersContent}
-        className="rounded-md border border-zinc-800 bg-zinc-950"
+        className="w-full rounded-md border border-zinc-800 bg-zinc-950"
       />
 
       <AddEventDialog
