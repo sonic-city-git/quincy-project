@@ -51,7 +51,7 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
       };
     });
 
-    // Get subfolders
+    // Get subfolders and initialize them
     folders.filter(f => f.parent_id).forEach(subfolder => {
       if (subfolder.parent_id && structure[subfolder.parent_id]) {
         structure[subfolder.parent_id].subfolders[subfolder.id] = {
@@ -65,13 +65,12 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
     filteredEquipment.forEach(item => {
       if (item.folder_id) {
         // Check if it belongs to a subfolder
-        const parentFolder = folders.find(f => 
-          Object.keys(structure).some(mainId => 
-            structure[mainId].subfolders[item.folder_id!]
-          )
-        );
+        const parentFolder = folders.find(f => {
+          const subfolder = folders.find(sf => sf.id === item.folder_id);
+          return subfolder?.parent_id === f.id;
+        });
 
-        if (parentFolder) {
+        if (parentFolder && structure[parentFolder.id]?.subfolders[item.folder_id]) {
           // Add to subfolder
           structure[parentFolder.id].subfolders[item.folder_id].equipment.push(item);
         } else if (structure[item.folder_id]) {
