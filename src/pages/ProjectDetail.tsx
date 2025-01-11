@@ -49,46 +49,46 @@ const ProjectDetail = () => {
             <TabsTrigger value="crew">Crew</TabsTrigger>
             <TabsTrigger value="financial">Financial</TabsTrigger>
           </TabsList>
-        </Tabs>
-      </div>
 
-      <div className="flex-1 overflow-auto p-8 pt-4">
-        <TabsContent value="general">
-          <Card className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="w-full">
-                <ProjectCalendar projectId={id || ''} />
-              </div>
-              
-              <div>
-                <div className="space-y-2">
-                  <p><span className="font-medium">Owner:</span> {project.crew_members?.name || 'No owner assigned'}</p>
+          <div className="flex-1 overflow-auto p-8 pt-4">
+            <TabsContent value="general">
+              <Card className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div className="w-full">
+                    <ProjectCalendar projectId={id || ''} />
+                  </div>
+                  
+                  <div>
+                    <div className="space-y-2">
+                      <p><span className="font-medium">Owner:</span> {project.crew_members?.name || 'No owner assigned'}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </Card>
-        </TabsContent>
+              </Card>
+            </TabsContent>
 
-        <TabsContent value="equipment">
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold">Equipment</h2>
-            {/* Equipment content will be implemented in future iterations */}
-          </Card>
-        </TabsContent>
+            <TabsContent value="equipment">
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold">Equipment</h2>
+                {/* Equipment content will be implemented in future iterations */}
+              </Card>
+            </TabsContent>
 
-        <TabsContent value="crew">
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold">Crew</h2>
-            {/* Crew content will be implemented in future iterations */}
-          </Card>
-        </TabsContent>
+            <TabsContent value="crew">
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold">Crew</h2>
+                {/* Crew content will be implemented in future iterations */}
+              </Card>
+            </TabsContent>
 
-        <TabsContent value="financial">
-          <Card className="p-6">
-            <h2 className="text-xl font-semibold">Financial</h2>
-            {/* Financial content will be implemented in future iterations */}
-          </Card>
-        </TabsContent>
+            <TabsContent value="financial">
+              <Card className="p-6">
+                <h2 className="text-xl font-semibold">Financial</h2>
+                {/* Financial content will be implemented in future iterations */}
+              </Card>
+            </TabsContent>
+          </div>
+        </Tabs>
       </div>
     </div>
   );
