@@ -9,11 +9,14 @@ import { Receipt } from "lucide-react";
 import { ProjectHeader } from "@/components/projects/detail/ProjectHeader";
 import { ProjectGeneralTab } from "@/components/projects/detail/ProjectGeneralTab";
 import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { InvoiceDialog } from "@/components/projects/invoice/InvoiceDialog";
 
 const ProjectDetail = () => {
   const { id } = useParams();
   const { project, loading } = useProjectDetails(id);
   const { toast } = useToast();
+  const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
   
   const { data: events } = useQuery({
     queryKey: ['events', id],
@@ -22,11 +25,7 @@ const ProjectDetail = () => {
   });
 
   const handleInvoice = () => {
-    toast({
-      title: "Invoice Generation",
-      description: "Invoice generation started...",
-    });
-    // Additional invoice logic here
+    setIsInvoiceDialogOpen(true);
   };
 
   if (loading) {
@@ -92,6 +91,12 @@ const ProjectDetail = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <InvoiceDialog 
+        isOpen={isInvoiceDialogOpen}
+        onClose={() => setIsInvoiceDialogOpen(false)}
+        events={events || []}
+      />
     </div>
   );
 };
