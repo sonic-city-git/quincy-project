@@ -3,7 +3,6 @@ import { useCalendarDate } from "@/hooks/useCalendarDate";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
-import { format } from "date-fns";
 import { CalendarEvent } from "@/types/events";
 import { AddEventDialog } from "./AddEventDialog";
 import { EditEventDialog } from "./EditEventDialog";
@@ -63,12 +62,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">
-          {format(currentDate, 'MMMM yyyy')}
-        </h2>
-      </div>
-
       <Calendar
         mode="single"
         selected={currentDate}
