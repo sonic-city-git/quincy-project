@@ -15,9 +15,10 @@ import {
 
 interface EventListProps {
   events: CalendarEvent[];
+  projectId?: string;
 }
 
-export function EventList({ events }: EventListProps) {
+export function EventList({ events, projectId }: EventListProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -34,8 +35,12 @@ export function EventList({ events }: EventListProps) {
       // Create updated event object
       const updatedEvent = { ...event, status: newStatus };
       
-      // Get all query keys that need to be updated
-      const queryKeys = ['events', ['events', event.project_id], 'calendarEvents'];
+      // Define query keys as arrays
+      const queryKeys = [
+        ['events'],
+        ['events', projectId],
+        ['calendarEvents']
+      ];
       
       // Update all relevant queries in the cache immediately
       queryKeys.forEach(queryKey => {
