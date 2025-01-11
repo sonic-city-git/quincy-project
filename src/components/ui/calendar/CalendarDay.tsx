@@ -33,7 +33,6 @@ export function CalendarDay({
   );
 
   const renderDayContent = () => {
-    console.log('Rendering day content', { date, isSelected, event });
     return (
       <button
         onMouseDown={(e) => {
