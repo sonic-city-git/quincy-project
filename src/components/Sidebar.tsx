@@ -4,11 +4,14 @@ import { LayoutDashboard, CalendarDays, Users, Package, LogOut } from "lucide-re
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useAuth } from "@/components/AuthProvider";
 
 export function Sidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { session } = useAuth();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -65,13 +68,22 @@ export function Sidebar() {
   return (
     <div className="pb-12 w-64 bg-zinc-900">
       <div className="px-3 py-4 border-b border-zinc-800">
-        <div className="flex items-center mb-4 px-3">
+        <div className="flex items-center justify-between mb-4 px-3">
           <h1 className="text-5xl font-bold text-accent">
             QUINCY
           </h1>
+          <Avatar className="h-8 w-8">
+            <AvatarImage 
+              src={session?.user?.user_metadata?.avatar_url} 
+              alt={session?.user?.email || 'User avatar'} 
+            />
+            <AvatarFallback className="bg-zinc-800 text-zinc-400">
+              {session?.user?.email?.charAt(0).toUpperCase() || 'U'}
+            </AvatarFallback>
+          </Avatar>
         </div>
       </div>
-      <div className="space-y-4 py-4 flex flex-col h-[calc(100%-120px)]">
+      <div className="space-y-4 py-4 flex flex-col h-[calc(100vh-120px)]">
         <div className="px-3 py-2">
           <div className="space-y-1">
             {links.map((link) => (
