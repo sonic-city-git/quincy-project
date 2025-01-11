@@ -38,14 +38,19 @@ export function AddEventDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date || !selectedEventType || !name) return;
+    if (!date || !selectedEventType) return;
 
     const eventType = eventTypes.find(type => type.id === selectedEventType);
     if (!eventType) return;
 
+    // If it's not a Show/Double Show and name is empty, use event type name
+    const eventName = (eventType.name === 'Show' || eventType.name === 'Double Show')
+      ? name
+      : (name.trim() || eventType.name);
+
     setIsSubmitting(true);
     try {
-      await onAddEvent(date, name, eventType);
+      await onAddEvent(date, eventName, eventType);
       handleClose();
     } catch (error) {
       console.error('Error adding event:', error);
@@ -60,6 +65,9 @@ export function AddEventDialog({
     onClose();
   };
 
+  const selectedType = eventTypes.find(type => type.id === selectedEventType);
+  const isNameRequired = selectedType?.name === 'Show' || selectedType?.name === 'Double Show';
+
   if (!date) return null;
 
   return (
@@ -70,19 +78,6 @@ export function AddEventDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
-              Event Name
-            </label>
-            <Input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter event name"
-              required
-            />
-          </div>
-
           <div className="space-y-2">
             <label htmlFor="type" className="text-sm font-medium">
               Event Type
@@ -105,11 +100,27 @@ export function AddEventDialog({
             </Select>
           </div>
 
+          <div className="space-y-2">
+            <label htmlFor="name" className="text-sm font-medium">
+              Event Name {isNameRequired && <span className="text-red-500">*</span>}
+            </label>
+            <Input
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter event name"
+              required={isNameRequired}
+            />
+          </div>
+
           <div className="flex justify-end space-x-2">
             <Button variant="outline" onClick={handleClose} type="button">
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting || !selectedEventType || (isNameRequired && !name.trim())}
+            >
               {isSubmitting ? "Adding..." : "Add Event"}
             </Button>
           </div>
