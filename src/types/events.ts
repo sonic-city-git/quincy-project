@@ -19,4 +19,5 @@ export interface CalendarEvent {
   type: EventType;
   status: EventStatus['name'];
   revenue?: number;
+  location?: string;
 }

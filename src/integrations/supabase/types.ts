@@ -510,6 +510,7 @@ export type Database = {
           date: string
           event_type_id: string | null
           id: string
+          location: string | null
           name: string
           project_id: string | null
           revenue: number | null
@@ -521,6 +522,7 @@ export type Database = {
           date: string
           event_type_id?: string | null
           id?: string
+          location?: string | null
           name: string
           project_id?: string | null
           revenue?: number | null
@@ -532,6 +534,7 @@ export type Database = {
           date?: string
           event_type_id?: string | null
           id?: string
+          location?: string | null
           name?: string
           project_id?: string | null
           revenue?: number | null

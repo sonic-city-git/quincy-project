@@ -1,6 +1,6 @@
 import { CalendarEvent } from "@/types/events";
 import { Card } from "@/components/ui/card";
-import { Calendar, Edit } from "lucide-react";
+import { Calendar, Edit, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,13 +34,19 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             {format(event.date, 'dd.MM.yy')}
           </span>
         </div>
-        <div className="flex items-center">
+        <div className="flex flex-col">
           <span 
             className="font-medium text-base truncate px-3 py-1 rounded-md"
             style={getColorStyles(event.type.color)}
           >
             {event.name}
           </span>
+          {event.location && (
+            <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
+              <MapPin className="h-3 w-3" />
+              <span>{event.location}</span>
+            </div>
+          )}
         </div>
         <div>
           <span 

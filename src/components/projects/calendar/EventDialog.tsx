@@ -19,6 +19,7 @@ import { CalendarEvent, EventType } from "@/types/events";
 import { useState, useEffect } from "react";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { Trash2 } from "lucide-react";
+import { LocationInput } from "./LocationInput";
 
 interface EventDialogProps {
   isOpen: boolean;
@@ -52,6 +53,7 @@ export function EventDialog({
   const [status, setStatus] = useState<CalendarEvent['status']>(
     event?.status || 'proposed'
   );
+  const [location, setLocation] = useState(event?.location || "");
 
   const selectedEventType = eventTypes.find(type => type.id === selectedType);
   const isNameRequired = selectedEventType?.name === 'Show' || selectedEventType?.name === 'Double Show';
@@ -61,9 +63,11 @@ export function EventDialog({
       setName(event.name);
       setSelectedType(event.type.id);
       setStatus(event.status);
+      setLocation(event.location || "");
     } else {
       setStatus('proposed');
       setSelectedType(eventTypes[0]?.id || '');
+      setLocation("");
     }
   }, [event, eventTypes]);
 
@@ -83,6 +87,7 @@ export function EventDialog({
         name,
         type: eventType,
         status,
+        location,
       });
     } else if (date && onAddEvent) {
       if (addEventCallback) {
@@ -128,6 +133,11 @@ export function EventDialog({
               required={isNameRequired}
             />
           </div>
+
+          <LocationInput 
+            value={location}
+            onChange={setLocation}
+          />
 
           <Select
             value={selectedType}
