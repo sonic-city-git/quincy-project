@@ -330,27 +330,36 @@ export type Database = {
       }
       event_types: {
         Row: {
+          allows_discount: boolean | null
           color: string
           created_at: string
           crew_rate_multiplier: number | null
+          equipment_available: boolean | null
+          equipment_rate_multiplier: number | null
           id: string
           name: string
           needs_crew: boolean | null
           updated_at: string
         }
         Insert: {
+          allows_discount?: boolean | null
           color: string
           created_at?: string
           crew_rate_multiplier?: number | null
+          equipment_available?: boolean | null
+          equipment_rate_multiplier?: number | null
           id?: string
           name: string
           needs_crew?: boolean | null
           updated_at?: string
         }
         Update: {
+          allows_discount?: boolean | null
           color?: string
           created_at?: string
           crew_rate_multiplier?: number | null
+          equipment_available?: boolean | null
+          equipment_rate_multiplier?: number | null
           id?: string
           name?: string
           needs_crew?: boolean | null
