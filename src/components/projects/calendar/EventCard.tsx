@@ -26,7 +26,13 @@ export function EventCard({ event, onStatusChange }: EventCardProps) {
             {format(event.date, 'dd.MM.yyyy')}
           </span>
         </div>
-        <h3 className="font-medium text-base truncate">{event.name}</h3>
+        <div className="flex items-center">
+          <span 
+            className={`font-medium text-base truncate px-3 py-1 rounded-md ${event.type.color.replace('bg-', 'bg-opacity-15 ')}`}
+          >
+            {event.name}
+          </span>
+        </div>
         <div 
           className={`text-sm px-3 py-1 rounded-full ${event.type.color}`}
         >
