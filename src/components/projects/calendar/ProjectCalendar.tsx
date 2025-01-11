@@ -51,8 +51,9 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
   const modifiersStyles = {
     event: {
-      fontWeight: 'bold',
-      textDecoration: 'underline'
+      backgroundColor: 'rgb(139, 92, 246)',
+      color: '#FFFFFF',
+      borderRadius: '4px'
     }
   };
 
