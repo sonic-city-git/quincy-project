@@ -46,7 +46,6 @@ export function EventList({ events, projectId }: EventListProps) {
 
   // Get past events for "Done and dusted" section - cancelled and invoiced events
   const pastEvents = events.filter(event => 
-    isBefore(event.date, today) && 
     (event.status === 'cancelled' || event.status === 'invoiced')
   ).sort(sortByDate);
 
