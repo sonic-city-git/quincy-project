@@ -161,12 +161,16 @@ export type Database = {
           description: string | null
           folder_id: string | null
           id: string
+          internal_remark: string | null
           model: string | null
           name: string
           notes: string | null
           power_requirements: string | null
+          rental_price: number | null
           serial_number: string | null
           status: string | null
+          stock: number | null
+          stock_calculation: string | null
           updated_at: string
           weight: number | null
         }
@@ -178,12 +182,16 @@ export type Database = {
           description?: string | null
           folder_id?: string | null
           id?: string
+          internal_remark?: string | null
           model?: string | null
           name: string
           notes?: string | null
           power_requirements?: string | null
+          rental_price?: number | null
           serial_number?: string | null
           status?: string | null
+          stock?: number | null
+          stock_calculation?: string | null
           updated_at?: string
           weight?: number | null
         }
@@ -195,12 +203,16 @@ export type Database = {
           description?: string | null
           folder_id?: string | null
           id?: string
+          internal_remark?: string | null
           model?: string | null
           name?: string
           notes?: string | null
           power_requirements?: string | null
+          rental_price?: number | null
           serial_number?: string | null
           status?: string | null
+          stock?: number | null
+          stock_calculation?: string | null
           updated_at?: string
           weight?: number | null
         }
