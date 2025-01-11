@@ -1,12 +1,19 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { LayoutDashboard, CalendarDays, Users } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function Sidebar() {
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   const isActive = (path: string) => {
     return location.pathname === path;
+  };
+
+  const handleProjectsClick = () => {
+    // Invalidate and refetch projects query
+    queryClient.invalidateQueries({ queryKey: ['projects'] });
   };
 
   const links = [
@@ -15,21 +22,24 @@ export function Sidebar() {
       label: "Dashboard", 
       icon: LayoutDashboard,
       isActive: isActive("/"),
-      bgColor: "hover:bg-[#9b87f5]/10" // Primary purple hover
+      bgColor: "hover:bg-[#9b87f5]/10", // Primary purple hover
+      onClick: () => {} // No special action
     },
     { 
       href: "/projects", 
       label: "Projects", 
       icon: CalendarDays,
       isActive: isActive("/projects"),
-      bgColor: "hover:bg-[#7E69AB]/10" // Secondary purple hover
+      bgColor: "hover:bg-[#7E69AB]/10", // Secondary purple hover
+      onClick: handleProjectsClick // Refresh projects on click
     },
     { 
       href: "/crew", 
       label: "Crew", 
       icon: Users,
       isActive: isActive("/crew"),
-      bgColor: "hover:bg-[#F97316]/10" // Accent orange hover
+      bgColor: "hover:bg-[#F97316]/10", // Accent orange hover
+      onClick: () => {} // No special action
     }
   ];
 
@@ -49,6 +59,7 @@ export function Sidebar() {
               <Link
                 key={link.href}
                 to={link.href}
+                onClick={link.onClick}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all",
                   link.bgColor,
