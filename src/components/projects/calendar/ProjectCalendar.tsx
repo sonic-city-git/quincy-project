@@ -131,15 +131,9 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         selected={undefined}
         onSelect={(date: Date | undefined) => {
           if (!date) return;
-          if (!isDragging) {
-            handleDragStart(date);
-          }
+          handleDragStart(date);
         }}
-        onDayMouseEnter={(date: Date) => {
-          if (isDragging) {
-            handleDragEnter(date);
-          }
-        }}
+        onDayMouseEnter={(date: Date) => handleDragEnter(date)}
         onDayMouseUp={() => handleDragEnd()}
       />
 
