@@ -74,17 +74,17 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     return {
       ...acc,
       [key]: ({ date }: { date: Date }) => (
-        <TooltipProvider delayDuration={0}>
+        <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="w-full h-full flex items-center justify-center cursor-pointer">
-                {date.getDate()}
+              <div className="w-full h-full flex items-center justify-center cursor-pointer relative">
+                <span>{date.getDate()}</span>
               </div>
             </TooltipTrigger>
             <TooltipContent 
               side="top" 
               align="center"
-              className="z-[99999] bg-zinc-900/95 border border-zinc-800 text-white p-3 rounded-md shadow-lg"
+              className="fixed z-[999999] bg-black/90 border border-zinc-700 text-white p-3 rounded-md shadow-xl"
               sideOffset={5}
               forceMount
             >
