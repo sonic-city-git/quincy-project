@@ -30,10 +30,10 @@ const ProjectDetail = () => {
     <div className="p-8 space-y-6">
       <div className="w-fit">
         <h1 
-          className="text-3xl font-bold px-3.5 py-2 rounded-md bg-opacity-90 transition-all hover:bg-opacity-100"
+          className="text-3xl font-bold px-3.5 py-2 rounded-md bg-opacity-90 transition-all hover:bg-opacity-100 antialiased"
           style={getColorStyles(project.color)}
         >
-          {project.name} <span className="ml-2 opacity-75 text-lg">{formattedProjectNumber}</span>
+          {project.name} <span className="ml-2 opacity-75 text-lg font-medium">{formattedProjectNumber}</span>
         </h1>
       </div>
       
