@@ -37,8 +37,6 @@ export function CalendarView({
 
         const clickedDate = dates[dates.length - 1];
         console.log('Clicked date:', clickedDate);
-
-        // Only trigger onDragStart, don't handle click here
         onDragStart(clickedDate);
       }}
       onDayMouseEnter={(date: Date) => {
@@ -50,16 +48,16 @@ export function CalendarView({
       onDayClick={(date: Date) => {
         console.log('Calendar onDayClick', { date, selectedDatesLength: selectedDates.length });
         if (selectedDates.length === 0) {
-          // Only handle click when not dragging
           onDayClick(date);
         }
       }}
       onDayMouseUp={(date: Date) => {
         console.log('Calendar onDayMouseUp', { date, selectedDatesLength: selectedDates.length });
         if (selectedDates.length > 0) {
-          // If we were dragging, handle both the click and drag end
           onDayClick(date);
           onDragEnd();
+        } else {
+          onDayClick(date);
         }
       }}
       className="w-full rounded-md border border-zinc-800 bg-zinc-950"
