@@ -47,9 +47,10 @@ export function CalendarView({
       components={modifiersContent}
       className="w-full rounded-md border border-zinc-800 bg-zinc-950"
       selected={selectedDates}
-      onSelect={(date: Date | undefined) => {
-        if (date) {
-          onDragStart(date);
+      onSelect={(dates: Date[] | undefined) => {
+        if (dates && dates.length > 0) {
+          // We take the last selected date as the starting point for the drag
+          onDragStart(dates[dates.length - 1]);
         }
       }}
       onDayMouseEnter={onDragEnter}
