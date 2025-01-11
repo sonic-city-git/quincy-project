@@ -49,32 +49,20 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
     setProcessedCount(0);
     
     try {
-      // Process events in smaller batches to prevent UI freezing
-      const batchSize = 5;
       const failedEvents: CalendarEvent[] = [];
 
-      for (let i = 0; i < invoiceReadyEvents.length; i += batchSize) {
-        const batch = invoiceReadyEvents.slice(i, i + batchSize);
-        
-        // Process each batch sequentially to ensure proper order
-        for (const event of batch) {
-          try {
-            await onStatusChange(event, 'invoiced');
-            setProcessedCount(prev => prev + 1);
-            console.log('Successfully updated event:', event.id);
-          } catch (error) {
-            console.error('Failed to update event:', event.id, error);
-            failedEvents.push(event);
-          }
+      // Process events sequentially
+      for (const event of invoiceReadyEvents) {
+        try {
+          console.log('Processing event:', event.id);
+          await onStatusChange(event, 'invoiced');
+          setProcessedCount(prev => prev + 1);
+          console.log('Successfully updated event:', event.id);
+        } catch (error) {
+          console.error('Failed to update event:', event.id, error);
+          failedEvents.push(event);
         }
-
-        // Give the UI a chance to update
-        await new Promise(resolve => setTimeout(resolve, 50));
       }
-
-      // Invalidate and refetch queries to refresh the data
-      await queryClient.invalidateQueries({ queryKey: ['events'] });
-      await queryClient.invalidateQueries({ queryKey: ['calendar-events'] });
 
       // Close both dialogs
       setShowConfirmation(false);
