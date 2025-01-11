@@ -21,6 +21,7 @@ export function CalendarView({
   onAddMultipleEvents
 }: CalendarViewProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [dragStartTime, setDragStartTime] = useState<number | null>(null);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [isMultiEventDialogOpen, setIsMultiEventDialogOpen] = useState(false);
 
@@ -55,6 +56,7 @@ export function CalendarView({
 
     if (!hasEvent) {
       setIsDragging(true);
+      setDragStartTime(Date.now());
       setSelectedDates([date]);
     }
   };
@@ -89,10 +91,25 @@ export function CalendarView({
   };
 
   const handleDragEnd = () => {
-    if (selectedDates.length > 0) {
+    // Only show multi-event dialog if we're actually dragging (more than 200ms)
+    const isDragOperation = dragStartTime && (Date.now() - dragStartTime) > 200;
+    
+    if (isDragOperation && selectedDates.length > 0) {
       setIsMultiEventDialogOpen(true);
+    } else {
+      // If it's a quick click, treat it as a regular day click
+      if (selectedDates.length === 1) {
+        handleDayClick(selectedDates[0]);
+      }
     }
+    
     setIsDragging(false);
+    setDragStartTime(null);
+    
+    // Only clear selected dates if we're not opening the multi-event dialog
+    if (!isDragOperation) {
+      setSelectedDates([]);
+    }
   };
 
   const handleAddMultipleEvents = (name: string, eventType: EventType) => {
