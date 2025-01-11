@@ -2,15 +2,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+// Colors selected for good readability with white text while maintaining a fresh look
 const PROJECT_COLORS = [
-  'violet',
-  'blue',
-  'green',
-  'yellow',
-  'orange',
-  'red',
-  'pink',
-  'purple'
+  '#8B5CF6', // Vivid Purple
+  '#0EA5E9', // Ocean Blue
+  '#F97316', // Bright Orange
+  '#D946EF', // Magenta Pink
 ];
 
 const getRandomColor = () => {
