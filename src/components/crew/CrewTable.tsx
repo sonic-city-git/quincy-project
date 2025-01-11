@@ -11,7 +11,7 @@ interface CrewTableProps {
 export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) {
   return (
     <Table>
-      <TableHeader className="bg-zinc-900/50 border-b border-zinc-800">
+      <TableHeader className="sticky top-0 bg-zinc-900/95 border-b border-zinc-800 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75">
         <TableRow>
           <TableHead className="w-12"></TableHead>
           <TableHead className="min-w-[200px]">Name</TableHead>
