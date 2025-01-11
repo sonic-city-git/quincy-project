@@ -24,6 +24,7 @@ const ProjectDetail = () => {
   };
 
   const colorStyles = getColorStyles(project.color);
+  const formattedProjectNumber = String(project.project_number).padStart(4, '0');
 
   return (
     <div className="p-8 space-y-6">
@@ -32,7 +33,7 @@ const ProjectDetail = () => {
           className="text-3xl font-bold px-3.5 py-2 rounded-md"
           style={colorStyles}
         >
-          {project.name}
+          {project.name} <span className="ml-2 opacity-75">#{formattedProjectNumber}</span>
         </h1>
       </div>
       
@@ -53,7 +54,6 @@ const ProjectDetail = () => {
               
               <div>
                 <div className="space-y-2">
-                  <p><span className="font-medium">Project Number:</span> {project.project_number}</p>
                   <p><span className="font-medium">Owner:</span> {project.crew_members?.name || 'No owner assigned'}</p>
                 </div>
               </div>
