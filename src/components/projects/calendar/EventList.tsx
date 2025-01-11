@@ -9,13 +9,15 @@ import { useEventTypes } from "@/hooks/useEventTypes";
 import { EventDialog } from "./EventDialog";
 import { InvoiceDialog } from "../invoice/InvoiceDialog";
 import { useState } from "react";
+import { Card } from "@/components/ui/card";
 
 interface EventListProps {
   events: CalendarEvent[];
   projectId?: string;
+  isLoading?: boolean;
 }
 
-export function EventList({ events, projectId }: EventListProps) {
+export function EventList({ events = [], projectId, isLoading }: EventListProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const today = startOfToday();
@@ -27,6 +29,26 @@ export function EventList({ events, projectId }: EventListProps) {
     closeEditDialog
   } = useEventDialog();
   const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
+
+  if (isLoading) {
+    return (
+      <Card className="p-6">
+        <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+          Loading events...
+        </div>
+      </Card>
+    );
+  }
+
+  if (!events.length) {
+    return (
+      <Card className="p-6">
+        <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+          No events found. Click on the calendar to add events.
+        </div>
+      </Card>
+    );
+  }
 
   // Sort function for events
   const sortByDate = (a: CalendarEvent, b: CalendarEvent) => {

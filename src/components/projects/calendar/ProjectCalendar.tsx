@@ -5,6 +5,7 @@ import { EventDialog } from "./EventDialog";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useCallback } from "react";
 import { CalendarView } from "./CalendarView";
+import { Card } from "@/components/ui/card";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -48,7 +49,17 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     }
   }, [normalizeDate, findEventOnDate, isDragging, openEditDialog, openAddDialog]);
 
-  if (isLoading || !eventTypes) {
+  if (isLoading) {
+    return (
+      <Card className="w-full p-6">
+        <div className="h-[400px] flex items-center justify-center text-muted-foreground">
+          Loading calendar...
+        </div>
+      </Card>
+    );
+  }
+
+  if (!eventTypes) {
     return null;
   }
 
@@ -57,7 +68,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
       <CalendarView
         currentDate={currentDate}
         setCurrentDate={setCurrentDate}
-        events={events}
+        events={events || []}
         selectedDates={selectedDates}
         onDragStart={handleDragStart}
         onDragEnter={handleDragEnter}

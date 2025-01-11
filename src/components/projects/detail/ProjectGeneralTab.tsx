@@ -6,14 +6,21 @@ import { EventList } from "@/components/projects/calendar/EventList";
 import { format, parseISO } from "date-fns";
 import { Project } from "@/types/projects";
 import { CalendarEvent } from "@/types/events";
+import { useQuery } from "@tanstack/react-query";
+import { fetchEvents } from "@/utils/eventQueries";
 
 interface ProjectGeneralTabProps {
   project: Project;
-  events: CalendarEvent[];
   projectId: string;
 }
 
-export function ProjectGeneralTab({ project, events, projectId }: ProjectGeneralTabProps) {
+export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps) {
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ['events', projectId],
+    queryFn: () => fetchEvents(projectId),
+    enabled: !!projectId
+  });
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
     try {
@@ -78,11 +85,13 @@ export function ProjectGeneralTab({ project, events, projectId }: ProjectGeneral
         </div>
       </Card>
 
-      {events && (
-        <Card className="p-6">
-          <EventList events={events} projectId={projectId} />
-        </Card>
-      )}
+      <Card className="p-6">
+        <EventList 
+          events={events} 
+          projectId={projectId}
+          isLoading={isLoading}
+        />
+      </Card>
     </div>
   );
 }
