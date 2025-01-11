@@ -537,6 +537,71 @@ export type Database = {
           },
         ]
       }
+      project_event_equipment: {
+        Row: {
+          created_at: string
+          equipment_id: string | null
+          event_id: string | null
+          group_id: string | null
+          id: string
+          notes: string | null
+          project_id: string | null
+          quantity: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          equipment_id?: string | null
+          event_id?: string | null
+          group_id?: string | null
+          id?: string
+          notes?: string | null
+          project_id?: string | null
+          quantity?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          equipment_id?: string | null
+          event_id?: string | null
+          group_id?: string | null
+          id?: string
+          notes?: string | null
+          project_id?: string | null
+          quantity?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_event_equipment_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_event_equipment_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "project_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_event_equipment_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "project_equipment_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_event_equipment_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       project_event_roles: {
         Row: {
           created_at: string
