@@ -27,12 +27,12 @@ export function CalendarView({
       return normalizeDate(eventDate).getTime() === normalizedDate.getTime();
     });
 
-    console.log('Triggering click for date:', normalizedDate, 'Event:', eventOnDate);
+    console.log('Calendar day clicked', { date: normalizedDate, existingEvent: eventOnDate });
     
-    // Pass both the date and event to the click handler
+    // Pass the event's date if it exists, otherwise pass the clicked date
     if (eventOnDate) {
-      console.log('Found event, opening edit dialog:', eventOnDate);
-      onDayClick(eventOnDate.date);
+      console.log('Found event, opening edit dialog for event:', eventOnDate);
+      onDayClick(new Date(eventOnDate.date));
     } else {
       console.log('No event found, opening add dialog');
       onDayClick(normalizedDate);
