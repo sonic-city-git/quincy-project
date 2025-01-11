@@ -8,7 +8,6 @@ import { useCalendarModifiers } from "./CalendarModifiers";
 import { EventDialog } from "./EventDialog";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "@/utils/eventQueries";
-import { EventList } from "./EventList";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -79,8 +78,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         className="w-full rounded-md border border-zinc-800 bg-zinc-950"
         selected={undefined}
       />
-
-      <EventList events={events} projectId={projectId} />
 
       <EventDialog
         isOpen={isAddDialogOpen}
