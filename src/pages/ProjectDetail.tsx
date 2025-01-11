@@ -26,29 +26,33 @@ const ProjectDetail = () => {
   const formattedProjectNumber = String(project.project_number).padStart(4, '0');
 
   return (
-    <div className="p-8 space-y-6">
-      <div className="space-y-2">
-        <div className="w-fit">
-          <div 
-            className="px-3.5 py-2 rounded-md font-medium"
-            style={getColorStyles(project.color)}
-          >
-            <span className="text-3xl">{project.name}</span>
+    <div className="flex flex-col h-full">
+      <div className="sticky top-0 bg-background z-10 p-8 pb-0 space-y-6">
+        <div className="flex items-center gap-4">
+          <div className="w-fit">
+            <div 
+              className="px-3.5 py-2 rounded-md font-medium"
+              style={getColorStyles(project.color)}
+            >
+              <span className="text-3xl">{project.name}</span>
+            </div>
+          </div>
+          <div className="text-lg text-muted-foreground">
+            #{formattedProjectNumber}
           </div>
         </div>
-        <div className="text-lg text-muted-foreground ml-1">
-          {formattedProjectNumber}
-        </div>
+        
+        <Tabs defaultValue="general" className="w-full">
+          <TabsList>
+            <TabsTrigger value="general">General</TabsTrigger>
+            <TabsTrigger value="equipment">Equipment</TabsTrigger>
+            <TabsTrigger value="crew">Crew</TabsTrigger>
+            <TabsTrigger value="financial">Financial</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
-      
-      <Tabs defaultValue="general" className="w-full">
-        <TabsList>
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="equipment">Equipment</TabsTrigger>
-          <TabsTrigger value="crew">Crew</TabsTrigger>
-          <TabsTrigger value="financial">Financial</TabsTrigger>
-        </TabsList>
 
+      <div className="flex-1 overflow-auto p-8 pt-4">
         <TabsContent value="general">
           <Card className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -85,7 +89,7 @@ const ProjectDetail = () => {
             {/* Financial content will be implemented in future iterations */}
           </Card>
         </TabsContent>
-      </Tabs>
+      </div>
     </div>
   );
 };
