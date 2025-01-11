@@ -6,13 +6,14 @@ import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useCallback } from "react";
 import { CalendarView } from "./CalendarView";
 import { Card } from "@/components/ui/card";
+import { compareDates } from "@/utils/dateFormatters";
 
 interface ProjectCalendarProps {
   projectId: string;
 }
 
 export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
-  const { currentDate, setCurrentDate, normalizeDate } = useCalendarDate();
+  const { currentDate, setCurrentDate } = useCalendarDate();
   const { data: eventTypes } = useEventTypes();
   const {
     events,
@@ -34,18 +35,17 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   } = useEventDialog();
 
   const handleDayClick = useCallback((date: Date) => {
-    const normalizedDate = normalizeDate(date);
-    const existingEvent = findEventOnDate(normalizedDate);
+    const existingEvent = findEventOnDate(date);
     console.log('Calendar day clicked', { date, existingEvent });
 
     if (existingEvent) {
       console.log('Opening edit dialog for event:', existingEvent);
       openEditDialog(existingEvent);
     } else {
-      console.log('Opening add dialog for date:', normalizedDate);
-      openAddDialog(normalizedDate);
+      console.log('Opening add dialog for date:', date);
+      openAddDialog(date);
     }
-  }, [normalizeDate, findEventOnDate, openEditDialog, openAddDialog]);
+  }, [findEventOnDate, openEditDialog, openAddDialog]);
 
   if (isLoading) {
     return (
