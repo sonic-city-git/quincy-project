@@ -17,11 +17,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   const {
     events,
     isLoading,
-    isDragging,
-    selectedDates,
-    handleDragStart,
-    handleDragEnter,
-    resetSelection,
     findEventOnDate,
     addEvent,
     updateEvent
@@ -44,10 +39,10 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
     if (existingEvent) {
       openEditDialog(existingEvent);
-    } else if (!isDragging) {
+    } else {
       openAddDialog(normalizedDate);
     }
-  }, [normalizeDate, findEventOnDate, isDragging, openEditDialog, openAddDialog]);
+  }, [normalizeDate, findEventOnDate, openEditDialog, openAddDialog]);
 
   if (isLoading) {
     return (
@@ -69,11 +64,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         currentDate={currentDate}
         setCurrentDate={setCurrentDate}
         events={events || []}
-        selectedDates={selectedDates}
-        onDragStart={handleDragStart}
-        onDragEnter={handleDragEnter}
         onDayClick={handleDayClick}
-        onDragEnd={resetSelection}
       />
 
       <EventDialog
