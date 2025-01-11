@@ -671,9 +671,8 @@ export type Database = {
           "Internal remark": string | null
           "Last change": string | null
           "Last change (Serial number)": string | null
-          "List price": string | null
+          "List price": number | null
           "Name (in database)": string | null
-          "Price incl. VAT": string | null
           "Purchase price (Serial number)": string | null
           "rental-price": number | null
           "Serial number (Serial number)": string | null
@@ -693,9 +692,8 @@ export type Database = {
           "Internal remark"?: string | null
           "Last change"?: string | null
           "Last change (Serial number)"?: string | null
-          "List price"?: string | null
+          "List price"?: number | null
           "Name (in database)"?: string | null
-          "Price incl. VAT"?: string | null
           "Purchase price (Serial number)"?: string | null
           "rental-price"?: number | null
           "Serial number (Serial number)"?: string | null
@@ -715,9 +713,8 @@ export type Database = {
           "Internal remark"?: string | null
           "Last change"?: string | null
           "Last change (Serial number)"?: string | null
-          "List price"?: string | null
+          "List price"?: number | null
           "Name (in database)"?: string | null
-          "Price incl. VAT"?: string | null
           "Purchase price (Serial number)"?: string | null
           "rental-price"?: number | null
           "Serial number (Serial number)"?: string | null
