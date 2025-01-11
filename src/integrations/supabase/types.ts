@@ -154,109 +154,45 @@ export type Database = {
       }
       equipment: {
         Row: {
-          barcode: string | null
-          brand: string | null
           code: string | null
           created_at: string
-          description: string | null
-          folder_id: string | null
           id: string
           internal_remark: string | null
-          model: string | null
           name: string
-          notes: string | null
-          power_requirements: string | null
           rental_price: number | null
           serial_number: string | null
-          status: string | null
           stock: number | null
           stock_calculation: string | null
           updated_at: string
           weight: number | null
         }
         Insert: {
-          barcode?: string | null
-          brand?: string | null
           code?: string | null
           created_at?: string
-          description?: string | null
-          folder_id?: string | null
           id?: string
           internal_remark?: string | null
-          model?: string | null
           name: string
-          notes?: string | null
-          power_requirements?: string | null
           rental_price?: number | null
           serial_number?: string | null
-          status?: string | null
           stock?: number | null
           stock_calculation?: string | null
           updated_at?: string
           weight?: number | null
         }
         Update: {
-          barcode?: string | null
-          brand?: string | null
           code?: string | null
           created_at?: string
-          description?: string | null
-          folder_id?: string | null
           id?: string
           internal_remark?: string | null
-          model?: string | null
           name?: string
-          notes?: string | null
-          power_requirements?: string | null
           rental_price?: number | null
           serial_number?: string | null
-          status?: string | null
           stock?: number | null
           stock_calculation?: string | null
           updated_at?: string
           weight?: number | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "equipment_folder_id_fkey"
-            columns: ["folder_id"]
-            isOneToOne: false
-            referencedRelation: "equipment_folders"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      equipment_folders: {
-        Row: {
-          created_at: string
-          id: string
-          name: string
-          parent_id: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          name: string
-          parent_id?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          name?: string
-          parent_id?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "equipment_folders_parent_id_fkey"
-            columns: ["parent_id"]
-            isOneToOne: false
-            referencedRelation: "equipment_folders"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       equipment_maintenance: {
         Row: {
