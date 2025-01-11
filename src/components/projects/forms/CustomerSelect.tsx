@@ -20,8 +20,8 @@ export function CustomerSelect({ value, onChange }: CustomerSelectProps) {
         <SelectTrigger>
           <SelectValue placeholder="Select customer" />
         </SelectTrigger>
-        <SelectContent className="h-[200px]">
-          <ScrollArea className="h-full w-full">
+        <SelectContent>
+          <ScrollArea className="h-[200px] w-full">
             <div className="p-1">
               {customers.map(customer => (
                 <SelectItem 
