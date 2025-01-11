@@ -3,6 +3,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CalendarEvent } from '@/types/events';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { getStatusIcon } from '@/utils/eventFormatters';
 
 interface CalendarDayProps {
   date: Date;
@@ -77,7 +78,10 @@ export function CalendarDay({
         className="z-[100] bg-zinc-950 border border-zinc-800 text-white p-3 rounded-md shadow-xl w-auto"
       >
         <div className="space-y-1.5 text-center">
-          <p className="font-semibold text-white">{event.name}</p>
+          <div className="flex items-center justify-center gap-2">
+            <p className="font-semibold text-white">{event.name}</p>
+            {getStatusIcon(event.status)}
+          </div>
           <p className="text-sm text-zinc-300">{event.type.name}</p>
         </div>
       </HoverCardContent>
