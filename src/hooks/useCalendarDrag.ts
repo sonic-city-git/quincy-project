@@ -9,10 +9,10 @@ export const useCalendarDrag = (openAddDialog: (date: Date, callback?: (date: Da
   const handleDragStart = useCallback((date: Date | undefined) => {
     if (!date) return;
     
-    setIsDragging(true);
     const normalizedDate = normalizeDate(date);
     if (!normalizedDate) return;
     
+    setIsDragging(true);
     setDragStartDate(normalizedDate);
     setSelectedDates([normalizedDate]);
   }, []);
