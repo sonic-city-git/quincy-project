@@ -42,8 +42,9 @@ export function EventList({ events }: EventListProps) {
 
       if (error) throw error;
 
-      // Invalidate the events query to trigger a refresh
+      // Invalidate both the events query and the calendar events query
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['calendarEvents'] });
 
       toast({
         title: "Status Updated",
