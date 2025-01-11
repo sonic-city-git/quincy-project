@@ -666,7 +666,6 @@ export type Database = {
           "Current quantity": number | null
           "Date of purchase (Serial number)": string | null
           "Display name (Serial number)": string | null
-          "External remark": string | null
           "Folder (Folder)": string | null
           "Internal reference (Serial number)": string | null
           "Internal remark": string | null
@@ -690,7 +689,6 @@ export type Database = {
           "Current quantity"?: number | null
           "Date of purchase (Serial number)"?: string | null
           "Display name (Serial number)"?: string | null
-          "External remark"?: string | null
           "Folder (Folder)"?: string | null
           "Internal reference (Serial number)"?: string | null
           "Internal remark"?: string | null
@@ -714,7 +712,6 @@ export type Database = {
           "Current quantity"?: number | null
           "Date of purchase (Serial number)"?: string | null
           "Display name (Serial number)"?: string | null
-          "External remark"?: string | null
           "Folder (Folder)"?: string | null
           "Internal reference (Serial number)"?: string | null
           "Internal remark"?: string | null
