@@ -102,11 +102,15 @@ export function Calendar({
                   }}
                   onMouseEnter={() => {
                     console.log('Calendar day mouseEnter', { day, selected });
-                    onDayMouseEnter?.(day);
+                    if (!event) {
+                      onDayMouseEnter?.(day);
+                    }
                   }}
                   onMouseUp={() => {
                     console.log('Calendar day mouseUp', { day, selected });
-                    onDayMouseUp?.(day);
+                    if (!event) {
+                      onDayMouseUp?.(day);
+                    }
                   }}
                 />
               </div>

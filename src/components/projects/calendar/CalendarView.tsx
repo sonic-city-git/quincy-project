@@ -35,14 +35,12 @@ export function CalendarView({
         console.log('Calendar onSelect', { dates, selectedDates });
         if (!dates || dates.length === 0) return;
         const clickedDate = dates[dates.length - 1];
-        console.log('Clicked date:', clickedDate);
+        console.log('Starting drag with date:', clickedDate);
         onDragStart(clickedDate);
       }}
       onDayMouseEnter={(date: Date) => {
         console.log('Day mouse enter', date);
-        if (selectedDates.length > 0) {
-          onDragEnter(date);
-        }
+        onDragEnter(date);
       }}
       onDayClick={(date: Date) => {
         console.log('Calendar onDayClick', { date, selectedDatesLength: selectedDates.length });
@@ -53,9 +51,7 @@ export function CalendarView({
       onDayMouseUp={(date: Date) => {
         console.log('Calendar onDayMouseUp', { date, selectedDatesLength: selectedDates.length });
         if (selectedDates.length > 0) {
-          onDayClick(date);
           onDragEnd();
-        } else {
           onDayClick(date);
         }
       }}
