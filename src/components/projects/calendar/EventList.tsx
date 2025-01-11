@@ -64,7 +64,10 @@ export function EventList({ events }: EventListProps) {
     
     return (
       <div key={status} className="space-y-3">
-        <h3 className="text-lg font-semibold">{getStatusText(status)}</h3>
+        <div className="flex items-center gap-2">
+          {getStatusIcon(status)}
+          <h3 className="text-lg font-semibold">{getStatusText(status)}</h3>
+        </div>
         <div className="grid gap-3">
           {events.map(renderEventCard)}
         </div>
