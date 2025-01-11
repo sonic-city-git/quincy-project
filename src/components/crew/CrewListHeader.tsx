@@ -26,6 +26,8 @@ export function CrewListHeader({
   selectedItem,
   onCrewMemberDeleted,
 }: CrewListHeaderProps) {
+  const hasActiveFilters = selectedRoles.length > 0 || searchQuery.length > 0;
+
   return (
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-2 flex-1">
@@ -38,7 +40,7 @@ export function CrewListHeader({
           selectedRoles={selectedRoles}
           onRoleToggle={onRoleToggle}
         />
-        {selectedRoles.length > 0 && (
+        {hasActiveFilters && (
           <CrewFilterClear onClear={onClearFilters} />
         )}
       </div>
