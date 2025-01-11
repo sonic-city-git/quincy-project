@@ -10,22 +10,18 @@ interface CrewTableProps {
 
 export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) {
   return (
-    <div className="relative overflow-auto">
-      <div className="sticky top-0 z-10">
-        <Table>
-          <TableHeader className="bg-zinc-900/95 border-b border-zinc-800 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75">
-            <TableRow>
-              <TableHead className="w-12"></TableHead>
-              <TableHead className="min-w-[200px]">Name</TableHead>
-              <TableHead className="min-w-[200px]">Roles</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Folder</TableHead>
-            </TableRow>
-          </TableHeader>
-        </Table>
-      </div>
+    <div className="relative">
       <Table>
+        <TableHeader className="sticky top-0 bg-zinc-900/95 border-b border-zinc-800 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75 z-10">
+          <TableRow>
+            <TableHead className="w-12"></TableHead>
+            <TableHead className="min-w-[200px]">Name</TableHead>
+            <TableHead className="min-w-[200px]">Roles</TableHead>
+            <TableHead>Email</TableHead>
+            <TableHead>Phone</TableHead>
+            <TableHead>Folder</TableHead>
+          </TableRow>
+        </TableHeader>
         <TableBody>
           {crew.map((member) => (
             <CrewTableRow
