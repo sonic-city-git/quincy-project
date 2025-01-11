@@ -120,6 +120,21 @@ export function EventDialog({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {event && onDeleteEvent && (
+            <div className="flex justify-start">
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="gap-2"
+                onClick={handleDelete}
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </Button>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Input
               placeholder={isNameRequired ? "Event name (required)" : "Event name"}
@@ -170,24 +185,10 @@ export function EventDialog({
             </SelectContent>
           </Select>
 
-          <DialogFooter className="flex justify-between items-center gap-2">
-            {event && onDeleteEvent && (
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                className="gap-2"
-                onClick={handleDelete}
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete
-              </Button>
-            )}
-            <div className="flex justify-end">
-              <Button type="submit">
-                {event ? "Update" : "Add"}
-              </Button>
-            </div>
+          <DialogFooter>
+            <Button type="submit">
+              {event ? "Update" : "Add"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
