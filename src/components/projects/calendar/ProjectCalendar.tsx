@@ -3,7 +3,7 @@ import { useCalendarDate } from "@/hooks/useCalendarDate";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { AddEventDialog } from "./AddEventDialog";
 import { EditEventDialog } from "./EditEventDialog";
 
@@ -74,27 +74,24 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     return {
       ...acc,
       [key]: ({ date }: { date: Date }) => (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="w-full h-full flex items-center justify-center cursor-pointer relative">
-                <span>{date.getDate()}</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent 
-              side="top" 
-              align="center"
-              className="fixed z-[999999] bg-black/90 border border-zinc-700 text-white p-3 rounded-md shadow-xl"
-              sideOffset={5}
-              forceMount
-            >
-              <div className="space-y-1.5">
-                <p className="font-semibold text-white">{event.name}</p>
-                <p className="text-sm text-zinc-300">{event.type.name}</p>
-              </div>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
+        <HoverCard openDelay={0} closeDelay={0}>
+          <HoverCardTrigger asChild>
+            <div className="w-full h-full flex items-center justify-center cursor-pointer">
+              <span>{date.getDate()}</span>
+            </div>
+          </HoverCardTrigger>
+          <HoverCardContent 
+            side="top" 
+            align="center"
+            className="w-auto bg-black/90 border border-zinc-700 text-white p-3 rounded-md shadow-xl z-[999999]"
+            sideOffset={5}
+          >
+            <div className="space-y-1.5">
+              <p className="font-semibold text-white">{event.name}</p>
+              <p className="text-sm text-zinc-300">{event.type.name}</p>
+            </div>
+          </HoverCardContent>
+        </HoverCard>
       )
     };
   }, {} as Record<string, (props: { date: Date }) => JSX.Element>) || {};
