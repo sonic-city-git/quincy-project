@@ -32,7 +32,13 @@ export function CalendarView({
       onSelect={(dates: Date[] | undefined) => {
         if (dates && dates.length > 0) {
           const lastDate = dates[dates.length - 1];
-          onDragStart(lastDate);
+          if (selectedDates.length === 0) {
+            // If no dates are selected, treat as a click
+            onDayClick(lastDate);
+          } else {
+            // Otherwise, treat as drag start
+            onDragStart(lastDate);
+          }
         }
       }}
       onDayMouseEnter={(date: Date) => {
