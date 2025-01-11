@@ -29,7 +29,6 @@ export function CalendarView({
 
     console.log('Calendar day clicked', { date: normalizedDate, existingEvent: eventOnDate });
     
-    // Pass the event's date if it exists, otherwise pass the clicked date
     if (eventOnDate) {
       console.log('Found event, opening edit dialog for event:', eventOnDate);
       onDayClick(new Date(eventOnDate.date));

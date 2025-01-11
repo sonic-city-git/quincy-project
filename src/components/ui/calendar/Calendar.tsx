@@ -86,9 +86,7 @@ export function Calendar({
                   isSelected={false}
                   onClick={() => {
                     console.log('Calendar day clicked', { day, event });
-                    if (!event) {
-                      onDayClick?.(day);
-                    }
+                    onDayClick?.(day);
                   }}
                 />
               </div>
