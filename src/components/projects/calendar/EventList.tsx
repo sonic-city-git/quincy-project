@@ -1,7 +1,7 @@
 import { CalendarEvent } from "@/types/events";
 import { Card } from "@/components/ui/card";
 import { format } from "date-fns";
-import { Calendar, Clock, CheckCircle, HelpCircle, Send, XCircle } from "lucide-react";
+import { Calendar, CheckCircle, HelpCircle, Send, XCircle } from "lucide-react";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -34,7 +34,7 @@ export function EventList({ events }: EventListProps) {
       <div className="grid gap-3">
         {sortedEvents.map((event, index) => (
           <Card key={`${event.date}-${index}`} className="p-4">
-            <div className="grid grid-cols-[160px_1fr_auto_auto_auto] items-center gap-6">
+            <div className="grid grid-cols-[160px_1fr_auto_auto] items-center gap-6">
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
@@ -50,10 +50,6 @@ export function EventList({ events }: EventListProps) {
               <div className="flex items-center gap-2 text-sm">
                 {getStatusIcon(event.status)}
                 <span>{getStatusText(event.status)}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground opacity-50">
-                <Clock className="h-4 w-4" />
-                <span>Options</span>
               </div>
             </div>
           </Card>
