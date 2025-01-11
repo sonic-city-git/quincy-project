@@ -4,7 +4,6 @@ import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
-import { toast } from "sonner";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -24,7 +23,7 @@ const Auth = () => {
       <Card className="w-full max-w-md p-6 bg-zinc-900 border-zinc-800">
         <div className="mb-8">
           <h1 className="text-5xl font-bold text-accent mb-2">QUINCY</h1>
-          <p className="text-zinc-400">Sign in to continue</p>
+          <p className="text-zinc-400">Sign in with Google to continue</p>
         </div>
         <SupabaseAuth 
           supabaseClient={supabase}
@@ -44,6 +43,7 @@ const Auth = () => {
           }}
           providers={["google"]}
           redirectTo={window.location.origin}
+          view="sign_in"
         />
       </Card>
     </div>
