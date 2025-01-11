@@ -52,8 +52,12 @@ export function CalendarView({
         if (selectedDates.length === 0) {
           // Only handle click when not dragging
           onDayClick(date);
-        } else {
-          // End drag operation and open dialog
+        }
+      }}
+      onDayMouseUp={(date: Date) => {
+        console.log('Calendar onDayMouseUp', { date, selectedDatesLength: selectedDates.length });
+        if (selectedDates.length > 0) {
+          // If we were dragging, handle both the click and drag end
           onDayClick(date);
           onDragEnd();
         }

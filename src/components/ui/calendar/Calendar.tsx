@@ -23,6 +23,7 @@ interface CalendarProps {
   onSelect?: (dates: Date[] | undefined) => void;
   onDayMouseEnter?: (date: Date) => void;
   onDayClick?: (date: Date) => void;
+  onDayMouseUp?: (date: Date) => void;
   className?: string;
 }
 
@@ -35,6 +36,7 @@ export function Calendar({
   onSelect,
   onDayMouseEnter,
   onDayClick,
+  onDayMouseUp,
   className,
 }: CalendarProps) {
   console.log('Calendar render', { selected, events });
@@ -107,7 +109,7 @@ export function Calendar({
                   onMouseUp={() => {
                     console.log('Calendar day mouseUp', { day, selected });
                     if (!event) {
-                      onDayClick?.(day);
+                      onDayMouseUp?.(day);
                     }
                   }}
                 />
