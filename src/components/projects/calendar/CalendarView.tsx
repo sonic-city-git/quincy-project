@@ -27,10 +27,14 @@ export function CalendarView({
   const handleDayMouseUp = (date: Date) => {
     console.log('handleDayMouseUp', { date, selectedDatesLength: selectedDates.length });
     if (selectedDates.length > 0) {
-      // First call onDayClick to handle the selection
-      onDayClick(selectedDates[0]);
-      // Then end the drag operation
-      onDragEnd();
+      const startDate = selectedDates[0];
+      console.log('Processing selection', { startDate, endDate: date });
+      // Call onDayClick with the start date before ending the drag
+      onDayClick(startDate);
+      // End the drag operation after handling the click
+      setTimeout(() => {
+        onDragEnd();
+      }, 0);
     }
   };
 
