@@ -24,7 +24,7 @@ function Calendar({
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-10 w-10 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full"
+          "h-12 w-12 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full"
         ),
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
@@ -32,16 +32,16 @@ function Calendar({
         head_row: "grid grid-cols-7 w-full",
         head_cell: cn(
           "text-muted-foreground rounded-md font-normal text-[0.8rem]",
-          "flex h-10 w-full items-center justify-center"
+          "flex h-12 w-full items-center justify-center"
         ),
         row: "grid grid-cols-7 w-full mt-2",
         cell: cn(
           "relative p-0 text-center text-sm focus-within:relative focus-within:z-20",
-          "flex h-10 w-full items-center justify-center"
+          "flex h-16 w-full items-center justify-center"
         ),
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-10 w-full p-0 font-normal aria-selected:opacity-100 hover:bg-zinc-800 rounded-md"
+          "h-16 w-full p-0 font-normal aria-selected:opacity-100 hover:bg-zinc-800 rounded-md"
         ),
         day_range_end: "day-range-end",
         day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground rounded-md",
