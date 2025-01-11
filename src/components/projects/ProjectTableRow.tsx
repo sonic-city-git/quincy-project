@@ -33,9 +33,9 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
         {String(index).padStart(4, '0')}
       </TableCell>
       <TableCell>
-        <div className="max-w-[330px]">
+        <div className="max-w-[345px]">
           <div 
-            className="px-3 py-1.5 rounded-md text-[15px] font-medium truncate"
+            className="px-3.5 py-2 rounded-md text-[15px] font-medium truncate"
             style={colorStyles}
           >
             {project.name}
