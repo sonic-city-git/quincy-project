@@ -30,8 +30,14 @@ export function CalendarView({
     if (!normalizedDate) return;
 
     if (selectedDates.length > 0) {
+      const startDate = selectedDates[0];
+      const endDate = normalizedDate;
+      console.log('Processing drag selection', { startDate, endDate });
+      
+      // First trigger the click event with the start date
+      onDayClick(startDate);
+      // Then end the drag operation
       onDragEnd();
-      onDayClick(normalizedDate);
     } else {
       onDayClick(normalizedDate);
     }
