@@ -71,9 +71,8 @@ export function CalendarView({
         selectMirror={true}
         unselectAuto={false}
         // Styling
-        className="fc-theme-custom"
-        dayHeaderClassNames="text-zinc-400 uppercase text-xs font-medium py-2"
         dayCellClassNames="hover:bg-zinc-900 transition-colors border-zinc-800"
+        dayHeaderClassNames="text-zinc-400 uppercase text-xs font-medium py-2"
         slotLaneClassNames="border-zinc-800"
         slotLabelClassNames="text-zinc-400"
         titleFormat={{ month: 'long', year: 'numeric' }}
