@@ -21,17 +21,24 @@ export function ProjectOwnerFilter({ value, onChange }: ProjectOwnerFilterProps)
   const { folders } = useFolders();
   const { sortCrew } = useCrewSort();
   
-  // Find Sonic City folder
-  const sonicCityFolder = folders?.find(folder => 
-    folder.name.toLowerCase() === 'sonic city'
-  );
+  // Find Sonic City folder and log for debugging
+  const sonicCityFolder = folders?.find(folder => {
+    console.log('Checking folder:', folder.name);
+    return folder.name.toLowerCase() === 'sonic city'
+  });
+  
+  console.log('Found Sonic City folder:', sonicCityFolder);
   
   // Filter and sort crew members
   const filteredCrew = sortCrew(
-    crew.filter(member => 
-      sonicCityFolder && member.folder_id === sonicCityFolder.id
-    )
+    crew.filter(member => {
+      const isSonicCity = sonicCityFolder && member.folder_id === sonicCityFolder.id;
+      console.log('Checking member:', member.name, 'folder_id:', member.folder_id, 'isSonicCity:', isSonicCity);
+      return isSonicCity;
+    })
   );
+
+  console.log('Filtered crew members:', filteredCrew);
 
   return (
     <DropdownMenu>
