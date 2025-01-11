@@ -2,12 +2,20 @@ export interface Project {
   id: string;
   name: string;
   customer_id: string | null;
-  owner: string;
   owner_id: string | null;
   color: string;
-  lastInvoiced?: string | null;
-  crew_member_id?: string | null;
   project_number: number;
+  created_at: string;
+  updated_at: string;
+  to_be_invoiced: number | null;
+  customer?: {
+    id: string;
+    name: string;
+  } | null;
+  owner?: {
+    id: string;
+    name: string;
+  } | null;
 }
 
 export interface ProjectData extends Project {

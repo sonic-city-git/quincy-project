@@ -1,5 +1,5 @@
 import { ToastState, ToastAction } from "./types";
-import { TOAST_REMOVE_DELAY } from "./toast-reducer";
+import { TOAST_REMOVE_DELAY, reducer } from "./toast-reducer";
 
 let count = 0;
 export const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
