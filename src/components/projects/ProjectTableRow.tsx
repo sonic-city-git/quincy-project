@@ -5,7 +5,6 @@ import { format, parseISO } from "date-fns";
 interface ProjectTableRowProps {
   project: Project;
   index: number;
-  colorStyle: React.HTMLAttributes<HTMLDivElement>;
 }
 
 export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
