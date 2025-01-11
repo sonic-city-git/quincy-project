@@ -8,7 +8,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCrew } from "@/hooks/useCrew";
-import { useFolders } from "@/hooks/useFolders";
 import { useCrewSort } from "@/components/crew/useCrewSort";
 
 interface ProjectOwnerFilterProps {
@@ -16,26 +15,15 @@ interface ProjectOwnerFilterProps {
   onChange: (value: string) => void;
 }
 
+const SONIC_CITY_FOLDER_ID = "34f3469f-02bd-4ecf-82f9-11a4e88c2d77";
+
 export function ProjectOwnerFilter({ value, onChange }: ProjectOwnerFilterProps) {
   const { crew, loading } = useCrew();
-  const { folders } = useFolders();
   const { sortCrew } = useCrewSort();
-  
-  // Find Sonic City folder and log for debugging
-  const sonicCityFolder = folders?.find(folder => {
-    console.log('Checking folder:', folder.name);
-    return folder.name.toLowerCase() === 'sonic city'
-  });
-  
-  console.log('Found Sonic City folder:', sonicCityFolder);
   
   // Filter and sort crew members
   const filteredCrew = sortCrew(
-    crew.filter(member => {
-      const isSonicCity = sonicCityFolder && member.folder_id === sonicCityFolder.id;
-      console.log('Checking member:', member.name, 'folder_id:', member.folder_id, 'isSonicCity:', isSonicCity);
-      return isSonicCity;
-    })
+    crew.filter(member => member.folder_id === SONIC_CITY_FOLDER_ID)
   );
 
   console.log('Filtered crew members:', filteredCrew);
