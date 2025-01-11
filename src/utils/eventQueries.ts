@@ -27,10 +27,11 @@ export const fetchEvents = async (projectId: string) => {
 
   console.log('Fetched events:', data);
   return (data || []).map(event => ({
+    id: event.id,
     date: new Date(event.date),
     name: event.name,
     type: event.event_types,
-    status: event.status as CalendarEvent['status'] // Type assertion to ensure correct type
+    status: event.status as CalendarEvent['status']
   }));
 };
 

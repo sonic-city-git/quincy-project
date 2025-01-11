@@ -7,6 +7,7 @@ export interface EventType {
 }
 
 export interface CalendarEvent {
+  id: string;
   date: Date;
   name: string;
   type: EventType;

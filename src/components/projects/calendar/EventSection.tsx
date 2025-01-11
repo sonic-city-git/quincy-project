@@ -34,7 +34,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     <div className="space-y-2">
       {events.map((event) => (
         <EventCard
-          key={`${event.date}-${event.name}`}
+          key={event.id}
           event={event}
           onStatusChange={onStatusChange}
           onEdit={onEdit}
