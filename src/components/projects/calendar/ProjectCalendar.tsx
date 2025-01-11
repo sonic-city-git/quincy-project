@@ -4,7 +4,6 @@ import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { AddEventDialog } from "./AddEventDialog";
 import { EditEventDialog } from "./EditEventDialog";
 
@@ -109,18 +108,16 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
   return (
     <div className="w-full">
-      <AspectRatio ratio={4/3} className="w-full">
-        <Calendar
-          mode="single"
-          month={currentDate}
-          onMonthChange={setCurrentDate}
-          onDayClick={handleDayClick}
-          modifiers={modifiers}
-          modifiersStyles={modifiersStyles}
-          components={modifiersContent}
-          className="w-full h-full rounded-md border border-zinc-800 bg-zinc-950"
-        />
-      </AspectRatio>
+      <Calendar
+        mode="single"
+        month={currentDate}
+        onMonthChange={setCurrentDate}
+        onDayClick={handleDayClick}
+        modifiers={modifiers}
+        modifiersStyles={modifiersStyles}
+        components={modifiersContent}
+        className="w-full rounded-md border border-zinc-800 bg-zinc-950"
+      />
 
       <AddEventDialog
         isOpen={isAddDialogOpen}
