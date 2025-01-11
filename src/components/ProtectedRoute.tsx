@@ -8,6 +8,9 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { session } = useAuth();
   const location = useLocation();
 
-  // Always render children since we have a mock session
+  if (!session) {
+    return <Navigate to="/auth" state={{ from: location }} replace />;
+  }
+
   return <>{children}</>;
 }
