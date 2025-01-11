@@ -50,8 +50,8 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     
     // Find an existing event on this date
     const existingEvent = events.find(event => {
-      const eventDate = normalizeDate(event.date);
-      return eventDate.getTime() === normalizedDate.getTime();
+      const eventDate = new Date(event.date);
+      return normalizeDate(eventDate).getTime() === normalizedDate.getTime();
     });
     
     console.log('Existing event found:', existingEvent);
