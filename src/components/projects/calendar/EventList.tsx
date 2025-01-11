@@ -32,40 +32,47 @@ export function EventList({ events }: EventListProps) {
 
   const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
     try {
-      // Optimistically update the cache
-      const oldData = queryClient.getQueryData(['events']) as CalendarEvent[];
-      const newData = oldData.map(e => 
+      // Create updated event object
+      const updatedEvent = { ...event, status: newStatus };
+      
+      // Update local state immediately
+      const currentEvents = [...events];
+      const updatedEvents = currentEvents.map(e => 
         e.date.getTime() === event.date.getTime() && e.name === event.name
-          ? { ...e, status: newStatus }
+          ? updatedEvent
           : e
       );
-      queryClient.setQueryData(['events'], newData);
-      queryClient.setQueryData(['calendarEvents'], newData);
+
+      // Update both queries optimistically
+      queryClient.setQueryData(['events'], updatedEvents);
+      queryClient.setQueryData(['calendarEvents'], updatedEvents);
 
       // Update the server
-      await supabase
+      const { error } = await supabase
         .from('project_events')
         .update({ status: newStatus })
         .eq('date', format(event.date, 'yyyy-MM-dd'))
         .eq('name', event.name);
 
-      // Refresh the cache to ensure consistency
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['events'] }),
-        queryClient.invalidateQueries({ queryKey: ['calendarEvents'] })
-      ]);
+      if (error) throw error;
 
       toast({
         title: "Status Updated",
         description: `Event status changed to ${newStatus}`,
       });
-    } catch (error) {
-      console.error('Error updating event status:', error);
-      // Revert the optimistic update on error
+
+      // Refresh queries in the background
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['events'] }),
         queryClient.invalidateQueries({ queryKey: ['calendarEvents'] })
       ]);
+    } catch (error) {
+      console.error('Error updating event status:', error);
+      
+      // Revert to original data
+      queryClient.setQueryData(['events'], events);
+      queryClient.setQueryData(['calendarEvents'], events);
+      
       toast({
         title: "Error",
         description: "Failed to update event status",
