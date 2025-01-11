@@ -38,10 +38,13 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
   const { addEquipment } = useProjectEquipment(projectId);
 
   // Filter equipment based on search
-  const filteredEquipment = equipment.filter(item => 
-    item.name?.toLowerCase().includes(search.toLowerCase()) ||
-    item.code?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredEquipment = equipment.filter(item => {
+    const searchLower = search.toLowerCase();
+    return (
+      item.name?.toLowerCase().includes(searchLower) ||
+      (item.code && item.code.toLowerCase().includes(searchLower))
+    );
+  });
 
   // Organize equipment into folder structure
   const organizeEquipment = () => {
@@ -67,7 +70,7 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
       }
     });
 
-    // Organize equipment into folders
+    // Organize filtered equipment into folders
     filteredEquipment.forEach(item => {
       if (item.folder_id) {
         // Check if it belongs to a subfolder
@@ -121,9 +124,25 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
     >
       <div className="text-left">
         <div className="font-medium">{item.name}</div>
+        {item.code && (
+          <div className="text-sm text-muted-foreground">{item.code}</div>
+        )}
       </div>
     </Button>
   );
+
+  // Only show folders that have matching equipment
+  const hasContent = (folderId: string) => {
+    const folder = folderStructure[folderId];
+    if (!folder) return false;
+
+    const hasMatchingEquipment = folder.equipment.length > 0;
+    const hasMatchingSubfolders = Object.values(folder.subfolders).some(
+      subfolder => subfolder.equipment.length > 0
+    );
+
+    return hasMatchingEquipment || hasMatchingSubfolders;
+  };
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
@@ -143,47 +162,51 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
           ) : Object.keys(folderStructure).length === 0 ? (
             <div className="text-sm text-muted-foreground">No equipment found</div>
           ) : (
-            Object.entries(folderStructure).map(([folderId, folder]) => (
-              <Collapsible
-                key={folderId}
-                open={openFolders.includes(folderId)}
-                onOpenChange={() => toggleFolder(folderId)}
-              >
-                <CollapsibleTrigger className="flex items-center w-full text-left py-2">
-                  <ChevronRight className={cn(
-                    "h-4 w-4 shrink-0 transition-transform duration-200",
-                    openFolders.includes(folderId) && "rotate-90"
-                  )} />
-                  <span className="font-semibold text-sm ml-2">{folder.name}</span>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pl-6 space-y-1">
-                  {/* Main folder equipment */}
-                  {folder.equipment.map(renderEquipmentItem)}
+            Object.entries(folderStructure)
+              .filter(([folderId]) => hasContent(folderId))
+              .map(([folderId, folder]) => (
+                <Collapsible
+                  key={folderId}
+                  open={openFolders.includes(folderId)}
+                  onOpenChange={() => toggleFolder(folderId)}
+                >
+                  <CollapsibleTrigger className="flex items-center w-full text-left py-2">
+                    <ChevronRight className={cn(
+                      "h-4 w-4 shrink-0 transition-transform duration-200",
+                      openFolders.includes(folderId) && "rotate-90"
+                    )} />
+                    <span className="font-semibold text-sm ml-2">{folder.name}</span>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pl-6 space-y-1">
+                    {/* Main folder equipment */}
+                    {folder.equipment.map(renderEquipmentItem)}
 
-                  {/* Subfolders */}
-                  {Object.entries(folder.subfolders).map(([subId, sub]) => (
-                    <Collapsible
-                      key={subId}
-                      open={openSubfolders.includes(subId)}
-                      onOpenChange={() => toggleSubfolder(subId)}
-                    >
-                      <CollapsibleTrigger className="flex items-center w-full text-left py-1">
-                        <ChevronRight className={cn(
-                          "h-4 w-4 shrink-0 transition-transform duration-200",
-                          openSubfolders.includes(subId) && "rotate-90"
-                        )} />
-                        <span className="font-medium text-sm ml-2 text-muted-foreground">
-                          {sub.name}
-                        </span>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className="pl-6 space-y-1">
-                        {sub.equipment.map(renderEquipmentItem)}
-                      </CollapsibleContent>
-                    </Collapsible>
-                  ))}
-                </CollapsibleContent>
-              </Collapsible>
-            ))
+                    {/* Subfolders */}
+                    {Object.entries(folder.subfolders)
+                      .filter(([, subfolder]) => subfolder.equipment.length > 0)
+                      .map(([subId, sub]) => (
+                        <Collapsible
+                          key={subId}
+                          open={openSubfolders.includes(subId)}
+                          onOpenChange={() => toggleSubfolder(subId)}
+                        >
+                          <CollapsibleTrigger className="flex items-center w-full text-left py-1">
+                            <ChevronRight className={cn(
+                              "h-4 w-4 shrink-0 transition-transform duration-200",
+                              openSubfolders.includes(subId) && "rotate-90"
+                            )} />
+                            <span className="font-medium text-sm ml-2 text-muted-foreground">
+                              {sub.name}
+                            </span>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="pl-6 space-y-1">
+                            {sub.equipment.map(renderEquipmentItem)}
+                          </CollapsibleContent>
+                        </Collapsible>
+                      ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              ))
           )}
         </div>
       </ScrollArea>
