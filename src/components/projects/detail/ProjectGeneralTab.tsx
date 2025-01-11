@@ -3,9 +3,8 @@ import { ProjectCalendar } from "@/components/projects/calendar/ProjectCalendar"
 import { CustomerSelect } from "@/components/projects/forms/CustomerSelect";
 import { OwnerSelect } from "@/components/projects/forms/OwnerSelect";
 import { EventList } from "@/components/projects/calendar/EventList";
-import { format, parseISO } from "date-fns";
 import { Project } from "@/types/projects";
-import { CalendarEvent } from "@/types/events";
+import { formatDisplayDate } from "@/utils/dateFormatters";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchEvents } from "@/utils/eventQueries";
 import { useEffect } from "react";
@@ -24,13 +23,10 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
     enabled: !!projectId
   });
 
-  // Fetch events when component mounts
   useEffect(() => {
     if (projectId) {
       console.log('Fetching events for project:', projectId);
       refetch();
-      
-      // Also invalidate the calendar events query to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] });
     }
   }, [projectId, refetch, queryClient]);
@@ -38,7 +34,7 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
     try {
-      return format(parseISO(dateString), 'dd.MM.yy');
+      return formatDisplayDate(new Date(dateString));
     } catch (error) {
       console.error('Error formatting date:', error);
       return '-';

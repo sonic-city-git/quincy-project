@@ -1,6 +1,6 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Project } from "@/types/projects";
-import { format, parseISO } from "date-fns";
+import { formatDisplayDate } from "@/utils/dateFormatters";
 import { useNavigate } from "react-router-dom";
 
 interface ProjectTableRowProps {
@@ -14,7 +14,7 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
   const formatDate = (dateString: string) => {
     if (!dateString) return '-';
     try {
-      return format(parseISO(dateString), 'dd.MM.yy');
+      return formatDisplayDate(new Date(dateString));
     } catch (error) {
       console.error('Error formatting date:', error);
       return '-';
