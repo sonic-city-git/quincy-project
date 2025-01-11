@@ -56,6 +56,7 @@ export type Database = {
       }
       crew_members: {
         Row: {
+          auth_id: string | null
           created_at: string
           email: string | null
           folder_id: string | null
@@ -65,6 +66,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          auth_id?: string | null
           created_at?: string
           email?: string | null
           folder_id?: string | null
@@ -74,6 +76,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          auth_id?: string | null
           created_at?: string
           email?: string | null
           folder_id?: string | null
