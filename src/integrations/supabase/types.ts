@@ -258,43 +258,73 @@ export type Database = {
           },
         ]
       }
-      equipment_maintenance: {
+      equipment_groups: {
         Row: {
-          cost: number | null
           created_at: string
-          description: string
-          equipment_id: string | null
           id: string
-          maintenance_date: string
-          notes: string | null
-          performed_by: string | null
+          name: string
+          sort_order: number | null
           updated_at: string
         }
         Insert: {
-          cost?: number | null
           created_at?: string
-          description: string
-          equipment_id?: string | null
           id?: string
-          maintenance_date: string
-          notes?: string | null
-          performed_by?: string | null
+          name: string
+          sort_order?: number | null
           updated_at?: string
         }
         Update: {
-          cost?: number | null
           created_at?: string
-          description?: string
+          id?: string
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      equipment_repairs: {
+        Row: {
+          can_be_used: boolean | null
+          created_at: string
+          description: string
+          end_date: string | null
+          equipment_id: string | null
+          id: string
+          quantity: number | null
+          serial_numbers: string[] | null
+          start_date: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          can_be_used?: boolean | null
+          created_at?: string
+          description: string
+          end_date?: string | null
           equipment_id?: string | null
           id?: string
-          maintenance_date?: string
-          notes?: string | null
-          performed_by?: string | null
+          quantity?: number | null
+          serial_numbers?: string[] | null
+          start_date?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          can_be_used?: boolean | null
+          created_at?: string
+          description?: string
+          end_date?: string | null
+          equipment_id?: string | null
+          id?: string
+          quantity?: number | null
+          serial_numbers?: string[] | null
+          start_date?: string
+          status?: string | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "equipment_maintenance_equipment_id_fkey"
+            foreignKeyName: "equipment_repairs_equipment_id_fkey"
             columns: ["equipment_id"]
             isOneToOne: false
             referencedRelation: "equipment"
@@ -421,6 +451,7 @@ export type Database = {
         Row: {
           created_at: string
           equipment_id: string | null
+          group_id: string | null
           id: string
           notes: string | null
           project_id: string | null
@@ -430,6 +461,7 @@ export type Database = {
         Insert: {
           created_at?: string
           equipment_id?: string | null
+          group_id?: string | null
           id?: string
           notes?: string | null
           project_id?: string | null
@@ -439,6 +471,7 @@ export type Database = {
         Update: {
           created_at?: string
           equipment_id?: string | null
+          group_id?: string | null
           id?: string
           notes?: string | null
           project_id?: string | null
@@ -454,7 +487,49 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "project_equipment_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "project_equipment_groups"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "project_equipment_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_equipment_groups: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          project_id: string | null
+          sort_order: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          project_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          project_id?: string | null
+          sort_order?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_equipment_groups_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
