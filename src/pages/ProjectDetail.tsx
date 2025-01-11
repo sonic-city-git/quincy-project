@@ -33,10 +33,10 @@ const ProjectDetail = () => {
             className="px-3.5 py-2 rounded-md font-medium"
             style={getColorStyles(project.color)}
           >
-            <span className="text-2xl">{project.name}</span>
+            <span className="text-3xl">{project.name}</span>
           </div>
         </div>
-        <div className="text-xl text-muted-foreground ml-1">
+        <div className="text-lg text-muted-foreground ml-1">
           #{formattedProjectNumber}
         </div>
       </div>
