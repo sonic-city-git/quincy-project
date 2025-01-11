@@ -41,10 +41,10 @@ export function CalendarView({
         }
       }}
       onDayClick={(date: Date) => {
-        if (selectedDates.length <= 1) {
-          onDayClick(date);
+        onDayClick(date);
+        if (selectedDates.length > 0) {
+          onDragEnd();
         }
-        onDragEnd();
       }}
       className="w-full rounded-md border border-zinc-800 bg-zinc-950"
     />
