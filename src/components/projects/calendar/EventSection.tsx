@@ -29,6 +29,7 @@ export function EventSection({ status, events, onStatusChange }: EventSectionPro
 
   const sectionIcon = getStatusIcon(status === 'done and dusted' ? 'invoiced' : status);
   const isDoneAndDusted = status === 'done and dusted';
+  const isCancelled = status === 'cancelled';
 
   const getStatusText = (status: string) => {
     return `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
@@ -76,7 +77,7 @@ export function EventSection({ status, events, onStatusChange }: EventSectionPro
           {sectionIcon}
           <h3 className="text-lg font-semibold">{getStatusText(status)}</h3>
         </div>
-        {events.length > 0 && (
+        {events.length > 0 && !isCancelled && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
