@@ -4,8 +4,6 @@ import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import { CalendarEvent } from "@/types/events";
-import { AddEventDialog } from "./AddEventDialog";
-import { EditEventDialog } from "./EditEventDialog";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -39,30 +37,32 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     }
   };
 
-  const modifiers = {
-    event: (date: Date) => {
-      if (!events) return false;
-      const normalizedDate = normalizeDate(date);
-      return events.some(event => 
-        event.date.getTime() === normalizedDate.getTime()
-      );
-    }
-  };
-
-  const modifiersStyles = {
-    event: {
-      backgroundColor: (date: Date) => {
-        if (!events) return undefined;
+  // Create a modifier for each event with a unique class name
+  const modifiers = events?.reduce((acc, event) => {
+    const eventDate = new Date(event.date);
+    const key = `event-${eventDate.getTime()}`;
+    return {
+      ...acc,
+      [key]: (date: Date) => {
         const normalizedDate = normalizeDate(date);
-        const event = events.find(event => 
-          event.date.getTime() === normalizedDate.getTime()
-        );
-        return event?.type.color;
-      },
-      color: '#FFFFFF',
-      borderRadius: '4px'
-    }
-  };
+        return event.date.getTime() === normalizedDate.getTime();
+      }
+    };
+  }, {}) || {};
+
+  // Create styles for each event using their specific class names
+  const modifiersStyles = events?.reduce((acc, event) => {
+    const eventDate = new Date(event.date);
+    const key = `event-${eventDate.getTime()}`;
+    return {
+      ...acc,
+      [key]: {
+        backgroundColor: event.event_types?.color || '#000000',
+        color: '#FFFFFF',
+        borderRadius: '4px'
+      }
+    };
+  }, {}) || {};
 
   if (isLoading || !eventTypes) {
     return <div>Loading calendar...</div>;
