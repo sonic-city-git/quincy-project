@@ -48,7 +48,6 @@ export function CalendarView({
       className="w-full rounded-md border border-zinc-800 bg-zinc-950"
       selected={undefined}
       onSelect={onDragStart}
-      onDayMouseDown={(date) => onDragStart(date)}
       onDayMouseEnter={onDragEnter}
       onDayClick={onDayClick}
       onDayMouseUp={onDragEnd}
