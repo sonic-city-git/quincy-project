@@ -9,32 +9,44 @@ interface CalendarHeaderProps {
 }
 
 export function CalendarHeader({ month, onMonthChange }: CalendarHeaderProps) {
+  const handlePreviousMonth = () => {
+    const previousMonth = new Date(month);
+    previousMonth.setMonth(month.getMonth() - 1);
+    onMonthChange(previousMonth);
+  };
+
+  const handleNextMonth = () => {
+    const nextMonth = new Date(month);
+    nextMonth.setMonth(month.getMonth() + 1);
+    onMonthChange(nextMonth);
+  };
+
   const handleResetMonth = () => {
     onMonthChange(new Date());
   };
 
   return (
-    <div className="flex items-center justify-center relative pt-1">
-      <div className="flex items-center min-w-[280px] justify-between">
+    <div className="relative flex items-center justify-center pt-1">
+      <div className="flex items-center gap-4">
         <Button
           variant="ghost"
-          className="h-10 w-10 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full"
-          onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() - 1, 1))}
+          className="h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          onClick={handlePreviousMonth}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
         
         <button
           onClick={handleResetMonth}
-          className="text-xl font-medium min-w-[160px] text-center hover:text-primary transition-colors"
+          className="text-xl font-medium min-w-[160px] text-center text-primary/50 hover:text-primary transition-colors"
         >
           {format(month, 'MMMM yyyy')}
         </button>
 
         <Button
           variant="ghost"
-          className="h-10 w-10 bg-transparent p-0 opacity-50 hover:opacity-100 rounded-full"
-          onClick={() => onMonthChange(new Date(month.getFullYear(), month.getMonth() + 1, 1))}
+          className="h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          onClick={handleNextMonth}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
