@@ -11,6 +11,9 @@ interface CalendarDayProps {
   event?: CalendarEvent;
   isSelected: boolean;
   onClick: () => void;
+  onMouseDown?: () => void;
+  onMouseEnter?: () => void;
+  onMouseUp?: () => void;
 }
 
 export function CalendarDay({
@@ -19,19 +22,26 @@ export function CalendarDay({
   isToday,
   event,
   isSelected,
-  onClick
+  onClick,
+  onMouseDown,
+  onMouseEnter,
+  onMouseUp
 }: CalendarDayProps) {
   const baseButtonClasses = cn(
     "h-10 w-full p-0 font-normal relative",
     !isCurrentMonth && "text-muted-foreground opacity-50",
     isToday && "border border-blue-500",
-    "hover:bg-zinc-800 rounded-md transition-colors"
+    "hover:bg-zinc-800 rounded-md transition-colors",
+    !event && isSelected && "bg-blue-500/30"
   );
 
   const renderDayContent = () => {
     return (
       <button
         onClick={onClick}
+        onMouseDown={onMouseDown}
+        onMouseEnter={onMouseEnter}
+        onMouseUp={onMouseUp}
         className={cn(
           baseButtonClasses,
           isSelected && !event && "bg-blue-500/30 text-white",

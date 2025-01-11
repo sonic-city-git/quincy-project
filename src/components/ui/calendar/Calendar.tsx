@@ -21,6 +21,10 @@ interface CalendarProps {
   events?: CalendarEvent[];
   onDayClick?: (date: Date) => void;
   className?: string;
+  selectedDates?: Date[];
+  onDragStart?: (date: Date) => void;
+  onDragEnter?: (date: Date) => void;
+  onDragEnd?: () => void;
 }
 
 export function Calendar({
@@ -30,6 +34,10 @@ export function Calendar({
   events = [],
   onDayClick,
   className,
+  selectedDates = [],
+  onDragStart,
+  onDragEnter,
+  onDragEnd,
 }: CalendarProps) {
   console.log('Calendar render', { events });
 
@@ -54,6 +62,10 @@ export function Calendar({
 
   const getEventForDate = (date: Date): CalendarEvent | undefined => {
     return events.find(event => isSameDay(new Date(event.date), date));
+  };
+
+  const isDateSelected = (date: Date): boolean => {
+    return selectedDates.some(selectedDate => isSameDay(selectedDate, date));
   };
 
   return (
@@ -83,10 +95,25 @@ export function Calendar({
                   isCurrentMonth={isSameMonth(day, month)}
                   isToday={isToday(day)}
                   event={event}
-                  isSelected={false}
+                  isSelected={isDateSelected(day)}
                   onClick={() => {
                     console.log('Calendar day clicked', { day, event });
                     onDayClick?.(day);
+                  }}
+                  onMouseDown={() => {
+                    if (!event && onDragStart) {
+                      onDragStart(day);
+                    }
+                  }}
+                  onMouseEnter={() => {
+                    if (!event && onDragEnter) {
+                      onDragEnter(day);
+                    }
+                  }}
+                  onMouseUp={() => {
+                    if (!event && onDragEnd) {
+                      onDragEnd();
+                    }
                   }}
                 />
               </div>
