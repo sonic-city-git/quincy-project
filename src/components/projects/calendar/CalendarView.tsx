@@ -1,7 +1,5 @@
-import { Calendar } from "@/components/ui/calendar";
+import { CustomCalendar } from "@/components/ui/custom-calendar";
 import { CalendarEvent } from "@/types/events";
-import { CalendarDay } from "./CalendarDay";
-import { useCalendarModifiers } from "./CalendarModifiers";
 
 interface CalendarViewProps {
   currentDate: Date;
@@ -24,28 +22,12 @@ export function CalendarView({
   onDayClick,
   onDragEnd
 }: CalendarViewProps) {
-  const { modifiers, modifiersStyles } = useCalendarModifiers(events, selectedDates);
-
-  const modifiersContent = events?.reduce((acc, event) => {
-    const eventDate = new Date(event.date);
-    const key = `event-${eventDate.getTime()}`;
-    return {
-      ...acc,
-      [key]: ({ date }: { date: Date }) => (
-        <CalendarDay date={date} event={event} />
-      )
-    };
-  }, {} as Record<string, (props: { date: Date }) => JSX.Element>) || {};
-
   return (
-    <Calendar
+    <CustomCalendar
       mode="multiple"
       month={currentDate}
       onMonthChange={setCurrentDate}
-      modifiers={modifiers}
-      modifiersStyles={modifiersStyles}
-      components={modifiersContent}
-      className="w-full rounded-md border border-zinc-800 bg-zinc-950"
+      events={events}
       selected={selectedDates}
       onSelect={(dates: Date[] | undefined) => {
         if (dates && dates.length > 0) {
@@ -64,6 +46,7 @@ export function CalendarView({
         }
         onDragEnd();
       }}
+      className="w-full rounded-md border border-zinc-800 bg-zinc-950"
     />
   );
 }
