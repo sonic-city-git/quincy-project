@@ -156,7 +156,7 @@ export type Database = {
         Row: {
           code: string | null
           created_at: string
-          folder: string | null
+          folder_id: string | null
           id: string
           internal_remark: string | null
           name: string
@@ -169,7 +169,7 @@ export type Database = {
         Insert: {
           code?: string | null
           created_at?: string
-          folder?: string | null
+          folder_id?: string | null
           id?: string
           internal_remark?: string | null
           name: string
@@ -182,7 +182,7 @@ export type Database = {
         Update: {
           code?: string | null
           created_at?: string
-          folder?: string | null
+          folder_id?: string | null
           id?: string
           internal_remark?: string | null
           name?: string
@@ -192,7 +192,47 @@ export type Database = {
           updated_at?: string
           weight?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "equipment_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_folders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      equipment_folders: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          parent_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          parent_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "equipment_folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_folders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       equipment_maintenance: {
         Row: {

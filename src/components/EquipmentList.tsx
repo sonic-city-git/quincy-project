@@ -13,6 +13,8 @@ export function EquipmentList() {
   const { 
     searchQuery, 
     setSearchQuery,
+    selectedFolders,
+    handleFolderToggle,
     clearFilters, 
     filterEquipment 
   } = useEquipmentFilters();
@@ -46,6 +48,8 @@ export function EquipmentList() {
               onClearFilters={clearFilters}
               selectedItem={selectedItem}
               onEquipmentDeleted={() => setSelectedItem(null)}
+              selectedFolders={selectedFolders}
+              onFolderToggle={handleFolderToggle}
             />
             <Separator className="bg-zinc-800" />
             
