@@ -17,7 +17,7 @@ export function CalendarDay({ date, event }: CalendarDayProps) {
         <div 
           className="w-full h-full flex items-center justify-center relative"
           style={{
-            backgroundColor: `${event.type.color}B3`, // B3 in hex is 70% opacity
+            backgroundColor: `${event.type.color}D9`, // D9 in hex is 85% opacity
             color: '#FFFFFF' // White text, fully opaque
           }}
         >
