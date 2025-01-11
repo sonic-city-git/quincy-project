@@ -1,13 +1,16 @@
 import { Calendar } from "@/components/ui/calendar/Calendar";
-import { CalendarEvent } from "@/types/events";
+import { CalendarEvent, EventType } from "@/types/events";
 import { useState } from "react";
 
 interface CalendarViewProps {
   currentDate: Date;
   setCurrentDate: (date: Date) => void;
   events: CalendarEvent[];
-  onDayClick: (date: Date) => void;
+  onDayClick: (date: Date, callback?: (date: Date, name: string, eventType: EventType) => void) => void;
 }
+
+// Event types that can be used for drag-select
+const DRAGGABLE_EVENT_TYPES = ['Preprod', 'INT Storage', 'EXT Storage', 'Hours'];
 
 export function CalendarView({
   currentDate,
@@ -84,10 +87,22 @@ export function CalendarView({
 
   const handleDragEnd = () => {
     if (selectedDates.length > 0) {
-      // Sort dates to ensure we're using the first date chronologically
+      // Sort dates to ensure chronological order
       const sortedDates = [...selectedDates].sort((a, b) => a.getTime() - b.getTime());
-      // Open add dialog with the first selected date
-      onDayClick(sortedDates[0]);
+      // Open add dialog with the first selected date and a callback to create events for all dates
+      onDayClick(sortedDates[0], (date: Date, name: string, eventType: EventType) => {
+        // Only proceed if the event type is allowed for drag-select
+        if (DRAGGABLE_EVENT_TYPES.includes(eventType.name)) {
+          // Create events for all selected dates
+          return Promise.all(sortedDates.map(selectedDate => {
+            // Create a new event for each date
+            return onDayClick(selectedDate, undefined);
+          }));
+        } else {
+          console.log('Event type not allowed for drag-select:', eventType.name);
+          return Promise.resolve();
+        }
+      });
     }
     setIsDragging(false);
     setSelectedDates([]);
