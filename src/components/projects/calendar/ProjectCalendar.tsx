@@ -74,17 +74,17 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     return {
       ...acc,
       [key]: ({ date }: { date: Date }) => (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="w-full h-full flex items-center justify-center">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger className="w-full h-full flex items-center justify-center">
               {date.getDate()}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="font-medium">{event.name}</p>
-            <p className="text-sm text-muted-foreground">{event.type.name}</p>
-          </TooltipContent>
-        </Tooltip>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="font-medium">{event.name}</p>
+              <p className="text-sm text-muted-foreground">{event.type.name}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )
     };
   }, {} as Record<string, (props: { date: Date }) => JSX.Element>) || {};
@@ -95,18 +95,16 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
   return (
     <div className="space-y-4">
-      <TooltipProvider>
-        <Calendar
-          mode="single"
-          month={currentDate}
-          onMonthChange={setCurrentDate}
-          onDayClick={handleDayClick}
-          modifiers={modifiers}
-          modifiersStyles={modifiersStyles}
-          components={modifiersContent}
-          className="rounded-md border"
-        />
-      </TooltipProvider>
+      <Calendar
+        mode="single"
+        month={currentDate}
+        onMonthChange={setCurrentDate}
+        onDayClick={handleDayClick}
+        modifiers={modifiers}
+        modifiersStyles={modifiersStyles}
+        components={modifiersContent}
+        className="rounded-md border"
+      />
 
       <AddEventDialog
         isOpen={isAddDialogOpen}
