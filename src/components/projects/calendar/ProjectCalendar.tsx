@@ -30,7 +30,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     addEventCallback
   } = useEventDialog();
 
-  // Drag selection state
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartDate, setDragStartDate] = useState<Date | null>(null);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
@@ -75,7 +74,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     const startTime = dragStartDate.getTime();
     const currentTime = normalizedDate.getTime();
 
-    // Calculate all dates between start and current
     const dates: Date[] = [];
     const direction = currentTime >= startTime ? 1 : -1;
     let currentDate = new Date(startTime);
@@ -97,9 +95,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     setDragStartDate(null);
     const firstDate = selectedDates[0];
     
-    // Open dialog for the first date - when user completes it, we'll create events for all dates
     openAddDialog(firstDate, async (date: Date, name: string, eventType: any) => {
-      // Create events for all selected dates
       for (const selectedDate of selectedDates) {
         await addEvent(selectedDate, name, eventType);
       }
@@ -107,7 +103,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     });
   }, [isDragging, selectedDates, openAddDialog, addEvent]);
 
-  // Create content renderer for each event day
   const modifiersContent = events?.reduce((acc, event) => {
     const eventDate = new Date(event.date);
     const key = `event-${eventDate.getTime()}`;

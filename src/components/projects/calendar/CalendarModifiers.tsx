@@ -1,7 +1,6 @@
 import { CalendarEvent } from "@/types/events";
 
 export function useCalendarModifiers(events: CalendarEvent[] | undefined, selectedDates: Date[] = []) {
-  // Create a modifier for each event
   const modifiers = {
     ...events?.reduce((acc, event) => {
       const eventDate = new Date(event.date);
@@ -18,7 +17,6 @@ export function useCalendarModifiers(events: CalendarEvent[] | undefined, select
         }
       };
     }, {} as Record<string, (date: Date) => boolean>),
-    // Add modifier for selected dates during drag
     selected: (date: Date) => {
       const normalizedDate = new Date(Date.UTC(
         date.getFullYear(),
@@ -36,7 +34,6 @@ export function useCalendarModifiers(events: CalendarEvent[] | undefined, select
     }
   };
 
-  // Create styles for each event and selected dates
   const modifiersStyles = {
     ...events?.reduce((acc, event) => {
       const eventDate = new Date(event.date);
@@ -57,7 +54,6 @@ export function useCalendarModifiers(events: CalendarEvent[] | undefined, select
         }
       };
     }, {} as Record<string, React.CSSProperties>),
-    // Add styles for selected dates
     selected: {
       backgroundColor: '#3b82f680',
       color: '#FFFFFF',
