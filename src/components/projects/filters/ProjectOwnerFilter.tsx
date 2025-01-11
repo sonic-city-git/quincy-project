@@ -19,11 +19,13 @@ export function ProjectOwnerFilter({ value, onChange }: ProjectOwnerFilterProps)
   const { crew, loading } = useCrew();
   const { folders } = useFolders();
 
-  // Find Sonic City folder
-  const sonicCityFolder = folders.find(folder => folder.name === 'Sonic City');
+  // Safely find Sonic City folder
+  const sonicCityFolder = folders?.find(folder => folder.name === 'Sonic City');
   
-  // Filter crew members to only show those in Sonic City folder
-  const filteredCrew = crew.filter(member => member.folder_id === sonicCityFolder?.id);
+  // Filter crew members only if we have both crew and the Sonic City folder
+  const filteredCrew = crew.filter(member => 
+    sonicCityFolder ? member.folder_id === sonicCityFolder.id : true
+  );
 
   return (
     <DropdownMenu>

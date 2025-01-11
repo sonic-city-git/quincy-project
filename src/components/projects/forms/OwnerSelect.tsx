@@ -14,8 +14,13 @@ export function OwnerSelect({ value, onChange, error, required }: OwnerSelectPro
   const { crew, loading } = useCrew();
   const { folders } = useFolders();
   
-  const sonicCityFolder = folders.find(folder => folder.name === 'Sonic City');
-  const filteredCrew = crew.filter(member => member.folder_id === sonicCityFolder?.id);
+  // Safely find the Sonic City folder, with null check
+  const sonicCityFolder = folders?.find(folder => folder.name === 'Sonic City');
+  
+  // Filter crew members only if we have both crew and the Sonic City folder
+  const filteredCrew = crew.filter(member => 
+    sonicCityFolder ? member.folder_id === sonicCityFolder.id : true
+  );
 
   return (
     <div className="space-y-2">
