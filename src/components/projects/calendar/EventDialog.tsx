@@ -108,11 +108,6 @@ export function EventDialog({
               onChange={(e) => setName(e.target.value)}
               required={isNameRequired}
             />
-            {isNameRequired && !name.trim() && (
-              <p className="text-sm text-destructive">
-                Name is required for Show and Double Show events
-              </p>
-            )}
           </div>
 
           <Select
