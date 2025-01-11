@@ -61,15 +61,6 @@ export function EventList({ events, projectId }: EventListProps) {
     try {
       const updatedEvent = { ...event, status: newStatus };
       
-      // Get the status id for the new status
-      const { data: statusData, error: statusError } = await supabase
-        .from('event_statuses')
-        .select('id')
-        .eq('name', newStatus)
-        .single();
-
-      if (statusError) throw statusError;
-
       // Update all relevant caches optimistically
       queryKeysToUpdate.forEach(queryKey => {
         queryClient.setQueryData(queryKey, (oldData: CalendarEvent[] | undefined) => {
@@ -83,7 +74,7 @@ export function EventList({ events, projectId }: EventListProps) {
       // Update the server
       const { error } = await supabase
         .from('project_events')
-        .update({ status_id: statusData.id })
+        .update({ status: newStatus })
         .eq('id', event.id)
         .eq('project_id', projectId);
 
@@ -123,21 +114,12 @@ export function EventList({ events, projectId }: EventListProps) {
     if (!projectId) return;
 
     try {
-      // Get the status id for the new status
-      const { data: statusData, error: statusError } = await supabase
-        .from('event_statuses')
-        .select('id')
-        .eq('name', updatedEvent.status)
-        .single();
-
-      if (statusError) throw statusError;
-
       const { error } = await supabase
         .from('project_events')
         .update({ 
           name: updatedEvent.name,
           event_type_id: updatedEvent.type.id,
-          status_id: statusData.id
+          status: updatedEvent.status
         })
         .eq('id', updatedEvent.id)
         .eq('project_id', projectId);
