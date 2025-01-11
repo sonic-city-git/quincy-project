@@ -36,14 +36,22 @@ export function EventList({ events, projectId }: EventListProps) {
     try {
       const updatedEvent = { ...event, status: newStatus };
       
-      // Update the cache optimistically
-      queryClient.setQueryData(['events', projectId], (oldData: CalendarEvent[] | undefined) => {
-        if (!oldData) return [updatedEvent];
-        return oldData.map(e => 
-          e.date.getTime() === event.date.getTime() && e.name === event.name
-            ? updatedEvent
-            : e
-        );
+      // Update all relevant queries that might be showing this data
+      const queryKeysToUpdate = [
+        ['events', projectId],
+        ['calendar-events', projectId]
+      ];
+
+      // Update all relevant caches optimistically
+      queryKeysToUpdate.forEach(queryKey => {
+        queryClient.setQueryData(queryKey, (oldData: CalendarEvent[] | undefined) => {
+          if (!oldData) return [updatedEvent];
+          return oldData.map(e => 
+            e.date.getTime() === event.date.getTime() && e.name === event.name
+              ? updatedEvent
+              : e
+          );
+        });
       });
 
       // Update the server
@@ -61,17 +69,19 @@ export function EventList({ events, projectId }: EventListProps) {
         description: `Event status changed to ${newStatus}`,
       });
 
-      // Refresh the data in the background
-      await queryClient.invalidateQueries({
-        queryKey: ['events', projectId]
-      });
+      // Refresh all relevant queries in the background
+      await Promise.all(
+        queryKeysToUpdate.map(queryKey =>
+          queryClient.invalidateQueries({ queryKey })
+        )
+      );
 
     } catch (error) {
       console.error('Error updating event status:', error);
       
-      // Revert the cache on error
-      queryClient.invalidateQueries({
-        queryKey: ['events', projectId]
+      // Revert all caches on error
+      queryKeysToUpdate.forEach(queryKey => {
+        queryClient.invalidateQueries({ queryKey });
       });
       
       toast({
