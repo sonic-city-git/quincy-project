@@ -27,9 +27,9 @@ const ProjectDetail = () => {
 
   return (
     <div className="p-8 space-y-6">
-      <div className="max-w-[345px]">
+      <div className="w-fit">
         <div 
-          className="px-3.5 py-2 rounded-md text-[15px] font-medium"
+          className="px-3.5 py-2 rounded-md text-xl font-medium"
           style={getColorStyles(project.color)}
         >
           {project.name} <span className="ml-2 opacity-75">{formattedProjectNumber}</span>
