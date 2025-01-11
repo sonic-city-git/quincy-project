@@ -16,21 +16,21 @@ export function EventList({ events }: EventListProps) {
       <h2 className="text-xl font-semibold">Project Events</h2>
       <div className="grid gap-4">
         {sortedEvents.map((event, index) => (
-          <Card key={`${event.date}-${index}`} className="p-4">
+          <Card key={`${event.date}-${index}`} className="p-4 w-full">
             <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 min-w-0">
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
                     {format(event.date, 'dd.MM.yyyy')}
                   </span>
                 </div>
+                <h3 className="font-medium truncate">{event.name}</h3>
                 <div 
                   className={`text-xs px-2 py-1 rounded-full w-fit ${event.type.color}`}
                 >
                   {event.type.name}
                 </div>
-                <h3 className="font-medium truncate">{event.name}</h3>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground opacity-50">
                 <Clock className="h-4 w-4" />
