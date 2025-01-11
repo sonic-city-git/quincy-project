@@ -112,7 +112,7 @@ export function AddEquipmentDialog() {
           Add Equipment
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Equipment</DialogTitle>
           <DialogDescription>
