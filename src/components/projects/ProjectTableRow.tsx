@@ -24,8 +24,7 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
         {String(index).padStart(4, '0')}
       </TableCell>
       <TableCell>
-        <div className="flex items-center gap-2 max-w-[300px]">
-          <div className={`w-3 h-3 rounded-sm bg-${project.color}-500 flex-shrink-0`} />
+        <div className="max-w-[300px]">
           <div 
             className={`px-2 py-1 rounded-md text-sm font-medium bg-${project.color}-500/10 text-${project.color}-500 truncate`}
           >
