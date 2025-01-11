@@ -6,6 +6,9 @@ import { useEventTypes } from "@/hooks/useEventTypes";
 import { CalendarDay } from "./CalendarDay";
 import { useCalendarModifiers } from "./CalendarModifiers";
 import { EventDialog } from "./EventDialog";
+import { EventList } from "./EventList";
+import { useQuery } from "@tanstack/react-query";
+import { fetchEvents } from "@/utils/eventQueries";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -13,7 +16,6 @@ interface ProjectCalendarProps {
 
 export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   const { currentDate, setCurrentDate, normalizeDate } = useCalendarDate();
-  const { events, isLoading, addEvent, updateEvent } = useCalendarEvents(projectId);
   const { data: eventTypes } = useEventTypes();
   const {
     selectedDate,
@@ -25,6 +27,13 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     closeAddDialog,
     closeEditDialog,
   } = useEventDialog();
+
+  // Use React Query for events to ensure automatic updates
+  const { data: events = [], isLoading } = useQuery({
+    queryKey: ['events', projectId],
+    queryFn: () => fetchEvents(projectId),
+    refetchOnWindowFocus: true,
+  });
 
   const { modifiers, modifiersStyles } = useCalendarModifiers(events);
 
@@ -76,7 +85,10 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onClose={closeAddDialog}
         date={selectedDate}
         eventTypes={eventTypes}
-        onAddEvent={addEvent}
+        onAddEvent={async (date, name, eventType) => {
+          const { addEvent } = useCalendarEvents(projectId);
+          return addEvent(date, name, eventType);
+        }}
       />
 
       <EventDialog
@@ -84,8 +96,13 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onClose={closeEditDialog}
         event={selectedEvent}
         eventTypes={eventTypes}
-        onUpdateEvent={updateEvent}
+        onUpdateEvent={async (event) => {
+          const { updateEvent } = useCalendarEvents(projectId);
+          return updateEvent(event);
+        }}
       />
+
+      <EventList events={events} />
     </div>
   );
 }
