@@ -9,6 +9,8 @@ import { format, parseISO } from "date-fns";
 import { EventList } from "@/components/projects/calendar/EventList";
 import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "@/utils/eventQueries";
+import { Button } from "@/components/ui/button";
+import { Receipt } from "lucide-react";
 
 const ProjectDetail = () => {
   const { id } = useParams();
@@ -59,18 +61,32 @@ const ProjectDetail = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="sticky top-0 bg-background z-10 p-8 pb-0 space-y-6">
-        <div className="flex items-center gap-4">
-          <div className="w-fit">
-            <div 
-              className="px-3.5 py-2 rounded-md font-medium"
-              style={getColorStyles(project.color)}
-            >
-              <span className="text-3xl">{project.name}</span>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div className="w-fit">
+              <div 
+                className="px-3.5 py-2 rounded-md font-medium"
+                style={getColorStyles(project.color)}
+              >
+                <span className="text-3xl">{project.name}</span>
+              </div>
+            </div>
+            <div className="text-lg text-muted-foreground">
+              #{formattedProjectNumber}
             </div>
           </div>
-          <div className="text-lg text-muted-foreground">
-            #{formattedProjectNumber}
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            onClick={() => {
+              console.log('Invoice button clicked');
+              // Invoice functionality will be implemented later
+            }}
+          >
+            <Receipt className="h-4 w-4" />
+            Invoice
+          </Button>
         </div>
         
         <Tabs defaultValue="general" className="w-full">
