@@ -32,26 +32,41 @@ interface InvoiceDialogProps {
 export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: InvoiceDialogProps) {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [processedCount, setProcessedCount] = useState(0);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const invoiceReadyEvents = events.filter(event => event.status === 'invoice ready');
+  const totalEvents = invoiceReadyEvents.length;
 
   const handleGenerateInvoice = () => {
     setShowConfirmation(true);
   };
 
   const handleConfirmInvoice = async () => {
+    if (!onStatusChange || isProcessing) return;
+    
     setIsProcessing(true);
+    setProcessedCount(0);
+    
     try {
-      // Update all events to 'invoiced' status
-      for (const event of invoiceReadyEvents) {
-        if (onStatusChange) {
-          await onStatusChange(event, 'invoiced');
-        }
+      // Process events in smaller batches to prevent UI freezing
+      const batchSize = 5;
+      for (let i = 0; i < invoiceReadyEvents.length; i += batchSize) {
+        const batch = invoiceReadyEvents.slice(i, i + batchSize);
+        
+        await Promise.all(
+          batch.map(async (event) => {
+            await onStatusChange(event, 'invoiced');
+            setProcessedCount(prev => prev + 1);
+          })
+        );
+
+        // Give the UI a chance to update
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
 
       // Invalidate queries to refresh the data
-      queryClient.invalidateQueries({ queryKey: ['events'] });
+      await queryClient.invalidateQueries({ queryKey: ['events'] });
 
       // Close both dialogs
       setShowConfirmation(false);
@@ -71,8 +86,11 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
       });
     } finally {
       setIsProcessing(false);
+      setProcessedCount(0);
     }
   };
+
+  const progressText = isProcessing ? `Processing ${processedCount}/${totalEvents} events...` : '';
 
   return (
     <>
@@ -90,7 +108,7 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
             ) : (
               <div className="space-y-6">
                 {invoiceReadyEvents.map((event) => (
-                  <InvoiceSummary key={`${event.date}-${event.name}`} event={event} />
+                  <InvoiceSummary key={event.id} event={event} />
                 ))}
               </div>
             )}
@@ -104,7 +122,7 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
               onClick={handleGenerateInvoice} 
               disabled={invoiceReadyEvents.length === 0 || isProcessing}
             >
-              Generate Invoice
+              {isProcessing ? progressText : 'Generate Invoice'}
             </Button>
           </div>
         </DialogContent>
@@ -124,7 +142,7 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
               onClick={handleConfirmInvoice}
               disabled={isProcessing}
             >
-              {isProcessing ? "Processing..." : "Confirm"}
+              {isProcessing ? progressText : "Confirm"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
