@@ -15,9 +15,25 @@ const ProjectDetail = () => {
     return <div className="p-8">Project not found</div>;
   }
 
+  const getColorStyles = (color: string) => {
+    return {
+      backgroundColor: `${color}80`,  // 80 in hex is 50% opacity
+      color: '#FFFFFF'  // White text, fully opaque
+    };
+  };
+
+  const colorStyles = getColorStyles(project.color);
+
   return (
     <div className="p-8 space-y-6">
-      <h1 className="text-2xl font-bold">{project.name}</h1>
+      <div className="max-w-[500px]">
+        <h1 
+          className="text-2xl font-bold px-3.5 py-2 rounded-md"
+          style={colorStyles}
+        >
+          {project.name}
+        </h1>
+      </div>
       
       <Tabs defaultValue="general" className="w-full">
         <TabsList>
