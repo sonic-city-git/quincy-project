@@ -47,8 +47,8 @@ const Auth = () => {
           providers={["google"]}
           redirectTo={redirectUrl}
           view="sign_in"
-          showLinks={false}
-          onlyThirdPartyProviders={true}
+          showLinks={true}
+          onlyThirdPartyProviders={false}
         />
       </Card>
     </div>
