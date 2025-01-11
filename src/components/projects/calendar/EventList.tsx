@@ -12,9 +12,9 @@ export function EventList({ events }: EventListProps) {
   const sortedEvents = [...events].sort((a, b) => a.date.getTime() - b.date.getTime());
 
   return (
-    <div className="space-y-4 mt-8">
-      <h2 className="text-xl font-semibold">Project Events</h2>
-      <div className="grid gap-4">
+    <div className="space-y-4 mt-8 -mx-8">
+      <h2 className="text-xl font-semibold px-8">Project Events</h2>
+      <div className="grid gap-4 px-8">
         {sortedEvents.map((event, index) => (
           <Card key={`${event.date}-${index}`} className="p-4 w-full">
             <div className="flex items-center justify-between gap-4">
