@@ -8,15 +8,26 @@ import { Button } from "@/components/ui/button";
 import { Receipt } from "lucide-react";
 import { ProjectHeader } from "@/components/projects/detail/ProjectHeader";
 import { ProjectGeneralTab } from "@/components/projects/detail/ProjectGeneralTab";
+import { useToast } from "@/hooks/use-toast";
 
 const ProjectDetail = () => {
   const { id } = useParams();
   const { project, loading } = useProjectDetails(id);
+  const { toast } = useToast();
+  
   const { data: events } = useQuery({
     queryKey: ['events', id],
     queryFn: () => fetchEvents(id || ''),
     enabled: !!id
   });
+
+  const handleInvoice = () => {
+    toast({
+      title: "Invoice Generation",
+      description: "Invoice generation started...",
+    });
+    // Additional invoice logic here
+  };
 
   if (loading) {
     return <div className="p-8">Loading...</div>;
@@ -47,9 +58,7 @@ const ProjectDetail = () => {
               variant="outline"
               size="sm"
               className="gap-2"
-              onClick={() => {
-                console.log('Invoice button clicked');
-              }}
+              onClick={handleInvoice}
             >
               <Receipt className="h-4 w-4" />
               Invoice
