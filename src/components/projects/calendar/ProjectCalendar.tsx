@@ -16,6 +16,7 @@ interface ProjectCalendarProps {
 export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   const { currentDate, setCurrentDate, normalizeDate } = useCalendarDate();
   const { data: eventTypes } = useEventTypes();
+  const { addEvent, updateEvent } = useCalendarEvents(projectId);
   const {
     selectedDate,
     isAddDialogOpen,
@@ -84,10 +85,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onClose={closeAddDialog}
         date={selectedDate}
         eventTypes={eventTypes}
-        onAddEvent={async (date, name, eventType) => {
-          const { addEvent } = useCalendarEvents(projectId);
-          return addEvent(date, name, eventType);
-        }}
+        onAddEvent={addEvent}
       />
 
       <EventDialog
@@ -95,10 +93,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onClose={closeEditDialog}
         event={selectedEvent}
         eventTypes={eventTypes}
-        onUpdateEvent={async (event) => {
-          const { updateEvent } = useCalendarEvents(projectId);
-          return updateEvent(event);
-        }}
+        onUpdateEvent={updateEvent}
       />
     </div>
   );
