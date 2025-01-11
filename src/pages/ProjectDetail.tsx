@@ -33,7 +33,7 @@ const ProjectDetail = () => {
           className="text-3xl font-bold px-3.5 py-2 rounded-md"
           style={colorStyles}
         >
-          {project.name} <span className="ml-2 opacity-75">#{formattedProjectNumber}</span>
+          {project.name} <span className="ml-2 opacity-75 text-lg">{formattedProjectNumber}</span>
         </h1>
       </div>
       
