@@ -68,9 +68,9 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
   };
 
   return (
-    <Card className="relative p-2 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/50 group">
+    <Card className="relative p-1.5 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/50 group">
       <div className="flex items-center justify-between h-full">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <Button 
             variant="ghost" 
             size="icon" 
@@ -82,7 +82,7 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
           </Button>
           <h3 className="text-sm font-medium leading-none text-zinc-200">{item.name}</h3>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <div className="flex items-center gap-1 bg-zinc-900/50 rounded-md p-0.5">
             <Button 
               variant="ghost" 
@@ -93,7 +93,7 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
             >
               <Minus className="h-3.5 w-3.5" />
             </Button>
-            <span className="w-7 text-center text-sm font-medium text-primary">{item.quantity}</span>
+            <span className="w-6 text-center text-sm font-medium text-primary">{item.quantity}</span>
             <Button 
               variant="ghost" 
               size="icon" 
