@@ -12,7 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus, X } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { useFolders } from "@/hooks/useFolders";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -22,6 +24,7 @@ const formSchema = z.object({
   stock: z.string().optional().or(z.literal("")),
   internal_remark: z.string().optional().or(z.literal("")),
   serial_numbers: z.array(z.string()).optional(),
+  folder_id: z.string().optional().nullable(),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -43,6 +46,7 @@ export function EditEquipmentDialog({
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [serialNumbers, setSerialNumbers] = useState<string[]>([]);
   const queryClient = useQueryClient();
+  const { folders = [], loading: foldersLoading } = useFolders();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -54,6 +58,7 @@ export function EditEquipmentDialog({
       stock: equipment.stock?.toString() || "",
       internal_remark: equipment.internal_remark || "",
       serial_numbers: [],
+      folder_id: equipment.folder_id || null,
     },
   });
 
@@ -126,6 +131,7 @@ export function EditEquipmentDialog({
           stock: data.stock_calculation === "manual" ? (data.stock ? parseInt(data.stock) : null) : data.serial_numbers?.length || 0,
           stock_calculation: data.stock_calculation,
           internal_remark: data.internal_remark || null,
+          folder_id: data.folder_id || null,
         })
         .eq('id', equipment.id);
 
@@ -212,6 +218,34 @@ export function EditEquipmentDialog({
                         <FormControl>
                           <Input type="number" placeholder="Enter rental price" {...field} />
                         </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="folder_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Folder</FormLabel>
+                        <Select
+                          disabled={foldersLoading}
+                          onValueChange={field.onChange}
+                          value={field.value || undefined}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a folder" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {folders.map((folder) => (
+                              <SelectItem key={folder.id} value={folder.id}>
+                                {folder.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
