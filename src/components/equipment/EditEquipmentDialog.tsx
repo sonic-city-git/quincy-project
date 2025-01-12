@@ -45,6 +45,7 @@ export function EditEquipmentDialog({
   onEquipmentDeleted 
 }: EditEquipmentDialogProps) {
   const [isPending, setIsPending] = useState(false);
+  const [isRestocking, setIsRestocking] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [showRestockDialog, setShowRestockDialog] = useState(false);
   const [restockAmount, setRestockAmount] = useState("");
@@ -91,7 +92,7 @@ export function EditEquipmentDialog({
       return;
     }
 
-    setIsPending(true);
+    setIsRestocking(true);
     try {
       const currentStock = equipment.stock || 0;
       const newStock = currentStock + parseInt(restockAmount);
@@ -111,7 +112,7 @@ export function EditEquipmentDialog({
       console.error("Error updating stock:", error);
       toast.error(error.message || "Failed to update stock");
     } finally {
-      setIsPending(false);
+      setIsRestocking(false);
     }
   };
 
@@ -354,6 +355,7 @@ export function EditEquipmentDialog({
                           variant="outline"
                           onClick={() => setShowRestockDialog(true)}
                           className="w-full"
+                          disabled={isPending}
                         >
                           <Package className="mr-2 h-4 w-4" />
                           Restock
@@ -481,8 +483,9 @@ export function EditEquipmentDialog({
             <AlertDialogAction
               onClick={handleRestock}
               className="bg-primary text-primary-foreground hover:bg-primary/90"
+              disabled={isRestocking}
             >
-              {isPending ? (
+              {isRestocking ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
               Restock
