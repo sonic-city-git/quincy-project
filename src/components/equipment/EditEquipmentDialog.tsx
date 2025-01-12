@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -7,16 +7,10 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Equipment } from "@/integrations/supabase/types/equipment";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Loader2, Plus, X, Package } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useFolders } from "@/hooks/useFolders";
-import { sortFolders } from "@/utils/folderSort";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { DeleteEquipmentAlert } from "./edit/DeleteEquipmentAlert";
+import { RestockDialog } from "./edit/RestockDialog";
+import { EditEquipmentForm } from "./edit/EditEquipmentForm";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -49,7 +43,6 @@ export function EditEquipmentDialog({
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [showRestockDialog, setShowRestockDialog] = useState(false);
   const [restockAmount, setRestockAmount] = useState("");
-  const [serialNumbers, setSerialNumbers] = useState<string[]>([]);
   const queryClient = useQueryClient();
   const { folders = [], loading: foldersLoading } = useFolders();
 
@@ -66,25 +59,6 @@ export function EditEquipmentDialog({
       folder_id: equipment.folder_id || null,
     },
   });
-
-  useEffect(() => {
-    const fetchSerialNumbers = async () => {
-      const { data } = await supabase
-        .from('equipment_serial_numbers')
-        .select('serial_number')
-        .eq('equipment_id', equipment.id);
-      
-      if (data) {
-        const numbers = data.map(d => d.serial_number);
-        setSerialNumbers(numbers);
-        form.setValue("serial_numbers", numbers);
-      }
-    };
-
-    if (equipment.stock_calculation === "serial_numbers") {
-      fetchSerialNumbers();
-    }
-  }, [equipment.id, equipment.stock_calculation]);
 
   const handleRestock = async () => {
     if (!restockAmount || parseInt(restockAmount) <= 0) {
@@ -114,21 +88,6 @@ export function EditEquipmentDialog({
     } finally {
       setIsRestocking(false);
     }
-  };
-
-  const stockCalculation = form.watch("stock_calculation");
-
-  const addSerialNumber = () => {
-    const currentSerialNumbers = form.getValues("serial_numbers") || [];
-    form.setValue("serial_numbers", [...currentSerialNumbers, ""]);
-  };
-
-  const removeSerialNumber = (index: number) => {
-    const currentSerialNumbers = form.getValues("serial_numbers") || [];
-    form.setValue(
-      "serial_numbers",
-      currentSerialNumbers.filter((_, i) => i !== index)
-    );
   };
 
   const handleDelete = async () => {
@@ -212,287 +171,34 @@ export function EditEquipmentDialog({
               Make changes to the equipment's information below.
             </DialogDescription>
           </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="code"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Code</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter code" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="rental_price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Rental Price</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="Enter rental price" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="folder_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Folder</FormLabel>
-                        <Select
-                          disabled={foldersLoading}
-                          onValueChange={field.onChange}
-                          value={field.value || undefined}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a folder" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <ScrollArea className="h-[200px]">
-                              {sortFolders(folders).map((folder) => (
-                                <SelectItem 
-                                  key={folder.id} 
-                                  value={folder.id}
-                                  className={!folder.parent_id ? "font-medium" : "pl-[2.5rem] italic"}
-                                >
-                                  {folder.name}
-                                </SelectItem>
-                              ))}
-                            </ScrollArea>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="stock_calculation"
-                    render={({ field }) => (
-                      <FormItem className="space-y-3">
-                        <FormLabel>Stock Calculation Method</FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="flex flex-col space-y-1"
-                          >
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem value="manual" />
-                              </FormControl>
-                              <FormLabel className="font-normal">
-                                Manual Stock Count
-                              </FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem value="serial_numbers" />
-                              </FormControl>
-                              <FormLabel className="font-normal">
-                                Track Serial Numbers
-                              </FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem value="consumable" />
-                              </FormControl>
-                              <FormLabel className="font-normal">
-                                Consumable
-                              </FormLabel>
-                            </FormItem>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {(stockCalculation === "manual" || stockCalculation === "consumable") && (
-                    <div className="space-y-4">
-                      <FormField
-                        control={form.control}
-                        name="stock"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Stock</FormLabel>
-                            <FormControl>
-                              <Input type="number" placeholder="Enter stock" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      {stockCalculation === "consumable" && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setShowRestockDialog(true)}
-                          className="w-full"
-                          disabled={isPending}
-                        >
-                          <Package className="mr-2 h-4 w-4" />
-                          Restock
-                        </Button>
-                      )}
-                    </div>
-                  )}
-
-                  {stockCalculation === "serial_numbers" && (
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <FormLabel>Serial Numbers</FormLabel>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={addSerialNumber}
-                          className="h-8"
-                        >
-                          <Plus className="h-4 w-4 mr-1" />
-                          Add Serial Number
-                        </Button>
-                      </div>
-                      <div className="space-y-2">
-                        {form.watch("serial_numbers")?.map((_, index) => (
-                          <div key={index} className="flex gap-2">
-                            <Input
-                              placeholder={`Serial number ${index + 1}`}
-                              value={form.watch(`serial_numbers.${index}`)}
-                              onChange={(e) => {
-                                const newSerialNumbers = [...(form.getValues("serial_numbers") || [])];
-                                newSerialNumbers[index] = e.target.value;
-                                form.setValue("serial_numbers", newSerialNumbers);
-                              }}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeSerialNumber(index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  <FormField
-                    control={form.control}
-                    name="internal_remark"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Internal Remark</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter internal remark" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-              <div className="flex justify-between pt-4">
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => setShowDeleteAlert(true)}
-                >
-                  Delete
-                </Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Save Changes
-                </Button>
-              </div>
-            </form>
-          </Form>
+          
+          <EditEquipmentForm
+            form={form}
+            folders={folders}
+            foldersLoading={foldersLoading}
+            isPending={isPending}
+            onShowDeleteAlert={() => setShowDeleteAlert(true)}
+            onShowRestockDialog={() => setShowRestockDialog(true)}
+          />
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={showDeleteAlert} onOpenChange={setShowDeleteAlert}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the equipment
-              "{equipment.name}" and all its associated data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteEquipmentAlert
+        open={showDeleteAlert}
+        onOpenChange={setShowDeleteAlert}
+        equipment={equipment}
+        onDelete={handleDelete}
+        isPending={isPending}
+      />
 
-      <AlertDialog open={showRestockDialog} onOpenChange={setShowRestockDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Restock Consumable</AlertDialogTitle>
-            <AlertDialogDescription>
-              Enter the amount to add to the current stock.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <div className="py-4">
-            <Input
-              type="number"
-              placeholder="Enter amount to add"
-              value={restockAmount}
-              onChange={(e) => setRestockAmount(e.target.value)}
-            />
-          </div>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleRestock}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-              disabled={isRestocking}
-            >
-              {isRestocking ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              Restock
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <RestockDialog
+        open={showRestockDialog}
+        onOpenChange={setShowRestockDialog}
+        restockAmount={restockAmount}
+        onRestockAmountChange={setRestockAmount}
+        onRestock={handleRestock}
+        isRestocking={isRestocking}
+      />
     </>
   );
 }
