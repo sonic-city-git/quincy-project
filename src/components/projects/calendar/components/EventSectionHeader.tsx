@@ -34,10 +34,13 @@ export function EventSectionHeader({
         {/* Equipment icon column */}
         <div className="col-span-1" />
         
-        {/* Crew icon column - now empty */}
+        {/* Empty column (was crew) */}
         <div className="col-span-1" />
         
-        {/* Empty space for revenue */}
+        {/* Empty space */}
+        <div className="col-span-1" />
+
+        {/* Flexible space */}
         <div className="col-span-1" />
 
         {/* Status manager column */}

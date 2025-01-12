@@ -12,7 +12,7 @@ export function EventSectionHeaderGrid({ children }: EventSectionHeaderGridProps
         2. Title: 165px
         3. Location icon: 30px
         4. Equipment icon: 30px
-        5. Crew icon: 30px
+        5. Empty space (was crew): 30px
         6. Empty space: 30px
         7. Flexible space: 1fr
         8. Status manager: 100px
