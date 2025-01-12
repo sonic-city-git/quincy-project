@@ -30,9 +30,6 @@ export function EventSectionHeader({
         <div className="flex items-center justify-between">
           {getStatusIcon(title.toLowerCase() as CalendarEvent['status'])}
           {title}
-          <div className="text-right font-medium text-muted-foreground">
-            {formatPrice(totalRevenue)}
-          </div>
         </div>
       </div>
     );
