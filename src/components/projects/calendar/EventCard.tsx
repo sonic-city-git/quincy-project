@@ -94,13 +94,13 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   };
 
   useEffect(() => {
-    let isSubscribed = true; // Add this flag for cleanup
+    let isSubscribed = true;
 
     const fetchStatus = async () => {
-      if (!isSubscribed) return; // Check if component is still mounted
+      if (!isSubscribed) return;
 
       try {
-        console.log('Fetching status for event:', event.id);
+        console.log('Fetching equipment status for event:', event.id);
         
         // Check project equipment
         const { data: projectEquipment } = await supabase
@@ -110,7 +110,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           .limit(1);
         
         if (isSubscribed) {
-          setHasProjectEquipment(!!projectEquipment?.length);
+          const hasProject = !!projectEquipment?.length;
+          console.log('Project equipment status:', { hasProject });
+          setHasProjectEquipment(hasProject);
         }
 
         // Check event equipment and sync status
@@ -121,12 +123,17 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
         if (!error && isSubscribed) {
           const hasEquipment = eventEquipment && eventEquipment.length > 0;
-          setHasEventEquipment(hasEquipment);
-          setIsSynced(hasEquipment ? eventEquipment.every(item => item.is_synced) : true);
-          console.log('Event equipment status updated:', {
+          const syncStatus = hasEquipment ? eventEquipment.every(item => item.is_synced) : true;
+          
+          console.log('Event equipment status:', {
+            eventId: event.id,
             hasEquipment,
-            isSynced: hasEquipment ? eventEquipment.every(item => item.is_synced) : true
+            syncStatus,
+            items: eventEquipment
           });
+          
+          setHasEventEquipment(hasEquipment);
+          setIsSynced(syncStatus);
         } else if (error) {
           console.error('Error fetching equipment status:', error);
           if (isSubscribed) {
@@ -158,8 +165,15 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         table: 'project_event_equipment',
         filter: `event_id=eq.${event.id}`
       }, (payload) => {
-        console.log('Received real-time update for event equipment:', payload);
-        fetchStatus();
+        console.log('Received real-time update for event equipment:', {
+          eventId: event.id,
+          payload
+        });
+        if (isSubscribed) {
+          fetchStatus();
+          // Invalidate queries to ensure UI consistency
+          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
+        }
       })
       .subscribe();
 
@@ -172,17 +186,25 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         table: 'project_equipment',
         filter: `project_id=eq.${event.project_id}`
       }, (payload) => {
-        console.log('Received real-time update for project equipment:', payload);
-        fetchStatus();
+        console.log('Received real-time update for project equipment:', {
+          projectId: event.project_id,
+          payload
+        });
+        if (isSubscribed) {
+          fetchStatus();
+          // Invalidate queries to ensure UI consistency
+          queryClient.invalidateQueries({ queryKey: ['project-equipment', event.project_id] });
+        }
       })
       .subscribe();
 
     return () => {
-      isSubscribed = false; // Set flag to false on cleanup
+      console.log('Cleaning up subscriptions for event:', event.id);
+      isSubscribed = false;
       channel.unsubscribe();
       projectChannel.unsubscribe();
     };
-  }, [event.id, event.project_id, event.type.needs_equipment]);
+  }, [event.id, event.project_id, event.type.needs_equipment, queryClient]);
 
   const handleEquipmentOption = async () => {
     try {
