@@ -181,13 +181,15 @@ export function AddEquipmentDialog() {
                         </FormControl>
                         <SelectContent>
                           {sortFolders(folders).map((folder) => (
+
                             <SelectItem 
                               key={folder.id} 
                               value={folder.id}
-                              className={!folder.parent_id ? "pl-8 font-medium" : ""}
+                              className={!folder.parent_id ? "font-medium" : "pl-8 italic"}
                             >
                               {folder.name}
                             </SelectItem>
+
                           ))}
                         </SelectContent>
                       </Select>
@@ -316,3 +318,4 @@ export function AddEquipmentDialog() {
     </Dialog>
   );
 }
+
