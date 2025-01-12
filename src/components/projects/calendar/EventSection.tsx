@@ -54,11 +54,13 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   };
 
   const getStatusText = (status: string) => {
-    switch (status) {
+    switch (status.toLowerCase()) {
       case 'invoice ready':
         return 'Invoice Ready';
       case 'cancelled':
         return 'Cancelled';
+      case 'done and dusted':
+        return 'Done and Dusted';
       default:
         return `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
     }
