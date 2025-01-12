@@ -10,10 +10,9 @@ interface EventListProps {
   events: CalendarEvent[];
   projectId: string;
   isLoading?: boolean;
-  onEdit?: (event: CalendarEvent) => void;
 }
 
-export function EventList({ events, projectId, isLoading, onEdit }: EventListProps) {
+export function EventList({ events, projectId, isLoading }: EventListProps) {
   const { updateEvent } = useEventUpdate(projectId);
   const { openEditDialog } = useEventDialog();
 
@@ -31,11 +30,7 @@ export function EventList({ events, projectId, isLoading, onEdit }: EventListPro
 
   const handleEdit = (event: CalendarEvent) => {
     console.log('Opening edit dialog for event:', event);
-    if (onEdit) {
-      onEdit(event);
-    } else {
-      openEditDialog(event);
-    }
+    openEditDialog(event);
   };
 
   const groupedEvents = groupEventsByStatus(events);

@@ -48,11 +48,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     }
   }, [findEventOnDate, openEditDialog, openAddDialog]);
 
-  const handleEditEvent = useCallback((event: CalendarEvent) => {
-    console.log('Handling edit event in ProjectCalendar:', event);
-    openEditDialog(event);
-  }, [openEditDialog]);
-
   const handleAddMultipleEvents = async (dates: Date[], name: string, eventType: any, status: CalendarEvent['status']) => {
     for (const date of dates) {
       await addEvent(date, name, eventType, status);
@@ -82,7 +77,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onDayClick={handleDayClick}
         eventTypes={eventTypes}
         onAddMultipleEvents={handleAddMultipleEvents}
-        onEditEvent={handleEditEvent}
       />
 
       <EventDialog
