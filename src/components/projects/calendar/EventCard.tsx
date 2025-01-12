@@ -29,15 +29,17 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   useEffect(() => {
     const fetchSyncStatus = async () => {
       try {
+        console.log('Fetching sync status for event:', event.id);
         const { data, error } = await supabase
           .from('project_event_equipment')
           .select('is_synced')
-          .eq('event_id', event.id)
-          .maybeSingle();
+          .eq('event_id', event.id);
 
         if (!error) {
           // If there's no equipment data yet, consider it not synced
-          setIsSynced(data?.is_synced ?? false);
+          const syncStatus = data && data.length > 0 ? data.every(item => item.is_synced) : false;
+          console.log('Sync status:', { data, syncStatus });
+          setIsSynced(syncStatus);
         } else {
           console.error('Error fetching sync status:', error);
           setIsSynced(false);
@@ -102,7 +104,15 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
   const getEquipmentIcon = () => {
     if (!event.type.needs_equipment) return null;
-    if (!hasEquipment) return <Package className="h-6 w-6 text-muted-foreground" />;
+    
+    // Check if there's any equipment in project_event_equipment
+    const hasAssignedEquipment = hasEquipment;
+    console.log('Equipment status:', { hasAssignedEquipment, isSynced });
+    
+    if (!hasAssignedEquipment) {
+      return <Package className="h-6 w-6 text-muted-foreground" />;
+    }
+    
     return (
       <Package 
         className={`h-6 w-6 ${isSynced ? 'text-green-500' : 'text-yellow-500'}`}
@@ -225,4 +235,4 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       </div>
     </Card>
   );
-}
+};
