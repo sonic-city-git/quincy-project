@@ -10,7 +10,7 @@ export const useEventDeletion = (projectId?: string) => {
     if (!projectId) return;
 
     try {
-      // Delete equipment records
+      // First delete equipment records
       const equipmentResult = await supabase
         .from('project_event_equipment')
         .delete()
