@@ -58,7 +58,7 @@ export function ProjectBaseEquipmentList({
             >
               <h3 
                 className={cn(
-                  "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
+                  "text-sm font-medium px-4 py-2 cursor-pointer transition-colors sticky top-0 z-10",
                   isSelected 
                     ? "bg-primary text-primary-foreground hover:bg-primary/90" 
                     : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
@@ -93,7 +93,7 @@ export function ProjectBaseEquipmentList({
         >
           <h3 
             className={cn(
-              "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
+              "text-sm font-medium px-4 py-2 cursor-pointer transition-colors sticky top-0 z-10",
               selectedGroupId === null 
                 ? "bg-primary text-primary-foreground hover:bg-primary/90" 
                 : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
