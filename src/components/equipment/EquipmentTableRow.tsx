@@ -21,20 +21,20 @@ export function EquipmentTableRow({ item, isSelected, onSelect }: EquipmentTable
           onCheckedChange={onSelect}
         />
       </TableCell>
-      <TableCell>
+      <TableCell className="w-[200px]">
         <div className="text-sm font-medium truncate max-w-[200px]">
           {item.name}
         </div>
       </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
+      <TableCell className="w-[150px] text-sm text-muted-foreground">
         <span className="truncate block max-w-[150px]">
           {item.code || '-'}
         </span>
       </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
+      <TableCell className="w-[100px] text-sm text-muted-foreground">
         {item.stock || 0}
       </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
+      <TableCell className="w-[150px] text-sm text-muted-foreground">
         {item.rental_price ? `${item.rental_price} kr` : '-'}
       </TableCell>
     </TableRow>
