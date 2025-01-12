@@ -31,6 +31,7 @@ export function EventActions({
 
   return (
     <>
+      {/* Status manager column */}
       <div className="flex items-center justify-center">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -74,6 +75,8 @@ export function EventActions({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      {/* Edit button column */}
       <div className="flex items-center justify-center">
         {onEdit && !isEditingDisabled && (
           <Button
