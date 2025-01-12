@@ -40,7 +40,9 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
           {selectedMember ? (
             <div className="flex items-center gap-2">
               <Avatar className="h-6 w-6">
-                {selectedMember.email && (
+                {selectedMember.avatarUrl ? (
+                  <AvatarImage src={selectedMember.avatarUrl} alt={selectedMember.name} />
+                ) : selectedMember.email && (
                   <AvatarImage 
                     src={`https://www.gravatar.com/avatar/${Buffer.from(selectedMember.email).toString('hex')}?d=404`}
                     alt={selectedMember.name}
@@ -71,7 +73,9 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
                     className="cursor-pointer rounded-sm hover:bg-accent flex items-center gap-2 py-2"
                   >
                     <Avatar className="h-6 w-6">
-                      {member.email && (
+                      {member.avatarUrl ? (
+                        <AvatarImage src={member.avatarUrl} alt={member.name} />
+                      ) : member.email && (
                         <AvatarImage 
                           src={`https://www.gravatar.com/avatar/${Buffer.from(member.email).toString('hex')}?d=404`}
                           alt={member.name}
