@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus } from "lucide-react";
 import {
@@ -29,6 +29,7 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
   const [customGroupName, setCustomGroupName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: equipmentGroups = [], isLoading: isLoadingGroups } = useQuery({
     queryKey: ['equipment-groups'],
@@ -78,6 +79,11 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
         onGroupSelect(data.id);
       }
       
+      // Invalidate the query to refresh the list
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment-groups', projectId] 
+      });
+      
       setCustomGroupName("");
       setIsCustomDialogOpen(false);
     } catch (error) {
@@ -97,20 +103,7 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap gap-2">
-        {projectGroups.map(group => (
-          <Button
-            key={group.id}
-            variant={selectedGroupId === group.id ? "default" : "outline"}
-            onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
-            className="whitespace-nowrap"
-          >
-            {group.name}
-          </Button>
-        ))}
-      </div>
-
+    <div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
