@@ -48,59 +48,61 @@ export function EventSectionHeader({
   };
 
   return (
-    <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px_40px_40px] gap-2 items-center">
-      <div className="flex items-center gap-2">
-        {sectionIcon}
-        <h3 className="text-lg font-semibold whitespace-nowrap">
-          {status.charAt(0).toUpperCase() + status.slice(1)}
-        </h3>
-      </div>
-      
-      <div /> {/* Empty space for name column */}
-      
-      <div className="flex items-center justify-center">
-        <div className="h-8 w-8 flex items-center justify-center">
-          <MapPin className="h-5 w-5 text-muted-foreground" />
+    <div className="p-3">
+      <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px_40px_40px] gap-2 items-center">
+        <div className="flex items-center gap-2">
+          {sectionIcon}
+          <h3 className="text-lg font-semibold whitespace-nowrap">
+            {status.charAt(0).toUpperCase() + status.slice(1)}
+          </h3>
         </div>
-      </div>
-
-      <div className="flex items-center justify-center">
-        {canSync ? (
+        
+        <div /> {/* Empty space for name column */}
+        
+        <div className="flex items-center justify-center">
           <div className="h-8 w-8 flex items-center justify-center">
-            {getSectionEquipmentIcon()}
+            <MapPin className="h-5 w-5 text-muted-foreground" />
           </div>
-        ) : <div />}
-      </div>
+        </div>
 
-      <div className="flex items-center justify-center">
-        {canSync ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 p-0"
-            onClick={handleSyncCrew}
-            disabled={isSyncing}
-          >
-            <Users className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-          </Button>
-        ) : (
-          <div />
-        )}
-      </div>
+        <div className="flex items-center justify-center">
+          {canSync ? (
+            <div className="h-8 w-8 flex items-center justify-center">
+              {getSectionEquipmentIcon()}
+            </div>
+          ) : <div />}
+        </div>
 
-      <div /> {/* Empty space for event type column */}
+        <div className="flex items-center justify-center">
+          {canSync ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 p-0"
+              onClick={handleSyncCrew}
+              disabled={isSyncing}
+            >
+              <Users className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+            </Button>
+          ) : (
+            <div />
+          )}
+        </div>
 
-      <div className="flex items-center justify-end text-sm">
-        {formatPrice(totalPrice)}
-      </div>
+        <div /> {/* Empty space for event type column */}
 
-      <div className="flex items-center justify-end col-span-2">
-        <EventStatusManager
-          status={status}
-          events={events}
-          onStatusChange={onStatusChange}
-          isCancelled={isCancelled}
-        />
+        <div className="flex items-center justify-end text-sm">
+          {formatPrice(totalPrice)}
+        </div>
+
+        <div className="flex items-center justify-end col-span-2">
+          <EventStatusManager
+            status={status}
+            events={events}
+            onStatusChange={onStatusChange}
+            isCancelled={isCancelled}
+          />
+        </div>
       </div>
     </div>
   );
