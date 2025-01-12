@@ -38,7 +38,7 @@ serve(async (req) => {
             role: 'user',
             content: `Suggest 3 alternative equipment options for: ${equipment.name}
             Consider these aspects:
-            - Similar price range
+            - Similar price range (around ${equipment.rental_price || 'unknown'} per day)
             - Similar technical specifications
             - Common use cases
             - Advantages and disadvantages compared to the original
@@ -49,7 +49,11 @@ serve(async (req) => {
     });
 
     const data = await response.json();
-    console.log('OpenAI response received');
+    console.log('OpenAI response received:', data);
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response from OpenAI');
+    }
 
     return new Response(JSON.stringify({ suggestions: data.choices[0].message.content }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

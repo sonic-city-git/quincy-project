@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Wand2 } from "lucide-react";
 import { EquipmentSuggestions } from "@/components/equipment/suggestions/EquipmentSuggestions";
 import { useState } from "react";
+import { Equipment } from "@/integrations/supabase/types/equipment";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
@@ -196,7 +197,7 @@ export function ProjectBaseEquipmentList({
                       {selectedEquipmentForSuggestions === item.id && (
                         <div className="absolute right-0 top-0 w-[300px] bg-background border border-border rounded-lg shadow-lg p-4 z-50">
                           <EquipmentSuggestions 
-                            equipment={item}
+                            equipment={item.equipment as Equipment}
                             onClose={() => setSelectedEquipmentForSuggestions(null)}
                           />
                         </div>
@@ -265,7 +266,7 @@ export function ProjectBaseEquipmentList({
                   {selectedEquipmentForSuggestions === item.id && (
                     <div className="absolute right-0 top-0 w-[300px] bg-background border border-border rounded-lg shadow-lg p-4 z-50">
                       <EquipmentSuggestions 
-                        equipment={item}
+                        equipment={item.equipment as Equipment}
                         onClose={() => setSelectedEquipmentForSuggestions(null)}
                       />
                     </div>
