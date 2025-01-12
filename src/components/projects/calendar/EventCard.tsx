@@ -256,20 +256,24 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         <div className="grid grid-cols-[100px_minmax(100px,200px)_30px_30px_1fr_100px_40px_40px] gap-0 items-center">
           <EventHeader event={event} />
           
-          <div className="flex items-center justify-center -ml-8">
+          <div className="flex items-center justify-center">
             {event.type.needs_equipment && (
-              <EquipmentIcon
-                isSynced={isSynced}
-                isEditingDisabled={isEditingDisabled(event.status)}
-                onViewEquipment={viewOutOfSyncEquipment}
-                onSyncEquipment={handleEquipmentOption}
-              />
+              <div className="h-6 w-6 flex items-center justify-center -ml-8">
+                <EquipmentIcon
+                  isSynced={isSynced}
+                  isEditingDisabled={isEditingDisabled(event.status)}
+                  onViewEquipment={viewOutOfSyncEquipment}
+                  onSyncEquipment={handleEquipmentOption}
+                />
+              </div>
             )}
           </div>
 
-          <div className="flex items-center justify-center -ml-6">
+          <div className="flex items-center justify-center">
             {event.type.needs_crew && (
-              <Users className={`h-6 w-6 ${isEditingDisabled(event.status) ? 'text-green-500' : 'text-muted-foreground'}`} />
+              <div className="h-6 w-6 flex items-center justify-center -ml-6">
+                <Users className={isEditingDisabled(event.status) ? 'text-green-500' : 'text-muted-foreground'} />
+              </div>
             )}
           </div>
 
