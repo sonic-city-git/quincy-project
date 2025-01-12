@@ -10,7 +10,7 @@ import { Equipment } from "@/integrations/supabase/types/equipment";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Loader2, Plus, X } from "lucide-react";
+import { Loader2, Plus, X, Package } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -46,6 +46,8 @@ export function EditEquipmentDialog({
 }: EditEquipmentDialogProps) {
   const [isPending, setIsPending] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
+  const [showRestockDialog, setShowRestockDialog] = useState(false);
+  const [restockAmount, setRestockAmount] = useState("");
   const [serialNumbers, setSerialNumbers] = useState<string[]>([]);
   const queryClient = useQueryClient();
   const { folders = [], loading: foldersLoading } = useFolders();
@@ -56,7 +58,7 @@ export function EditEquipmentDialog({
       name: equipment.name || "",
       code: equipment.code || "",
       rental_price: equipment.rental_price?.toString() || "",
-      stock_calculation: equipment.stock_calculation as "manual" | "serial_numbers" || "manual",
+      stock_calculation: equipment.stock_calculation as "manual" | "serial_numbers" | "consumable" || "manual",
       stock: equipment.stock?.toString() || "",
       internal_remark: equipment.internal_remark || "",
       serial_numbers: [],
@@ -82,6 +84,36 @@ export function EditEquipmentDialog({
       fetchSerialNumbers();
     }
   }, [equipment.id, equipment.stock_calculation]);
+
+  const handleRestock = async () => {
+    if (!restockAmount || parseInt(restockAmount) <= 0) {
+      toast.error("Please enter a valid amount");
+      return;
+    }
+
+    setIsPending(true);
+    try {
+      const currentStock = equipment.stock || 0;
+      const newStock = currentStock + parseInt(restockAmount);
+
+      const { error } = await supabase
+        .from('equipment')
+        .update({ stock: newStock })
+        .eq('id', equipment.id);
+
+      if (error) throw error;
+
+      queryClient.invalidateQueries({ queryKey: ['equipment'] });
+      setShowRestockDialog(false);
+      setRestockAmount("");
+      toast.success("Stock updated successfully");
+    } catch (error: any) {
+      console.error("Error updating stock:", error);
+      toast.error(error.message || "Failed to update stock");
+    } finally {
+      setIsPending(false);
+    }
+  };
 
   const stockCalculation = form.watch("stock_calculation");
 
@@ -130,7 +162,9 @@ export function EditEquipmentDialog({
           name: data.name,
           code: data.code || null,
           rental_price: data.rental_price ? parseFloat(data.rental_price) : null,
-          stock: data.stock_calculation === "manual" ? (data.stock ? parseInt(data.stock) : null) : data.serial_numbers?.length || 0,
+          stock: data.stock_calculation === "manual" || data.stock_calculation === "consumable" 
+            ? (data.stock ? parseInt(data.stock) : null) 
+            : data.serial_numbers?.length || 0,
           stock_calculation: data.stock_calculation,
           internal_remark: data.internal_remark || null,
           folder_id: data.folder_id || null,
@@ -140,14 +174,12 @@ export function EditEquipmentDialog({
       if (equipmentError) throw equipmentError;
 
       if (data.stock_calculation === "serial_numbers" && data.serial_numbers?.length) {
-        // Delete existing serial numbers
         await supabase
           .from('equipment_serial_numbers')
           .delete()
           .eq('equipment_id', equipment.id);
 
-        // Insert new serial numbers
-        const { error: serialNumberError } = await supabase
+        await supabase
           .from('equipment_serial_numbers')
           .insert(
             data.serial_numbers.map(serial => ({
@@ -156,8 +188,6 @@ export function EditEquipmentDialog({
               status: 'Available'
             }))
           );
-
-        if (serialNumberError) throw serialNumberError;
       }
 
       queryClient.invalidateQueries({ queryKey: ['equipment'] });
@@ -303,20 +333,33 @@ export function EditEquipmentDialog({
                     )}
                   />
 
-                  {stockCalculation === "manual" && (
-                    <FormField
-                      control={form.control}
-                      name="stock"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Stock</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="Enter stock" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
+                  {(stockCalculation === "manual" || stockCalculation === "consumable") && (
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="stock"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Stock</FormLabel>
+                            <FormControl>
+                              <Input type="number" placeholder="Enter stock" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      {stockCalculation === "consumable" && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => setShowRestockDialog(true)}
+                          className="w-full"
+                        >
+                          <Package className="mr-2 h-4 w-4" />
+                          Restock
+                        </Button>
                       )}
-                    />
+                    </div>
                   )}
 
                   {stockCalculation === "serial_numbers" && (
@@ -412,6 +455,37 @@ export function EditEquipmentDialog({
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
               Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showRestockDialog} onOpenChange={setShowRestockDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Restock Consumable</AlertDialogTitle>
+            <AlertDialogDescription>
+              Enter the amount to add to the current stock.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Input
+              type="number"
+              placeholder="Enter amount to add"
+              value={restockAmount}
+              onChange={(e) => setRestockAmount(e.target.value)}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRestock}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Restock
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
