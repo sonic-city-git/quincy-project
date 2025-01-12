@@ -3,6 +3,7 @@ export interface EventType {
   name: string;
   color: string;
   needs_crew?: boolean;
+  needs_equipment?: boolean;
   rate_multiplier?: number;
 }
 
