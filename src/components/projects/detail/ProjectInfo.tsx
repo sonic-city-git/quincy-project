@@ -38,8 +38,6 @@ export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInf
 
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-medium">Project Information</h3>
-
       <div className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">Customer</label>
