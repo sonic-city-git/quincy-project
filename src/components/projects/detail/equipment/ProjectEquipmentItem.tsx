@@ -68,7 +68,7 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
   };
 
   return (
-    <Card className="relative p-2 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/30 group">
+    <Card className="relative p-2 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/50 group">
       <div className="flex items-center justify-between h-full">
         <div className="flex items-center gap-2">
           <Button 
