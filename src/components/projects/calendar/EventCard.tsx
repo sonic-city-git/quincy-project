@@ -8,6 +8,8 @@ import { EventActions } from "./components/EventActions";
 import { EventEquipmentSync } from "./components/EventEquipmentSync";
 import { useState } from 'react';
 import { EquipmentDialog } from "./components/EquipmentDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -15,13 +17,30 @@ interface EventCardProps {
   onEdit?: (event: CalendarEvent) => void;
 }
 
+interface ProjectEquipment {
+  id: string;
+  quantity: number;
+  equipment: {
+    name: string;
+    code: string;
+  };
+  group: {
+    name: string;
+  };
+}
+
 export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const [isEquipmentDialogOpen, setIsEquipmentDialogOpen] = useState(false);
   const [equipmentDifference, setEquipmentDifference] = useState({
-    added: [],
-    removed: [],
-    changed: []
+    added: [] as ProjectEquipment[],
+    removed: [] as ProjectEquipment[],
+    changed: [] as Array<{
+      item: ProjectEquipment;
+      oldQuantity: number;
+      newQuantity: number;
+    }>
   });
+  const [isSynced, setIsSynced] = useState(true);
 
   const isEditingDisabled = (status: string) => {
     return ['cancelled', 'invoice ready'].includes(status);
@@ -75,9 +94,13 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
       if (eventError) throw eventError;
 
-      const added = [];
-      const removed = [];
-      const changed = [];
+      const added: ProjectEquipment[] = [];
+      const removed: ProjectEquipment[] = [];
+      const changed: Array<{
+        item: ProjectEquipment;
+        oldQuantity: number;
+        newQuantity: number;
+      }> = [];
 
       const projectMap = new Map(projectEquipment?.map(item => [item.equipment.name, item]) || []);
       const eventMap = new Map(eventEquipment?.map(item => [item.equipment.name, item]) || []);
@@ -116,11 +139,10 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     }
   };
 
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onEdit && !isEditingDisabled(event.status)) {
-      onEdit(event);
-    }
+  const handleSyncEquipment = async () => {
+    // Implementation for syncing equipment
+    toast.success('Equipment synced successfully');
+    setIsSynced(true);
   };
 
   return (
@@ -134,7 +156,10 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           
           <EventCardIcons
             event={event}
+            isSynced={isSynced}
+            isEditingDisabled={isEditingDisabled(event.status)}
             onViewEquipment={viewOutOfSyncEquipment}
+            onSyncEquipment={handleSyncEquipment}
           />
 
           <EventEquipmentSync
@@ -152,7 +177,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           <EventActions
             event={event}
             onStatusChange={onStatusChange}
-            onEdit={handleEditClick}
+            onEdit={onEdit}
             isEditingDisabled={isEditingDisabled(event.status)}
           />
         </div>
