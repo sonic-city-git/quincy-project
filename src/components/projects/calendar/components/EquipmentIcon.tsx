@@ -18,7 +18,6 @@ interface EquipmentIconProps {
   isEditingDisabled: boolean;
   onViewEquipment: () => void;
   onSyncEquipment: () => void;
-  className?: string;
 }
 
 export function EquipmentIcon({
@@ -26,9 +25,8 @@ export function EquipmentIcon({
   isEditingDisabled,
   onViewEquipment,
   onSyncEquipment,
-  className
 }: EquipmentIconProps) {
-  const iconClasses = `h-4 w-4 ${isSynced ? 'text-green-500' : 'text-blue-500'} ${className || ''}`;
+  const iconClasses = `h-4 w-4 ${isSynced ? 'text-green-500' : 'text-blue-500'}`;
 
   // If synced or editing is disabled, just show the icon without any interaction
   if (isSynced || isEditingDisabled) {
