@@ -128,6 +128,23 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     if (event.type.needs_equipment) {
       fetchStatus();
     }
+
+    // Set up subscription for real-time updates
+    const channel = supabase
+      .channel(`event-equipment-${event.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'project_event_equipment',
+        filter: `event_id=eq.${event.id}`
+      }, () => {
+        fetchStatus();
+      })
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
   }, [event.id, event.project_id, event.type.needs_equipment]);
 
   const handleEquipmentOption = async () => {
