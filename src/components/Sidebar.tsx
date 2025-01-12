@@ -86,7 +86,7 @@ export function Sidebar() {
               to={link.href}
               onClick={link.onClick}
               className={cn(
-                "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-zinc-400 transition-all text-sm",
+                "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-zinc-400 transition-all text-base",
                 link.bgColor,
                 "hover:text-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100",
                 link.isActive && "bg-zinc-800 text-zinc-100"
