@@ -7,10 +7,12 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
+  const iconClasses = "h-6 w-6 flex-shrink-0";
+  
   return (
     <>
       <div className="flex items-center gap-2">
-        <Calendar className="h-6 w-6 text-muted-foreground" />
+        <Calendar className={`${iconClasses} text-muted-foreground`} />
         <span className="text-sm text-muted-foreground">
           {format(event.date, 'dd.MM.yy')}
         </span>

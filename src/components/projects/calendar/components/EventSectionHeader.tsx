@@ -20,6 +20,7 @@ export function EventSectionHeader({
   onStatusChange 
 }: EventSectionHeaderProps) {
   const isCancelled = title.toLowerCase() === 'cancelled';
+  const iconClasses = "h-6 w-6 flex-shrink-0";
 
   return (
     <div className="border border-zinc-800 rounded-lg bg-zinc-900/50 backdrop-blur-sm p-3 mb-4">
@@ -33,16 +34,16 @@ export function EventSectionHeader({
         <div className="col-span-2" />
         
         {/* Equipment icon column */}
-        <div className="col-span-1">
+        <div className="col-span-1 flex items-center">
           {eventType?.needs_equipment && (
-            <Package className="h-6 w-6 text-muted-foreground" />
+            <Package className={`${iconClasses} text-muted-foreground`} />
           )}
         </div>
         
         {/* Crew icon column */}
-        <div className="col-span-1">
+        <div className="col-span-1 flex items-center">
           {eventType?.needs_crew && (
-            <Users className="h-6 w-6 text-muted-foreground" />
+            <Users className={`${iconClasses} text-muted-foreground`} />
           )}
         </div>
 
