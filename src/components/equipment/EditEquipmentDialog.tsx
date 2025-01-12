@@ -179,6 +179,7 @@ export function EditEquipmentDialog({
             isPending={isPending}
             onShowDeleteAlert={() => setShowDeleteAlert(true)}
             onShowRestockDialog={() => setShowRestockDialog(true)}
+            onSubmit={onSubmit}
           />
         </DialogContent>
       </Dialog>

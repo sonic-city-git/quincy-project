@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Package, Plus, X } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
-import { Folder } from "@/types/folders";
+import { Folder } from "@/integrations/supabase/types/folder";
 import { sortFolders } from "@/utils/folderSort";
 
 interface EditEquipmentFormProps {
@@ -16,6 +16,7 @@ interface EditEquipmentFormProps {
   isPending: boolean;
   onShowDeleteAlert: () => void;
   onShowRestockDialog: () => void;
+  onSubmit: (data: any) => Promise<void>;
 }
 
 export function EditEquipmentForm({
@@ -24,7 +25,8 @@ export function EditEquipmentForm({
   foldersLoading,
   isPending,
   onShowDeleteAlert,
-  onShowRestockDialog
+  onShowRestockDialog,
+  onSubmit
 }: EditEquipmentFormProps) {
   const stockCalculation = form.watch("stock_calculation");
   
@@ -43,7 +45,7 @@ export function EditEquipmentForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-4">
             <FormField
