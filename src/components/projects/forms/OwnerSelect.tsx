@@ -38,7 +38,7 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
       >
         <SelectTrigger className={cn("flex items-center gap-2", error ? "border-red-500" : "", className)}>
           {selectedMember && (
-            <Avatar className="h-6 w-6">
+            <Avatar className="h-6 w-6 flex-shrink-0">
               {selectedMember.avatar_url ? (
                 <AvatarImage 
                   src={selectedMember.avatar_url} 
@@ -52,7 +52,7 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
               )}
             </Avatar>
           )}
-          <SelectValue placeholder="Select owner" />
+          <SelectValue placeholder="Select owner" className="flex-grow" />
         </SelectTrigger>
         <SelectContent>
           <ScrollArea className="h-[200px] w-full">
@@ -70,7 +70,7 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
                     value={member.id}
                     className="cursor-pointer rounded-sm hover:bg-accent flex items-center gap-2 py-2"
                   >
-                    <Avatar className="h-6 w-6">
+                    <Avatar className="h-6 w-6 flex-shrink-0">
                       {member.avatar_url ? (
                         <AvatarImage 
                           src={member.avatar_url} 
