@@ -23,9 +23,10 @@ interface EventCardProps {
 
 export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const [isSynced, setIsSynced] = useState(true);
+  const [hasEventEquipment, setHasEventEquipment] = useState(false);
   const [hasProjectEquipment, setHasProjectEquipment] = useState(false);
 
-  // Fetch initial sync status and project equipment status
+  // Fetch initial sync status and equipment status
   useEffect(() => {
     const fetchStatus = async () => {
       try {
@@ -38,24 +39,25 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         
         setHasProjectEquipment(!!projectEquipment?.length);
 
-        // Check sync status
+        // Check event equipment and sync status
         const { data: eventEquipment, error } = await supabase
           .from('project_event_equipment')
-          .select('is_synced')
+          .select('*')
           .eq('event_id', event.id);
 
         if (!error) {
-          const syncStatus = eventEquipment && eventEquipment.length > 0 
-            ? eventEquipment.every(item => item.is_synced) 
-            : false;
-          setIsSynced(syncStatus);
+          const hasEquipment = eventEquipment && eventEquipment.length > 0;
+          setHasEventEquipment(hasEquipment);
+          setIsSynced(hasEquipment ? eventEquipment.every(item => item.is_synced) : true);
         } else {
-          console.error('Error fetching sync status:', error);
-          setIsSynced(false);
+          console.error('Error fetching equipment status:', error);
+          setHasEventEquipment(false);
+          setIsSynced(true);
         }
       } catch (error) {
         console.error('Error in fetchStatus:', error);
-        setIsSynced(false);
+        setHasEventEquipment(false);
+        setIsSynced(true);
       }
     };
 
@@ -114,16 +116,16 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const getEquipmentIcon = useCallback(() => {
     if (!event.type.needs_equipment) return null;
     
-    if (!hasProjectEquipment) {
+    if (!hasEventEquipment && !hasProjectEquipment) {
       return <Package className="h-6 w-6 text-muted-foreground" />;
     }
     
     return (
       <Package 
-        className={`h-6 w-6 ${isSynced ? 'text-green-500' : 'text-yellow-500'}`}
+        className={`h-6 w-6 ${hasEventEquipment && isSynced ? 'text-green-500' : 'text-yellow-500'}`}
       />
     );
-  }, [event.type.needs_equipment, hasProjectEquipment, isSynced]);
+  }, [event.type.needs_equipment, hasEventEquipment, hasProjectEquipment, isSynced]);
 
   return (
     <Card key={`${event.date}-${event.name}`} className="p-4">
