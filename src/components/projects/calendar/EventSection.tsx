@@ -1,18 +1,17 @@
+import { Brush, ChevronDown, Package, Users, MapPin, CheckCircle, Send, DollarSign, XCircle, HelpCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 import { CalendarEvent } from "@/types/events";
-import { getStatusIcon } from "@/utils/eventFormatters";
-import { EventCard } from "./EventCard";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Brush, ChevronDown, Package, Users, MapPin } from "lucide-react";
-import { useState, useEffect } from "react";
-import { EventStatusManager } from "./EventStatusManager";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { EventSectionHeader } from "./components/EventSectionHeader";
+import { EventSectionContent } from "./components/EventSectionContent";
 
 interface EventSectionProps {
   status: CalendarEvent['status'] | 'done and dusted';
@@ -39,27 +38,8 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     </div>
   );
 
-  const getSectionEquipmentIcon = () => {
-    if (sectionSyncStatus === 'no-equipment') {
-      return <Package className="h-6 w-6 text-muted-foreground" />;
-    }
-    if (sectionSyncStatus === 'out-of-sync') {
-      return <Package className="h-6 w-6 text-blue-500" />;
-    }
-    return <Package className="h-6 w-6 text-green-500" />;
-  };
-
   // Calculate total price for all events in this section
   const totalPrice = events.reduce((sum, event) => sum + (event.revenue || 0), 0);
-
-  const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat('nb-NO', {
-      style: 'currency',
-      currency: 'NOK',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount).replace('NOK', 'kr').replace('.', ',');
-  };
 
   const handleSyncCrew = async () => {
     try {
@@ -168,28 +148,12 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   const getStatusBackground = (status: string) => {
     switch (status) {
       case 'proposed':
-        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       case 'confirmed':
-        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       case 'invoice ready':
-        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       case 'cancelled':
         return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       default:
         return 'bg-zinc-800/45 hover:bg-zinc-800/50';
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'invoice ready':
-        return 'Invoice Ready';
-      case 'cancelled':
-        return 'Cancelled';
-      case 'done and dusted':
-        return 'Done and Dusted';
-      default:
-        return `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
     }
   };
 
@@ -200,19 +164,16 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
           <CollapsibleTrigger className="flex items-center justify-between w-full group p-4">
             <div className="flex items-center gap-2">
               {sectionIcon}
-              <h3 className="text-lg font-semibold whitespace-nowrap">{getStatusText(status)}</h3>
+              <h3 className="text-lg font-semibold whitespace-nowrap">Done and Dusted</h3>
             </div>
             <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''} ml-2`} />
           </CollapsibleTrigger>
-          <CollapsibleContent className="px-4 pb-4">
-            {events.map((event) => (
-              <EventCard
-                key={event.id}
-                event={event}
-                onStatusChange={onStatusChange}
-                onEdit={onEdit}
-              />
-            ))}
+          <CollapsibleContent>
+            <EventSectionContent
+              events={events}
+              onStatusChange={onStatusChange}
+              onEdit={onEdit}
+            />
           </CollapsibleContent>
         </div>
       </Collapsible>
@@ -223,71 +184,40 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     <div className="space-y-3">
       <div className={`rounded-lg ${getStatusBackground(status)}`}>
         <div className="p-4">
-          <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px_40px_40px] gap-2 items-center">
-            <div className="flex items-center gap-2">
-              {sectionIcon}
-              <h3 className="text-lg font-semibold whitespace-nowrap">{getStatusText(status)}</h3>
-            </div>
-            
-            <div /> {/* Empty space for name column */}
-            
-            <div className="flex items-center justify-center">
-              <div className="h-8 w-8 flex items-center justify-center">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center">
-              {canSync ? (
-                <div className="h-8 w-8 flex items-center justify-center">
-                  {getSectionEquipmentIcon()}
-                </div>
-              ) : <div />}
-            </div>
-
-            <div className="flex items-center justify-center">
-              {canSync ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8 p-0"
-                  onClick={handleSyncCrew}
-                  disabled={isSyncing}
-                >
-                  <Users className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-                </Button>
-              ) : (
-                <div />
-              )}
-            </div>
-
-            <div /> {/* Empty space for event type column */}
-
-            <div className="flex items-center justify-end text-sm">
-              {formatPrice(totalPrice)}
-            </div>
-
-            <div className="flex items-center justify-end col-span-2">
-              <EventStatusManager
-                status={status}
-                events={events}
-                onStatusChange={onStatusChange}
-                isCancelled={isCancelled}
-              />
-            </div>
-          </div>
+          <EventSectionHeader
+            status={status}
+            events={events}
+            sectionIcon={sectionIcon}
+            sectionSyncStatus={sectionSyncStatus}
+            totalPrice={totalPrice}
+            canSync={canSync}
+            isSyncing={isSyncing}
+            handleSyncCrew={handleSyncCrew}
+            onStatusChange={onStatusChange}
+            isCancelled={isCancelled}
+          />
         </div>
-        <div className="px-4 pb-4">
-          {events.map((event) => (
-            <EventCard
-              key={event.id}
-              event={event}
-              onStatusChange={onStatusChange}
-              onEdit={onEdit}
-            />
-          ))}
-        </div>
+        <EventSectionContent
+          events={events}
+          onStatusChange={onStatusChange}
+          onEdit={onEdit}
+        />
       </div>
     </div>
   );
+}
+
+function getStatusIcon(status: string) {
+  switch (status.toLowerCase()) {
+    case 'confirmed':
+      return <CheckCircle className="h-5 w-5 text-green-500" />;
+    case 'invoice ready':
+      return <Send className="h-5 w-5 text-blue-500" />;
+    case 'invoiced':
+      return <DollarSign className="h-5 w-5 text-emerald-500" />;
+    case 'cancelled':
+      return <XCircle className="h-5 w-5 text-red-500" />;
+    default: // 'proposed'
+      return <HelpCircle className="h-5 w-5 text-yellow-500" />;
+  }
 }

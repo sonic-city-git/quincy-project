@@ -1,46 +1,14 @@
-import { TableCell, TableRow } from "@/components/ui/table";
 import { CalendarEvent } from "@/types/events";
-import { formatDisplayDate } from "@/utils/dateFormatters";
-import { useNavigate } from "react-router-dom";
-import { Users, MapPin } from "lucide-react";
 import { EVENT_COLORS } from "@/constants/eventColors";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState, useEffect } from 'react';
 import { useQueryClient } from "@tanstack/react-query";
-import { EquipmentIcon } from "./components/EquipmentIcon";
 import { EquipmentDialog } from "./components/EquipmentDialog";
-import { EventHeader } from "./components/EventHeader";
 import { EventActions } from "./components/EventActions";
 import { Card } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-
-interface EquipmentItem {
-  id: string;
-  quantity: number;
-  equipment: {
-    name: string;
-    code: string | null;
-  };
-  group: {
-    name: string;
-  } | null;
-}
-
-interface EquipmentDifference {
-  added: EquipmentItem[];
-  removed: EquipmentItem[];
-  changed: {
-    item: EquipmentItem;
-    oldQuantity: number;
-    newQuantity: number;
-  }[];
-}
+import { EventCardHeader } from "./components/EventCardHeader";
+import { EventCardIcons } from "./components/EventCardIcons";
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -51,14 +19,14 @@ interface EventCardProps {
 export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const [isSynced, setIsSynced] = useState(true);
   const [isEquipmentDialogOpen, setIsEquipmentDialogOpen] = useState(false);
-  const [equipmentDifference, setEquipmentDifference] = useState<EquipmentDifference>({
+  const [equipmentDifference, setEquipmentDifference] = useState({
     added: [],
     removed: [],
     changed: []
   });
   const queryClient = useQueryClient();
 
-  const isEditingDisabled = (status: CalendarEvent['status']) => {
+  const isEditingDisabled = (status: string) => {
     return ['cancelled', 'invoice ready'].includes(status);
   };
 
@@ -205,9 +173,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
       if (eventError) throw eventError;
 
-      const added: EquipmentItem[] = [];
-      const removed: EquipmentItem[] = [];
-      const changed: EquipmentDifference['changed'] = [];
+      const added = [];
+      const removed = [];
+      const changed = [];
 
       const projectMap = new Map(projectEquipment?.map(item => [item.equipment.name, item]) || []);
       const eventMap = new Map(eventEquipment?.map(item => [item.equipment.name, item]) || []);
@@ -216,10 +184,10 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         const eventItem = eventMap.get(projectItem.equipment.name);
         
         if (!eventItem) {
-          added.push(projectItem as EquipmentItem);
+          added.push(projectItem);
         } else if (eventItem.quantity !== projectItem.quantity) {
           changed.push({
-            item: projectItem as EquipmentItem,
+            item: projectItem,
             oldQuantity: eventItem.quantity,
             newQuantity: projectItem.quantity
           });
@@ -230,7 +198,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         const projectItem = projectMap.get(eventItem.equipment.name);
         
         if (!projectItem) {
-          removed.push(eventItem as EquipmentItem);
+          removed.push(eventItem);
         }
       });
 
@@ -263,45 +231,15 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         className={`p-3 transition-colors mb-2 ${getStatusBackground(event.status)}`}
       >
         <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px_40px_40px] gap-2 items-center">
-          <EventHeader event={event} />
+          <EventCardHeader event={event} />
           
-          <div className="flex items-center justify-center my-auto">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="h-8 w-8 flex items-center justify-center">
-                    <MapPin 
-                      className={`h-5 w-5 ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
-                    />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{event.location || 'No location set'}</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-
-          <div className="flex items-center justify-center my-auto">
-            {event.type.needs_equipment && (
-              <div className="h-8 w-8 flex items-center justify-center">
-                <EquipmentIcon
-                  isSynced={isSynced}
-                  isEditingDisabled={isEditingDisabled(event.status)}
-                  onViewEquipment={viewOutOfSyncEquipment}
-                  onSyncEquipment={handleEquipmentOption}
-                />
-              </div>
-            )}
-          </div>
-
-          <div className="flex items-center justify-center my-auto">
-            {event.type.needs_crew && (
-              <div className="h-8 w-8 flex items-center justify-center">
-                <Users className={`h-5 w-5 ${isEditingDisabled(event.status) ? 'text-green-500' : 'text-muted-foreground'}`} />
-              </div>
-            )}
-          </div>
+          <EventCardIcons
+            event={event}
+            isSynced={isSynced}
+            isEditingDisabled={isEditingDisabled(event.status)}
+            onViewEquipment={viewOutOfSyncEquipment}
+            onSyncEquipment={handleEquipmentOption}
+          />
 
           <div className="flex items-center">
             <span 
