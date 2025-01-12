@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { CalendarEvent } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
+import { Settings2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Settings2 } from "lucide-react";
 
 interface EventStatusManagerProps {
   status: string;
@@ -31,9 +31,9 @@ export function EventStatusManager({ status, events, onStatusChange, isCancelled
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-12 w-12"
         >
-          <Settings2 className="h-5 w-5" />
+          <Settings2 className="h-7 w-7" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -41,7 +41,7 @@ export function EventStatusManager({ status, events, onStatusChange, isCancelled
           onClick={() => handleStatusChangeAll('proposed')}
           className="flex items-center gap-2"
         >
-          <div className="h-5 w-5">
+          <div className="h-7 w-7">
             {getStatusIcon('proposed')}
           </div>
           Proposed
@@ -50,7 +50,7 @@ export function EventStatusManager({ status, events, onStatusChange, isCancelled
           onClick={() => handleStatusChangeAll('confirmed')}
           className="flex items-center gap-2"
         >
-          <div className="h-5 w-5">
+          <div className="h-7 w-7">
             {getStatusIcon('confirmed')}
           </div>
           Confirmed
@@ -59,7 +59,7 @@ export function EventStatusManager({ status, events, onStatusChange, isCancelled
           onClick={() => handleStatusChangeAll('invoice ready')}
           className="flex items-center gap-2"
         >
-          <div className="h-5 w-5">
+          <div className="h-7 w-7">
             {getStatusIcon('invoice ready')}
           </div>
           Invoice Ready
@@ -68,7 +68,7 @@ export function EventStatusManager({ status, events, onStatusChange, isCancelled
           onClick={() => handleStatusChangeAll('cancelled')}
           className="flex items-center gap-2"
         >
-          <div className="h-5 w-5">
+          <div className="h-7 w-7">
             {getStatusIcon('cancelled')}
           </div>
           Cancelled

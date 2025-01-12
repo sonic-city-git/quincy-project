@@ -38,9 +38,9 @@ export function EventActions({
             <Button
               variant="ghost"
               size="icon"
-              className="h-10 w-10"
+              className="h-12 w-12"
             >
-              <div className="h-6 w-6">
+              <div className="h-7 w-7">
                 {getStatusIcon(event.status)}
               </div>
             </Button>
@@ -50,7 +50,7 @@ export function EventActions({
               onClick={() => onStatusChange(event, 'proposed')}
               className="flex items-center gap-2"
             >
-              <div className="h-6 w-6">
+              <div className="h-7 w-7">
                 {getStatusIcon('proposed')}
               </div>
               Proposed
@@ -59,7 +59,7 @@ export function EventActions({
               onClick={() => onStatusChange(event, 'confirmed')}
               className="flex items-center gap-2"
             >
-              <div className="h-6 w-6">
+              <div className="h-7 w-7">
                 {getStatusIcon('confirmed')}
               </div>
               Confirmed
@@ -68,7 +68,7 @@ export function EventActions({
               onClick={() => onStatusChange(event, 'invoice ready')}
               className="flex items-center gap-2"
             >
-              <div className="h-6 w-6">
+              <div className="h-7 w-7">
                 {getStatusIcon('invoice ready')}
               </div>
               Invoice Ready
@@ -77,7 +77,7 @@ export function EventActions({
               onClick={() => onStatusChange(event, 'cancelled')}
               className="flex items-center gap-2"
             >
-              <div className="h-6 w-6">
+              <div className="h-7 w-7">
                 {getStatusIcon('cancelled')}
               </div>
               Cancelled
@@ -93,9 +93,9 @@ export function EventActions({
             variant="ghost"
             size="icon"
             onClick={handleEdit}
-            className="h-10 w-10 text-muted-foreground hover:text-foreground"
+            className="h-12 w-12 text-muted-foreground hover:text-foreground"
           >
-            <Edit2 className="h-6 w-6" />
+            <Edit2 className="h-7 w-7" />
           </Button>
         )}
       </div>

@@ -27,7 +27,7 @@ export function EventSectionHeader({
     <div className="border border-zinc-800 rounded-lg bg-zinc-900/50 backdrop-blur-sm p-3 mb-4">
       <EventSectionHeaderGrid>
         <div className="col-span-2 flex items-center gap-2 justify-start">
-          <div className="h-5 w-5">
+          <div className="h-7 w-7">
             {getStatusIcon(title.toLowerCase() as CalendarEvent['status'])}
           </div>
           <h3 className="text-lg font-semibold">{title}</h3>
@@ -42,14 +42,14 @@ export function EventSectionHeader({
         {/* Equipment icon column */}
         <div className="flex items-center justify-center">
           {eventType?.needs_equipment && (
-            <Package className="h-5 w-5 text-muted-foreground" />
+            <Package className="h-7 w-7 text-muted-foreground" />
           )}
         </div>
         
         {/* Crew icon column */}
         <div className="flex items-center justify-center">
           {eventType?.needs_crew && (
-            <Users className="h-5 w-5 text-muted-foreground" />
+            <Users className="h-7 w-7 text-muted-foreground" />
           )}
         </div>
 
