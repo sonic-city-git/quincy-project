@@ -1,6 +1,6 @@
 import { CalendarEvent } from "@/types/events";
 import { Card } from "@/components/ui/card";
-import { Calendar, Edit, MapPin, Package, Users, AlertTriangle, RefreshCw } from "lucide-react";
+import { Calendar, Edit, MapPin, Package, Users } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
@@ -61,6 +61,21 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     removed: [],
     changed: []
   });
+
+  const getStatusBackground = (status: string) => {
+    switch (status) {
+      case 'proposed':
+        return 'bg-yellow-500/5 hover:bg-yellow-500/10';
+      case 'confirmed':
+        return 'bg-green-500/5 hover:bg-green-500/10';
+      case 'invoice ready':
+        return 'bg-blue-500/5 hover:bg-blue-500/10';
+      case 'cancelled':
+        return 'bg-red-500/5 hover:bg-red-500/10';
+      default:
+        return 'hover:bg-zinc-800/50';
+    }
+  };
 
   const getEquipmentIcon = () => {
     if (!hasEventEquipment) {
@@ -334,7 +349,10 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
   return (
     <>
-      <Card key={`${event.date}-${event.name}`} className="p-4">
+      <Card 
+        key={`${event.date}-${event.name}`} 
+        className={`p-4 transition-colors ${getStatusBackground(event.status)}`}
+      >
         <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_auto] gap-4">
           <div className="flex items-center gap-2">
             <Calendar className="h-4 w-4 text-muted-foreground" />
