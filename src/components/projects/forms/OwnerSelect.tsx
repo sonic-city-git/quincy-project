@@ -20,9 +20,6 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
   // Filter out the dev@soniccity.no email
   const filteredCrew = crew?.filter(member => member.email !== 'dev@soniccity.no') || [];
 
-  // Find the selected crew member for the trigger display
-  const selectedMember = filteredCrew.find(member => member.id === value);
-
   return (
     <div className="space-y-2">
       <Select
@@ -54,7 +51,7 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
                   <SelectItem 
                     key={member.id} 
                     value={member.id}
-                    className="cursor-pointer rounded-sm hover:bg-accent flex items-center gap-3 py-3 px-3"
+                    className="flex items-center gap-3 py-2 px-3 cursor-pointer rounded-sm hover:bg-accent"
                   >
                     <Avatar className="h-8 w-8 flex-shrink-0">
                       {member.avatar_url ? (
@@ -69,7 +66,7 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
                         </AvatarFallback>
                       )}
                     </Avatar>
-                    <span>{member.name}</span>
+                    <span className="truncate">{member.name}</span>
                   </SelectItem>
                 );
               })}
