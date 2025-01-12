@@ -25,7 +25,7 @@ interface GroupSelectorProps {
   onGroupSelect: (groupId: string | null) => void;
 }
 
-export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: GroupSelectorProps) {
+export function GroupSelector({ projectId }: GroupSelectorProps) {
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
   const [customGroupName, setCustomGroupName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -61,21 +61,15 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
   const handleAddGroup = async (name: string, sortOrder: number = projectGroups.length) => {
     setIsSubmitting(true);
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('project_equipment_groups')
         .insert({
           project_id: projectId,
           name,
           sort_order: sortOrder
-        })
-        .select()
-        .single();
+        });
       
       if (error) throw error;
-      
-      if (data) {
-        onGroupSelect(data.id);
-      }
       
       setCustomGroupName("");
       setIsCustomDialogOpen(false);
@@ -96,20 +90,7 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
   }
 
   return (
-    <div className="flex justify-between items-center mb-4">
-      <div className="flex flex-wrap gap-2">
-        {projectGroups.map(group => (
-          <Button
-            key={group.id}
-            variant={selectedGroupId === group.id ? "default" : "outline"}
-            onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
-            className="whitespace-nowrap"
-          >
-            {group.name}
-          </Button>
-        ))}
-      </div>
-
+    <div className="flex justify-end mb-4">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
