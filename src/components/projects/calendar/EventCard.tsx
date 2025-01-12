@@ -1,6 +1,6 @@
 import { CalendarEvent } from "@/types/events";
 import { Card } from "@/components/ui/card";
-import { Calendar, Edit, MapPin, Package, Users, AlertTriangle } from "lucide-react";
+import { Calendar, Edit, MapPin, Package, Users, AlertTriangle, RefreshCw } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
@@ -67,6 +67,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       return <Package className="h-6 w-6 text-yellow-500" />;
     }
     if (!isSynced) {
+      if (equipmentDifference.changed.length > 0) {
+        return <RefreshCw className="h-6 w-6 text-blue-500" />;
+      }
       return <AlertTriangle className="h-6 w-6 text-orange-500" />;
     }
     return <Package className="h-6 w-6 text-green-500" />;
