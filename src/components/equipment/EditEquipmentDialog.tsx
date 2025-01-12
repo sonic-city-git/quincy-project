@@ -224,40 +224,37 @@ export function EditEquipmentDialog({
                     )}
                   />
                   <FormField
-
-<FormField
-  control={form.control}
-  name="folder_id"
-  render={({ field }) => (
-    <FormItem>
-      <FormLabel>Folder</FormLabel>
-      <Select
-        disabled={foldersLoading}
-        onValueChange={field.onChange}
-        value={field.value || undefined}
-      >
-        <FormControl>
-          <SelectTrigger>
-            <SelectValue placeholder="Select a folder" />
-          </SelectTrigger>
-        </FormControl>
-        <SelectContent>
-          {sortFolders(folders).map((folder) => (
-            <SelectItem 
-              key={folder.id} 
-              value={folder.id}
-              className={folder.parent_id ? "pl-6 italic" : ""}
-            >
-              {folder.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
-
+                    control={form.control}
+                    name="folder_id"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Folder</FormLabel>
+                        <Select
+                          disabled={foldersLoading}
+                          onValueChange={field.onChange}
+                          value={field.value || undefined}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a folder" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {sortFolders(folders).map((folder) => (
+                              <SelectItem 
+                                key={folder.id} 
+                                value={folder.id}
+                                className={folder.parent_id ? "pl-6 italic" : ""}
+                              >
+                                {folder.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
                 <div className="space-y-4">
                   <FormField
@@ -411,4 +408,3 @@ export function EditEquipmentDialog({
     </>
   );
 }
-
