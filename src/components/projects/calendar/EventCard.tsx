@@ -94,8 +94,14 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   };
 
   useEffect(() => {
+    let isSubscribed = true; // Add this flag for cleanup
+
     const fetchStatus = async () => {
+      if (!isSubscribed) return; // Check if component is still mounted
+
       try {
+        console.log('Fetching status for event:', event.id);
+        
         // Check project equipment
         const { data: projectEquipment } = await supabase
           .from('project_equipment')
@@ -103,7 +109,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           .eq('project_id', event.project_id)
           .limit(1);
         
-        setHasProjectEquipment(!!projectEquipment?.length);
+        if (isSubscribed) {
+          setHasProjectEquipment(!!projectEquipment?.length);
+        }
 
         // Check event equipment and sync status
         const { data: eventEquipment, error } = await supabase
@@ -111,24 +119,33 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           .select('*')
           .eq('event_id', event.id);
 
-        if (!error) {
+        if (!error && isSubscribed) {
           const hasEquipment = eventEquipment && eventEquipment.length > 0;
           setHasEventEquipment(hasEquipment);
           setIsSynced(hasEquipment ? eventEquipment.every(item => item.is_synced) : true);
-        } else {
+          console.log('Event equipment status updated:', {
+            hasEquipment,
+            isSynced: hasEquipment ? eventEquipment.every(item => item.is_synced) : true
+          });
+        } else if (error) {
           console.error('Error fetching equipment status:', error);
-          setHasEventEquipment(false);
-          setIsSynced(true);
+          if (isSubscribed) {
+            setHasEventEquipment(false);
+            setIsSynced(true);
+          }
         }
       } catch (error) {
         console.error('Error in fetchStatus:', error);
-        setHasEventEquipment(false);
-        setIsSynced(true);
+        if (isSubscribed) {
+          setHasEventEquipment(false);
+          setIsSynced(true);
+        }
       }
     };
 
     // Initial fetch
     if (event.type.needs_equipment) {
+      console.log('Initial fetch for event:', event.id);
       fetchStatus();
     }
 
@@ -140,8 +157,8 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         schema: 'public',
         table: 'project_event_equipment',
         filter: `event_id=eq.${event.id}`
-      }, () => {
-        console.log('Received real-time update for event equipment');
+      }, (payload) => {
+        console.log('Received real-time update for event equipment:', payload);
         fetchStatus();
       })
       .subscribe();
@@ -154,13 +171,14 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         schema: 'public',
         table: 'project_equipment',
         filter: `project_id=eq.${event.project_id}`
-      }, () => {
-        console.log('Received real-time update for project equipment');
+      }, (payload) => {
+        console.log('Received real-time update for project equipment:', payload);
         fetchStatus();
       })
       .subscribe();
 
     return () => {
+      isSubscribed = false; // Set flag to false on cleanup
       channel.unsubscribe();
       projectChannel.unsubscribe();
     };
@@ -210,6 +228,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
       ]);
 
+      console.log('Equipment sync completed successfully for event:', event.id);
       toast.success('Equipment list synchronized successfully');
     } catch (error) {
       console.error('Error syncing equipment:', error);
