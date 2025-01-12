@@ -15,8 +15,8 @@ export function EventSection({ title, events, onStatusChange, onEdit }: EventSec
 
   return (
     <div className="space-y-4">
-      <EventSectionHeader title={title} count={events.length} />
-      <EventSectionContent>
+      <EventSectionHeader title={title} eventCount={events.length} />
+      <EventSectionContent events={events} onStatusChange={onStatusChange}>
         {events.map((event) => (
           <EventCard
             key={event.id}

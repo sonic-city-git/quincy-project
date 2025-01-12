@@ -20,7 +20,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
     return <EventListEmpty />;
   }
 
-  const { proposed, confirmed, invoiceReady, invoiced } = groupEventsByStatus(events);
+  const { proposed, confirmed, ready, cancelled } = groupEventsByStatus(events);
 
   return (
     <div className="space-y-8">
@@ -38,13 +38,13 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
       />
       <EventSection
         title="Invoice Ready"
-        events={invoiceReady}
+        events={ready}
         onStatusChange={onStatusChange}
         onEdit={onEdit}
       />
       <EventSection
-        title="Invoiced"
-        events={invoiced}
+        title="Cancelled"
+        events={cancelled}
         onStatusChange={onStatusChange}
         onEdit={onEdit}
       />
