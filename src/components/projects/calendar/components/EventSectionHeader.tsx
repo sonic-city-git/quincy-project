@@ -34,31 +34,49 @@ export function EventSectionHeader({
   const isCancelled = title.toLowerCase() === 'cancelled';
 
   return (
-    <div className="flex items-center justify-between border-b border-border pb-2">
-      <div className="flex items-center gap-2">
-        {getStatusIcon()}
-        <h3 className="text-lg font-semibold">{title}</h3>
-        <span className="text-sm text-muted-foreground">({eventCount})</span>
-      </div>
-      <div className="flex items-center gap-4">
-        {eventType && (
-          <div className="flex items-center gap-2">
-            {eventType.needs_equipment && (
-              <Package className="h-4 w-4 text-muted-foreground" />
-            )}
-            {eventType.needs_crew && (
-              <Users className="h-4 w-4 text-muted-foreground" />
-            )}
-          </div>
-        )}
-        {onStatusChange && (
-          <EventStatusManager
-            status={title.toLowerCase()}
-            events={events}
-            onStatusChange={onStatusChange}
-            isCancelled={isCancelled}
-          />
-        )}
+    <div className="border-b border-border pb-2">
+      <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px_40px_40px] gap-2 items-center">
+        <div className="flex items-center gap-2">
+          {getStatusIcon()}
+          <h3 className="text-lg font-semibold">{title}</h3>
+          <span className="text-sm text-muted-foreground">({eventCount})</span>
+        </div>
+        
+        {/* Empty space for event name */}
+        <div className="col-span-1" />
+        
+        {/* Icons column alignment */}
+        <div className="flex items-center justify-center">
+          {eventType?.needs_equipment && (
+            <Package className="h-4 w-4 text-muted-foreground" />
+          )}
+        </div>
+        <div className="flex items-center justify-center">
+          {eventType?.needs_crew && (
+            <Users className="h-4 w-4 text-muted-foreground" />
+          )}
+        </div>
+        
+        {/* Empty space for event type */}
+        <div className="col-span-1" />
+        
+        {/* Empty space for name */}
+        <div className="col-span-1" />
+        
+        {/* Empty space for revenue */}
+        <div className="col-span-1" />
+        
+        {/* Status manager alignment */}
+        <div className="col-span-2 flex justify-end">
+          {onStatusChange && (
+            <EventStatusManager
+              status={title.toLowerCase()}
+              events={events}
+              onStatusChange={onStatusChange}
+              isCancelled={isCancelled}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
