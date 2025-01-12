@@ -27,7 +27,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
   return (
     <Card key={`${event.date}-${event.name}`} className="p-4">
-      <div className="grid grid-cols-[120px_1fr_80px_auto_auto] items-center gap-4">
+      <div className="grid grid-cols-[120px_1fr_80px_auto_auto] gap-4">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
@@ -52,12 +52,14 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           )}
         </div>
 
-        <div className="flex items-center justify-center space-x-2">
-          {event.type.needs_equipment && <Package className="h-4 w-4 text-muted-foreground" />}
-          {event.type.needs_crew && <Users className="h-4 w-4 text-muted-foreground" />}
+        <div className="flex items-center justify-center">
+          <div className="flex gap-2">
+            {event.type.needs_equipment && <Package className="h-4 w-4 text-muted-foreground" />}
+            {event.type.needs_crew && <Users className="h-4 w-4 text-muted-foreground" />}
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center">
           <span 
             className="text-sm px-3 py-1 rounded-md inline-block"
             style={getColorStyles(event.type.color)}
