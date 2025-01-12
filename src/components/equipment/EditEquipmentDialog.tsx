@@ -15,6 +15,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useFolders } from "@/hooks/useFolders";
+import { sortFolders } from "@/utils/folderSort";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -223,33 +224,40 @@ export function EditEquipmentDialog({
                     )}
                   />
                   <FormField
-                    control={form.control}
-                    name="folder_id"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Folder</FormLabel>
-                        <Select
-                          disabled={foldersLoading}
-                          onValueChange={field.onChange}
-                          value={field.value || undefined}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a folder" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {folders.map((folder) => (
-                              <SelectItem key={folder.id} value={folder.id}>
-                                {folder.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+
+<FormField
+  control={form.control}
+  name="folder_id"
+  render={({ field }) => (
+    <FormItem>
+      <FormLabel>Folder</FormLabel>
+      <Select
+        disabled={foldersLoading}
+        onValueChange={field.onChange}
+        value={field.value || undefined}
+      >
+        <FormControl>
+          <SelectTrigger>
+            <SelectValue placeholder="Select a folder" />
+          </SelectTrigger>
+        </FormControl>
+        <SelectContent>
+          {sortFolders(folders).map((folder) => (
+            <SelectItem 
+              key={folder.id} 
+              value={folder.id}
+              className={folder.parent_id ? "pl-6 italic" : ""}
+            >
+              {folder.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
+
                 </div>
                 <div className="space-y-4">
                   <FormField
@@ -403,3 +411,4 @@ export function EditEquipmentDialog({
     </>
   );
 }
+

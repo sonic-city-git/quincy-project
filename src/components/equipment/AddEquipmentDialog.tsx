@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Package, Plus, X } from "lucide-react";
 import { useFolders } from "@/hooks/useFolders";
+import { sortFolders } from "@/utils/folderSort";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -185,8 +186,12 @@ export function AddEquipmentDialog() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {folders.map((folder) => (
-                            <SelectItem key={folder.id} value={folder.id}>
+                          {sortFolders(folders).map((folder) => (
+                            <SelectItem 
+                              key={folder.id} 
+                              value={folder.id}
+                              className={folder.parent_id ? "pl-6 italic" : ""}
+                            >
                               {folder.name}
                             </SelectItem>
                           ))}
