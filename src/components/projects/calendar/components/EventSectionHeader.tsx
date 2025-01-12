@@ -29,7 +29,7 @@ export function EventSectionHeader({
           <h3 className="text-lg font-semibold">{title}</h3>
         </div>
         
-        {/* Empty space before icons */}
+        {/* Empty space for location icon column */}
         <div className="col-span-1" />
         
         {/* Icons column alignment */}
