@@ -223,47 +223,49 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     <div className="space-y-3">
       <div className={`rounded-lg ${getStatusBackground(status)}`}>
         <div className="p-4">
-          <div className="grid grid-cols-[100px_200px_30px_30px_1fr_100px_40px_40px] gap-0 items-center">
-            <div className="flex items-center gap-2">
-              {sectionIcon}
-              <h3 className="text-lg font-semibold whitespace-nowrap">{getStatusText(status)}</h3>
-            </div>
-            
-            <div /> {/* Empty space for name column */}
-            
-            <div className="flex items-center justify-center -ml-8">
-              {canSync ? getSectionEquipmentIcon() : <div />}
-            </div>
+          <div className="p-4"> {/* Added wrapper with padding */}
+            <div className="grid grid-cols-[100px_200px_30px_30px_1fr_100px_40px_40px] gap-0 items-center">
+              <div className="flex items-center gap-2">
+                {sectionIcon}
+                <h3 className="text-lg font-semibold whitespace-nowrap">{getStatusText(status)}</h3>
+              </div>
+              
+              <div /> {/* Empty space for name column */}
+              
+              <div className="flex items-center justify-center -ml-8">
+                {canSync ? getSectionEquipmentIcon() : <div />}
+              </div>
 
-            <div className="flex items-center justify-center -ml-6">
-              {canSync ? (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 p-0"
-                  onClick={handleSyncCrew}
-                  disabled={isSyncing}
-                >
-                  <Users className="h-6 w-6 text-muted-foreground hover:text-foreground" />
-                </Button>
-              ) : (
-                <div />
-              )}
-            </div>
+              <div className="flex items-center justify-center -ml-6">
+                {canSync ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 p-0"
+                    onClick={handleSyncCrew}
+                    disabled={isSyncing}
+                  >
+                    <Users className="h-6 w-6 text-muted-foreground hover:text-foreground" />
+                  </Button>
+                ) : (
+                  <div />
+                )}
+              </div>
 
-            <div className="ml-5" /> {/* Empty space for event type column */}
+              <div className="ml-5" /> {/* Empty space for event type column */}
 
-            <div className="flex items-center justify-end text-sm font-medium">
-              {formatPrice(totalPrice)}
-            </div>
+              <div className="flex items-center justify-end text-sm font-medium">
+                {formatPrice(totalPrice)}
+              </div>
 
-            <div className="flex items-center justify-end col-span-2">
-              <EventStatusManager
-                status={status}
-                events={events}
-                onStatusChange={onStatusChange}
-                isCancelled={isCancelled}
-              />
+              <div className="flex items-center justify-end col-span-2">
+                <EventStatusManager
+                  status={status}
+                  events={events}
+                  onStatusChange={onStatusChange}
+                  isCancelled={isCancelled}
+                />
+              </div>
             </div>
           </div>
         </div>
