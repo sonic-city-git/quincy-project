@@ -13,11 +13,11 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface EventSectionProps {
   status: CalendarEvent['status'] | 'done and dusted';
@@ -199,24 +199,23 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
             <div /> {/* Empty space for name column */}
             
             {canSync ? (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 p-0"
-                      onClick={handleSyncEquipment}
-                      disabled={isSyncing}
-                    >
-                      <Package className="h-6 w-6 text-muted-foreground hover:text-foreground" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 p-0"
+                    disabled={isSyncing}
+                  >
+                    <Package className="h-6 w-6 text-muted-foreground hover:text-foreground" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem onClick={handleSyncEquipment}>
                     Sync all {status} from project equipment
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <div /> /* Placeholder for equipment column */
             )}
