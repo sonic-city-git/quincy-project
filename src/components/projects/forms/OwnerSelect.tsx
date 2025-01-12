@@ -20,6 +20,14 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
   // Filter out the dev@soniccity.no email
   const filteredCrew = crew?.filter(member => member.email !== 'dev@soniccity.no') || [];
 
+  // Find the selected crew member for the trigger display
+  const selectedMember = filteredCrew.find(member => member.id === value);
+  const selectedInitials = selectedMember?.name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
+
   return (
     <div className="space-y-2">
       <Select
@@ -28,8 +36,23 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
         disabled={loading}
         required={required}
       >
-        <SelectTrigger className={cn(error ? "border-red-500" : "", className)}>
-          <SelectValue placeholder="Select owner" />
+        <SelectTrigger className={cn("flex items-center gap-2", error ? "border-red-500" : "", className)}>
+          {selectedMember ? (
+            <div className="flex items-center gap-2">
+              <Avatar className="h-6 w-6">
+                {selectedMember.email && (
+                  <AvatarImage 
+                    src={`https://www.gravatar.com/avatar/${Buffer.from(selectedMember.email).toString('hex')}?d=404`}
+                    alt={selectedMember.name}
+                  />
+                )}
+                <AvatarFallback className="text-xs">{selectedInitials}</AvatarFallback>
+              </Avatar>
+              <SelectValue placeholder="Select owner" />
+            </div>
+          ) : (
+            <SelectValue placeholder="Select owner" />
+          )}
         </SelectTrigger>
         <SelectContent>
           <ScrollArea className="h-[200px] w-full">
@@ -56,7 +79,7 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
                       )}
                       <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                     </Avatar>
-                    {member.name}
+                    <span>{member.name}</span>
                   </SelectItem>
                 );
               })}
