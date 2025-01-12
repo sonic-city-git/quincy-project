@@ -381,7 +381,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div>
-                      {hasEventEquipment && isSynced ? (
+                      {(hasEventEquipment && isSynced) || event.status === 'invoiced' ? (
                         <Package className="h-6 w-6 text-green-500" />
                       ) : (
                         <DropdownMenu>
@@ -390,16 +390,18 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6 p-0"
+                              disabled={event.status === 'invoiced'}
                             >
                               {getEquipmentIcon()}
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="start">
-                            {!hasEventEquipment ? (
+                            {!hasEventEquipment && event.status !== 'invoiced' && (
                               <DropdownMenuItem onClick={handleEquipmentOption}>
                                 Sync from project equipment
                               </DropdownMenuItem>
-                            ) : !isSynced ? (
+                            )}
+                            {!isSynced && event.status !== 'invoiced' && (
                               <>
                                 <DropdownMenuItem onClick={viewOutOfSyncEquipment}>
                                   View equipment list
@@ -408,7 +410,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
                                   Sync from project equipment
                                 </DropdownMenuItem>
                               </>
-                            ) : null}
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       )}
