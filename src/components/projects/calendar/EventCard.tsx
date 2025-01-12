@@ -21,6 +21,11 @@ interface EventCardProps {
 export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const hasEquipment = event.equipment && event.equipment.length > 0;
 
+  const handleEquipmentOption = (option: 'assign' | 'custom') => {
+    console.log('Equipment option selected:', option, event);
+    // TODO: Implement the actual functionality for each option
+  };
+
   return (
     <Card key={`${event.date}-${event.name}`} className="p-4">
       <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_auto] gap-4">
@@ -47,16 +52,27 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
         <div className="flex items-center justify-center">
           {event.type.needs_equipment && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 p-0"
-              onClick={() => console.log('Equipment clicked', event)}
-            >
-              <Package 
-                className={`h-6 w-6 ${hasEquipment ? 'text-green-500' : 'text-muted-foreground'}`}
-              />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 p-0"
+                >
+                  <Package 
+                    className={`h-6 w-6 ${hasEquipment ? 'text-green-500' : 'text-muted-foreground'}`}
+                  />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => handleEquipmentOption('assign')}>
+                  Assign and track project equipment
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleEquipmentOption('custom')}>
+                  Create custom equipment list
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
         </div>
 
@@ -67,7 +83,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         </div>
 
         <div className="flex items-center">
-          <span className={`text-sm px-2 py-1 rounded-md ${EVENT_COLORS[event.type.name]}`}>
+          <span 
+            className={`text-sm px-2 py-1 rounded-md ${EVENT_COLORS[event.type.name]}`}
+          >
             {event.type.name}
           </span>
         </div>

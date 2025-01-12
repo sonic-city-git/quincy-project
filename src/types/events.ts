@@ -21,4 +21,5 @@ export interface CalendarEvent {
   status: EventStatus['name'];
   revenue?: number;
   location?: string;
+  equipment?: Array<{ id: string; name: string }>;
 }
