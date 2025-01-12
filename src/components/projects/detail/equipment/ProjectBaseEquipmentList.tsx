@@ -129,7 +129,7 @@ export function ProjectBaseEquipmentList({
                   : "bg-zinc-900/50"
               )} />
               <div className="relative z-10">
-                <div className="bg-zinc-900/75 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75">
+                <div className="bg-zinc-900/90">
                   <h3 
                     className={cn(
                       "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
@@ -180,7 +180,7 @@ export function ProjectBaseEquipmentList({
               : "bg-zinc-900/50"
           )} />
           <div className="relative z-10">
-            <div className="bg-zinc-900/75 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75">
+            <div className="bg-zinc-900/90">
               <h3 
                 className={cn(
                   "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
