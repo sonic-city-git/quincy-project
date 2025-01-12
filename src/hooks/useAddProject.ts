@@ -47,7 +47,9 @@ export function useAddProject() {
       return project;
     },
     onSuccess: () => {
+      // Invalidate both projects and project_equipment queries
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['project_equipment'] });
       toast.success("Project added successfully");
     },
     onError: (error) => {
