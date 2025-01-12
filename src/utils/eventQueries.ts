@@ -130,3 +130,48 @@ export const updateEvent = async (
     throw error;
   }
 };
+
+export const deleteEvent = async (eventId: string, projectId: string) => {
+  try {
+    console.log('Starting deletion process for event:', eventId);
+    
+    // First delete equipment records
+    const { error: equipmentError } = await supabase
+      .from('project_event_equipment')
+      .delete()
+      .match({ event_id: eventId });
+      
+    if (equipmentError) {
+      console.error('Error deleting event equipment:', equipmentError);
+      throw new Error(`Failed to delete equipment: ${equipmentError.message}`);
+    }
+
+    // Delete role records
+    const { error: rolesError } = await supabase
+      .from('project_event_roles')
+      .delete()
+      .match({ event_id: eventId });
+      
+    if (rolesError) {
+      console.error('Error deleting event roles:', rolesError);
+      throw new Error(`Failed to delete roles: ${rolesError.message}`);
+    }
+
+    // Delete the event
+    const { error: eventError } = await supabase
+      .from('project_events')
+      .delete()
+      .match({ id: eventId, project_id: projectId });
+      
+    if (eventError) {
+      console.error('Error deleting event:', eventError);
+      throw new Error(`Failed to delete event: ${eventError.message}`);
+    }
+
+    console.log('Successfully deleted event and related records');
+    return true;
+  } catch (error) {
+    console.error('Error in deleteEvent:', error);
+    throw error;
+  }
+};
