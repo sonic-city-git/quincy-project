@@ -42,7 +42,6 @@ interface EventCardProps {
 export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const [isSynced, setIsSynced] = useState(true);
   const [hasEventEquipment, setHasEventEquipment] = useState(false);
-  const [hasProjectEquipment, setHasProjectEquipment] = useState(false);
   const [isEquipmentDialogOpen, setIsEquipmentDialogOpen] = useState(false);
   const [equipmentDifference, setEquipmentDifference] = useState<EquipmentDifference>({
     added: [],
@@ -69,33 +68,18 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
   const fetchEquipmentStatus = async () => {
     if (!event.type.needs_equipment) return;
-    console.log('Fetching equipment status for event:', event.id);
-
+    
     try {
-      // Check project equipment
-      const { data: projectEquipment } = await supabase
-        .from('project_equipment')
-        .select('id')
-        .eq('project_id', event.project_id)
-        .limit(1);
-      
-      setHasProjectEquipment(!!projectEquipment?.length);
-      console.log('Project has equipment:', !!projectEquipment?.length);
-
-      // Check event equipment and sync status
-      const { data: eventEquipment, error } = await supabase
+      const { data: eventEquipment } = await supabase
         .from('project_event_equipment')
-        .select('*')
+        .select('is_synced')
         .eq('event_id', event.id);
 
-      if (!error) {
-        const hasEquipment = eventEquipment && eventEquipment.length > 0;
-        const syncStatus = hasEquipment ? eventEquipment.every(item => item.is_synced) : true;
-        
-        console.log('Event equipment status:', { hasEquipment, syncStatus });
-        setHasEventEquipment(hasEquipment);
-        setIsSynced(syncStatus);
-      }
+      const hasEquipment = eventEquipment && eventEquipment.length > 0;
+      const syncStatus = hasEquipment ? eventEquipment.every(item => item.is_synced) : true;
+      
+      setHasEventEquipment(hasEquipment);
+      setIsSynced(syncStatus);
     } catch (error) {
       console.error('Error fetching equipment status:', error);
       setHasEventEquipment(false);
@@ -104,68 +88,30 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   };
 
   useEffect(() => {
-    let projectChannel: ReturnType<typeof supabase.channel>;
-    let eventChannel: ReturnType<typeof supabase.channel>;
-    let equipmentChannel: ReturnType<typeof supabase.channel>;
+    let channel: ReturnType<typeof supabase.channel>;
 
-    const setupSubscriptions = () => {
-      console.log('Setting up subscriptions for event:', event.id);
-
-      // Subscribe to project equipment changes
-      projectChannel = supabase
-        .channel(`project-equipment-${event.project_id}`)
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'project_equipment',
-          filter: `project_id=eq.${event.project_id}`
-        }, (payload) => {
-          console.log('Project equipment changed:', payload);
-          fetchEquipmentStatus();
-          queryClient.invalidateQueries({ queryKey: ['project-equipment', event.project_id] });
-        })
-        .subscribe();
+    if (event.type.needs_equipment) {
+      fetchEquipmentStatus();
 
       // Subscribe to event equipment changes
-      eventChannel = supabase
+      channel = supabase
         .channel(`event-equipment-${event.id}`)
         .on('postgres_changes', {
           event: '*',
           schema: 'public',
           table: 'project_event_equipment',
           filter: `event_id=eq.${event.id}`
-        }, (payload) => {
-          console.log('Event equipment changed:', payload);
+        }, () => {
           fetchEquipmentStatus();
           queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
         })
         .subscribe();
-
-      // Subscribe to equipment changes
-      equipmentChannel = supabase
-        .channel(`equipment-changes`)
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'equipment'
-        }, () => {
-          console.log('Equipment table changed, refreshing status');
-          fetchEquipmentStatus();
-        })
-        .subscribe();
-    };
-
-    if (event.type.needs_equipment) {
-      fetchEquipmentStatus();
-      setupSubscriptions();
     }
 
     return () => {
-      if (projectChannel) projectChannel.unsubscribe();
-      if (eventChannel) eventChannel.unsubscribe();
-      if (equipmentChannel) equipmentChannel.unsubscribe();
+      if (channel) channel.unsubscribe();
     };
-  }, [event.id, event.project_id, event.type.needs_equipment, queryClient]);
+  }, [event.id, event.type.needs_equipment, queryClient]);
 
   const handleEquipmentOption = async () => {
     try {
