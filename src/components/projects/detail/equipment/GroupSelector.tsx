@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2 } from "lucide-react";
 
 interface GroupSelectorProps {
   projectId: string;
@@ -15,9 +13,6 @@ interface GroupSelectorProps {
 
 export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: GroupSelectorProps) {
   const [groupSearch, setGroupSearch] = useState("");
-  const [isGroupPopoverOpen, setIsGroupPopoverOpen] = useState(false);
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
 
   const { data: equipmentGroups = [], isLoading: isLoadingGroups } = useQuery({
     queryKey: ['equipment-groups'],
@@ -47,40 +42,6 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
     enabled: !!projectId
   });
 
-  const createGroup = async (name: string) => {
-    if (!name.trim()) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('project_equipment_groups')
-        .insert({
-          name,
-          project_id: projectId,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Group created successfully",
-      });
-
-      queryClient.invalidateQueries({ queryKey: ['project-equipment-groups', projectId] });
-      setGroupSearch("");
-      setIsGroupPopoverOpen(false);
-      if (data) onGroupSelect(data.id);
-    } catch (error) {
-      console.error('Error creating group:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create group",
-        variant: "destructive",
-      });
-    }
-  };
-
   if (isLoadingGroups || isLoadingProjectGroups) {
     return (
       <div className="flex items-center gap-2">
@@ -94,60 +55,16 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
     group.name.toLowerCase().includes(groupSearch.toLowerCase())
   );
 
-  const showCreateOption = groupSearch.trim() !== "" && 
-    !equipmentGroups.some(group => group.name.toLowerCase() === groupSearch.toLowerCase());
-
   return (
     <div className="flex gap-2">
-      <Popover open={isGroupPopoverOpen} onOpenChange={setIsGroupPopoverOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={isGroupPopoverOpen}
-            className="w-[200px] justify-between"
-          >
-            {selectedGroupId ? projectGroups.find(g => g.id === selectedGroupId)?.name : "Select group..."}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-[200px] p-0">
-          {isLoadingGroups ? (
-            <div className="p-4 flex items-center justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" />
-            </div>
-          ) : (
-            <Command>
-              <CommandInput
-                placeholder="Search groups..."
-                value={groupSearch}
-                onValueChange={setGroupSearch}
-              />
-              <CommandEmpty>
-                {showCreateOption && (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => createGroup(groupSearch)}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create "{groupSearch}"
-                  </Button>
-                )}
-              </CommandEmpty>
-              <CommandGroup>
-                {filteredGroups.map(group => (
-                  <CommandItem
-                    key={group.id}
-                    onSelect={() => createGroup(group.name)}
-                  >
-                    {group.name}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            </Command>
-          )}
-        </PopoverContent>
-      </Popover>
+      <div className="w-[200px]">
+        <Input
+          placeholder="Search groups..."
+          value={groupSearch}
+          onChange={(e) => setGroupSearch(e.target.value)}
+          className="bg-zinc-800/50"
+        />
+      </div>
 
       <div className="flex gap-2 overflow-x-auto">
         {projectGroups.map(group => (
