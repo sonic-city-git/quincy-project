@@ -41,9 +41,10 @@ export function EquipmentSelector({ onSelect, projectId, selectedGroupId }: Equi
         searchQuery={searchQuery}
         selectedFolders={selectedFolders}
         selectedItem={selectedItem}
-        onSelect={setSelectedItem}
+        onItemSelect={setSelectedItem}
         projectId={projectId}
         selectedGroupId={selectedGroupId}
+        equipment={[]}
       />
     </div>
   );
