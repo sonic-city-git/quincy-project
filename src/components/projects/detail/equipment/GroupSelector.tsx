@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 
 interface GroupSelectorProps {
   projectId: string;
@@ -19,8 +19,8 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch equipment groups
-  const { data: equipmentGroups = [] } = useQuery({
+  // Fetch equipment groups with proper error handling
+  const { data: equipmentGroups = [], isLoading } = useQuery({
     queryKey: ['equipment-groups'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -33,8 +33,8 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
     }
   });
 
-  // Fetch project equipment groups
-  const { data: projectGroups = [] } = useQuery({
+  // Fetch project equipment groups with proper error handling
+  const { data: projectGroups = [], isLoading: isLoadingProjectGroups } = useQuery({
     queryKey: ['project-equipment-groups', projectId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -87,6 +87,15 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
   const filteredGroups = equipmentGroups.filter(group => 
     group.name.toLowerCase().includes(groupSearch.toLowerCase())
   );
+
+  if (isLoading || isLoadingProjectGroups) {
+    return (
+      <div className="flex items-center gap-2">
+        <Loader2 className="h-4 w-4 animate-spin" />
+        <span>Loading groups...</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex gap-2">
