@@ -3,6 +3,9 @@ import { Card } from "@/components/ui/card";
 import { GripVertical, Minus, Plus, X } from "lucide-react";
 import { ProjectEquipment } from "@/types/equipment";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ProjectEquipmentItemProps {
   item: ProjectEquipment;
@@ -11,12 +14,36 @@ interface ProjectEquipmentItemProps {
 }
 
 export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectEquipmentItemProps) {
+  const [isUpdating, setIsUpdating] = useState(false);
+
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('application/json', JSON.stringify({
       id: item.id,
       currentGroupId: item.group_id
     }));
     e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleQuantityChange = async (delta: number) => {
+    const newQuantity = item.quantity + delta;
+    if (newQuantity < 1) return;
+    
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('project_equipment')
+        .update({ quantity: newQuantity })
+        .eq('id', item.id);
+
+      if (error) throw error;
+      
+      toast.success('Quantity updated');
+    } catch (error) {
+      console.error('Error updating quantity:', error);
+      toast.error('Failed to update quantity');
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
@@ -36,15 +63,33 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
         </div>
         <div className="flex items-center gap-0.5">
           <div className="flex items-center gap-0.5">
-            <Button variant="outline" size="icon" className="h-5 w-5">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="h-5 w-5" 
+              onClick={() => handleQuantityChange(-1)}
+              disabled={isUpdating || item.quantity <= 1}
+            >
               <Minus className="h-3 w-3" />
             </Button>
             <span className="w-6 text-center text-sm">{item.quantity}</span>
-            <Button variant="outline" size="icon" className="h-5 w-5">
+            <Button 
+              variant="outline" 
+              size="icon" 
+              className="h-5 w-5"
+              onClick={() => handleQuantityChange(1)}
+              disabled={isUpdating}
+            >
               <Plus className="h-3 w-3" />
             </Button>
           </div>
-          <Button variant="ghost" size="icon" className="h-5 w-5" onClick={onRemove}>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-5 w-5" 
+            onClick={onRemove}
+            disabled={isUpdating}
+          >
             <X className="h-3 w-3" />
           </Button>
         </div>
