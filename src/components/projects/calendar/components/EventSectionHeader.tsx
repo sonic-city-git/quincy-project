@@ -57,10 +57,7 @@ export function EventSectionHeader({
           {formatPrice(totalRevenue)}
         </div>
 
-        {/* Edit button column */}
-        <div className="col-span-1" />
-
-        {/* Status manager column - now single column */}
+        {/* Status manager column - now second to last */}
         <div className="col-span-1 flex justify-end">
           {onStatusChange && (
             <EventStatusManager
@@ -71,6 +68,9 @@ export function EventSectionHeader({
             />
           )}
         </div>
+
+        {/* Empty column for edit button alignment */}
+        <div className="col-span-1" />
       </EventSectionHeaderGrid>
     </div>
   );

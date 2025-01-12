@@ -16,8 +16,8 @@ export function EventSectionHeaderGrid({ children }: EventSectionHeaderGridProps
         6. Crew icon: 30px
         7. Event type: 150px
         8. Revenue: 100px
-        9. Edit button: 40px
-        10. Status button: 40px
+        9. Status manager: 40px
+        10. Edit button: 40px
       */}
       {children}
     </div>
