@@ -6,7 +6,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, Package, Users } from "lucide-react";
+import { ChevronDown, Package, Users, Send } from "lucide-react";
 import { useState } from "react";
 import { EventStatusManager } from "./EventStatusManager";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,12 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
 
   if (!events.length) return null;
 
-  const sectionIcon = getStatusIcon(status === 'done and dusted' ? 'invoiced' : status);
+  const sectionIcon = status === 'invoice ready' ? (
+    <Send className="h-5 w-5 text-blue-500" />
+  ) : (
+    getStatusIcon(status === 'done and dusted' ? 'invoiced' : status)
+  );
+  
   const isDoneAndDusted = status === 'done and dusted';
   const isCancelled = status === 'cancelled';
   const canSync = status === 'proposed' || status === 'confirmed';
@@ -53,7 +58,12 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   };
 
   const getStatusText = (status: string) => {
-    return status === 'invoice ready' ? 'Invoice Ready' : `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
+    switch (status) {
+      case 'invoice ready':
+        return 'Invoice Ready';
+      default:
+        return `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
+    }
   };
 
   const handleSyncEquipment = async () => {
