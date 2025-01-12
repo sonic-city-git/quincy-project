@@ -56,8 +56,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     setDragStartDate(null);
   }, []);
 
-  const addEvent = async (date: Date, eventName: string, eventType: EventType) => {
-    const newEvent = await addEventHandler(date, eventName, eventType);
+  const addEvent = async (date: Date, eventName: string, eventType: EventType, status: CalendarEvent['status'] = 'proposed') => {
+    const newEvent = await addEventHandler(date, eventName, eventType, status);
     
     queryClient.setQueryData(['events', projectId], (old: CalendarEvent[] | undefined) => 
       old ? [...old, newEvent] : [newEvent]

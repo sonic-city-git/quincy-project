@@ -8,7 +8,7 @@ export const useEventManagement = (projectId: string) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
-  const addEvent = async (date: Date, eventName: string, eventType: EventType) => {
+  const addEvent = async (date: Date, eventName: string, eventType: EventType, status: CalendarEvent['status'] = 'proposed') => {
     if (!projectId) {
       console.error('No project ID provided for adding event');
       throw new Error('Project ID is missing');
@@ -16,8 +16,8 @@ export const useEventManagement = (projectId: string) => {
 
     setIsLoading(true);
     try {
-      console.log('Adding event:', { projectId, date, eventName, eventType });
-      const eventData = await createEvent(projectId, date, eventName, eventType);
+      console.log('Adding event:', { projectId, date, eventName, eventType, status });
+      const eventData = await createEvent(projectId, date, eventName, eventType, status);
       
       if (eventType.needs_crew) {
         console.log('Event needs crew, creating role assignments');

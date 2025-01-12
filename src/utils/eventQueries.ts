@@ -43,7 +43,8 @@ export const createEvent = async (
   projectId: string,
   date: Date,
   eventName: string,
-  eventType: EventType
+  eventType: EventType,
+  status: CalendarEvent['status'] = 'proposed' // Add status parameter with default value
 ) => {
   const formattedDate = formatDatabaseDate(date);
   
@@ -51,7 +52,8 @@ export const createEvent = async (
     projectId,
     date: formattedDate,
     eventName,
-    eventType
+    eventType,
+    status // Log the status
   });
 
   try {
@@ -62,7 +64,7 @@ export const createEvent = async (
         date: formattedDate,
         name: eventName.trim() || eventType.name,
         event_type_id: eventType.id,
-        status: 'proposed'
+        status: status // Use the provided status instead of hardcoding 'proposed'
       })
       .select(`
         *,
