@@ -105,7 +105,7 @@ export function ProjectBaseEquipmentList({
             <div 
               key={group.id} 
               className={cn(
-                "rounded-lg border border-border bg-background/50 transition-all duration-200 relative",
+                "rounded-lg border border-border bg-background/50 transition-all duration-200",
                 isSelected && "ring-2 ring-primary/20"
               )}
               onDragOver={handleDragOver}
@@ -113,7 +113,7 @@ export function ProjectBaseEquipmentList({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, group.id)}
             >
-              <div className="sticky top-0 z-10 bg-inherit rounded-t-lg">
+              <div className="bg-inherit rounded-t-lg">
                 <h3 
                   className={cn(
                     "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
@@ -147,7 +147,7 @@ export function ProjectBaseEquipmentList({
         {ungroupedEquipment.length > 0 && (
           <div 
             className={cn(
-              "rounded-lg border border-border bg-background/50 transition-all duration-200 relative",
+              "rounded-lg border border-border bg-background/50 transition-all duration-200",
               selectedGroupId === null && "ring-2 ring-primary/20"
             )}
             onDragOver={handleDragOver}
@@ -155,7 +155,7 @@ export function ProjectBaseEquipmentList({
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, null)}
           >
-            <div className="sticky top-0 z-10 bg-inherit rounded-t-lg">
+            <div className="bg-inherit rounded-t-lg">
               <h3 
                 className={cn(
                   "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
