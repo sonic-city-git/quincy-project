@@ -69,7 +69,7 @@ export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) 
         .select('id')
         .eq('project_id', projectId)
         .eq('name', name)
-        .single();
+        .maybeSingle();
 
       if (existingGroup) {
         // If the group exists, select it and notify the user
