@@ -42,19 +42,43 @@ export function useProjectEquipment(projectId: string) {
   const addEquipment = async (item: Equipment, groupId: string | null = null) => {
     setLoading(true);
     try {
-      const { error } = await supabase
+      // First check if the equipment already exists in the project
+      const { data: existingEquipment } = await supabase
         .from('project_equipment')
-        .insert({
-          project_id: projectId,
-          equipment_id: item.id,
-          quantity: 1,
-          group_id: groupId
-        });
+        .select('*')
+        .eq('project_id', projectId)
+        .eq('equipment_id', item.id)
+        .eq('group_id', groupId)
+        .single();
 
-      if (error) throw error;
+      if (existingEquipment) {
+        // If it exists, update the quantity
+        const { error: updateError } = await supabase
+          .from('project_equipment')
+          .update({
+            quantity: existingEquipment.quantity + 1,
+            group_id: groupId
+          })
+          .eq('id', existingEquipment.id);
+
+        if (updateError) throw updateError;
+        toast.success('Equipment quantity updated');
+      } else {
+        // If it doesn't exist, create a new entry
+        const { error: insertError } = await supabase
+          .from('project_equipment')
+          .insert({
+            project_id: projectId,
+            equipment_id: item.id,
+            quantity: 1,
+            group_id: groupId
+          });
+
+        if (insertError) throw insertError;
+        toast.success('Equipment added to project');
+      }
 
       queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] });
-      toast.success('Equipment added to project');
     } catch (error) {
       console.error('Error adding equipment:', error);
       toast.error('Failed to add equipment');
