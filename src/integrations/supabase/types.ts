@@ -544,6 +544,7 @@ export type Database = {
           event_id: string | null
           group_id: string | null
           id: string
+          is_synced: boolean | null
           notes: string | null
           project_id: string | null
           quantity: number | null
@@ -555,6 +556,7 @@ export type Database = {
           event_id?: string | null
           group_id?: string | null
           id?: string
+          is_synced?: boolean | null
           notes?: string | null
           project_id?: string | null
           quantity?: number | null
@@ -566,6 +568,7 @@ export type Database = {
           event_id?: string | null
           group_id?: string | null
           id?: string
+          is_synced?: boolean | null
           notes?: string | null
           project_id?: string | null
           quantity?: number | null
