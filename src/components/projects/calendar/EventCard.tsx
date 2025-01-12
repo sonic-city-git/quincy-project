@@ -26,6 +26,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   };
 
   console.log('Event type:', event.type);  // Add this to debug
+  console.log('Needs equipment:', event.type.needs_equipment);  // Additional debug log
 
   return (
     <Card key={`${event.date}-${event.name}`} className="p-4">
