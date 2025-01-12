@@ -26,6 +26,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
               <EquipmentSelector 
                 onSelect={() => {}} 
                 projectId={projectId}
+                selectedGroupId={selectedGroupId}
               />
             </div>
           </div>

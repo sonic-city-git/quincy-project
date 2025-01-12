@@ -14,6 +14,7 @@ interface EquipmentSelectorProps {
   onSelect: (equipment: Equipment) => void;
   className?: string;
   projectId: string;
+  selectedGroupId: string | null;
 }
 
 interface FolderStructure {
@@ -29,7 +30,7 @@ interface FolderStructure {
   }
 }
 
-export function EquipmentSelector({ onSelect, className, projectId }: EquipmentSelectorProps) {
+export function EquipmentSelector({ onSelect, className, projectId, selectedGroupId }: EquipmentSelectorProps) {
   const [search, setSearch] = useState("");
   const { equipment = [], loading } = useEquipment();
   const { folders = [] } = useFolders();
@@ -144,7 +145,7 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
   };
 
   const handleDoubleClick = async (item: Equipment) => {
-    await addEquipment(item);
+    await addEquipment(item, selectedGroupId);
   };
 
   const renderEquipmentItem = (item: Equipment) => (
@@ -208,10 +209,8 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
                     <span className="font-semibold text-sm ml-2">{folder.name}</span>
                   </CollapsibleTrigger>
                   <CollapsibleContent className="pl-6 space-y-1">
-                    {/* Main folder equipment */}
                     {folder.equipment.map(renderEquipmentItem)}
 
-                    {/* Subfolders */}
                     {Object.entries(folder.subfolders)
                       .filter(([, subfolder]) => subfolder.equipment.length > 0)
                       .map(([subId, sub]) => (
