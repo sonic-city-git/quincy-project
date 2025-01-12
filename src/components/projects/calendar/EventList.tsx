@@ -89,39 +89,43 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
     if (!projectId) return;
 
     try {
+      // First, delete all equipment records
       console.log('Deleting event equipment...');
-      const { error: equipmentDeleteError } = await supabase
+      const { error: equipmentError } = await supabase
         .from('project_event_equipment')
         .delete()
-        .eq('event_id', event.id);
+        .match({ event_id: event.id });
 
-      if (equipmentDeleteError) {
-        console.error('Error deleting event equipment:', equipmentDeleteError);
-        throw equipmentDeleteError;
+      if (equipmentError) {
+        console.error('Error deleting event equipment:', equipmentError);
+        throw equipmentError;
       }
 
+      // Then, delete all role records
       console.log('Deleting event roles...');
-      const { error: rolesDeleteError } = await supabase
+      const { error: rolesError } = await supabase
         .from('project_event_roles')
         .delete()
-        .eq('event_id', event.id);
+        .match({ event_id: event.id });
 
-      if (rolesDeleteError) {
-        console.error('Error deleting event roles:', rolesDeleteError);
-        throw rolesDeleteError;
+      if (rolesError) {
+        console.error('Error deleting event roles:', rolesError);
+        throw rolesError;
       }
 
+      // Finally, delete the event itself
       console.log('Deleting event...');
-      const { error: eventDeleteError } = await supabase
+      const { error: eventError } = await supabase
         .from('project_events')
         .delete()
-        .eq('id', event.id);
+        .match({ id: event.id });
 
-      if (eventDeleteError) {
-        console.error('Error deleting event:', eventDeleteError);
-        throw eventDeleteError;
+      if (eventError) {
+        console.error('Error deleting event:', eventError);
+        throw eventError;
       }
 
+      // Invalidate relevant queries
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
         queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] }),
