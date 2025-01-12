@@ -189,51 +189,63 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   return (
     <div className="space-y-3">
       <div className={`rounded-lg ${getStatusBackground(status)}`}>
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center gap-2">
-            {sectionIcon}
-            <h3 className="text-lg font-semibold">{getStatusText(status)}</h3>
-          </div>
-          <div className="flex items-center gap-4">
-            {canSync && (
+        <div className="p-4">
+          <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_auto] gap-4 items-center">
+            <div className="flex items-center gap-2">
+              {sectionIcon}
+              <h3 className="text-lg font-semibold">{getStatusText(status)}</h3>
+            </div>
+            
+            <div /> {/* Empty space for name column */}
+            
+            {canSync ? (
               <TooltipProvider>
-                <div className="flex items-center gap-2">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={handleSyncEquipment}
-                        disabled={isSyncing}
-                      >
-                        <Package className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Sync equipment with project list
-                    </TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={handleSyncCrew}
-                        disabled={isSyncing}
-                      >
-                        <Users className="h-5 w-5 text-muted-foreground hover:text-foreground" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      Sync crew with project list
-                    </TooltipContent>
-                  </Tooltip>
-                </div>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 p-0"
+                      onClick={handleSyncEquipment}
+                      disabled={isSyncing}
+                    >
+                      <Package className="h-6 w-6 text-muted-foreground hover:text-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Sync equipment with project list
+                  </TooltipContent>
+                </Tooltip>
               </TooltipProvider>
+            ) : (
+              <div /> /* Placeholder for equipment column */
             )}
+
+            {canSync ? (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 p-0"
+                      onClick={handleSyncCrew}
+                      disabled={isSyncing}
+                    >
+                      <Users className="h-6 w-6 text-muted-foreground hover:text-foreground" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Sync crew with project list
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ) : (
+              <div /> /* Placeholder for crew column */
+            )}
+
+            <div /> {/* Empty space for event type column */}
+
             <EventStatusManager
               status={status}
               events={events}
