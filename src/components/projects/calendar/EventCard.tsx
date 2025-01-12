@@ -1,6 +1,6 @@
 import { CalendarEvent } from "@/types/events";
 import { Card } from "@/components/ui/card";
-import { Calendar, Edit, MapPin, Package } from "lucide-react";
+import { Calendar, Edit, MapPin, Package, Users } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,12 +25,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     };
   };
 
-  console.log('Event type:', event.type);  // Add this to debug
-  console.log('Needs equipment:', event.type.needs_equipment);  // Additional debug log
-
   return (
     <Card key={`${event.date}-${event.name}`} className="p-4">
-      <div className="grid grid-cols-[120px_1fr_auto_auto_auto_auto] items-center gap-2">
+      <div className="grid grid-cols-[120px_1fr_auto_auto_auto_auto_auto] items-center gap-2">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
@@ -54,9 +51,10 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           )}
         </div>
         <div className="flex items-center gap-2">
-          {event.type.needs_equipment && (
-            <Package className="h-4 w-4 text-muted-foreground" />
-          )}
+          {event.type.needs_equipment && <Package className="h-4 w-4 text-muted-foreground" />}
+          {event.type.needs_crew && <Users className="h-4 w-4 text-muted-foreground" />}
+        </div>
+        <div className="flex items-center gap-2">
           <span 
             className="text-sm px-3 py-1 rounded-md inline-block"
             style={getColorStyles(event.type.color)}
