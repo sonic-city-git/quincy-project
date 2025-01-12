@@ -63,6 +63,24 @@ export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) 
   const handleAddGroup = async (name: string, sortOrder: number = projectGroups.length) => {
     setIsSubmitting(true);
     try {
+      // First check if the group already exists
+      const { data: existingGroup } = await supabase
+        .from('project_equipment_groups')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('name', name)
+        .single();
+
+      if (existingGroup) {
+        // If the group exists, select it and notify the user
+        onGroupSelect(existingGroup.id);
+        setCustomGroupName("");
+        setIsCustomDialogOpen(false);
+        toast.info("Group already exists, selecting it");
+        return;
+      }
+
+      // If the group doesn't exist, create it
       const { data, error } = await supabase
         .from('project_equipment_groups')
         .insert({
@@ -87,9 +105,9 @@ export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) 
       setCustomGroupName("");
       setIsCustomDialogOpen(false);
       toast.success("Group added successfully");
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding group:', error);
-      toast.error("Failed to add group");
+      toast.error(error.message || "Failed to add group");
     } finally {
       setIsSubmitting(false);
     }
