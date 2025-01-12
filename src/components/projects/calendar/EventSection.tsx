@@ -1,15 +1,9 @@
 import { CalendarEvent } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventCard } from "./EventCard";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { ChevronDown, Package, Users } from "lucide-react";
-import { useState } from "react";
 import { EventStatusManager } from "./EventStatusManager";
 import { Button } from "@/components/ui/button";
+import { Package, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -27,12 +21,8 @@ interface EventSectionProps {
 }
 
 export function EventSection({ status, events, onStatusChange, onEdit }: EventSectionProps) {
-  const [isOpen, setIsOpen] = useState(status !== 'done and dusted');
   const [isSyncing, setIsSyncing] = useState(false);
 
-  if (!events.length) return null;
-
-  const sectionIcon = getStatusIcon(status === 'done and dusted' ? 'invoiced' : status);
   const isDoneAndDusted = status === 'done and dusted';
   const isCancelled = status === 'cancelled';
   const canSync = status === 'proposed' || status === 'confirmed';
@@ -221,24 +211,15 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
             )}
 
             {canSync ? (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 p-0"
-                      onClick={handleSyncCrew}
-                      disabled={isSyncing}
-                    >
-                      <Users className="h-6 w-6 text-muted-foreground hover:text-foreground" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    Sync crew with project list
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 p-0"
+                onClick={handleSyncCrew}
+                disabled={isSyncing}
+              >
+                <Users className="h-6 w-6 text-muted-foreground hover:text-foreground" />
+              </Button>
             ) : (
               <div /> /* Placeholder for crew column */
             )}
