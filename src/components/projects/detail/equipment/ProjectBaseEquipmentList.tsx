@@ -3,13 +3,19 @@ import { ProjectEquipmentItem } from "./ProjectEquipmentItem";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
   selectedGroupId: string | null;
+  onGroupSelect: (groupId: string) => void;
 }
 
-export function ProjectBaseEquipmentList({ projectId }: ProjectBaseEquipmentListProps) {
+export function ProjectBaseEquipmentList({ 
+  projectId, 
+  selectedGroupId,
+  onGroupSelect 
+}: ProjectBaseEquipmentListProps) {
   const { equipment, loading, removeEquipment } = useProjectEquipment(projectId);
   
   const { data: groups = [] } = useQuery({
@@ -47,9 +53,17 @@ export function ProjectBaseEquipmentList({ projectId }: ProjectBaseEquipmentList
         {/* Always render all groups, even if empty */}
         {groups.map((group) => (
           <div key={group.id} className="space-y-2">
-            <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+            <button
+              onClick={() => onGroupSelect(group.id)}
+              className={cn(
+                "w-full text-left font-medium text-sm uppercase tracking-wide px-2 py-1 rounded transition-colors",
+                selectedGroupId === group.id 
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-muted/50"
+              )}
+            >
               {group.name}
-            </h3>
+            </button>
             <div className="space-y-2">
               {(groupedEquipment[group.id] || []).map((item) => (
                 <ProjectEquipmentItem
