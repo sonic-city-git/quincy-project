@@ -3,6 +3,7 @@ import { CalendarEvent, EventType } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
 import { Package, Users } from "lucide-react";
+import { formatRevenue } from "@/utils/priceFormatters";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -21,6 +22,9 @@ export function EventSectionHeader({
 }: EventSectionHeaderProps) {
   const isCancelled = title.toLowerCase() === 'cancelled';
   const iconClasses = "h-6 w-6 flex-shrink-0";
+
+  // Calculate total revenue for the section
+  const totalRevenue = events.reduce((sum, event) => sum + (event.revenue || 0), 0);
 
   return (
     <div className="border border-zinc-800 rounded-lg bg-zinc-900/50 backdrop-blur-sm p-3 mb-4">
@@ -51,7 +55,9 @@ export function EventSectionHeader({
         <div className="col-span-1" />
 
         {/* Revenue column */}
-        <div className="col-span-1" />
+        <div className="col-span-1 text-right font-medium text-muted-foreground">
+          {formatRevenue(totalRevenue)}
+        </div>
 
         {/* Status manager column */}
         <div className="col-span-2 flex justify-end">
