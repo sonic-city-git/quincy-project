@@ -37,6 +37,8 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   const isCancelled = status === 'cancelled';
   const canSync = status === 'proposed' || status === 'confirmed';
 
+  const sectionIcon = getStatusIcon(status);
+
   // Get the appropriate section icon based on sync status
   const getSectionEquipmentIcon = () => {
     if (sectionSyncStatus === 'no-equipment') {
@@ -47,8 +49,6 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     }
     return <Package className="h-6 w-6 text-green-500" />;
   };
-
-  const sectionIcon = getStatusIcon(status);
 
   useEffect(() => {
     const checkSectionSyncStatus = async () => {
