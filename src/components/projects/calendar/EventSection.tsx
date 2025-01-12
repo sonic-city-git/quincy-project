@@ -249,7 +249,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div>
+              <div className="flex items-center justify-center">
                 {getSectionEquipmentIcon()}
               </div>
             </TooltipTrigger>
@@ -318,33 +318,33 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     <div className="space-y-3">
       <div className={`rounded-lg ${getStatusBackground(status)}`}>
         <div className="p-4">
-          <div className="grid grid-cols-[auto_1fr_40px_40px_1fr_auto] gap-4 items-center">
-            <div className="flex items-center gap-2 min-w-[120px]">
+          <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_auto] gap-4 items-center">
+            <div className="flex items-center gap-2">
               {sectionIcon}
               <h3 className="text-lg font-semibold whitespace-nowrap">{getStatusText(status)}</h3>
             </div>
             
             <div /> {/* Empty space for name column */}
             
-            {canSync ? (
-              renderEquipmentIcon()
-            ) : (
-              <div /> /* Placeholder for equipment column */
-            )}
+            <div className="flex items-center justify-center">
+              {canSync ? renderEquipmentIcon() : <div />}
+            </div>
 
-            {canSync ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-6 w-6 p-0"
-                onClick={handleSyncCrew}
-                disabled={isSyncing}
-              >
-                <Users className="h-6 w-6 text-muted-foreground hover:text-foreground" />
-              </Button>
-            ) : (
-              <div /> /* Placeholder for crew column */
-            )}
+            <div className="flex items-center justify-center">
+              {canSync ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 p-0"
+                  onClick={handleSyncCrew}
+                  disabled={isSyncing}
+                >
+                  <Users className="h-6 w-6 text-muted-foreground hover:text-foreground" />
+                </Button>
+              ) : (
+                <div />
+              )}
+            </div>
 
             <div /> {/* Empty space for event type column */}
 
