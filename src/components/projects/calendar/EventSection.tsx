@@ -74,7 +74,9 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
 
     try {
       for (const event of events) {
-        // Delete existing equipment for the event
+        console.log('Syncing equipment for event:', event.id);
+        
+        // Delete existing equipment for this event
         const { error: deleteError } = await supabase
           .from('project_event_equipment')
           .delete()
