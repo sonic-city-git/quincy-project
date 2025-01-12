@@ -54,6 +54,7 @@ export function EventDialog({
       setStatus(event.status);
       setLocation(event.location || "");
     } else {
+      setName("");
       setStatus('proposed');
       setSelectedType(eventTypes[0]?.id || '');
       setLocation("");
