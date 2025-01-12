@@ -107,16 +107,18 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
           if (upsertError) throw upsertError;
         }
 
-        // Invalidate queries for this specific event
+        // Invalidate queries for this specific event's equipment
         await queryClient.invalidateQueries({ 
           queryKey: ['project-event-equipment', event.id]
         });
       }
 
-      // Invalidate the main events query to refresh the UI
-      await queryClient.invalidateQueries({ 
-        queryKey: ['events']
-      });
+      // Invalidate all relevant queries to ensure UI updates
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['events'] }),
+        queryClient.invalidateQueries({ queryKey: ['project-event-equipment'] }),
+        queryClient.invalidateQueries({ queryKey: ['project-equipment'] })
+      ]);
 
       toast.success(`Equipment synchronized for all ${status} events`);
     } catch (error) {
