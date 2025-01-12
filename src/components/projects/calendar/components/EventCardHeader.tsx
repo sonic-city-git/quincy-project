@@ -1,5 +1,5 @@
 import { CalendarEvent } from "@/types/events";
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { format } from "date-fns";
 
 interface EventCardHeaderProps {
@@ -27,7 +27,7 @@ export function EventCardHeader({ event }: EventCardHeaderProps) {
       <div className="flex items-center justify-start">
         {event.location && (
           <div className="flex items-center text-muted-foreground">
-            <MapPin className="h-4 w-4" />
+            <span className="text-sm">{event.location}</span>
           </div>
         )}
       </div>
