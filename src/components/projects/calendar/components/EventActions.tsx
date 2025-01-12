@@ -22,9 +22,9 @@ export function EventActions({
   onEdit,
   isEditingDisabled 
 }: EventActionsProps) {
-  const handleEdit = () => {
-    if (onEdit) {
-      console.log('Handling edit click for event:', event);
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onEdit && !isEditingDisabled) {
       onEdit(event);
     }
   };
