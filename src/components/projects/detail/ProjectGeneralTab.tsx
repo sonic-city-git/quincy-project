@@ -31,7 +31,7 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
 
   return (
     <div className="space-y-8">
-      <Card className="bg-zinc-800/45 p-6">
+      <Card className="rounded-lg bg-zinc-800/45 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Calendar Section */}
           <Card className="rounded-lg bg-zinc-800/45">
@@ -50,7 +50,7 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
       </Card>
 
       {/* Event List Section */}
-      <Card className="bg-zinc-800/45 p-6">
+      <Card className="rounded-lg bg-zinc-800/45 p-6">
         <EventList 
           events={events} 
           projectId={projectId}
