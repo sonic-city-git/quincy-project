@@ -14,6 +14,7 @@ import { EVENT_COLORS } from "@/constants/eventColors";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState, useEffect, useCallback } from 'react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -26,7 +27,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const [hasEventEquipment, setHasEventEquipment] = useState(false);
   const [hasProjectEquipment, setHasProjectEquipment] = useState(false);
 
-  // Fetch initial sync status and equipment status
   useEffect(() => {
     const fetchStatus = async () => {
       try {
@@ -106,6 +106,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       }
 
       setIsSynced(true);
+      setHasEventEquipment(true);
       toast.success('Equipment list synchronized successfully');
     } catch (error) {
       console.error('Error syncing equipment:', error);
@@ -187,33 +188,52 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
         <div className="flex items-center justify-center">
           {event.type.needs_equipment && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 p-0"
-                >
-                  {getEquipmentIcon()}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                {!isSynced && hasEventEquipment ? (
-                  <>
-                    <DropdownMenuItem onClick={viewOutOfSyncEquipment}>
-                      View out of sync equipment list
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleEquipmentOption}>
-                      Sync to project equipment list
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <DropdownMenuItem onClick={handleEquipmentOption}>
-                    Assign project equipment list
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    {hasEventEquipment && isSynced ? (
+                      <Package className="h-6 w-6 text-green-500" />
+                    ) : (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-6 w-6 p-0"
+                          >
+                            {getEquipmentIcon()}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start">
+                          {!hasEventEquipment ? (
+                            <DropdownMenuItem onClick={handleEquipmentOption}>
+                              Sync from project equipment
+                            </DropdownMenuItem>
+                          ) : !isSynced ? (
+                            <>
+                              <DropdownMenuItem onClick={viewOutOfSyncEquipment}>
+                                View equipment list
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={handleEquipmentOption}>
+                                Sync from project equipment
+                              </DropdownMenuItem>
+                            </>
+                          ) : null}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {hasEventEquipment && isSynced 
+                    ? "Equipment list is NSYNC" 
+                    : !hasEventEquipment 
+                      ? "No equipment assigned"
+                      : "Equipment list out of sync"}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           )}
         </div>
 
