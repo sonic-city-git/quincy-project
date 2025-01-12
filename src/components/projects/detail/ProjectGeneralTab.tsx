@@ -34,14 +34,14 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
       <Card className="bg-zinc-800/45 hover:bg-zinc-800/50 transition-colors p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Calendar Section */}
-          <Card className="bg-zinc-900/50 hover:bg-zinc-900/60 transition-colors">
+          <Card className="bg-primary/10 hover:bg-primary/15 transition-colors">
             <div className="p-6">
               <ProjectCalendar projectId={projectId} />
             </div>
           </Card>
           
           {/* General Info Section */}
-          <Card className="bg-zinc-900/50 hover:bg-zinc-900/60 transition-colors">
+          <Card className="bg-primary/10 hover:bg-primary/15 transition-colors">
             <div className="p-6">
               <ProjectInfo project={project} />
             </div>
