@@ -77,15 +77,13 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
       <div className="w-[200px] relative">
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
-            <div>
-              <Input
-                placeholder="Search groups..."
-                value={groupSearch}
-                onChange={(e) => setGroupSearch(e.target.value)}
-                onFocus={() => setIsOpen(true)}
-                className="bg-zinc-800/50"
-              />
-            </div>
+            <Input
+              placeholder="Search groups..."
+              value={groupSearch}
+              onChange={(e) => setGroupSearch(e.target.value)}
+              onFocus={() => setIsOpen(true)}
+              className="bg-zinc-800/50 cursor-text"
+            />
           </PopoverTrigger>
           <PopoverContent 
             className="w-[200px] p-0" 
