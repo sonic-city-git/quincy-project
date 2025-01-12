@@ -37,26 +37,22 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
         required={required}
       >
         <SelectTrigger className={cn("flex items-center gap-2", error ? "border-red-500" : "", className)}>
-          {selectedMember ? (
-            <div className="flex items-center gap-2">
-              <Avatar className="h-6 w-6">
-                {selectedMember.avatar_url ? (
-                  <AvatarImage 
-                    src={selectedMember.avatar_url} 
-                    alt={selectedMember.name} 
-                    className="object-cover"
-                  />
-                ) : (
-                  <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
-                    {selectedInitials}
-                  </AvatarFallback>
-                )}
-              </Avatar>
-              <SelectValue placeholder="Select owner" />
-            </div>
-          ) : (
-            <SelectValue placeholder="Select owner" />
+          {selectedMember && (
+            <Avatar className="h-6 w-6">
+              {selectedMember.avatar_url ? (
+                <AvatarImage 
+                  src={selectedMember.avatar_url} 
+                  alt={selectedMember.name} 
+                  className="object-cover"
+                />
+              ) : (
+                <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
+                  {selectedInitials}
+                </AvatarFallback>
+              )}
+            </Avatar>
           )}
+          <SelectValue placeholder="Select owner" />
         </SelectTrigger>
         <SelectContent>
           <ScrollArea className="h-[200px] w-full">
