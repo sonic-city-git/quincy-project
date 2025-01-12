@@ -231,7 +231,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
             
             <div /> {/* Empty space for name column */}
             
-            <div /> {/* Removed map pin */}
+            <div /> {/* Empty space for map pin column */}
 
             <div className="flex items-center justify-center">
               {canSync ? getSectionEquipmentIcon() : <div />}
