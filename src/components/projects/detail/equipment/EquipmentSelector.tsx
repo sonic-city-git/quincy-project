@@ -187,7 +187,7 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
       </div>
 
       <ScrollArea className="flex-1">
-        <div className="space-y-2 pr-4">
+        <div className="space-y-1 pr-4">
           {loading ? (
             <div className="text-sm text-muted-foreground">Loading equipment...</div>
           ) : Object.keys(folderStructure).length === 0 ? (
@@ -201,14 +201,14 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
                   open={openFolders.includes(folderId)}
                   onOpenChange={() => toggleFolder(folderId)}
                 >
-                  <CollapsibleTrigger className="flex items-center w-full text-left py-2">
+                  <CollapsibleTrigger className="flex items-center w-full text-left py-1">
                     <ChevronRight className={cn(
                       "h-4 w-4 shrink-0 transition-transform duration-200",
                       openFolders.includes(folderId) && "rotate-90"
                     )} />
-                    <span className="font-semibold text-sm ml-2">{folder.name}</span>
+                    <span className="font-semibold text-sm ml-1">{folder.name}</span>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="pl-6 space-y-1">
+                  <CollapsibleContent className="pl-4 space-y-0.5">
                     {folder.equipment.map(renderEquipmentItem)}
 
                     {Object.entries(folder.subfolders)
@@ -224,11 +224,11 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
                               "h-4 w-4 shrink-0 transition-transform duration-200",
                               openSubfolders.includes(subId) && "rotate-90"
                             )} />
-                            <span className="font-medium text-sm ml-2 text-muted-foreground">
+                            <span className="font-medium text-sm ml-1 text-muted-foreground">
                               {sub.name}
                             </span>
                           </CollapsibleTrigger>
-                          <CollapsibleContent className="pl-6 space-y-1">
+                          <CollapsibleContent className="pl-4 space-y-0.5">
                             {sub.equipment.map(renderEquipmentItem)}
                           </CollapsibleContent>
                         </Collapsible>
