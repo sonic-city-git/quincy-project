@@ -6,6 +6,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchEvents } from "@/utils/eventQueries";
 import { useEffect } from "react";
 import { ProjectInfo } from "./ProjectInfo";
+import { Separator } from "@/components/ui/separator";
 
 interface ProjectGeneralTabProps {
   project: Project;
@@ -31,18 +32,31 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
 
   return (
     <div className="space-y-8">
-      <Card className="bg-zinc-800/45 hover:bg-zinc-800/50 transition-colors">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
-          <div className="w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Calendar Section */}
+        <Card className="bg-zinc-800/45 hover:bg-zinc-800/50 transition-colors">
+          <div className="p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-zinc-100">Calendar</h2>
+            </div>
+            <Separator className="bg-zinc-700" />
             <ProjectCalendar projectId={projectId} />
           </div>
-          
-          <div>
+        </Card>
+        
+        {/* General Info Section */}
+        <Card className="bg-zinc-800/45 hover:bg-zinc-800/50 transition-colors">
+          <div className="p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-zinc-100">General Information</h2>
+            </div>
+            <Separator className="bg-zinc-700" />
             <ProjectInfo project={project} />
           </div>
-        </div>
-      </Card>
+        </Card>
+      </div>
 
+      {/* Event List Section */}
       <Card className="bg-zinc-800/45 hover:bg-zinc-800/50 transition-colors p-6">
         <EventList 
           events={events} 
