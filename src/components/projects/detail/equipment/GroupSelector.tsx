@@ -72,7 +72,7 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
       queryClient.invalidateQueries({ queryKey: ['project-equipment-groups', projectId] });
       setGroupSearch("");
       setIsGroupPopoverOpen(false);
-      onGroupSelect(data.id);
+      if (data) onGroupSelect(data.id);
       return data;
     } catch (error) {
       console.error('Error creating group:', error);
@@ -83,6 +83,10 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
       });
     }
   };
+
+  const filteredGroups = equipmentGroups.filter(group => 
+    group.name.toLowerCase().includes(groupSearch.toLowerCase())
+  );
 
   return (
     <div className="flex gap-2">
@@ -117,18 +121,14 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
               )}
             </CommandEmpty>
             <CommandGroup>
-              {equipmentGroups
-                .filter(group => 
-                  group.name.toLowerCase().includes(groupSearch.toLowerCase())
-                )
-                .map(group => (
-                  <CommandItem
-                    key={group.id}
-                    onSelect={() => createGroup(group.name)}
-                  >
-                    {group.name}
-                  </CommandItem>
-                ))}
+              {filteredGroups.map(group => (
+                <CommandItem
+                  key={group.id}
+                  onSelect={() => createGroup(group.name)}
+                >
+                  {group.name}
+                </CommandItem>
+              ))}
             </CommandGroup>
           </Command>
         </PopoverContent>

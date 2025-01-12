@@ -25,8 +25,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
             <div className="flex-1 overflow-hidden">
               <EquipmentSelector 
                 onSelect={() => {}} 
-                projectId={projectId} 
-                selectedGroupId={selectedGroupId}
+                projectId={projectId}
               />
             </div>
           </div>
