@@ -51,9 +51,11 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
     );
   }
 
-  const filteredGroups = equipmentGroups.filter(group => 
-    group.name.toLowerCase().includes(groupSearch.toLowerCase())
-  );
+  const filteredGroups = groupSearch.trim() === "" 
+    ? equipmentGroups 
+    : equipmentGroups.filter(group => 
+        group.name.toLowerCase().includes(groupSearch.toLowerCase())
+      );
 
   return (
     <div className="flex gap-2">
