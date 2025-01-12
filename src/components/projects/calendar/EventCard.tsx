@@ -40,7 +40,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
-  const [sectionSyncStatus, setSectionSyncStatus] = useState<'synced' | 'out-of-sync' | 'no-equipment'>('no-equipment');
+  const [isSynced, setIsSynced] = useState(true);
   const [isEquipmentDialogOpen, setIsEquipmentDialogOpen] = useState(false);
   const [equipmentDifference, setEquipmentDifference] = useState<EquipmentDifference>({
     added: [],
@@ -74,13 +74,11 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         .select('is_synced')
         .eq('event_id', event.id);
 
-      const hasEquipment = eventEquipment && eventEquipment.length > 0;
-      const syncStatus = hasEquipment ? eventEquipment.every(item => item.is_synced) : true;
-      
-      setSectionSyncStatus(hasEquipment ? (syncStatus ? 'synced' : 'out-of-sync') : 'no-equipment');
+      const syncStatus = eventEquipment?.every(item => item.is_synced) ?? true;
+      setIsSynced(syncStatus);
     } catch (error) {
       console.error('Error checking equipment status:', error);
-      setSectionSyncStatus('no-equipment');
+      setIsSynced(true);
     }
   };
 
@@ -244,8 +242,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           <div className="flex items-center justify-center">
             {event.type.needs_equipment && (
               <EquipmentIcon
-                hasEventEquipment={sectionSyncStatus !== 'no-equipment'}
-                isSynced={sectionSyncStatus === 'synced'}
+                isSynced={isSynced}
                 isEditingDisabled={isEditingDisabled(event.status)}
                 onViewEquipment={viewOutOfSyncEquipment}
                 onSyncEquipment={handleEquipmentOption}
