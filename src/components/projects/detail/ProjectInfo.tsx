@@ -61,14 +61,14 @@ export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInf
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">Last Invoiced</label>
-          <div className="text-sm">
+          <div className="text-sm bg-zinc-900/50 px-3 py-2 rounded-md border border-zinc-700">
             {formatDate(project.created_at)}
           </div>
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">To be Invoiced</label>
-          <div className="text-sm font-medium">
+          <div className="text-sm font-medium bg-zinc-900/50 px-3 py-2 rounded-md border border-zinc-700">
             {formatCurrency(project.to_be_invoiced)}
           </div>
         </div>
