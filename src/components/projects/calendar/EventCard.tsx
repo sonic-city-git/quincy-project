@@ -258,7 +258,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           
           <div className="flex items-center justify-center">
             {event.type.needs_equipment && (
-              <div className="h-6 w-6 flex items-center justify-center -ml-7">
+              <div className="h-6 w-6 flex items-center justify-center -ml-8">
                 <EquipmentIcon
                   isSynced={isSynced}
                   isEditingDisabled={isEditingDisabled(event.status)}
@@ -271,7 +271,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
           <div className="flex items-center justify-center">
             {event.type.needs_crew && (
-              <div className="h-6 w-6 flex items-center justify-center -ml-5">
+              <div className="h-6 w-6 flex items-center justify-center -ml-8">
                 <Users className={isEditingDisabled(event.status) ? 'text-green-500' : 'text-muted-foreground'} />
               </div>
             )}
