@@ -13,7 +13,7 @@ import { getStatusIcon } from "@/utils/eventFormatters";
 import { EVENT_COLORS } from "@/constants/eventColors";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -22,37 +22,47 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
-  const hasEquipment = event.equipment && event.equipment.length > 0;
   const [isSynced, setIsSynced] = useState(true);
+  const [hasProjectEquipment, setHasProjectEquipment] = useState(false);
 
-  // Fetch initial sync status
+  // Fetch initial sync status and project equipment status
   useEffect(() => {
-    const fetchSyncStatus = async () => {
+    const fetchStatus = async () => {
       try {
-        const { data, error } = await supabase
+        // Check project equipment
+        const { data: projectEquipment } = await supabase
+          .from('project_equipment')
+          .select('id')
+          .eq('project_id', event.project_id)
+          .limit(1);
+        
+        setHasProjectEquipment(!!projectEquipment?.length);
+
+        // Check sync status
+        const { data: eventEquipment, error } = await supabase
           .from('project_event_equipment')
           .select('is_synced')
           .eq('event_id', event.id);
 
         if (!error) {
-          // If there's no equipment data yet, consider it not synced
-          const syncStatus = data && data.length > 0 ? data.every(item => item.is_synced) : false;
-          console.log('Sync status:', { data, syncStatus });
+          const syncStatus = eventEquipment && eventEquipment.length > 0 
+            ? eventEquipment.every(item => item.is_synced) 
+            : false;
           setIsSynced(syncStatus);
         } else {
           console.error('Error fetching sync status:', error);
           setIsSynced(false);
         }
       } catch (error) {
-        console.error('Error in fetchSyncStatus:', error);
+        console.error('Error in fetchStatus:', error);
         setIsSynced(false);
       }
     };
 
     if (event.type.needs_equipment) {
-      fetchSyncStatus();
+      fetchStatus();
     }
-  }, [event.id, event.type.needs_equipment]);
+  }, [event.id, event.project_id, event.type.needs_equipment]);
 
   const handleEquipmentOption = async () => {
     try {
@@ -101,18 +111,8 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     }
   };
 
-  const getEquipmentIcon = () => {
+  const getEquipmentIcon = useCallback(() => {
     if (!event.type.needs_equipment) return null;
-    
-    // Check if there's any equipment data
-    const { data: projectEquipment } = await supabase
-      .from('project_equipment')
-      .select('id')
-      .eq('project_id', event.project_id)
-      .limit(1);
-    
-    const hasProjectEquipment = projectEquipment && projectEquipment.length > 0;
-    console.log('Equipment status:', { hasProjectEquipment, isSynced });
     
     if (!hasProjectEquipment) {
       return <Package className="h-6 w-6 text-muted-foreground" />;
@@ -123,7 +123,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         className={`h-6 w-6 ${isSynced ? 'text-green-500' : 'text-yellow-500'}`}
       />
     );
-  };
+  }, [event.type.needs_equipment, hasProjectEquipment, isSynced]);
 
   return (
     <Card key={`${event.date}-${event.name}`} className="p-4">
@@ -240,4 +240,4 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       </div>
     </Card>
   );
-};
+}
