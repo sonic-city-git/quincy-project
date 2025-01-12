@@ -38,9 +38,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       case 'confirmed':
       case 'invoice ready':
       case 'cancelled':
-        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
+        return 'bg-zinc-800/75 hover:bg-zinc-800/90';
       default:
-        return 'hover:bg-zinc-800/50';
+        return 'hover:bg-zinc-800/90';
     }
   };
 
@@ -238,7 +238,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     <>
       <Card 
         key={`${event.date}-${event.name}`} 
-        className={`p-3 transition-colors mb-2 ${getStatusBackground(event.status)}`}
+        className={`p-2 transition-colors mb-1.5 ${getStatusBackground(event.status)}`}
       >
         <EventCardGrid>
           <EventCardContent event={event} />
@@ -251,9 +251,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             onSyncEquipment={handleEquipmentOption}
           />
 
-          <div className="flex items-center px-2">
+          <div className="flex items-center px-1.5">
             <span 
-              className={`text-sm px-2 py-1 rounded-md bg-opacity-75 ${EVENT_COLORS[event.type.name]}`}
+              className={`text-sm px-1.5 py-0.5 rounded-md bg-opacity-75 ${EVENT_COLORS[event.type.name]}`}
             >
               {event.type.name}
             </span>
