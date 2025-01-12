@@ -42,8 +42,8 @@ export function ProjectBaseEquipmentList({
   }
 
   return (
-    <ScrollArea className="h-[700px]">
-      <div className="space-y-6 pr-4">
+    <ScrollArea className="h-[700px] pr-4">
+      <div className="space-y-6">
         {groups.map(group => {
           const groupEquipment = equipment?.filter(item => item.group_id === group.id) || [];
           const isSelected = selectedGroupId === group.id;
@@ -52,7 +52,7 @@ export function ProjectBaseEquipmentList({
             <div 
               key={group.id} 
               className={cn(
-                "rounded-lg border border-border bg-background/50 overflow-hidden",
+                "rounded-lg border border-border bg-background/50",
                 isSelected && "ring-2 ring-primary/20"
               )}
             >
@@ -87,7 +87,7 @@ export function ProjectBaseEquipmentList({
         
         <div 
           className={cn(
-            "rounded-lg border border-border bg-background/50 overflow-hidden",
+            "rounded-lg border border-border bg-background/50",
             selectedGroupId === null && "ring-2 ring-primary/20"
           )}
         >
