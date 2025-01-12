@@ -4,7 +4,7 @@ import { CrewMember } from "@/types/crew";
 import { toast } from "sonner";
 import { useEffect } from "react";
 
-export function useCrew() {
+export function useCrew(folderId?: string) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export function useCrew() {
           table: 'crew_members'
         },
         () => {
-          queryClient.invalidateQueries({ queryKey: ['crew'] });
+          queryClient.invalidateQueries({ queryKey: ['crew', folderId] });
         }
       )
       .subscribe();
@@ -26,24 +26,31 @@ export function useCrew() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [queryClient]);
+  }, [queryClient, folderId]);
 
   const { data: crew = [], isLoading: loading, refetch } = useQuery({
-    queryKey: ['crew'],
+    queryKey: ['crew', folderId],
     queryFn: async () => {
       try {
         console.log('Fetching crew members...');
         
-        // First fetch crew members with their folders
-        const { data: crewData, error: crewError } = await supabase
+        // Build the base query
+        let query = supabase
           .from('crew_members')
           .select(`
             *,
             crew_folders (
               name
             )
-          `)
-          .order('name');
+          `);
+
+        // Add folder filter if provided
+        if (folderId) {
+          query = query.eq('folder_id', folderId);
+        }
+
+        // Execute query and order by name
+        const { data: crewData, error: crewError } = await query.order('name');
 
         if (crewError) {
           console.error('Error fetching crew:', crewError);

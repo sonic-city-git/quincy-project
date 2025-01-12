@@ -1,7 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCrew } from "@/hooks/useCrew";
-import { useFolders } from "@/hooks/useFolders";
 import { cn } from "@/lib/utils";
 
 interface OwnerSelectProps {
@@ -13,26 +12,12 @@ interface OwnerSelectProps {
 }
 
 export function OwnerSelect({ value, onChange, error, required, className }: OwnerSelectProps) {
-  const { crew, loading } = useCrew();
-  const { folders } = useFolders();
-  
-  console.log('All folders:', folders);
-  console.log('All crew members:', crew);
-  
-  // Find the Sonic City folder ID - it has the ID "34f3469f-02bd-4ecf-82f9-11a4e88c2d77"
+  // Use the Sonic City folder ID directly
   const sonicCityFolderId = "34f3469f-02bd-4ecf-82f9-11a4e88c2d77";
+  const { crew, loading } = useCrew(sonicCityFolderId);
   
-  console.log('Sonic City folder ID:', sonicCityFolderId);
-  
-  // Filter crew members to only include those from Sonic City folder
-  // and exclude the dev@soniccity.no email
-  const filteredCrew = crew?.filter(member => {
-    console.log('Checking member:', member.name, 'folder_id:', member.folder_id);
-    return member.folder_id === sonicCityFolderId && 
-           member.email !== 'dev@soniccity.no';
-  }) || [];
-  
-  console.log('Filtered crew members:', filteredCrew);
+  // Filter out the dev@soniccity.no email
+  const filteredCrew = crew?.filter(member => member.email !== 'dev@soniccity.no') || [];
 
   return (
     <div className="space-y-2">
