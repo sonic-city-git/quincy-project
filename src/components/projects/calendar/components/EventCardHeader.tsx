@@ -16,16 +16,14 @@ export function EventCardHeader({ event }: EventCardHeaderProps) {
         </span>
       </div>
       
-      <div className="flex flex-col">
-        <div className="flex items-start">
-          <span className="font-medium text-base">
-            {event.name}
-          </span>
-        </div>
+      <div className="flex items-center gap-2">
+        <span className="font-medium text-base truncate">
+          {event.name}
+        </span>
         {event.location && (
-          <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground">
             <MapPin className="h-3 w-3" />
-            <span>{event.location}</span>
+            <span className="truncate">{event.location}</span>
           </div>
         )}
       </div>

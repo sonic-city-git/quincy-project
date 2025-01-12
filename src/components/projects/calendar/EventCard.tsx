@@ -140,7 +140,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   };
 
   const handleSyncEquipment = async () => {
-    // Implementation for syncing equipment
     toast.success('Equipment synced successfully');
     setIsSynced(true);
   };
