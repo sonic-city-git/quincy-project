@@ -4,6 +4,7 @@ import { EventSectionHeader } from "./components/EventSectionHeader";
 import { EventListEmpty } from "./components/EventListEmpty";
 import { EventListLoading } from "./components/EventListLoading";
 import { useEventUpdate } from "@/hooks/useEventUpdate";
+import { useEventDialog } from "@/hooks/useEventDialog";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -13,6 +14,7 @@ interface EventListProps {
 
 export function EventList({ events, projectId, isLoading }: EventListProps) {
   const { updateEvent } = useEventUpdate(projectId);
+  const { openEditDialog } = useEventDialog();
 
   if (isLoading) {
     return <EventListLoading />;
@@ -27,8 +29,7 @@ export function EventList({ events, projectId, isLoading }: EventListProps) {
   };
 
   const handleEdit = (event: CalendarEvent) => {
-    console.log('Edit event:', event);
-    // Implement edit functionality
+    openEditDialog(event);
   };
 
   const upcomingEvents = events.filter(event => new Date(event.date) >= new Date());
