@@ -32,7 +32,7 @@ export function EventSectionHeader({
             <div className="h-6 w-6 flex items-center justify-center">
               {getStatusIcon(title.toLowerCase() as CalendarEvent['status'])}
             </div>
-            <h3 className="text-lg font-semibold">{title}</h3>
+            <h3>{title}</h3>
           </div>
           <div className="text-right font-medium text-muted-foreground">
             {formatPrice(totalRevenue)}
