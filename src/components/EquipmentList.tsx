@@ -118,7 +118,7 @@ export function EquipmentList() {
                                   {subfolder.name}
                                 </span>
                               </div>
-                              <div className="pl-4">
+                              <div>
                                 <EquipmentTable 
                                   equipment={folderEquipment}
                                   selectedItem={selectedItem}
