@@ -8,6 +8,9 @@ import { useEventTypes } from "@/hooks/useEventTypes";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventStatusChange } from "./hooks/useEventStatusChange";
 import { groupEventsByStatus } from "./utils/eventGroups";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -19,6 +22,8 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
   const { data: eventTypes = [] } = useEventTypes();
   const { handleStatusChange } = useEventStatusChange(projectId);
   const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
   
   const { 
     isEditDialogOpen, 
