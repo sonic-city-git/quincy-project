@@ -117,7 +117,8 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['events'] }),
         queryClient.invalidateQueries({ queryKey: ['project-event-equipment'] }),
-        queryClient.invalidateQueries({ queryKey: ['project-equipment'] })
+        queryClient.invalidateQueries({ queryKey: ['project-equipment'] }),
+        queryClient.invalidateQueries({ queryKey: ['calendar-events'] })
       ]);
 
       toast.success(`Equipment synchronized for all ${status} events`);
