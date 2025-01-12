@@ -27,19 +27,14 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
   return (
     <Card key={`${event.date}-${event.name}`} className="p-4">
-      <div className="grid grid-cols-[120px_auto_auto_1fr_auto_auto_auto] items-center gap-2">
+      <div className="grid grid-cols-[120px_1fr_auto_auto_auto_auto_auto] items-center gap-2">
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-muted-foreground">
             {format(event.date, 'dd.MM.yy')}
           </span>
         </div>
-        <div className="flex items-center gap-2">
-          {event.type.needs_equipment && <Package className="h-4 w-4 text-muted-foreground" />}
-        </div>
-        <div className="flex items-center gap-2">
-          {event.type.needs_crew && <Users className="h-4 w-4 text-muted-foreground" />}
-        </div>
+        
         <div className="flex flex-col">
           <div className="flex items-start">
             <span 
@@ -56,6 +51,12 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             </div>
           )}
         </div>
+
+        <div className="flex items-center gap-4">
+          {event.type.needs_equipment && <Package className="h-4 w-4 text-muted-foreground" />}
+          {event.type.needs_crew && <Users className="h-4 w-4 text-muted-foreground" />}
+        </div>
+
         <div className="flex items-center gap-2">
           <span 
             className="text-sm px-3 py-1 rounded-md inline-block"
@@ -64,9 +65,11 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             {event.type.name}
           </span>
         </div>
+
         <div className="text-sm text-muted-foreground font-medium">
           {formatRevenue(event.revenue)}
         </div>
+
         <div className="flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
