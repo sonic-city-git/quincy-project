@@ -26,7 +26,7 @@ export function EventSectionHeader({
   // Use a simpler layout for Done and Dusted section
   if (isDoneAndDusted) {
     return (
-      <div className="border border-zinc-800 rounded-lg bg-zinc-900/50 backdrop-blur-sm p-3 mb-4">
+      <div className="mb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-6 w-6 flex items-center justify-center">
