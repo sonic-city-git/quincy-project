@@ -1,10 +1,9 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { ProjectBaseEquipmentList } from "./ProjectBaseEquipmentList";
-import { EquipmentSelector } from "./EquipmentSelector";
 import { Box, ListCheck } from "lucide-react";
 import { GroupSelector } from "./GroupSelector";
 import { useState } from "react";
+import { EquipmentSelector } from "./EquipmentSelector";
+import { ProjectBaseEquipmentList } from "./ProjectBaseEquipmentList";
 
 interface ProjectEquipmentTabProps {
   projectId: string;
@@ -18,10 +17,10 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
       <Card className="rounded-lg border-0 bg-zinc-900/50 p-6">
         <div className="grid grid-cols-1 md:grid-cols-14 gap-6">
           {/* Available Equipment Column - Spans 5 columns */}
-          <div className="md:col-span-5 bg-zinc-800/50 rounded-lg border border-zinc-700/50">
+          <div className="md:col-span-5 bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-colors">
             <div className="p-4 border-b border-zinc-700/50">
               <div className="flex items-center gap-2">
-                <Box className="h-5 w-5 text-accent" />
+                <Box className="h-5 w-5 text-primary" />
                 <h2 className="text-lg font-semibold">Available Equipment</h2>
               </div>
             </div>
@@ -37,11 +36,11 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
           </div>
           
           {/* Project Equipment Column - Spans 9 columns */}
-          <div className="md:col-span-9 bg-zinc-800/50 rounded-lg border border-zinc-700/50">
+          <div className="md:col-span-9 bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-colors">
             <div className="p-4 border-b border-zinc-700/50">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <ListCheck className="h-5 w-5 text-accent" />
+                  <ListCheck className="h-5 w-5 text-primary" />
                   <h2 className="text-lg font-semibold">Project Equipment</h2>
                 </div>
                 <GroupSelector 

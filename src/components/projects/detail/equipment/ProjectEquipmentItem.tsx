@@ -32,7 +32,6 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
     
     setIsUpdating(true);
 
-    // Optimistically update the UI
     queryClient.setQueryData(['project-equipment', item.id], (oldData: ProjectEquipment[] | undefined) => {
       if (!oldData) return [{ ...item, quantity: newQuantity }];
       return oldData.map(equipment => 
@@ -48,7 +47,6 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
 
       if (error) throw error;
       
-      // Invalidate and refetch to ensure consistency
       await queryClient.invalidateQueries({ 
         queryKey: ['project-equipment'] 
       });
@@ -58,7 +56,6 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
       console.error('Error updating quantity:', error);
       toast.error('Failed to update quantity');
       
-      // Revert optimistic update on error
       queryClient.setQueryData(['project-equipment', item.id], (oldData: ProjectEquipment[] | undefined) => {
         if (!oldData) return [item];
         return oldData.map(equipment => 
