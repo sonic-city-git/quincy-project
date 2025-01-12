@@ -4,6 +4,7 @@ import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
@@ -33,6 +34,33 @@ export function ProjectBaseEquipmentList({
     enabled: !!projectId
   });
 
+  const handleDrop = async (e: React.DragEvent, newGroupId: string | null) => {
+    e.preventDefault();
+    const data = e.dataTransfer.getData('application/json');
+    if (!data) return;
+
+    const { id, currentGroupId } = JSON.parse(data);
+    if (currentGroupId === newGroupId) return;
+
+    try {
+      const { error } = await supabase
+        .from('project_equipment')
+        .update({ group_id: newGroupId })
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success('Equipment moved successfully');
+    } catch (error) {
+      console.error('Error moving equipment:', error);
+      toast.error('Failed to move equipment');
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
   const ungroupedEquipment = equipment?.filter(item => !item.group_id) || [];
   
   if (loading) {
@@ -55,6 +83,8 @@ export function ProjectBaseEquipmentList({
                 "rounded-lg border border-border bg-background/50",
                 isSelected && "ring-2 ring-primary/20"
               )}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, group.id)}
             >
               <h3 
                 className={cn(
@@ -90,6 +120,8 @@ export function ProjectBaseEquipmentList({
             "rounded-lg border border-border bg-background/50",
             selectedGroupId === null && "ring-2 ring-primary/20"
           )}
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, null)}
         >
           <h3 
             className={cn(

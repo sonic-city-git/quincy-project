@@ -1,18 +1,37 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Minus, Plus, X } from "lucide-react";
+import { GripVertical, Minus, Plus, X } from "lucide-react";
 import { ProjectEquipment } from "@/types/equipment";
+import { cn } from "@/lib/utils";
 
 interface ProjectEquipmentItemProps {
   item: ProjectEquipment;
   onRemove: () => void;
+  onGroupChange?: (itemId: string, newGroupId: string | null) => void;
 }
 
-export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemProps) {
+export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectEquipmentItemProps) {
+  const handleDragStart = (e: React.DragEvent) => {
+    e.dataTransfer.setData('application/json', JSON.stringify({
+      id: item.id,
+      currentGroupId: item.group_id
+    }));
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
   return (
     <Card className="p-1 h-[28px]">
       <div className="flex items-center justify-between h-full">
-        <div>
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-5 w-5 cursor-grab active:cursor-grabbing" 
+            draggable
+            onDragStart={handleDragStart}
+          >
+            <GripVertical className="h-3 w-3 text-muted-foreground" />
+          </Button>
           <h3 className="text-sm font-medium leading-none">{item.name}</h3>
         </div>
         <div className="flex items-center gap-0.5">
