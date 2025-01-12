@@ -1,6 +1,6 @@
 import { CalendarEvent } from "@/types/events";
 import { Card } from "@/components/ui/card";
-import { Calendar, Edit, MapPin, Package, Users } from "lucide-react";
+import { Calendar, Edit, MapPin, Package, Users, AlertTriangle } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +20,7 @@ import { getStatusIcon } from "@/utils/eventFormatters";
 import { EVENT_COLORS } from "@/constants/eventColors";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface EquipmentItem {
@@ -61,6 +61,16 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     removed: [],
     changed: []
   });
+
+  const getEquipmentIcon = () => {
+    if (!hasEventEquipment) {
+      return <Package className="h-6 w-6 text-yellow-500" />;
+    }
+    if (!isSynced) {
+      return <AlertTriangle className="h-6 w-6 text-orange-500" />;
+    }
+    return <Package className="h-6 w-6 text-green-500" />;
+  };
 
   useEffect(() => {
     const fetchStatus = async () => {
