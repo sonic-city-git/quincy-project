@@ -37,6 +37,19 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   const isCancelled = status === 'cancelled';
   const canSync = status === 'proposed' || status === 'confirmed';
 
+  // Get the appropriate section icon based on sync status
+  const getSectionEquipmentIcon = () => {
+    if (sectionSyncStatus === 'no-equipment') {
+      return <Package className="h-6 w-6 text-muted-foreground" />;
+    }
+    if (sectionSyncStatus === 'out-of-sync') {
+      return <Package className="h-6 w-6 text-blue-500" />;
+    }
+    return <Package className="h-6 w-6 text-green-500" />;
+  };
+
+  const sectionIcon = getStatusIcon(status);
+
   useEffect(() => {
     const checkSectionSyncStatus = async () => {
       const eventsWithEquipment = events.filter(event => event.type.needs_equipment);
@@ -91,16 +104,6 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
       channels.forEach(channel => channel.unsubscribe());
     };
   }, [events]);
-
-  const getSectionEquipmentIcon = () => {
-    if (sectionSyncStatus === 'no-equipment') {
-      return <Package className="h-6 w-6 text-muted-foreground" />;
-    }
-    if (sectionSyncStatus === 'out-of-sync') {
-      return <Package className="h-6 w-6 text-blue-500" />;
-    }
-    return <Package className="h-6 w-6 text-green-500" />;
-  };
 
   const getStatusBackground = (status: string) => {
     switch (status) {
