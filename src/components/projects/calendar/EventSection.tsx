@@ -7,7 +7,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { ChevronDown, Package, Users } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EventStatusManager } from "./EventStatusManager";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -30,15 +30,77 @@ interface EventSectionProps {
 export function EventSection({ status, events, onStatusChange, onEdit }: EventSectionProps) {
   const [isOpen, setIsOpen] = useState(status !== 'done and dusted');
   const [isSyncing, setIsSyncing] = useState(false);
+  const [sectionSyncStatus, setSectionSyncStatus] = useState<'synced' | 'out-of-sync' | 'no-equipment'>('no-equipment');
   const queryClient = useQueryClient();
 
-  if (!events.length) return null;
-
-  const sectionIcon = getStatusIcon(status === 'done and dusted' ? 'invoiced' : status);
-  
   const isDoneAndDusted = status === 'done and dusted';
   const isCancelled = status === 'cancelled';
   const canSync = status === 'proposed' || status === 'confirmed';
+
+  useEffect(() => {
+    const checkSectionSyncStatus = async () => {
+      const eventsWithEquipment = events.filter(event => event.type.needs_equipment);
+      
+      if (eventsWithEquipment.length === 0) {
+        setSectionSyncStatus('no-equipment');
+        return;
+      }
+
+      try {
+        const promises = eventsWithEquipment.map(async (event) => {
+          const { data: eventEquipment } = await supabase
+            .from('project_event_equipment')
+            .select('is_synced')
+            .eq('event_id', event.id);
+
+          return {
+            hasEquipment: eventEquipment && eventEquipment.length > 0,
+            isSynced: eventEquipment?.every(item => item.is_synced)
+          };
+        });
+
+        const results = await Promise.all(promises);
+        const hasAnyEquipment = results.some(r => r.hasEquipment);
+        const allSynced = results.every(r => r.isSynced);
+
+        setSectionSyncStatus(hasAnyEquipment ? (allSynced ? 'synced' : 'out-of-sync') : 'no-equipment');
+      } catch (error) {
+        console.error('Error checking section sync status:', error);
+        setSectionSyncStatus('no-equipment');
+      }
+    };
+
+    checkSectionSyncStatus();
+
+    // Set up subscription for all events in this section
+    const channels = events.map(event => {
+      return supabase
+        .channel(`section-equipment-${event.id}`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'project_event_equipment',
+          filter: `event_id=eq.${event.id}`
+        }, () => {
+          checkSectionSyncStatus();
+        })
+        .subscribe();
+    });
+
+    return () => {
+      channels.forEach(channel => channel.unsubscribe());
+    };
+  }, [events]);
+
+  const getSectionEquipmentIcon = () => {
+    if (sectionSyncStatus === 'no-equipment') {
+      return <Package className="h-6 w-6 text-muted-foreground" />;
+    }
+    if (sectionSyncStatus === 'out-of-sync') {
+      return <Package className="h-6 w-6 text-blue-500" />;
+    }
+    return <Package className="h-6 w-6 text-green-500" />;
+  };
 
   const getStatusBackground = (status: string) => {
     switch (status) {
@@ -76,21 +138,19 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
       for (const event of events) {
         console.log('Syncing equipment for event:', event.id);
         
-        // Delete existing equipment for this event
-        const { error: deleteError } = await supabase
-          .from('project_event_equipment')
-          .delete()
-          .eq('event_id', event.id);
-
-        if (deleteError) throw deleteError;
-
-        // Get project equipment
         const { data: projectEquipment, error: fetchError } = await supabase
           .from('project_equipment')
           .select('*')
           .eq('project_id', event.project_id);
 
         if (fetchError) throw fetchError;
+
+        const { error: deleteError } = await supabase
+          .from('project_event_equipment')
+          .delete()
+          .eq('event_id', event.id);
+
+        if (deleteError) throw deleteError;
 
         if (projectEquipment && projectEquipment.length > 0) {
           const eventEquipment = projectEquipment.map(item => ({
@@ -109,19 +169,13 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
           if (upsertError) throw upsertError;
         }
 
-        // Invalidate queries for this specific event's equipment
-        await queryClient.invalidateQueries({ 
-          queryKey: ['project-event-equipment', event.id]
-        });
+        // Invalidate queries for this specific event
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
+          queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
+          queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
+        ]);
       }
-
-      // Invalidate all relevant queries to ensure UI updates
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['events'] }),
-        queryClient.invalidateQueries({ queryKey: ['project-event-equipment'] }),
-        queryClient.invalidateQueries({ queryKey: ['project-equipment'] }),
-        queryClient.invalidateQueries({ queryKey: ['calendar-events'] })
-      ]);
 
       toast.success(`Equipment synchronized for all ${status} events`);
     } catch (error) {
@@ -234,7 +288,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
                     className="h-6 w-6 p-0"
                     disabled={isSyncing}
                   >
-                    <Package className="h-6 w-6 text-muted-foreground hover:text-foreground" />
+                    {getSectionEquipmentIcon()}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start">
