@@ -17,10 +17,8 @@ export function OwnerSelect({ value, onChange, error, required }: OwnerSelectPro
   console.log('All folders:', folders);
   console.log('All crew members:', crew);
   
-  // Find the Sonic City folder ID
-  const sonicCityFolderId = folders?.find(folder => 
-    folder.name === 'Sonic City'
-  )?.id;
+  // Find the Sonic City folder ID - it has the ID "34f3469f-02bd-4ecf-82f9-11a4e88c2d77"
+  const sonicCityFolderId = "34f3469f-02bd-4ecf-82f9-11a4e88c2d77";
   
   console.log('Sonic City folder ID:', sonicCityFolderId);
   
