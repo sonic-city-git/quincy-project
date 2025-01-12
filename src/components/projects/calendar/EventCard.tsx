@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState, useEffect } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EquipmentItem {
   id: string;
@@ -61,6 +62,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     removed: [],
     changed: []
   });
+  const queryClient = useQueryClient();
 
   const isEditingDisabled = (status: CalendarEvent['status']) => {
     return ['cancelled', 'invoice ready'].includes(status);
@@ -156,16 +158,22 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
         const { error: upsertError } = await supabase
           .from('project_event_equipment')
-          .upsert(eventEquipment, {
-            onConflict: 'event_id,equipment_id',
-            ignoreDuplicates: true
-          });
+          .upsert(eventEquipment);
 
         if (upsertError) throw upsertError;
       }
 
+      // Update local state
       setIsSynced(true);
-      setHasEventEquipment(true);
+      setHasEventEquipment(projectEquipment && projectEquipment.length > 0);
+
+      // Invalidate queries to refresh data
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
+        queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
+        queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
+      ]);
+
       toast.success('Equipment list synchronized successfully');
     } catch (error) {
       console.error('Error syncing equipment:', error);
