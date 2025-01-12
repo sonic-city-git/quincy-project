@@ -7,10 +7,11 @@ interface EventSectionProps {
   title: string;
   events: CalendarEvent[];
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
-  onEdit: (event: CalendarEvent) => void;
+  onEdit?: (event: CalendarEvent) => void;
+  hideEdit?: boolean;
 }
 
-export function EventSection({ title, events, onStatusChange, onEdit }: EventSectionProps) {
+export function EventSection({ title, events, onStatusChange, onEdit, hideEdit }: EventSectionProps) {
   if (!events.length) return null;
 
   // Get the event type from the first event in the section
@@ -27,14 +28,14 @@ export function EventSection({ title, events, onStatusChange, onEdit }: EventSec
       <EventSectionContent 
         events={events} 
         onStatusChange={onStatusChange}
-        onEdit={onEdit}
+        onEdit={hideEdit ? undefined : onEdit}
       >
         {events.map((event) => (
           <EventCard
             key={event.id}
             event={event}
             onStatusChange={onStatusChange}
-            onEdit={onEdit}
+            onEdit={hideEdit ? undefined : onEdit}
           />
         ))}
       </EventSectionContent>
