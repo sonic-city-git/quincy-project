@@ -96,7 +96,7 @@ export function EquipmentList() {
                       </div>
                       
                       {hasDirectEquipment && (
-                        <div className="pl-6">
+                        <div>
                           <EquipmentTable 
                             equipment={groupedEquipment[parentFolder.id]}
                             selectedItem={selectedItem}
@@ -105,7 +105,7 @@ export function EquipmentList() {
                         </div>
                       )}
 
-                      <div className="pl-6">
+                      <div>
                         {subfolders.map(subfolder => {
                           const folderEquipment = groupedEquipment[subfolder.id] || [];
                           if (folderEquipment.length === 0) return null;
@@ -114,7 +114,7 @@ export function EquipmentList() {
                             <div key={subfolder.id} className="border-l border-zinc-800">
                               <div className="flex items-center gap-2 p-3 bg-zinc-800/50">
                                 <Folder className="h-4 w-4 text-primary" />
-                                <span className="font-medium">
+                                <span className="text-sm font-medium">
                                   {subfolder.name}
                                 </span>
                               </div>
