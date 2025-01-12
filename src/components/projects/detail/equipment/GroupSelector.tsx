@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Plus } from "lucide-react";
 import {
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface GroupSelectorProps {
   projectId: string;
@@ -25,10 +26,11 @@ interface GroupSelectorProps {
   onGroupSelect: (groupId: string | null) => void;
 }
 
-export function GroupSelector({ projectId }: GroupSelectorProps) {
+export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) {
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
   const [customGroupName, setCustomGroupName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: equipmentGroups = [], isLoading: isLoadingGroups } = useQuery({
     queryKey: ['equipment-groups'],
@@ -61,20 +63,33 @@ export function GroupSelector({ projectId }: GroupSelectorProps) {
   const handleAddGroup = async (name: string, sortOrder: number = projectGroups.length) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('project_equipment_groups')
         .insert({
           project_id: projectId,
           name,
           sort_order: sortOrder
-        });
+        })
+        .select()
+        .single();
       
       if (error) throw error;
       
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment-groups', projectId] 
+      });
+
+      // Select the newly created group
+      if (data) {
+        onGroupSelect(data.id);
+      }
+      
       setCustomGroupName("");
       setIsCustomDialogOpen(false);
+      toast.success("Group added successfully");
     } catch (error) {
       console.error('Error adding group:', error);
+      toast.error("Failed to add group");
     } finally {
       setIsSubmitting(false);
     }
