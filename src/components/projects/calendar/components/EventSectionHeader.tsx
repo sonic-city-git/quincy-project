@@ -1,74 +1,56 @@
+import { CalendarEvent } from "@/types/events";
 import { EventStatusManager } from "../EventStatusManager";
-import { CalendarEvent, EventType } from "@/types/events";
-import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
 import { Package, Users } from "lucide-react";
 import { formatRevenue } from "@/utils/priceFormatters";
 
 interface EventSectionHeaderProps {
   title: string;
-  eventCount: number;
-  eventType?: EventType;
-  events?: CalendarEvent[];
-  onStatusChange?: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
+  events: CalendarEvent[];
+  onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
+  isCancelled?: boolean;
 }
 
 export function EventSectionHeader({ 
   title, 
-  eventCount, 
-  eventType,
-  events = [],
-  onStatusChange 
+  events,
+  onStatusChange,
+  isCancelled = false
 }: EventSectionHeaderProps) {
-  const isCancelled = title.toLowerCase() === 'cancelled';
-  const iconClasses = "h-6 w-6 flex-shrink-0";
-
-  // Calculate total revenue for the section
   const totalRevenue = events.reduce((sum, event) => sum + (event.revenue || 0), 0);
+  const hasEquipment = events.some(event => event.type.needs_equipment);
+  const hasCrew = events.some(event => event.type.needs_crew);
 
   return (
-    <div className="border border-zinc-800 rounded-lg bg-zinc-900/50 backdrop-blur-sm p-3 mb-4">
+    <div className="flex items-center justify-between py-2 px-3">
       <EventSectionHeaderGrid>
-        <div className="col-span-2 flex items-center gap-2 justify-start">
-          {getStatusIcon(title.toLowerCase() as CalendarEvent['status'])}
-          <h3 className="text-lg font-semibold">{title}</h3>
+        <div className="text-sm font-medium text-muted-foreground">
+          {title}
         </div>
-        
-        {/* Empty space */}
-        <div className="col-span-2" />
-        
-        {/* Equipment icon column */}
-        <div className="col-span-1 flex items-center">
-          {eventType?.needs_equipment && (
-            <Package className={`${iconClasses} text-muted-foreground`} />
+        <div />
+        <div className="flex items-center gap-2">
+          {hasEquipment && (
+            <Package className="h-4 w-4 text-muted-foreground" />
+          )}
+          {hasCrew && (
+            <Users className="h-4 w-4 text-muted-foreground" />
           )}
         </div>
-        
-        {/* Crew icon column */}
-        <div className="col-span-1 flex items-center">
-          {eventType?.needs_crew && (
-            <Users className={`${iconClasses} text-muted-foreground`} />
-          )}
-        </div>
-
-        {/* Event type column */}
-        <div className="col-span-1" />
-
-        {/* Revenue column */}
-        <div className="col-span-1 text-right font-medium text-muted-foreground">
+        <div />
+        <div />
+        <div />
+        <div />
+        <div className="text-sm font-medium text-muted-foreground text-right">
           {formatRevenue(totalRevenue)}
         </div>
-
-        {/* Status manager column */}
-        <div className="col-span-2 flex justify-end">
-          {onStatusChange && (
-            <EventStatusManager
-              status={title.toLowerCase()}
-              events={events}
-              onStatusChange={onStatusChange}
-              isCancelled={isCancelled}
-            />
-          )}
+        <div />
+        <div className="flex justify-end">
+          <EventStatusManager
+            status={events[0]?.status || 'proposed'}
+            events={events}
+            onStatusChange={onStatusChange}
+            isCancelled={isCancelled}
+          />
         </div>
       </EventSectionHeaderGrid>
     </div>
