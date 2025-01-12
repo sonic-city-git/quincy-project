@@ -67,7 +67,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
       if (deleteError) throw deleteError;
 
-      // Insert new equipment records
+      // Insert new equipment records using upsert
       if (projectEquipment && projectEquipment.length > 0) {
         const eventEquipment = projectEquipment.map(item => ({
           project_id: event.project_id,
@@ -78,11 +78,14 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           is_synced: true
         }));
 
-        const { error: insertError } = await supabase
+        const { error: upsertError } = await supabase
           .from('project_event_equipment')
-          .insert(eventEquipment);
+          .upsert(eventEquipment, {
+            onConflict: 'event_id,equipment_id',
+            ignoreDuplicates: true
+          });
 
-        if (insertError) throw insertError;
+        if (upsertError) throw upsertError;
       }
 
       setIsSynced(true);
