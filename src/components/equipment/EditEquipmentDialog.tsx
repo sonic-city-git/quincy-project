@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useFolders } from "@/hooks/useFolders";
 import { sortFolders } from "@/utils/folderSort";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -240,15 +241,17 @@ export function EditEquipmentDialog({
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            {sortFolders(folders).map((folder) => (
-                              <SelectItem 
-                                key={folder.id} 
-                                value={folder.id}
-                                className={!folder.parent_id ? "font-medium" : "pl-8 italic"}
-                              >
-                                {folder.name}
-                              </SelectItem>
-                            ))}
+                            <ScrollArea className="h-[200px]">
+                              {sortFolders(folders).map((folder) => (
+                                <SelectItem 
+                                  key={folder.id} 
+                                  value={folder.id}
+                                  className={!folder.parent_id ? "font-medium" : "pl-8 italic"}
+                                >
+                                  {folder.name}
+                                </SelectItem>
+                              ))}
+                            </ScrollArea>
                           </SelectContent>
                         </Select>
                         <FormMessage />

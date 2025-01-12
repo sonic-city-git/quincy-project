@@ -14,6 +14,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Package, Plus, X } from "lucide-react";
 import { useFolders } from "@/hooks/useFolders";
 import { sortFolders } from "@/utils/folderSort";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -180,17 +181,17 @@ export function AddEquipmentDialog() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {sortFolders(folders).map((folder) => (
-
-                            <SelectItem 
-                              key={folder.id} 
-                              value={folder.id}
-                              className={!folder.parent_id ? "font-medium" : "pl-8 italic"}
-                            >
-                              {folder.name}
-                            </SelectItem>
-
-                          ))}
+                          <ScrollArea className="h-[200px]">
+                            {sortFolders(folders).map((folder) => (
+                              <SelectItem 
+                                key={folder.id} 
+                                value={folder.id}
+                                className={!folder.parent_id ? "font-medium" : "pl-8 italic"}
+                              >
+                                {folder.name}
+                              </SelectItem>
+                            ))}
+                          </ScrollArea>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -318,4 +319,3 @@ export function AddEquipmentDialog() {
     </Dialog>
   );
 }
-
