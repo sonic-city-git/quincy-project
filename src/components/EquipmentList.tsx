@@ -79,8 +79,9 @@ export function EquipmentList() {
                   const hasVisibleSubfolders = subfolders.some(subfolder => 
                     (groupedEquipment[subfolder.id] || []).length > 0
                   );
+                  const hasDirectEquipment = (groupedEquipment[parentFolder.id] || []).length > 0;
 
-                  if (!hasVisibleSubfolders) return null;
+                  if (!hasVisibleSubfolders && !hasDirectEquipment) return null;
 
                   return (
                     <div key={parentFolder.id} className="mb-4">
@@ -88,6 +89,17 @@ export function EquipmentList() {
                         <Folder className="h-4 w-4 text-primary" />
                         <span className="font-medium">{parentFolder.name}</span>
                       </div>
+                      
+                      {hasDirectEquipment && (
+                        <div className="pl-6">
+                          <EquipmentTable 
+                            equipment={groupedEquipment[parentFolder.id]}
+                            selectedItem={selectedItem}
+                            onItemSelect={handleItemSelect}
+                          />
+                        </div>
+                      )}
+
                       <div className="pl-6">
                         {subfolders.map(subfolder => {
                           const folderEquipment = groupedEquipment[subfolder.id] || [];
