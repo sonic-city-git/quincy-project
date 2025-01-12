@@ -2,11 +2,11 @@ import { CalendarEvent } from "@/types/events";
 import { Calendar, Users } from "lucide-react";
 import { format } from "date-fns";
 
-interface EventCardHeaderProps {
+interface EventCardProps {
   event: CalendarEvent;
 }
 
-export function EventCardHeader({ event }: EventCardHeaderProps) {
+export function EventCard({ event }: EventCardProps) {
   return (
     <>
       <div className="flex items-center gap-2">
