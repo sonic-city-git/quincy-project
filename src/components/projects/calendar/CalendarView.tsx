@@ -9,7 +9,7 @@ interface CalendarViewProps {
   events: CalendarEvent[];
   onDayClick: (date: Date) => void;
   eventTypes?: EventType[];
-  onAddMultipleEvents: (dates: Date[], name: string, eventType: EventType) => void;
+  onAddMultipleEvents: (dates: Date[], name: string, eventType: EventType, status: CalendarEvent['status']) => void;
 }
 
 export function CalendarView({
@@ -112,8 +112,8 @@ export function CalendarView({
     }
   };
 
-  const handleAddMultipleEvents = (name: string, eventType: EventType) => {
-    onAddMultipleEvents(selectedDates, name, eventType);
+  const handleAddMultipleEvents = (name: string, eventType: EventType, status: CalendarEvent['status']) => {
+    onAddMultipleEvents(selectedDates, name, eventType, status);
     setSelectedDates([]);
     setIsMultiEventDialogOpen(false);
   };
