@@ -34,12 +34,6 @@ interface FolderStructure {
   }
 }
 
-interface EquipmentGroup {
-  id: string;
-  name: string;
-  sort_order: number | null;
-}
-
 export function EquipmentSelector({ onSelect, className, projectId }: EquipmentSelectorProps) {
   const [search, setSearch] = useState("");
   const { equipment = [], loading } = useEquipment();
@@ -51,7 +45,7 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
   const [isGroupPopoverOpen, setIsGroupPopoverOpen] = useState(false);
   const { toast } = useToast();
 
-  // Fetch equipment groups with proper error handling
+  // Fetch equipment groups
   const { data: equipmentGroups = [] } = useQuery({
     queryKey: ['equipment-groups'],
     queryFn: async () => {
@@ -61,13 +55,13 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
         .order('sort_order');
       
       if (error) throw error;
-      return data || []; // Ensure we always return an array
+      return data || [];
     }
   });
 
   // Create new group
   const createGroup = async (name: string) => {
-    if (!name.trim()) return; // Don't create empty groups
+    if (!name.trim()) return;
     
     try {
       const { data, error } = await supabase
@@ -94,39 +88,6 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
       toast({
         title: "Error",
         description: "Failed to create group",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Create group from template
-  const createGroupFromTemplate = async (template: EquipmentGroup) => {
-    try {
-      const { data, error } = await supabase
-        .from('project_equipment_groups')
-        .insert({
-          name: template.name,
-          project_id: projectId,
-          sort_order: template.sort_order,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Group created from template",
-      });
-
-      setGroupSearch("");
-      setIsGroupPopoverOpen(false);
-      return data;
-    } catch (error) {
-      console.error('Error creating group from template:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create group from template",
         variant: "destructive",
       });
     }
@@ -289,13 +250,13 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
               aria-expanded={isGroupPopoverOpen}
               className="w-full justify-between"
             >
-              {groupSearch || "Select or create a group..."}
+              {groupSearch || "Search or create a group..."}
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-full p-0">
             <Command>
               <CommandInput
-                placeholder="Search groups..."
+                placeholder="Type to search or create..."
                 value={groupSearch}
                 onValueChange={setGroupSearch}
               />
@@ -307,19 +268,19 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
                     onClick={() => createGroup(groupSearch)}
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    Create "{groupSearch}"
+                    Create new group "{groupSearch}"
                   </Button>
                 )}
               </CommandEmpty>
               <CommandGroup>
-                {(equipmentGroups || [])
+                {equipmentGroups
                   .filter(group => 
                     group.name.toLowerCase().includes(groupSearch.toLowerCase())
                   )
                   .map(group => (
                     <CommandItem
                       key={group.id}
-                      onSelect={() => createGroupFromTemplate(group)}
+                      onSelect={() => createGroup(group.name)}
                     >
                       {group.name}
                     </CommandItem>
