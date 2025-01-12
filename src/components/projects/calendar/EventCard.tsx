@@ -18,13 +18,6 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
-  const getColorStyles = (color: string) => {
-    return {
-      backgroundColor: `${color}D9`,  // D9 in hex is 85% opacity
-      color: '#FFFFFF'  // White text, fully opaque
-    };
-  };
-
   return (
     <Card key={`${event.date}-${event.name}`} className="p-4">
       <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_auto] gap-4">
@@ -37,10 +30,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         
         <div className="flex flex-col">
           <div className="flex items-start">
-            <span 
-              className="font-medium text-base px-3 py-1 rounded-md inline-block"
-              style={getColorStyles(event.type.color)}
-            >
+            <span className="font-medium text-base">
               {event.name}
             </span>
           </div>
@@ -54,13 +44,13 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
         <div className="flex items-center justify-center">
           {event.type.needs_equipment && (
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <Package className="h-6 w-6 text-muted-foreground" />
           )}
         </div>
 
         <div className="flex items-center justify-center">
           {event.type.needs_crew && (
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-6 w-6 text-muted-foreground" />
           )}
         </div>
 
