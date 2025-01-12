@@ -138,7 +138,7 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
     <Button
       key={item.id}
       variant="ghost"
-      className="w-full justify-start h-[26px] py-0"
+      className="w-full justify-start h-[26px] py-0 px-1"
       onClick={() => onSelect(item)}
       onDoubleClick={() => handleDoubleClick(item)}
     >
@@ -187,14 +187,14 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
                   open={openFolders.includes(folderId)}
                   onOpenChange={() => toggleFolder(folderId)}
                 >
-                  <CollapsibleTrigger className="flex items-center w-full text-left py-1">
+                  <CollapsibleTrigger className="flex items-center w-full text-left py-1 px-1">
                     <ChevronRight className={cn(
                       "h-4 w-4 shrink-0 transition-transform duration-200",
                       openFolders.includes(folderId) && "rotate-90"
                     )} />
                     <span className="font-semibold text-sm ml-1">{folder.name}</span>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="pl-3 space-y-0.5">
+                  <CollapsibleContent className="pl-2 space-y-0.5">
                     {folder.equipment.map(renderEquipmentItem)}
 
                     {Object.entries(folder.subfolders)
@@ -205,7 +205,7 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
                           open={openSubfolders.includes(subId)}
                           onOpenChange={() => toggleSubfolder(subId)}
                         >
-                          <CollapsibleTrigger className="flex items-center w-full text-left py-1">
+                          <CollapsibleTrigger className="flex items-center w-full text-left py-1 px-1">
                             <ChevronRight className={cn(
                               "h-4 w-4 shrink-0 transition-transform duration-200",
                               openSubfolders.includes(subId) && "rotate-90"
@@ -214,7 +214,7 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
                               {sub.name}
                             </span>
                           </CollapsibleTrigger>
-                          <CollapsibleContent className="pl-4 space-y-0.5">
+                          <CollapsibleContent className="pl-2 space-y-0.5">
                             {sub.equipment.map(renderEquipmentItem)}
                           </CollapsibleContent>
                         </Collapsible>
