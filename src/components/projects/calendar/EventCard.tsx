@@ -385,8 +385,8 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div>
-                      {(hasEventEquipment && isSynced) || isEditingDisabled(event.status) ? (
-                        <Package className="h-6 w-6 text-green-500" />
+                      {isEditingDisabled(event.status) ? (
+                        getEquipmentIcon()
                       ) : (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
