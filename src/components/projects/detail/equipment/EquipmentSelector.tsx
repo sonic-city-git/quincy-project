@@ -3,7 +3,6 @@ import { EquipmentTable } from "@/components/equipment/EquipmentTable";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useEquipmentFilters } from "@/components/equipment/filters/useEquipmentFilters";
 
 interface EquipmentSelectorProps {
   onSelect: (equipmentId: string) => void;
@@ -12,29 +11,16 @@ interface EquipmentSelectorProps {
 }
 
 export function EquipmentSelector({ onSelect, projectId, selectedGroupId }: EquipmentSelectorProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedFolders, setSelectedFolders] = useState<string[]>([]);
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const {
-    searchQuery,
-    setSearchQuery,
-    selectedFolders,
-    handleFolderToggle,
-    clearFilters,
-    filterEquipment
-  } = useEquipmentFilters();
 
   const { data: equipment = [] } = useQuery({
     queryKey: ['available-equipment', searchQuery, selectedFolders],
     queryFn: async () => {
       let query = supabase
         .from('equipment')
-        .select(`
-          *,
-          equipment_folders (
-            id,
-            name,
-            parent_id
-          )
-        `)
+        .select('*')
         .order('name');
 
       if (searchQuery) {
@@ -51,12 +37,25 @@ export function EquipmentSelector({ onSelect, projectId, selectedGroupId }: Equi
     },
   });
 
+  const handleFolderToggle = (folderId: string) => {
+    setSelectedFolders(prev => 
+      prev.includes(folderId) 
+        ? prev.filter(id => id !== folderId)
+        : [...prev, folderId]
+    );
+  };
+
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setSelectedFolders([]);
+  };
+
   return (
     <div className="space-y-4">
       <EquipmentListHeader
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
-        onClearFilters={clearFilters}
+        onClearFilters={handleClearFilters}
         selectedItem={selectedItem}
         onEquipmentDeleted={() => setSelectedItem(null)}
         selectedFolders={selectedFolders}
@@ -64,7 +63,7 @@ export function EquipmentSelector({ onSelect, projectId, selectedGroupId }: Equi
       />
       <div className="flex-1 overflow-hidden">
         <EquipmentTable
-          equipment={filterEquipment(equipment)}
+          equipment={equipment}
           selectedItem={selectedItem}
           onItemSelect={setSelectedItem}
           searchQuery={searchQuery}
