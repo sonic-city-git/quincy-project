@@ -32,8 +32,6 @@ export function useCrew(folderId?: string) {
     queryKey: ['crew', folderId],
     queryFn: async () => {
       try {
-        console.log('Fetching crew members...');
-        
         // Build the base query
         let query = supabase
           .from('crew_members')
