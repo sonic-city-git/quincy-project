@@ -9,9 +9,17 @@ interface EventSectionProps {
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
   onEdit?: (event: CalendarEvent) => void;
   hideEdit?: boolean;
+  hideHeader?: boolean;
 }
 
-export function EventSection({ title, events, onStatusChange, onEdit, hideEdit }: EventSectionProps) {
+export function EventSection({ 
+  title, 
+  events, 
+  onStatusChange, 
+  onEdit, 
+  hideEdit,
+  hideHeader 
+}: EventSectionProps) {
   if (!events.length) return null;
 
   // Get the event type from the first event in the section
@@ -19,12 +27,14 @@ export function EventSection({ title, events, onStatusChange, onEdit, hideEdit }
 
   return (
     <div className="space-y-4">
-      <EventSectionHeader 
-        title={title} 
-        eventType={eventType}
-        events={events}
-        onStatusChange={onStatusChange}
-      />
+      {!hideHeader && (
+        <EventSectionHeader 
+          title={title} 
+          eventType={eventType}
+          events={events}
+          onStatusChange={onStatusChange}
+        />
+      )}
       <EventSectionContent 
         events={events} 
         onStatusChange={onStatusChange}

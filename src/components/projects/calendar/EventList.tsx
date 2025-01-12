@@ -69,21 +69,26 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
       )}
       {doneAndDusted.length > 0 && (
         <Collapsible defaultOpen={false}>
-          <Card className="rounded-lg bg-gray-500/5 p-6">
+          <Card className="rounded-lg bg-zinc-800/45 p-6">
             <CollapsibleTrigger className="flex items-center gap-2 w-full">
               <div className="flex items-center gap-2">
-                <Brush className="h-5 w-5 text-gray-400" />
-                <h3 className="text-lg font-semibold">Done and Dusted</h3>
+                <Brush className="h-5 w-5 text-muted-foreground" />
+                <h3 className="text-lg font-semibold text-muted-foreground">Done and Dusted</h3>
               </div>
-              <ChevronDown className="h-4 w-4 ml-auto transition-transform duration-200" />
+              <ChevronDown className="h-4 w-4 ml-auto text-muted-foreground transition-transform duration-200" />
             </CollapsibleTrigger>
-            <CollapsibleContent>
-              <EventSection
-                title="Done and Dusted"
-                events={doneAndDusted}
-                onStatusChange={onStatusChange}
-                hideEdit
-              />
+            <CollapsibleContent className="pt-6 space-y-4">
+              {doneAndDusted.map((event) => (
+                <Card key={event.id} className="p-4 bg-zinc-800/45">
+                  <EventSection
+                    title="Done and Dusted"
+                    events={[event]}
+                    onStatusChange={onStatusChange}
+                    hideEdit
+                    hideHeader
+                  />
+                </Card>
+              ))}
             </CollapsibleContent>
           </Card>
         </Collapsible>
