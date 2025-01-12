@@ -112,7 +112,7 @@ export function ProjectBaseEquipmentList({
             <div 
               key={group.id} 
               className={cn(
-                "rounded-lg border transition-all duration-200 relative overflow-hidden",
+                "rounded-lg border-2 transition-all duration-200 relative overflow-hidden",
                 isSelected 
                   ? "border-primary/20" 
                   : "border-zinc-800/50"
@@ -163,7 +163,7 @@ export function ProjectBaseEquipmentList({
         
         <div 
           className={cn(
-            "rounded-lg border transition-all duration-200 relative overflow-hidden",
+            "rounded-lg border-2 transition-all duration-200 relative overflow-hidden",
             selectedGroupId === null 
               ? "border-primary/20" 
               : "border-zinc-800/50"
