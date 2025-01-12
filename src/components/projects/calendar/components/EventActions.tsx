@@ -22,6 +22,13 @@ export function EventActions({
   onEdit,
   isEditingDisabled 
 }: EventActionsProps) {
+  const handleEdit = () => {
+    if (onEdit) {
+      console.log('Handling edit click for event:', event);
+      onEdit(event);
+    }
+  };
+
   return (
     <>
       <div className="flex items-center justify-center">
@@ -72,7 +79,7 @@ export function EventActions({
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => onEdit(event)}
+            onClick={handleEdit}
             className="text-muted-foreground hover:text-foreground"
           >
             <Edit className="h-4 w-4" />

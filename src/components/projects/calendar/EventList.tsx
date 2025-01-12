@@ -29,6 +29,7 @@ export function EventList({ events, projectId, isLoading }: EventListProps) {
   };
 
   const handleEdit = (event: CalendarEvent) => {
+    console.log('Opening edit dialog for event:', event);
     openEditDialog(event);
   };
 
