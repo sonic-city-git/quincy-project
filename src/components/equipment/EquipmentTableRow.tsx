@@ -15,7 +15,7 @@ export function EquipmentTableRow({ item, isSelected, onSelect }: EquipmentTable
         isSelected ? 'bg-zinc-800/75' : ''
       }`}
     >
-      <TableCell className="w-12">
+      <TableCell className="w-[48px]">
         <Checkbox 
           checked={isSelected}
           onCheckedChange={onSelect}
@@ -26,8 +26,8 @@ export function EquipmentTableRow({ item, isSelected, onSelect }: EquipmentTable
           {item.name}
         </div>
       </TableCell>
-      <TableCell className="w-[150px] text-sm text-muted-foreground">
-        <span className="truncate block max-w-[150px]">
+      <TableCell className="w-[150px]">
+        <span className="text-sm text-muted-foreground truncate block max-w-[150px]">
           {item.code || '-'}
         </span>
       </TableCell>
