@@ -2,6 +2,7 @@ import { EventStatusManager } from "../EventStatusManager";
 import { CalendarEvent, EventType } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
+import { Package } from "lucide-react";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -32,7 +33,11 @@ export function EventSectionHeader({
         <div className="col-span-1" />
         
         {/* Equipment icon column */}
-        <div className="col-span-1" />
+        <div className="col-span-1">
+          {eventType?.needs_equipment && (
+            <Package className="h-5 w-5 text-muted-foreground" />
+          )}
+        </div>
         
         {/* Empty column (was crew) */}
         <div className="col-span-1" />
@@ -40,7 +45,10 @@ export function EventSectionHeader({
         {/* Empty space */}
         <div className="col-span-1" />
 
-        {/* Flexible space */}
+        {/* Event type column */}
+        <div className="col-span-1" />
+
+        {/* Revenue column */}
         <div className="col-span-1" />
 
         {/* Status manager column */}
@@ -54,9 +62,6 @@ export function EventSectionHeader({
             />
           )}
         </div>
-
-        {/* Empty last column */}
-        <div className="col-span-1" />
       </EventSectionHeaderGrid>
     </div>
   );
