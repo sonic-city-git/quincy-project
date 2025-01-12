@@ -38,9 +38,11 @@ export function EventActions({
             <Button
               variant="ghost"
               size="icon"
-              className="flex items-center gap-2"
+              className="h-6 w-6"
             >
-              {getStatusIcon(event.status)}
+              <div className="h-4 w-4">
+                {getStatusIcon(event.status)}
+              </div>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -48,28 +50,36 @@ export function EventActions({
               onClick={() => onStatusChange(event, 'proposed')}
               className="flex items-center gap-2"
             >
-              {getStatusIcon('proposed')}
+              <div className="h-4 w-4">
+                {getStatusIcon('proposed')}
+              </div>
               Proposed
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => onStatusChange(event, 'confirmed')}
               className="flex items-center gap-2"
             >
-              {getStatusIcon('confirmed')}
+              <div className="h-4 w-4">
+                {getStatusIcon('confirmed')}
+              </div>
               Confirmed
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => onStatusChange(event, 'invoice ready')}
               className="flex items-center gap-2"
             >
-              {getStatusIcon('invoice ready')}
+              <div className="h-4 w-4">
+                {getStatusIcon('invoice ready')}
+              </div>
               Invoice Ready
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => onStatusChange(event, 'cancelled')}
               className="flex items-center gap-2"
             >
-              {getStatusIcon('cancelled')}
+              <div className="h-4 w-4">
+                {getStatusIcon('cancelled')}
+              </div>
               Cancelled
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -83,7 +93,7 @@ export function EventActions({
             variant="ghost"
             size="icon"
             onClick={handleEdit}
-            className="text-muted-foreground hover:text-foreground"
+            className="h-6 w-6 text-muted-foreground hover:text-foreground"
           >
             <Edit2 className="h-4 w-4" />
           </Button>
