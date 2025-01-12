@@ -112,42 +112,50 @@ export function ProjectBaseEquipmentList({
             <div 
               key={group.id} 
               className={cn(
-                "rounded-lg border transition-all duration-200 relative",
+                "rounded-lg border transition-all duration-200 relative overflow-hidden",
                 isSelected 
-                  ? "border-primary/20 bg-primary/5" 
-                  : "border-zinc-800/50 bg-zinc-900/50"
+                  ? "border-primary/20" 
+                  : "border-zinc-800/50"
               )}
               onDragOver={handleDragOver}
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, group.id)}
             >
-              <div className="bg-inherit rounded-t-lg relative z-10">
-                <h3 
-                  className={cn(
-                    "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
-                    isSelected 
-                      ? "bg-primary/20 text-primary hover:bg-primary/30" 
-                      : "bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800/70"
+              <div className={cn(
+                "absolute inset-0 transition-all duration-200",
+                isSelected 
+                  ? "bg-primary/5" 
+                  : "bg-zinc-900/50"
+              )} />
+              <div className="relative z-10">
+                <div className="bg-zinc-900/75 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75">
+                  <h3 
+                    className={cn(
+                      "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
+                      isSelected 
+                        ? "bg-primary/20 text-primary hover:bg-primary/30" 
+                        : "bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800/70"
+                    )}
+                    onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
+                  >
+                    {group.name}
+                  </h3>
+                </div>
+                <div className="p-3 space-y-2">
+                  {groupEquipment.map((item) => (
+                    <ProjectEquipmentItem
+                      key={item.id}
+                      item={item}
+                      onRemove={() => removeEquipment(item.id)}
+                    />
+                  ))}
+                  {groupEquipment.length === 0 && (
+                    <div className="text-sm text-muted-foreground px-1">
+                      No equipment in this group
+                    </div>
                   )}
-                  onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
-                >
-                  {group.name}
-                </h3>
-              </div>
-              <div className="p-3 space-y-2 relative z-10">
-                {groupEquipment.map((item) => (
-                  <ProjectEquipmentItem
-                    key={item.id}
-                    item={item}
-                    onRemove={() => removeEquipment(item.id)}
-                  />
-                ))}
-                {groupEquipment.length === 0 && (
-                  <div className="text-sm text-muted-foreground px-1">
-                    No equipment in this group
-                  </div>
-                )}
+                </div>
               </div>
             </div>
           );
@@ -155,37 +163,45 @@ export function ProjectBaseEquipmentList({
         
         <div 
           className={cn(
-            "rounded-lg border transition-all duration-200 relative",
+            "rounded-lg border transition-all duration-200 relative overflow-hidden",
             selectedGroupId === null 
-              ? "border-primary/20 bg-primary/5" 
-              : "border-zinc-800/50 bg-zinc-900/50"
+              ? "border-primary/20" 
+              : "border-zinc-800/50"
           )}
           onDragOver={handleDragOver}
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, null)}
         >
-          <div className="bg-inherit rounded-t-lg relative z-10">
-            <h3 
-              className={cn(
-                "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
-                selectedGroupId === null 
-                  ? "bg-primary/20 text-primary hover:bg-primary/30" 
-                  : "bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800/70"
-              )}
-              onClick={() => onGroupSelect(null)}
-            >
-              Ungrouped Equipment
-            </h3>
-          </div>
-          <div className="p-3 space-y-2 relative z-10">
-            {ungroupedEquipment.map((item) => (
-              <ProjectEquipmentItem
-                key={item.id}
-                item={item}
-                onRemove={() => removeEquipment(item.id)}
-              />
-            ))}
+          <div className={cn(
+            "absolute inset-0 transition-all duration-200",
+            selectedGroupId === null 
+              ? "bg-primary/5" 
+              : "bg-zinc-900/50"
+          )} />
+          <div className="relative z-10">
+            <div className="bg-zinc-900/75 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75">
+              <h3 
+                className={cn(
+                  "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
+                  selectedGroupId === null 
+                    ? "bg-primary/20 text-primary hover:bg-primary/30" 
+                    : "bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800/70"
+                )}
+                onClick={() => onGroupSelect(null)}
+              >
+                Ungrouped Equipment
+              </h3>
+            </div>
+            <div className="p-3 space-y-2">
+              {ungroupedEquipment.map((item) => (
+                <ProjectEquipmentItem
+                  key={item.id}
+                  item={item}
+                  onRemove={() => removeEquipment(item.id)}
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
