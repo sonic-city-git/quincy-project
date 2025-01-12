@@ -16,25 +16,25 @@ export function ProjectTabs({ project, projectId }: ProjectTabsProps) {
         <TabsList className="bg-zinc-800/45 p-1 rounded-lg">
           <TabsTrigger 
             value="general" 
-            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-primary transition-colors"
+            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
           >
             General
           </TabsTrigger>
           <TabsTrigger 
             value="equipment"
-            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-primary transition-colors"
+            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
           >
             Equipment
           </TabsTrigger>
           <TabsTrigger 
             value="crew"
-            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-primary transition-colors"
+            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
           >
             Crew
           </TabsTrigger>
           <TabsTrigger 
             value="financial"
-            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-primary transition-colors"
+            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
           >
             Financial
           </TabsTrigger>
