@@ -128,21 +128,21 @@ export function ProjectBaseEquipmentList({
                   ? "bg-primary/5" 
                   : "bg-zinc-900/50"
               )} />
-              <div className="relative z-10">
+              <div className="relative z-20">
                 <div className="bg-zinc-900/90">
                   <h3 
                     className={cn(
-                      "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
+                      "text-sm font-medium px-4 py-2 cursor-pointer transition-colors text-white",
                       isSelected 
-                        ? "bg-primary/20 text-primary hover:bg-primary/30" 
-                        : "bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800/70"
+                        ? "bg-primary/20 hover:bg-primary/30" 
+                        : "bg-zinc-800/50 hover:bg-zinc-800/70"
                     )}
                     onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
                   >
                     {group.name}
                   </h3>
                 </div>
-                <div className="p-3 space-y-2">
+                <div className="p-3 space-y-2 relative z-30 bg-background/95">
                   {groupEquipment.map((item) => (
                     <ProjectEquipmentItem
                       key={item.id}
@@ -179,21 +179,21 @@ export function ProjectBaseEquipmentList({
               ? "bg-primary/5" 
               : "bg-zinc-900/50"
           )} />
-          <div className="relative z-10">
+          <div className="relative z-20">
             <div className="bg-zinc-900/90">
               <h3 
                 className={cn(
-                  "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
+                  "text-sm font-medium px-4 py-2 cursor-pointer transition-colors text-white",
                   selectedGroupId === null 
-                    ? "bg-primary/20 text-primary hover:bg-primary/30" 
-                    : "bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800/70"
+                    ? "bg-primary/20 hover:bg-primary/30" 
+                    : "bg-zinc-800/50 hover:bg-zinc-800/70"
                 )}
                 onClick={() => onGroupSelect(null)}
               >
                 Ungrouped Equipment
               </h3>
             </div>
-            <div className="p-3 space-y-2">
+            <div className="p-3 space-y-2 relative z-30 bg-background/95">
               {ungroupedEquipment.map((item) => (
                 <ProjectEquipmentItem
                   key={item.id}
