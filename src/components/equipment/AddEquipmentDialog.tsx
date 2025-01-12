@@ -190,7 +190,7 @@ export function AddEquipmentDialog() {
                             <SelectItem 
                               key={folder.id} 
                               value={folder.id}
-                              className={folder.parent_id ? "pl-6 italic" : ""}
+                              className={!folder.parent_id ? "font-medium" : "pl-6 italic"}
                             >
                               {folder.name}
                             </SelectItem>
