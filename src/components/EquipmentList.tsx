@@ -8,6 +8,7 @@ import { EquipmentListHeader } from "./equipment/EquipmentListHeader";
 import { useEquipmentFilters } from "./equipment/filters/useEquipmentFilters";
 import { useFolders } from "@/hooks/useFolders";
 import { Equipment } from "@/integrations/supabase/types/equipment";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "./ui/table";
 
 export function EquipmentList() {
   const { equipment = [], loading, refetch } = useEquipment();
@@ -74,73 +75,89 @@ export function EquipmentList() {
             
             <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0">
               <div className="h-full overflow-auto">
-                {parentFolders.map(parentFolder => {
-                  const subfolders = folders.filter(f => f.parent_id === parentFolder.id);
-                  const hasVisibleSubfolders = subfolders.some(subfolder => 
-                    (groupedEquipment[subfolder.id] || []).length > 0
-                  );
-                  const hasDirectEquipment = (groupedEquipment[parentFolder.id] || []).length > 0;
+                <Table>
+                  <TableHeader className="sticky top-0 bg-zinc-900/95 border-b border-zinc-800 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75 z-10">
+                    <TableRow>
+                      <TableHead className="w-12"></TableHead>
+                      <TableHead className="min-w-[200px]">Name</TableHead>
+                      <TableHead>Code</TableHead>
+                      <TableHead>Stock</TableHead>
+                      <TableHead>Price</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {parentFolders.map(parentFolder => {
+                      const subfolders = folders.filter(f => f.parent_id === parentFolder.id);
+                      const hasVisibleSubfolders = subfolders.some(subfolder => 
+                        (groupedEquipment[subfolder.id] || []).length > 0
+                      );
+                      const hasDirectEquipment = (groupedEquipment[parentFolder.id] || []).length > 0;
 
-                  if (!hasVisibleSubfolders && !hasDirectEquipment) return null;
+                      if (!hasVisibleSubfolders && !hasDirectEquipment) return null;
 
-                  return (
-                    <div key={parentFolder.id} className="mb-4">
-                      <div className="flex items-center gap-2 p-3 bg-zinc-800/50">
-                        <Folder className="h-4 w-4 text-primary" />
-                        <span className="font-medium">{parentFolder.name}</span>
-                      </div>
-                      
-                      {hasDirectEquipment && (
-                        <div className="pl-6">
-                          <EquipmentTable 
-                            equipment={groupedEquipment[parentFolder.id]}
-                            selectedItem={selectedItem}
-                            onItemSelect={handleItemSelect}
-                          />
-                        </div>
-                      )}
-
-                      <div className="pl-6">
-                        {subfolders.map(subfolder => {
-                          const folderEquipment = groupedEquipment[subfolder.id] || [];
-                          if (folderEquipment.length === 0) return null;
-
-                          return (
-                            <div key={subfolder.id} className="border-l border-zinc-800">
-                              <div className="flex items-center gap-2 p-2 pl-4">
-                                <Folder className="h-4 w-4 text-secondary" />
-                                <span className="text-sm font-medium text-secondary">
-                                  {subfolder.name}
-                                </span>
-                              </div>
-                              <div className="pl-4">
-                                <EquipmentTable 
-                                  equipment={folderEquipment}
-                                  selectedItem={selectedItem}
-                                  onItemSelect={handleItemSelect}
-                                />
-                              </div>
+                      return (
+                        <div key={parentFolder.id} className="mb-4">
+                          <div className="flex items-center gap-2 p-3 bg-zinc-800/50">
+                            <Folder className="h-4 w-4 text-primary" />
+                            <span className="font-medium">{parentFolder.name}</span>
+                          </div>
+                          
+                          {hasDirectEquipment && (
+                            <div className="pl-6">
+                              <EquipmentTable 
+                                equipment={groupedEquipment[parentFolder.id]}
+                                selectedItem={selectedItem}
+                                onItemSelect={handleItemSelect}
+                                hideHeader
+                              />
                             </div>
-                          );
-                        })}
+                          )}
+
+                          <div className="pl-6">
+                            {subfolders.map(subfolder => {
+                              const folderEquipment = groupedEquipment[subfolder.id] || [];
+                              if (folderEquipment.length === 0) return null;
+
+                              return (
+                                <div key={subfolder.id} className="border-l border-zinc-800">
+                                  <div className="flex items-center gap-2 p-2 pl-4">
+                                    <Folder className="h-4 w-4 text-secondary" />
+                                    <span className="text-sm font-medium text-secondary">
+                                      {subfolder.name}
+                                    </span>
+                                  </div>
+                                  <div className="pl-4">
+                                    <EquipmentTable 
+                                      equipment={folderEquipment}
+                                      selectedItem={selectedItem}
+                                      onItemSelect={handleItemSelect}
+                                      hideHeader
+                                    />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    
+                    {groupedEquipment['unassigned']?.length > 0 && (
+                      <div className="p-2">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Folder className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium text-muted-foreground">Unassigned</span>
+                        </div>
+                        <EquipmentTable 
+                          equipment={groupedEquipment['unassigned']}
+                          selectedItem={selectedItem}
+                          onItemSelect={handleItemSelect}
+                          hideHeader
+                        />
                       </div>
-                    </div>
-                  );
-                })}
-                
-                {groupedEquipment['unassigned']?.length > 0 && (
-                  <div className="p-2">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Folder className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium text-muted-foreground">Unassigned</span>
-                    </div>
-                    <EquipmentTable 
-                      equipment={groupedEquipment['unassigned']}
-                      selectedItem={selectedItem}
-                      onItemSelect={handleItemSelect}
-                    />
-                  </div>
-                )}
+                    )}
+                  </TableBody>
+                </Table>
               </div>
             </div>
           </div>
