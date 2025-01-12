@@ -1,20 +1,18 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Separator } from "./ui/separator";
-import { Loader2, ChevronRight, ChevronDown, Folder } from "lucide-react";
+import { Loader2, Folder } from "lucide-react";
 import { useEquipment } from "@/hooks/useEquipment";
 import { EquipmentTable } from "./equipment/EquipmentTable";
 import { EquipmentListHeader } from "./equipment/EquipmentListHeader";
 import { useEquipmentFilters } from "./equipment/filters/useEquipmentFilters";
 import { useFolders } from "@/hooks/useFolders";
 import { Equipment } from "@/types/equipment";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 
 export function EquipmentList() {
   const { equipment = [], loading, refetch } = useEquipment();
   const { folders = [], loading: foldersLoading } = useFolders();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const [openFolders, setOpenFolders] = useState<string[]>([]);
   const { 
     searchQuery, 
     setSearchQuery,
@@ -30,14 +28,6 @@ export function EquipmentList() {
 
   const handleItemSelect = (id: string) => {
     setSelectedItem(prev => prev === id ? null : id);
-  };
-
-  const toggleFolder = (folderId: string) => {
-    setOpenFolders(prev => 
-      prev.includes(folderId) 
-        ? prev.filter(id => id !== folderId)
-        : [...prev, folderId]
-    );
   };
 
   const groupEquipmentByFolder = (items: Equipment[]) => {
@@ -86,46 +76,38 @@ export function EquipmentList() {
               <div className="h-full overflow-auto">
                 {parentFolders.map(parentFolder => {
                   const subfolders = folders.filter(f => f.parent_id === parentFolder.id);
-                  const isOpen = openFolders.includes(parentFolder.id);
 
                   return (
-                    <Collapsible
-                      key={parentFolder.id}
-                      open={isOpen}
-                      onOpenChange={() => toggleFolder(parentFolder.id)}
-                    >
-                      <CollapsibleTrigger className="w-full flex items-center gap-2 p-2 hover:bg-zinc-800/50 transition-colors">
-                        {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    <div key={parentFolder.id} className="mb-4">
+                      <div className="flex items-center gap-2 p-3 bg-zinc-800/50">
                         <Folder className="h-4 w-4 text-primary" />
                         <span className="font-medium">{parentFolder.name}</span>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <div className="pl-6">
-                          {subfolders.map(subfolder => {
-                            const folderEquipment = groupedEquipment[subfolder.id] || [];
-                            if (folderEquipment.length === 0) return null;
+                      </div>
+                      <div className="pl-6">
+                        {subfolders.map(subfolder => {
+                          const folderEquipment = groupedEquipment[subfolder.id] || [];
+                          if (folderEquipment.length === 0) return null;
 
-                            return (
-                              <div key={subfolder.id} className="border-l border-zinc-800">
-                                <div className="flex items-center gap-2 p-2 pl-4">
-                                  <Folder className="h-4 w-4 text-secondary" />
-                                  <span className="text-sm font-medium text-secondary">
-                                    {subfolder.name}
-                                  </span>
-                                </div>
-                                <div className="pl-4">
-                                  <EquipmentTable 
-                                    equipment={folderEquipment}
-                                    selectedItem={selectedItem}
-                                    onItemSelect={handleItemSelect}
-                                  />
-                                </div>
+                          return (
+                            <div key={subfolder.id} className="border-l border-zinc-800">
+                              <div className="flex items-center gap-2 p-2 pl-4">
+                                <Folder className="h-4 w-4 text-secondary" />
+                                <span className="text-sm font-medium text-secondary">
+                                  {subfolder.name}
+                                </span>
                               </div>
-                            );
-                          })}
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
+                              <div className="pl-4">
+                                <EquipmentTable 
+                                  equipment={folderEquipment}
+                                  selectedItem={selectedItem}
+                                  onItemSelect={handleItemSelect}
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
                   );
                 })}
                 
