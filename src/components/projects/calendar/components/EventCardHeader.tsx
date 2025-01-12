@@ -1,5 +1,5 @@
 import { CalendarEvent } from "@/types/events";
-import { Calendar } from "lucide-react";
+import { Calendar, Users } from "lucide-react";
 import { format } from "date-fns";
 
 interface EventCardHeaderProps {
@@ -24,10 +24,15 @@ export function EventCardHeader({ event }: EventCardHeaderProps) {
         </div>
       </div>
 
-      <div className="flex items-center justify-start">
+      <div className="flex items-center justify-between">
         {event.location && (
           <div className="flex items-center text-muted-foreground">
             <span className="text-sm">{event.location}</span>
+          </div>
+        )}
+        {event.type?.needs_crew && (
+          <div className="flex items-center text-muted-foreground">
+            <Users className="h-4 w-4" />
           </div>
         )}
       </div>
