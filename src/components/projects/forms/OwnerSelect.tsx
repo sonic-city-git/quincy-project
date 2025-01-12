@@ -19,14 +19,10 @@ export function OwnerSelect({ value, onChange, error, required }: OwnerSelectPro
   
   // Filter crew members to only include those from Sonic City folder
   // and exclude the dev@soniccity.no email
-  const filteredCrew = crew.filter(member => 
-    sonicCityFolder && 
-    member.folder_id === sonicCityFolder.id &&
+  const filteredCrew = crew?.filter(member => 
+    member.folder_id === sonicCityFolder?.id &&
     member.email !== 'dev@soniccity.no'
-  );
-
-  console.log('Sonic City Folder:', sonicCityFolder);
-  console.log('Filtered crew members:', filteredCrew);
+  ) || [];
 
   return (
     <div className="space-y-2">
