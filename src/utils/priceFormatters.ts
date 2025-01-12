@@ -5,3 +5,7 @@ export const formatPrice = (amount: number | null | undefined) => {
     maximumFractionDigits: 2
   }).format(amount).replace(/\s/g, ' ') + ' kr';
 };
+
+export const formatRevenue = (amount: number | null | undefined) => {
+  return formatPrice(amount);
+};
