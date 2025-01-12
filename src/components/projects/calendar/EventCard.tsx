@@ -9,7 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { getStatusIcon, formatRevenue } from "@/utils/eventFormatters";
+import { getStatusIcon } from "@/utils/eventFormatters";
+import { EVENT_COLORS } from "@/constants/eventColors";
 
 interface EventCardProps {
   event: CalendarEvent;
