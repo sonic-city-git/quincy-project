@@ -7,7 +7,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { EquipmentDialog } from "./components/EquipmentDialog";
 import { EventActions } from "./components/EventActions";
 import { Card } from "@/components/ui/card";
-import { EventCardHeader } from "./components/EventCardHeader";
+import { EventCard as EventCardContent } from "./components/EventCard";
 import { EventCardIcons } from "./components/EventCardIcons";
 import { formatPrice } from "@/utils/priceFormatters";
 import { EventCardGrid } from "./components/EventCardGrid";
@@ -241,7 +241,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         className={`p-3 transition-colors mb-2 ${getStatusBackground(event.status)}`}
       >
         <EventCardGrid>
-          <EventCardHeader event={event} />
+          <EventCardContent event={event} />
           
           <EventCardIcons
             event={event}
