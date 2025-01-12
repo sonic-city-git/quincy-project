@@ -22,7 +22,7 @@ const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   code: z.string().optional().or(z.literal("")),
   rental_price: z.string().optional().or(z.literal("")),
-  stock_calculation: z.enum(["manual", "serial_numbers"]),
+  stock_calculation: z.enum(["manual", "serial_numbers", "consumable"]),
   stock: z.string().optional().or(z.literal("")),
   internal_remark: z.string().optional().or(z.literal("")),
   serial_numbers: z.array(z.string()).optional(),
@@ -286,6 +286,14 @@ export function EditEquipmentDialog({
                               </FormControl>
                               <FormLabel className="font-normal">
                                 Track Serial Numbers
+                              </FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-3 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="consumable" />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                Consumable
                               </FormLabel>
                             </FormItem>
                           </RadioGroup>
