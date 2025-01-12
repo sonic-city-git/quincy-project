@@ -1,11 +1,13 @@
-import { HelpCircle, CheckCircle, Send, XCircle } from "lucide-react";
+import { HelpCircle, CheckCircle, Send, XCircle, Package, Users } from "lucide-react";
+import { EventType } from "@/types/events";
 
 interface EventSectionHeaderProps {
   title: string;
   eventCount: number;
+  eventType?: EventType;
 }
 
-export function EventSectionHeader({ title, eventCount }: EventSectionHeaderProps) {
+export function EventSectionHeader({ title, eventCount, eventType }: EventSectionHeaderProps) {
   const getStatusIcon = () => {
     switch (title.toLowerCase()) {
       case 'confirmed':
@@ -20,10 +22,22 @@ export function EventSectionHeader({ title, eventCount }: EventSectionHeaderProp
   };
 
   return (
-    <div className="flex items-center gap-2">
-      {getStatusIcon()}
-      <h3 className="text-lg font-semibold">{title}</h3>
-      <span className="text-sm text-muted-foreground">({eventCount})</span>
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2">
+        {getStatusIcon()}
+        <h3 className="text-lg font-semibold">{title}</h3>
+        <span className="text-sm text-muted-foreground">({eventCount})</span>
+      </div>
+      {eventType && (
+        <div className="flex items-center gap-2">
+          {eventType.needs_equipment && (
+            <Package className="h-4 w-4 text-muted-foreground" />
+          )}
+          {eventType.needs_crew && (
+            <Users className="h-4 w-4 text-muted-foreground" />
+          )}
+        </div>
+      )}
     </div>
   );
 }
