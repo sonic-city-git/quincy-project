@@ -246,7 +246,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
                   onClick={handleSyncCrew}
                   disabled={isSyncing}
                 >
-                  <Users className="h-6 w-6 text-muted-foreground hover:text-foreground" />
+                  <Users className="h-5 w-5 text-muted-foreground hover:text-foreground" />
                 </Button>
               ) : (
                 <div />
