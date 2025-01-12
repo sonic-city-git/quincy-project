@@ -7,6 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Settings2 } from "lucide-react";
 
 interface EventStatusManagerProps {
   status: string;
@@ -28,11 +29,11 @@ export function EventStatusManager({ status, events, onStatusChange, isCancelled
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
-          size="sm"
-          className="flex items-center gap-2"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
         >
-          Manage all
+          <Settings2 className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">

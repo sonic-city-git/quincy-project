@@ -44,9 +44,9 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   const canSync = status === 'proposed' || status === 'confirmed';
 
   const sectionIcon = isDoneAndDusted ? (
-    <Brush className="h-5 w-5 text-gray-400" />
+    <Brush className="h-6 w-6 text-gray-400" />
   ) : (
-    getStatusIcon(status)
+    getStatusIcon(status, 24)  // Increased size to match the design
   );
 
   const getSectionEquipmentIcon = () => {
@@ -57,6 +57,18 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
       return <Package className="h-6 w-6 text-blue-500" />;
     }
     return <Package className="h-6 w-6 text-green-500" />;
+  };
+
+  // Calculate total price for all events in this section
+  const totalPrice = events.reduce((sum, event) => sum + (event.revenue || 0), 0);
+
+  const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat('nb-NO', {
+      style: 'currency',
+      currency: 'NOK',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount).replace('NOK', 'kr').replace('.', ',');
   };
 
   useEffect(() => {
@@ -141,170 +153,6 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     }
   };
 
-  const handleSyncEquipment = async () => {
-    if (!canSync || isSyncing) return;
-    setIsSyncing(true);
-
-    try {
-      for (const event of events) {
-        console.log('Syncing equipment for event:', event.id);
-        
-        const { data: projectEquipment, error: fetchError } = await supabase
-          .from('project_equipment')
-          .select('*')
-          .eq('project_id', event.project_id);
-
-        if (fetchError) throw fetchError;
-
-        const { error: deleteError } = await supabase
-          .from('project_event_equipment')
-          .delete()
-          .eq('event_id', event.id);
-
-        if (deleteError) throw deleteError;
-
-        if (projectEquipment && projectEquipment.length > 0) {
-          const eventEquipment = projectEquipment.map(item => ({
-            project_id: event.project_id,
-            event_id: event.id,
-            equipment_id: item.equipment_id,
-            quantity: item.quantity,
-            group_id: item.group_id,
-            is_synced: true
-          }));
-
-          const { error: upsertError } = await supabase
-            .from('project_event_equipment')
-            .upsert(eventEquipment);
-
-          if (upsertError) throw upsertError;
-        }
-
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
-          queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
-          queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
-        ]);
-      }
-
-      toast.success(`Equipment synchronized for all ${status} events`);
-    } catch (error) {
-      console.error('Error syncing equipment:', error);
-      toast.error('Failed to sync equipment');
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const handleSyncCrew = async () => {
-    if (!canSync || isSyncing) return;
-    setIsSyncing(true);
-
-    try {
-      for (const event of events) {
-        const { error: deleteError } = await supabase
-          .from('project_event_roles')
-          .delete()
-          .eq('event_id', event.id);
-
-        if (deleteError) throw deleteError;
-
-        const { data: projectRoles, error: fetchError } = await supabase
-          .from('project_roles')
-          .select('*')
-          .eq('project_id', event.project_id);
-
-        if (fetchError) throw fetchError;
-
-        if (projectRoles && projectRoles.length > 0) {
-          const eventRoles = projectRoles.map(role => ({
-            project_id: event.project_id,
-            event_id: event.id,
-            role_id: role.role_id,
-            crew_member_id: role.preferred_id,
-            daily_rate: role.daily_rate,
-            hourly_rate: role.hourly_rate
-          }));
-
-          const { error: upsertError } = await supabase
-            .from('project_event_roles')
-            .upsert(eventRoles);
-
-          if (upsertError) throw upsertError;
-        }
-      }
-
-      toast.success('Crew synchronized for all events');
-    } catch (error) {
-      console.error('Error syncing crew:', error);
-      toast.error('Failed to sync crew');
-    } finally {
-      setIsSyncing(false);
-    }
-  };
-
-  const renderEquipmentIcon = () => {
-    if (sectionSyncStatus === 'synced') {
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center justify-center">
-                {getSectionEquipmentIcon()}
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              All equipment lists are synced
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    }
-
-    return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 p-0"
-            disabled={isSyncing}
-          >
-            {getSectionEquipmentIcon()}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuItem onClick={handleSyncEquipment}>
-            Sync all {status} from project equipment
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    );
-  };
-
-  const formatPrice = (amount: number | null | undefined) => {
-    if (amount === null || amount === undefined) return "-";
-    return new Intl.NumberFormat('nb-NO', {
-      style: 'currency',
-      currency: 'NOK',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount);
-  };
-
-  const content = (
-    <div className="space-y-2">
-      {events.map((event) => (
-        <EventCard
-          key={event.id}
-          event={event}
-          onStatusChange={onStatusChange}
-          onEdit={onEdit}
-        />
-      ))}
-    </div>
-  );
-
   if (isDoneAndDusted) {
     return (
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -317,7 +165,14 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
             <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''} ml-2`} />
           </CollapsibleTrigger>
           <CollapsibleContent className="px-4 pb-4">
-            {content}
+            {events.map((event) => (
+              <EventCard
+                key={event.id}
+                event={event}
+                onStatusChange={onStatusChange}
+                onEdit={onEdit}
+              />
+            ))}
           </CollapsibleContent>
         </div>
       </Collapsible>
@@ -328,7 +183,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     <div className="space-y-3">
       <div className={`rounded-lg ${getStatusBackground(status)}`}>
         <div className="p-4">
-          <div className="grid grid-cols-[100px_minmax(100px,200px)_30px_30px_1fr_100px_auto] gap-0 items-center">
+          <div className="grid grid-cols-[100px_minmax(100px,200px)_30px_30px_1fr_100px_40px_40px] gap-0 items-center">
             <div className="flex items-center gap-2">
               {sectionIcon}
               <h3 className="text-lg font-semibold whitespace-nowrap">{getStatusText(status)}</h3>
@@ -337,7 +192,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
             <div /> {/* Empty space for name column */}
             
             <div className="flex items-center justify-center -ml-8">
-              {canSync ? renderEquipmentIcon() : <div />}
+              {canSync ? getSectionEquipmentIcon() : <div />}
             </div>
 
             <div className="flex items-center justify-center -ml-6">
@@ -359,19 +214,28 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
             <div className="ml-5" /> {/* Empty space for event type column */}
 
             <div className="flex items-center justify-end text-sm font-medium">
-              {/* Price column header - intentionally left empty */}
+              {formatPrice(totalPrice)}
             </div>
 
-            <EventStatusManager
-              status={status}
-              events={events}
-              onStatusChange={onStatusChange}
-              isCancelled={isCancelled}
-            />
+            <div className="flex items-center justify-end col-span-2">
+              <EventStatusManager
+                status={status}
+                events={events}
+                onStatusChange={onStatusChange}
+                isCancelled={isCancelled}
+              />
+            </div>
           </div>
         </div>
         <div className="px-4 pb-4">
-          {content}
+          {events.map((event) => (
+            <EventCard
+              key={event.id}
+              event={event}
+              onStatusChange={onStatusChange}
+              onEdit={onEdit}
+            />
+          ))}
         </div>
       </div>
     </div>
