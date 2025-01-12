@@ -112,7 +112,7 @@ export function EquipmentList() {
 
                           return (
                             <div key={subfolder.id} className="border-l border-zinc-800">
-                              <div className="flex items-center gap-2 p-2 pl-4">
+                              <div className="flex items-center gap-2 p-3 bg-zinc-800/50">
                                 <Folder className="h-4 w-4 text-secondary" />
                                 <span className="text-sm font-medium text-secondary">
                                   {subfolder.name}
