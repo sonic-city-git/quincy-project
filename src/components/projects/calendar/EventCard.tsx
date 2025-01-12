@@ -142,7 +142,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     try {
       console.log('Fetching equipment differences...');
       
-      // Fetch project equipment with detailed information
       const { data: projectEquipment, error: projectError } = await supabase
         .from('project_equipment')
         .select(`
@@ -160,7 +159,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
       if (projectError) throw projectError;
 
-      // Fetch event equipment with detailed information
       const { data: eventEquipment, error: eventError } = await supabase
         .from('project_event_equipment')
         .select(`
@@ -181,24 +179,36 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       console.log('Project equipment:', projectEquipment);
       console.log('Event equipment:', eventEquipment);
 
-      // Create maps using equipment name as key for easier comparison
-      const projectMap = new Map(projectEquipment?.map(item => [item.equipment.name, item]) || []);
-      const eventMap = new Map(eventEquipment?.map(item => [item.equipment.name, item]) || []);
-
       const added: EquipmentItem[] = [];
       const removed: EquipmentItem[] = [];
 
-      // Find items in project but not in event (added)
-      projectMap.forEach((item, name) => {
-        if (!eventMap.has(name)) {
-          added.push(item as EquipmentItem);
+      // Create maps with equipment name as key and full item as value
+      const projectMap = new Map(projectEquipment?.map(item => [item.equipment.name, item]) || []);
+      const eventMap = new Map(eventEquipment?.map(item => [item.equipment.name, item]) || []);
+
+      // Check project equipment against event equipment
+      projectEquipment?.forEach(projectItem => {
+        const eventItem = eventMap.get(projectItem.equipment.name);
+        
+        // If item doesn't exist in event or quantities differ, add to differences
+        if (!eventItem || eventItem.quantity !== projectItem.quantity) {
+          console.log('Added or changed:', projectItem.equipment.name, {
+            projectQty: projectItem.quantity,
+            eventQty: eventItem?.quantity
+          });
+          added.push(projectItem as EquipmentItem);
         }
       });
 
-      // Find items in event but not in project (removed)
-      eventMap.forEach((item, name) => {
-        if (!projectMap.has(name)) {
-          removed.push(item as EquipmentItem);
+      // Check event equipment against project equipment
+      eventEquipment?.forEach(eventItem => {
+        const projectItem = projectMap.get(eventItem.equipment.name);
+        
+        // Only add to removed if item doesn't exist in project
+        // (quantity differences are handled in the added array)
+        if (!projectItem) {
+          console.log('Removed:', eventItem.equipment.name);
+          removed.push(eventItem as EquipmentItem);
         }
       });
 
