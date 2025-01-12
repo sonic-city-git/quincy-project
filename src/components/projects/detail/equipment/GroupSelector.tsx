@@ -73,7 +73,6 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
       
       if (error) throw error;
       
-      // Select the newly created group
       if (data) {
         onGroupSelect(data.id);
       }
@@ -97,7 +96,7 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex justify-between items-center mb-4">
       <div className="flex flex-wrap gap-2">
         {projectGroups.map(group => (
           <Button
@@ -118,7 +117,7 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
             Add Group
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="w-[200px]">
+        <DropdownMenuContent align="end" className="w-[200px]">
           {equipmentGroups.map(group => (
             <DropdownMenuItem
               key={group.id}
