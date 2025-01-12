@@ -41,14 +41,16 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
             <div className="flex items-center gap-2">
               <Avatar className="h-6 w-6">
                 {selectedMember.avatar_url ? (
-                  <AvatarImage src={selectedMember.avatar_url} alt={selectedMember.name} />
-                ) : selectedMember.email && (
                   <AvatarImage 
-                    src={`https://www.gravatar.com/avatar/${Buffer.from(selectedMember.email).toString('hex')}?d=404`}
-                    alt={selectedMember.name}
+                    src={selectedMember.avatar_url} 
+                    alt={selectedMember.name} 
+                    className="object-cover"
                   />
+                ) : (
+                  <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
+                    {selectedInitials}
+                  </AvatarFallback>
                 )}
-                <AvatarFallback className="text-xs">{selectedInitials}</AvatarFallback>
               </Avatar>
               <SelectValue placeholder="Select owner" />
             </div>
@@ -74,14 +76,16 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
                   >
                     <Avatar className="h-6 w-6">
                       {member.avatar_url ? (
-                        <AvatarImage src={member.avatar_url} alt={member.name} />
-                      ) : member.email && (
                         <AvatarImage 
-                          src={`https://www.gravatar.com/avatar/${Buffer.from(member.email).toString('hex')}?d=404`}
-                          alt={member.name}
+                          src={member.avatar_url} 
+                          alt={member.name} 
+                          className="object-cover"
                         />
+                      ) : (
+                        <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
+                          {initials}
+                        </AvatarFallback>
                       )}
-                      <AvatarFallback className="text-xs">{initials}</AvatarFallback>
                     </Avatar>
                     <span>{member.name}</span>
                   </SelectItem>
