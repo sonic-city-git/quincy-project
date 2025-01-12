@@ -381,7 +381,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div>
-                      {(hasEventEquipment && isSynced) || event.status === 'invoiced' ? (
+                      {(hasEventEquipment && isSynced) || event.status === 'invoice ready' ? (
                         <Package className="h-6 w-6 text-green-500" />
                       ) : (
                         <DropdownMenu>
@@ -390,18 +390,18 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6 p-0"
-                              disabled={event.status === 'invoiced'}
+                              disabled={event.status === 'invoice ready'}
                             >
                               {getEquipmentIcon()}
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="start">
-                            {!hasEventEquipment && event.status !== 'invoiced' && (
+                            {!hasEventEquipment && event.status !== 'invoice ready' && (
                               <DropdownMenuItem onClick={handleEquipmentOption}>
                                 Sync from project equipment
                               </DropdownMenuItem>
                             )}
-                            {!isSynced && event.status !== 'invoiced' && (
+                            {!isSynced && event.status !== 'invoice ready' && (
                               <>
                                 <DropdownMenuItem onClick={viewOutOfSyncEquipment}>
                                   View equipment list
