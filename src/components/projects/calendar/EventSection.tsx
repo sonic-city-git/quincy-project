@@ -6,7 +6,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, Package, Users, Send } from "lucide-react";
+import { ChevronDown, Package, Users } from "lucide-react";
 import { useState } from "react";
 import { EventStatusManager } from "./EventStatusManager";
 import { Button } from "@/components/ui/button";
@@ -32,11 +32,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
 
   if (!events.length) return null;
 
-  const sectionIcon = status === 'invoice ready' ? (
-    <Send className="h-5 w-5 text-blue-500" />
-  ) : (
-    getStatusIcon(status === 'done and dusted' ? 'invoiced' : status)
-  );
+  const sectionIcon = getStatusIcon(status === 'done and dusted' ? 'invoiced' : status);
   
   const isDoneAndDusted = status === 'done and dusted';
   const isCancelled = status === 'cancelled';
