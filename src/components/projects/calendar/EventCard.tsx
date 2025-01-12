@@ -54,15 +54,15 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           )}
         </div>
         <div className="flex items-center gap-2">
+          {event.type.needs_equipment && (
+            <Package className="h-4 w-4 text-muted-foreground" />
+          )}
           <span 
             className="text-sm px-3 py-1 rounded-md inline-block"
             style={getColorStyles(event.type.color)}
           >
             {event.type.name}
           </span>
-          {event.type.needs_equipment && (
-            <Package className="h-4 w-4 text-muted-foreground" />
-          )}
         </div>
         <div className="text-sm text-muted-foreground font-medium">
           {formatRevenue(event.revenue)}
