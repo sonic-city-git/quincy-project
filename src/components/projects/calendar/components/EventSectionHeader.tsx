@@ -1,5 +1,4 @@
 import { Package, Users } from "lucide-react";
-import { EventType } from "@/types/events";
 import { EventStatusManager } from "../EventStatusManager";
 import { CalendarEvent } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
@@ -46,7 +45,7 @@ export function EventSectionHeader({
           )}
         </div>
         
-        {/* Empty space for event type */}
+        {/* Empty space for third icon */}
         <div className="col-span-1" />
         
         {/* Empty space for name */}
@@ -55,8 +54,8 @@ export function EventSectionHeader({
         {/* Empty space for revenue */}
         <div className="col-span-1" />
         
-        {/* Status manager alignment */}
-        <div className="flex justify-end">
+        {/* Status manager alignment - now spans two columns to match EventCardGrid */}
+        <div className="col-span-2 flex justify-end">
           {onStatusChange && (
             <EventStatusManager
               status={title.toLowerCase()}
