@@ -68,7 +68,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
         </Card>
       )}
       {doneAndDusted.length > 0 && (
-        <Collapsible defaultOpen={false}>
+        <Collapsible defaultOpen={false} className="mb-16">
           <Card className="rounded-lg bg-zinc-800/45 p-6">
             <CollapsibleTrigger className="flex items-center gap-2 w-full">
               <div className="flex items-center gap-2">
