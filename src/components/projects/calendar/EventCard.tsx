@@ -243,10 +243,10 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         key={`${event.date}-${event.name}`} 
         className={`p-4 transition-colors ${getStatusBackground(event.status)}`}
       >
-        <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_40px_40px] gap-1">
+        <div className="grid grid-cols-[100px_1fr_30px_30px_1fr_40px_40px] gap-0">
           <EventHeader event={event} />
           
-          <div className="flex items-center justify-center -ml-2">
+          <div className="flex items-center justify-center -ml-4">
             {event.type.needs_equipment && (
               <EquipmentIcon
                 isSynced={isSynced}
@@ -257,13 +257,13 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             )}
           </div>
 
-          <div className="flex items-center justify-center -ml-2">
+          <div className="flex items-center justify-center -ml-4">
             {event.type.needs_crew && (
               <Users className={`h-6 w-6 ${isEditingDisabled(event.status) ? 'text-green-500' : 'text-muted-foreground'}`} />
             )}
           </div>
 
-          <div className="flex items-center -ml-2">
+          <div className="flex items-center -ml-4">
             <span 
               className={`text-sm px-2 py-1 rounded-md ${EVENT_COLORS[event.type.name]}`}
             >
