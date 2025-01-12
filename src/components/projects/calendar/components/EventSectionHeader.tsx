@@ -1,4 +1,4 @@
-import { Brush, ChevronDown, Package, Users, MapPin } from "lucide-react";
+import { Brush, ChevronDown, Package, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EventStatusManager } from "../EventStatusManager";
 import { CalendarEvent } from "@/types/events";
@@ -59,11 +59,7 @@ export function EventSectionHeader({
         
         <div /> {/* Empty space for name column */}
         
-        <div className="flex items-center justify-center">
-          <div className="h-8 w-8 flex items-center justify-center">
-            <MapPin className="h-5 w-5 text-muted-foreground" />
-          </div>
-        </div>
+        <div /> {/* Removed MapPin, keeping empty div for grid alignment */}
 
         <div className="flex items-center justify-center">
           {canSync ? (
