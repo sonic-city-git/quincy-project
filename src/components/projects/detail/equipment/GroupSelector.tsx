@@ -74,53 +74,54 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
         ))}
       </div>
 
-      <div className="w-[200px] relative">
-        <Popover open={isOpen} onOpenChange={setIsOpen}>
-          <PopoverTrigger asChild>
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <div className="w-[200px]">
             <Input
-              placeholder="Search groups..."
+              placeholder="Add group"
               value={groupSearch}
               onChange={(e) => setGroupSearch(e.target.value)}
               onFocus={() => setIsOpen(true)}
-              className="bg-zinc-800/50 cursor-text"
+              className="bg-zinc-800/50"
             />
-          </PopoverTrigger>
-          <PopoverContent 
-            className="w-[200px] p-0" 
-            align="start"
-          >
-            <div className="py-2">
-              {filteredGroups.map(group => (
-                <button
-                  key={group.id}
-                  className="w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground text-sm"
-                  onClick={async () => {
-                    const { error } = await supabase
-                      .from('project_equipment_groups')
-                      .insert({
-                        project_id: projectId,
-                        name: group.name,
-                        sort_order: group.sort_order
-                      });
-                    
-                    if (error) {
-                      console.error('Error adding group:', error);
-                    }
-                    setIsOpen(false);
-                  }}
-                >
-                  + {group.name}
-                </button>
-              ))}
-              {filteredGroups.length === 0 && (
-                <div className="px-4 py-2 text-sm text-muted-foreground">
-                  No groups found
-                </div>
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
-      </div>
+          </div>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="w-[200px] p-0" 
+          align="start"
+        >
+          <div className="py-2">
+            {filteredGroups.map(group => (
+              <button
+                key={group.id}
+                className="w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground text-sm"
+                onClick={async () => {
+                  const { error } = await supabase
+                    .from('project_equipment_groups')
+                    .insert({
+                      project_id: projectId,
+                      name: group.name,
+                      sort_order: group.sort_order
+                    });
+                  
+                  if (error) {
+                    console.error('Error adding group:', error);
+                  }
+                  setIsOpen(false);
+                  setGroupSearch("");
+                }}
+              >
+                + {group.name}
+              </button>
+            ))}
+            {filteredGroups.length === 0 && (
+              <div className="px-4 py-2 text-sm text-muted-foreground">
+                No groups found
+              </div>
+            )}
+          </div>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
