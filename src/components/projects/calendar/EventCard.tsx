@@ -243,7 +243,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         key={`${event.date}-${event.name}`} 
         className={`p-4 transition-colors ${getStatusBackground(event.status)}`}
       >
-        <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_auto] gap-4">
+        <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_40px_40px] gap-4">
           <EventHeader event={event} />
           
           <div className="flex items-center justify-center">
