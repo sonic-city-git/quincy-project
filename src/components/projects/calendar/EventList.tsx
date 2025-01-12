@@ -24,30 +24,32 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
 
   return (
     <div className="space-y-8">
-      <EventSection
-        title="Proposed"
-        events={proposed}
-        onStatusChange={onStatusChange}
-        onEdit={onEdit}
-      />
-      <EventSection
-        title="Confirmed"
-        events={confirmed}
-        onStatusChange={onStatusChange}
-        onEdit={onEdit}
-      />
-      <EventSection
-        title="Invoice Ready"
-        events={ready}
-        onStatusChange={onStatusChange}
-        onEdit={onEdit}
-      />
-      <EventSection
-        title="Cancelled"
-        events={cancelled}
-        onStatusChange={onStatusChange}
-        onEdit={onEdit}
-      />
+      <div className="border border-zinc-800 rounded-lg bg-zinc-900/50 backdrop-blur-sm p-6 space-y-8">
+        <EventSection
+          title="Proposed"
+          events={proposed}
+          onStatusChange={onStatusChange}
+          onEdit={onEdit}
+        />
+        <EventSection
+          title="Confirmed"
+          events={confirmed}
+          onStatusChange={onStatusChange}
+          onEdit={onEdit}
+        />
+        <EventSection
+          title="Invoice Ready"
+          events={ready}
+          onStatusChange={onStatusChange}
+          onEdit={onEdit}
+        />
+        <EventSection
+          title="Cancelled"
+          events={cancelled}
+          onStatusChange={onStatusChange}
+          onEdit={onEdit}
+        />
+      </div>
     </div>
   );
 }
