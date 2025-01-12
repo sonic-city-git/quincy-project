@@ -27,7 +27,7 @@ export function EventSectionHeader({
   }
 
   return (
-    <div className="bg-background/50 backdrop-blur-sm border border-border rounded-lg p-3 mb-4">
+    <div className="p-3 mb-4">
       <EventSectionHeaderGrid>
         <div className="col-span-2 flex items-center gap-2 justify-start">
           <div className="h-6 w-6 flex items-center justify-center">
