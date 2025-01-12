@@ -27,7 +27,6 @@ export function EventSectionHeader({
         <div className="flex items-center gap-2">
           {getStatusIcon(title.toLowerCase() as CalendarEvent['status'])}
           <h3 className="text-lg font-semibold">{title}</h3>
-          <span className="text-sm text-muted-foreground">({eventCount})</span>
         </div>
         
         {/* Empty space for event name */}
