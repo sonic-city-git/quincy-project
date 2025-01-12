@@ -102,7 +102,21 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       if (fetchError) throw fetchError;
 
       if (projectEquipment && projectEquipment.length > 0) {
-        const eventEquipment = projectEquipment.map(item => ({
+        // Create a Map to deduplicate equipment by equipment_id
+        const uniqueEquipment = new Map();
+        
+        projectEquipment.forEach(item => {
+          // If equipment already exists, update quantity
+          if (uniqueEquipment.has(item.equipment_id)) {
+            const existing = uniqueEquipment.get(item.equipment_id);
+            existing.quantity += item.quantity;
+            uniqueEquipment.set(item.equipment_id, existing);
+          } else {
+            uniqueEquipment.set(item.equipment_id, item);
+          }
+        });
+
+        const eventEquipment = Array.from(uniqueEquipment.values()).map(item => ({
           project_id: event.project_id,
           event_id: event.id,
           equipment_id: item.equipment_id,
@@ -111,15 +125,20 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           is_synced: true
         }));
 
-        // Use upsert with ON CONFLICT DO UPDATE
-        const { error: upsertError } = await supabase
+        // First, delete existing equipment for this event
+        const { error: deleteError } = await supabase
           .from('project_event_equipment')
-          .upsert(eventEquipment, {
-            onConflict: 'event_id,equipment_id',
-            ignoreDuplicates: false
-          });
+          .delete()
+          .eq('event_id', event.id);
 
-        if (upsertError) throw upsertError;
+        if (deleteError) throw deleteError;
+
+        // Then insert the new equipment
+        const { error: insertError } = await supabase
+          .from('project_event_equipment')
+          .insert(eventEquipment);
+
+        if (insertError) throw insertError;
       }
 
       await Promise.all([
