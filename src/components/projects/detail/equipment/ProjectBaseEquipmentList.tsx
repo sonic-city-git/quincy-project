@@ -142,42 +142,39 @@ export function ProjectBaseEquipmentList({
           );
         })}
         
-        <div 
-          className={cn(
-            "rounded-lg border border-border bg-background/50 transition-all duration-200",
-            selectedGroupId === null && "ring-2 ring-primary/20"
-          )}
-          onDragOver={handleDragOver}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDrop={(e) => handleDrop(e, null)}
-        >
-          <h3 
+        {ungroupedEquipment.length > 0 && (
+          <div 
             className={cn(
-              "text-sm font-medium px-4 py-2 cursor-pointer transition-colors sticky top-0 z-10",
-              selectedGroupId === null 
-                ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
+              "rounded-lg border border-border bg-background/50 transition-all duration-200",
+              selectedGroupId === null && "ring-2 ring-primary/20"
             )}
-            onClick={() => onGroupSelect(null)}
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, null)}
           >
-            Ungrouped Equipment
-          </h3>
-          <div className="p-3 space-y-2">
-            {ungroupedEquipment.map((item) => (
-              <ProjectEquipmentItem
-                key={item.id}
-                item={item}
-                onRemove={() => removeEquipment(item.id)}
-              />
-            ))}
-            {ungroupedEquipment.length === 0 && (
-              <div className="text-sm text-muted-foreground px-1">
-                No ungrouped equipment
-              </div>
-            )}
+            <h3 
+              className={cn(
+                "text-sm font-medium px-4 py-2 cursor-pointer transition-colors sticky top-0 z-10",
+                selectedGroupId === null 
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                  : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
+              )}
+              onClick={() => onGroupSelect(null)}
+            >
+              Ungrouped Equipment
+            </h3>
+            <div className="p-3 space-y-2">
+              {ungroupedEquipment.map((item) => (
+                <ProjectEquipmentItem
+                  key={item.id}
+                  item={item}
+                  onRemove={() => removeEquipment(item.id)}
+                />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </ScrollArea>
   );
