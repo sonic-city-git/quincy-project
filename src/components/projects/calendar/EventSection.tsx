@@ -26,6 +26,21 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   const isDoneAndDusted = status === 'done and dusted';
   const isCancelled = status === 'cancelled';
 
+  const getStatusBackground = (status: string) => {
+    switch (status) {
+      case 'proposed':
+        return 'bg-yellow-500/5';
+      case 'confirmed':
+        return 'bg-green-500/5';
+      case 'invoice ready':
+        return 'bg-blue-500/5';
+      case 'cancelled':
+        return 'bg-red-500/5';
+      default:
+        return 'bg-zinc-800/5';
+    }
+  };
+
   const getStatusText = (status: string) => {
     return `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
   };
@@ -54,7 +69,9 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
           <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''} ml-2`} />
         </CollapsibleTrigger>
         <CollapsibleContent className="pt-3">
-          {content}
+          <div className={`p-4 rounded-lg ${getStatusBackground(status)}`}>
+            {content}
+          </div>
         </CollapsibleContent>
       </Collapsible>
     );
@@ -74,7 +91,9 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
           isCancelled={isCancelled}
         />
       </div>
-      {content}
+      <div className={`p-4 rounded-lg ${getStatusBackground(status)}`}>
+        {content}
+      </div>
     </div>
   );
 }
