@@ -116,37 +116,52 @@ export function EquipmentSelector({ onSelect, projectId, selectedGroupId }: Equi
     return filterEquipment(equipment).filter(item => item.folder_id === folderId);
   };
 
+  // Helper function to check if a folder or its subfolders contain matching equipment
+  const folderHasMatchingEquipment = (folder: Folder): boolean => {
+    const directMatches = getFolderEquipment(folder.id).length > 0;
+    if (directMatches) return true;
+
+    const subfolders = getSubfolders(folder.id);
+    return subfolders.some(subfolder => getFolderEquipment(subfolder.id).length > 0);
+  };
+
   const renderFolderContent = (folder: Folder) => {
     const subfolders = getSubfolders(folder.id);
     const folderEquipment = getFolderEquipment(folder.id);
+    const hasMatchingContent = searchQuery ? folderHasMatchingEquipment(folder) : false;
 
     return (
       <div key={folder.id} className="space-y-1">
-        <Collapsible>
+        <Collapsible defaultOpen={hasMatchingContent}>
           <CollapsibleTrigger className="flex items-center w-full hover:bg-accent/50 px-2 h-[28px] text-sm font-medium rounded-md">
             <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 ui-open:rotate-90" />
             <span className="ml-1">{folder.name}</span>
           </CollapsibleTrigger>
           <CollapsibleContent className="pl-4 space-y-1">
-            {subfolders.map(subfolder => (
-              <Collapsible key={subfolder.id}>
-                <CollapsibleTrigger className="flex items-center w-full hover:bg-accent/50 px-2 h-[28px] text-sm font-medium rounded-md">
-                  <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 ui-open:rotate-90" />
-                  <span className="ml-1">{subfolder.name}</span>
-                </CollapsibleTrigger>
-                <CollapsibleContent className="pl-4 space-y-1">
-                  {getFolderEquipment(subfolder.id).map(item => (
-                    <button
-                      key={item.id}
-                      onClick={() => onSelect(item.id)}
-                      className="w-full text-left px-4 h-[28px] text-sm font-medium hover:bg-accent rounded-md transition-colors"
-                    >
-                      {item.name}
-                    </button>
-                  ))}
-                </CollapsibleContent>
-              </Collapsible>
-            ))}
+            {subfolders.map(subfolder => {
+              const subfolderEquipment = getFolderEquipment(subfolder.id);
+              const hasMatchingSubfolderContent = searchQuery ? subfolderEquipment.length > 0 : false;
+
+              return (
+                <Collapsible key={subfolder.id} defaultOpen={hasMatchingSubfolderContent}>
+                  <CollapsibleTrigger className="flex items-center w-full hover:bg-accent/50 px-2 h-[28px] text-sm font-medium rounded-md">
+                    <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 ui-open:rotate-90" />
+                    <span className="ml-1">{subfolder.name}</span>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pl-4 space-y-1">
+                    {subfolderEquipment.map(item => (
+                      <button
+                        key={item.id}
+                        onClick={() => onSelect(item.id)}
+                        className="w-full text-left px-4 h-[28px] text-sm font-medium hover:bg-accent rounded-md transition-colors"
+                      >
+                        {item.name}
+                      </button>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            })}
             {folderEquipment.map(item => (
               <button
                 key={item.id}
