@@ -113,12 +113,6 @@ export function AddEquipmentDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <Package className="h-4 w-4" />
-          Add Equipment
-        </Button>
-      </DialogTrigger>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Equipment</DialogTitle>
@@ -190,7 +184,7 @@ export function AddEquipmentDialog() {
                             <SelectItem 
                               key={folder.id} 
                               value={folder.id}
-                              className={!folder.parent_id ? "font-medium" : "pl-6 italic"}
+                              className={!folder.parent_id ? "pl-6 italic" : ""}
                             >
                               {folder.name}
                             </SelectItem>
