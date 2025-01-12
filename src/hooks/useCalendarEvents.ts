@@ -65,12 +65,14 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   };
 
   const handleEventUpdate = async (updatedEvent: CalendarEvent) => {
-    const updated = await updateEvent(updatedEvent);
+    if (!projectId) return;
+    
+    await updateEvent(projectId, updatedEvent);
     
     queryClient.setQueryData(['events', projectId], (old: CalendarEvent[] | undefined) => 
       old?.map(event => 
-        event.date.getTime() === updated.date.getTime()
-          ? updated
+        event.id === updatedEvent.id
+          ? updatedEvent
           : event
       ) || []
     );
@@ -99,7 +101,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
       console.error('Error in deleteEvent:', error);
       toast("Error", {
         description: error instanceof Error ? error.message : "Failed to delete event",
-        variant: "destructive"
+        style: { background: 'red', color: 'white' }
       });
       return false;
     }
