@@ -95,8 +95,8 @@ export function ProjectBaseEquipmentList({
   }
 
   return (
-    <ScrollArea className="h-[700px] pr-4">
-      <div className="space-y-6">
+    <ScrollArea className="h-full">
+      <div className="space-y-6 pr-4">
         {groups.map(group => {
           const groupEquipment = equipment?.filter(item => item.group_id === group.id) || [];
           const isSelected = selectedGroupId === group.id;

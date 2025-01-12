@@ -22,7 +22,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
               <Box className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold">Available Equipment</h2>
             </div>
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-hidden">
               <EquipmentSelector 
                 onSelect={() => {}} 
                 projectId={projectId}
@@ -43,7 +43,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
                 onGroupSelect={setSelectedGroupId}
               />
             </div>
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-hidden">
               <ProjectBaseEquipmentList 
                 projectId={projectId} 
                 selectedGroupId={selectedGroupId}
