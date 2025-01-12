@@ -18,6 +18,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EventSectionProps {
   status: CalendarEvent['status'] | 'done and dusted';
@@ -29,6 +30,7 @@ interface EventSectionProps {
 export function EventSection({ status, events, onStatusChange, onEdit }: EventSectionProps) {
   const [isOpen, setIsOpen] = useState(status !== 'done and dusted');
   const [isSyncing, setIsSyncing] = useState(false);
+  const queryClient = useQueryClient();
 
   if (!events.length) return null;
 
@@ -104,7 +106,17 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
 
           if (upsertError) throw upsertError;
         }
+
+        // Invalidate queries for this specific event
+        await queryClient.invalidateQueries({ 
+          queryKey: ['project-event-equipment', event.id]
+        });
       }
+
+      // Invalidate the main events query to refresh the UI
+      await queryClient.invalidateQueries({ 
+        queryKey: ['events']
+      });
 
       toast.success(`Equipment synchronized for all ${status} events`);
     } catch (error) {
