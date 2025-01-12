@@ -10,6 +10,12 @@ import { EquipmentIcon } from "./components/EquipmentIcon";
 import { EquipmentDialog } from "./components/EquipmentDialog";
 import { EventHeader } from "./components/EventHeader";
 import { EventActions } from "./components/EventActions";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface EquipmentItem {
   id: string;
@@ -253,9 +259,24 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         key={`${event.date}-${event.name}`} 
         className={`p-4 transition-colors ${getStatusBackground(event.status)}`}
       >
-        <div className="grid grid-cols-[100px_200px_30px_30px_1fr_100px_40px_40px] gap-0 items-center">
+        <div className="grid grid-cols-[100px_200px_30px_30px_30px_1fr_100px_40px_40px] gap-0 items-center">
           <EventHeader event={event} />
           
+          <div className="flex items-center justify-center">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="h-6 w-6 flex items-center justify-center">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{event.location || 'No location set'}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+
           <div className="flex items-center justify-center">
             {event.type.needs_equipment && (
               <div className="h-6 w-6 flex items-center justify-center">

@@ -6,13 +6,19 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Brush, ChevronDown, Package, Users } from "lucide-react";
+import { Brush, ChevronDown, Package, Users, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import { EventStatusManager } from "./EventStatusManager";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface EventSectionProps {
   status: CalendarEvent['status'] | 'done and dusted';
@@ -223,8 +229,8 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     <div className="space-y-3">
       <div className={`rounded-lg ${getStatusBackground(status)}`}>
         <div className="p-4">
-          <div className="p-4"> {/* Added wrapper with padding */}
-            <div className="grid grid-cols-[100px_200px_30px_30px_1fr_100px_40px_40px] gap-0 items-center">
+          <div className="p-4">
+            <div className="grid grid-cols-[100px_200px_30px_30px_30px_1fr_100px_40px_40px] gap-0 items-center">
               <div className="flex items-center gap-2">
                 {sectionIcon}
                 <h3 className="text-lg font-semibold whitespace-nowrap">{getStatusText(status)}</h3>
@@ -232,6 +238,12 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
               
               <div /> {/* Empty space for name column */}
               
+              <div className="flex items-center justify-center">
+                <div className="h-6 w-6 flex items-center justify-center">
+                  <MapPin className="h-4 w-4 text-muted-foreground" />
+                </div>
+              </div>
+
               <div className="flex items-center justify-center">
                 {canSync ? getSectionEquipmentIcon() : <div />}
               </div>
@@ -252,7 +264,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
                 )}
               </div>
 
-              <div className="ml-5" /> {/* Empty space for event type column */}
+              <div /> {/* Empty space for event type column */}
 
               <div className="flex items-center justify-end text-sm font-medium">
                 {formatPrice(totalPrice)}
