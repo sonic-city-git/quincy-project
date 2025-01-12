@@ -96,6 +96,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   useEffect(() => {
     const fetchStatus = async () => {
       try {
+        // Check project equipment
         const { data: projectEquipment } = await supabase
           .from('project_equipment')
           .select('id')
@@ -104,6 +105,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         
         setHasProjectEquipment(!!projectEquipment?.length);
 
+        // Check event equipment and sync status
         const { data: eventEquipment, error } = await supabase
           .from('project_event_equipment')
           .select('*')
@@ -125,6 +127,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       }
     };
 
+    // Initial fetch
     if (event.type.needs_equipment) {
       fetchStatus();
     }
@@ -138,12 +141,28 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         table: 'project_event_equipment',
         filter: `event_id=eq.${event.id}`
       }, () => {
+        console.log('Received real-time update for event equipment');
+        fetchStatus();
+      })
+      .subscribe();
+
+    // Also listen for project equipment changes
+    const projectChannel = supabase
+      .channel(`project-equipment-${event.project_id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'project_equipment',
+        filter: `project_id=eq.${event.project_id}`
+      }, () => {
+        console.log('Received real-time update for project equipment');
         fetchStatus();
       })
       .subscribe();
 
     return () => {
       channel.unsubscribe();
+      projectChannel.unsubscribe();
     };
   }, [event.id, event.project_id, event.type.needs_equipment]);
 
