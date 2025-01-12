@@ -29,6 +29,10 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
     }
   }, [projectId, refetch, queryClient]);
 
+  const handleStatusChange = async (event: any, newStatus: any) => {
+    // Implement your status change logic here
+  };
+
   return (
     <div className="space-y-8">
       <Card className="rounded-lg bg-zinc-800/45 p-6">
@@ -43,7 +47,11 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
           {/* General Info Section */}
           <Card className="rounded-lg bg-zinc-800/45">
             <div className="p-6">
-              <ProjectInfo project={project} />
+              <ProjectInfo 
+                project={project} 
+                events={events}
+                onStatusChange={handleStatusChange}
+              />
             </div>
           </Card>
         </div>

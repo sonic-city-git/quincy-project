@@ -2,12 +2,20 @@ import { CustomerSelect } from "@/components/projects/forms/CustomerSelect";
 import { OwnerSelect } from "@/components/projects/forms/OwnerSelect";
 import { formatDisplayDate } from "@/utils/dateFormatters";
 import { Project } from "@/types/projects";
+import { ProjectInvoiceButton } from "./ProjectInvoiceButton";
+import { useState } from "react";
+import { InvoiceDialog } from "../invoice/InvoiceDialog";
+import { CalendarEvent } from "@/types/events";
 
 interface ProjectInfoProps {
   project: Project;
+  events?: CalendarEvent[];
+  onStatusChange?: (event: CalendarEvent, newStatus: CalendarEvent['status']) => Promise<void>;
 }
 
-export function ProjectInfo({ project }: ProjectInfoProps) {
+export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInfoProps) {
+  const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
     try {
@@ -30,6 +38,11 @@ export function ProjectInfo({ project }: ProjectInfoProps) {
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-between items-start mb-4">
+        <h3 className="text-lg font-medium">Project Information</h3>
+        <ProjectInvoiceButton onClick={() => setIsInvoiceDialogOpen(true)} />
+      </div>
+
       <div className="space-y-4">
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">Customer</label>
@@ -65,6 +78,13 @@ export function ProjectInfo({ project }: ProjectInfoProps) {
           </div>
         </div>
       </div>
+
+      <InvoiceDialog 
+        isOpen={isInvoiceDialogOpen}
+        onClose={() => setIsInvoiceDialogOpen(false)}
+        events={events}
+        onStatusChange={onStatusChange}
+      />
     </div>
   );
 }
