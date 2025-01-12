@@ -94,8 +94,7 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
       const { error: equipmentDeleteError } = await supabase
         .from('project_event_equipment')
         .delete()
-        .eq('event_id', event.id)
-        .eq('project_id', projectId);
+        .eq('event_id', event.id);
 
       if (equipmentDeleteError) throw equipmentDeleteError;
 
@@ -103,8 +102,7 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
       const { error: rolesDeleteError } = await supabase
         .from('project_event_roles')
         .delete()
-        .eq('event_id', event.id)
-        .eq('project_id', projectId);
+        .eq('event_id', event.id);
 
       if (rolesDeleteError) throw rolesDeleteError;
 
