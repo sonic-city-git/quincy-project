@@ -2,9 +2,22 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Plus } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface GroupSelectorProps {
   projectId: string;
@@ -13,8 +26,9 @@ interface GroupSelectorProps {
 }
 
 export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: GroupSelectorProps) {
-  const [groupSearch, setGroupSearch] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
+  const [customGroupName, setCustomGroupName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data: equipmentGroups = [], isLoading: isLoadingGroups } = useQuery({
     queryKey: ['equipment-groups'],
@@ -44,6 +58,28 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
     enabled: !!projectId
   });
 
+  const handleAddGroup = async (name: string, sortOrder: number = 0) => {
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('project_equipment_groups')
+        .insert({
+          project_id: projectId,
+          name,
+          sort_order: sortOrder
+        });
+      
+      if (error) throw error;
+      
+      setCustomGroupName("");
+      setIsCustomDialogOpen(false);
+    } catch (error) {
+      console.error('Error adding group:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (isLoadingGroups || isLoadingProjectGroups) {
     return (
       <div className="flex items-center gap-2">
@@ -52,12 +88,6 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
       </div>
     );
   }
-
-  const filteredGroups = groupSearch.trim() === "" 
-    ? equipmentGroups 
-    : equipmentGroups.filter(group => 
-        group.name.toLowerCase().includes(groupSearch.toLowerCase())
-      );
 
   return (
     <div className="space-y-4">
@@ -74,54 +104,60 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
         ))}
       </div>
 
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <div className="w-[200px]">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Group
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-[200px]">
+          {equipmentGroups.map(group => (
+            <DropdownMenuItem
+              key={group.id}
+              onClick={() => handleAddGroup(group.name, group.sort_order)}
+            >
+              {group.name}
+            </DropdownMenuItem>
+          ))}
+          <DropdownMenuItem
+            className="font-medium"
+            onClick={() => setIsCustomDialogOpen(true)}
+          >
+            + Custom
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={isCustomDialogOpen} onOpenChange={setIsCustomDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Custom Group</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
             <Input
-              placeholder="Add group"
-              value={groupSearch}
-              onChange={(e) => setGroupSearch(e.target.value)}
-              onFocus={() => setIsOpen(true)}
-              className="bg-zinc-800/50"
+              placeholder="Enter group name"
+              value={customGroupName}
+              onChange={(e) => setCustomGroupName(e.target.value)}
             />
           </div>
-        </PopoverTrigger>
-        <PopoverContent 
-          className="w-[200px] p-0" 
-          align="start"
-        >
-          <div className="py-2">
-            {filteredGroups.map(group => (
-              <button
-                key={group.id}
-                className="w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground text-sm"
-                onClick={async () => {
-                  const { error } = await supabase
-                    .from('project_equipment_groups')
-                    .insert({
-                      project_id: projectId,
-                      name: group.name,
-                      sort_order: group.sort_order
-                    });
-                  
-                  if (error) {
-                    console.error('Error adding group:', error);
-                  }
-                  setIsOpen(false);
-                  setGroupSearch("");
-                }}
-              >
-                + {group.name}
-              </button>
-            ))}
-            {filteredGroups.length === 0 && (
-              <div className="px-4 py-2 text-sm text-muted-foreground">
-                No groups found
-              </div>
-            )}
-          </div>
-        </PopoverContent>
-      </Popover>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsCustomDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => handleAddGroup(customGroupName)}
+              disabled={!customGroupName.trim() || isSubmitting}
+            >
+              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Create Group
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
