@@ -22,10 +22,12 @@ export function EventCardHeader({ event }: EventCardHeaderProps) {
             {event.name}
           </span>
         </div>
+      </div>
+
+      <div className="flex items-center justify-center">
         {event.location && (
-          <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
-            <MapPin className="h-3 w-3" />
-            <span>{event.location}</span>
+          <div className="flex items-center text-muted-foreground">
+            <MapPin className="h-4 w-4" />
           </div>
         )}
       </div>
