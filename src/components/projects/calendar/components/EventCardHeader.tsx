@@ -16,7 +16,7 @@ export function EventCardHeader({ event }: EventCardHeaderProps) {
         </span>
       </div>
       
-      <div className="flex flex-col">
+      <div className="flex flex-col justify-start">
         <div className="flex items-start">
           <span className="font-medium text-base">
             {event.name}
