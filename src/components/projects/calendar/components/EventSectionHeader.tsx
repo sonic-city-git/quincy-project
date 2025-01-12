@@ -32,12 +32,12 @@ export function EventSectionHeader({
         {/* Icons column alignment */}
         <div className="flex items-center justify-center">
           {eventType?.needs_equipment && (
-            <Package className="h-4 w-4 text-muted-foreground" />
+            <Package className="h-6 w-6 text-muted-foreground" />
           )}
         </div>
         <div className="flex items-center justify-center">
           {eventType?.needs_crew && (
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-6 w-6 text-muted-foreground" />
           )}
         </div>
         
