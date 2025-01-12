@@ -76,6 +76,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
       const syncStatus = eventEquipment?.every(item => item.is_synced) ?? true;
       setIsSynced(syncStatus);
+      console.log('Equipment sync status updated:', { eventId: event.id, syncStatus });
     } catch (error) {
       console.error('Error checking equipment status:', error);
       setIsSynced(true);
@@ -95,15 +96,21 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           schema: 'public',
           table: 'project_event_equipment',
           filter: `event_id=eq.${event.id}`
-        }, () => {
+        }, (payload) => {
+          console.log('Received real-time update:', payload);
           checkEquipmentStatus();
           queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
         })
-        .subscribe();
+        .subscribe((status) => {
+          console.log(`Subscription status for event ${event.id}:`, status);
+        });
     }
 
     return () => {
-      if (channel) channel.unsubscribe();
+      if (channel) {
+        console.log(`Unsubscribing from event ${event.id}`);
+        channel.unsubscribe();
+      }
     };
   }, [event.id, event.type.needs_equipment, queryClient]);
 
