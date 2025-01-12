@@ -1,28 +1,15 @@
 import { CalendarEvent } from "@/types/events";
 import { Card } from "@/components/ui/card";
-import { Calendar, Edit, MapPin, Package, Users } from "lucide-react";
-import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { getStatusIcon } from "@/utils/eventFormatters";
+import { Users } from "lucide-react";
 import { EVENT_COLORS } from "@/constants/eventColors";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useState, useEffect } from 'react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useQueryClient } from "@tanstack/react-query";
+import { EquipmentIcon } from "./components/EquipmentIcon";
+import { EquipmentDialog } from "./components/EquipmentDialog";
+import { EventHeader } from "./components/EventHeader";
+import { EventActions } from "./components/EventActions";
 
 interface EquipmentItem {
   id: string;
@@ -37,9 +24,9 @@ interface EquipmentItem {
 }
 
 interface EquipmentDifference {
-  added: EquipmentItem[];    // Completely new items
-  removed: EquipmentItem[];  // Items that no longer exist
-  changed: {                 // Items with quantity changes
+  added: EquipmentItem[];
+  removed: EquipmentItem[];
+  changed: {
     item: EquipmentItem;
     oldQuantity: number;
     newQuantity: number;
@@ -71,26 +58,13 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const getStatusBackground = (status: string) => {
     switch (status) {
       case 'proposed':
-        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       case 'confirmed':
-        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       case 'invoice ready':
-        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       case 'cancelled':
         return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       default:
         return 'hover:bg-zinc-800/50';
     }
-  };
-
-  const getEquipmentIcon = () => {
-    if (!hasEventEquipment) {
-      return <Package className="h-6 w-6 text-gray-400" />;
-    }
-    if (!isSynced) {
-      return <Package className="h-6 w-6 text-blue-500" />;
-    }
-    return <Package className="h-6 w-6 text-green-500" />;
   };
 
   useEffect(() => {
@@ -150,13 +124,11 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       }
     };
 
-    // Initial fetch
     if (event.type.needs_equipment) {
       console.log('Initial fetch for event:', event.id);
       fetchStatus();
     }
 
-    // Set up subscription for real-time updates
     const channel = supabase
       .channel(`event-equipment-${event.id}`)
       .on('postgres_changes', {
@@ -171,13 +143,11 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         });
         if (isSubscribed) {
           fetchStatus();
-          // Invalidate queries to ensure UI consistency
           queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
         }
       })
       .subscribe();
 
-    // Also listen for project equipment changes
     const projectChannel = supabase
       .channel(`project-equipment-${event.project_id}`)
       .on('postgres_changes', {
@@ -192,7 +162,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         });
         if (isSubscribed) {
           fetchStatus();
-          // Invalidate queries to ensure UI consistency
           queryClient.invalidateQueries({ queryKey: ['project-equipment', event.project_id] });
         }
       })
@@ -239,11 +208,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         if (upsertError) throw upsertError;
       }
 
-      // Update local state
       setIsSynced(true);
       setHasEventEquipment(projectEquipment && projectEquipment.length > 0);
 
-      // Invalidate queries to refresh data
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
         queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
@@ -303,22 +270,18 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       const removed: EquipmentItem[] = [];
       const changed: EquipmentDifference['changed'] = [];
 
-      // Create maps with equipment name as key and full item as value
       const projectMap = new Map(projectEquipment?.map(item => [item.equipment.name, item]) || []);
       const eventMap = new Map(eventEquipment?.map(item => [item.equipment.name, item]) || []);
 
-      // Check project equipment against event equipment
       projectEquipment?.forEach(projectItem => {
         const eventItem = eventMap.get(projectItem.equipment.name);
         
         if (!eventItem) {
-          // Item is completely new
           console.log('Added new:', projectItem.equipment.name, {
             quantity: projectItem.quantity
           });
           added.push(projectItem as EquipmentItem);
         } else if (eventItem.quantity !== projectItem.quantity) {
-          // Item exists but quantity changed
           console.log('Changed:', projectItem.equipment.name, {
             oldQty: eventItem.quantity,
             newQty: projectItem.quantity
@@ -331,12 +294,10 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         }
       });
 
-      // Check event equipment against project equipment
       eventEquipment?.forEach(eventItem => {
         const projectItem = projectMap.get(eventItem.equipment.name);
         
         if (!projectItem) {
-          // Item was completely removed
           console.log('Removed:', eventItem.equipment.name, {
             quantity: eventItem.quantity
           });
@@ -358,84 +319,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     }
   };
 
-  const renderEquipmentList = (items: EquipmentItem[], type: 'added' | 'removed') => {
-    const groupedEquipment = items.reduce((acc, item) => {
-      const groupName = item.group?.name || 'Ungrouped';
-      if (!acc[groupName]) {
-        acc[groupName] = [];
-      }
-      acc[groupName].push(item);
-      return acc;
-    }, {} as Record<string, EquipmentItem[]>);
-
-    return Object.entries(groupedEquipment).map(([groupName, items]) => (
-      <div key={groupName} className="mb-4">
-        <h3 className="text-sm font-medium mb-2 px-2 py-1 bg-secondary/10 rounded-md">
-          {groupName}
-        </h3>
-        <div className="space-y-2">
-          {items.map((item) => (
-            <Card key={item.id} className={`p-2 ${type === 'added' ? 'border-green-500' : 'border-red-500'}`}>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">
-                  {item.equipment.name}
-                  {item.equipment.code && (
-                    <span className="text-muted-foreground ml-1">
-                      ({item.equipment.code})
-                    </span>
-                  )}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  Qty: {item.quantity}
-                </span>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
-    ));
-  };
-
-  const renderChangedEquipmentList = (items: EquipmentDifference['changed']) => {
-    const groupedEquipment = items.reduce((acc, { item }) => {
-      const groupName = item.group?.name || 'Ungrouped';
-      if (!acc[groupName]) {
-        acc[groupName] = [];
-      }
-      acc[groupName].push(item);
-      return acc;
-    }, {} as Record<string, EquipmentItem[]>);
-
-    return Object.entries(groupedEquipment).map(([groupName, groupItems]) => (
-      <div key={groupName} className="mb-4">
-        <h3 className="text-sm font-medium mb-2 px-2 py-1 bg-secondary/10 rounded-md">
-          {groupName}
-        </h3>
-        <div className="space-y-2">
-          {items
-            .filter(({ item }) => (item.group?.name || 'Ungrouped') === groupName)
-            .map(({ item, oldQuantity, newQuantity }) => (
-              <Card key={item.id} className="p-2 border-blue-500">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">
-                    {item.equipment.name}
-                    {item.equipment.code && (
-                      <span className="text-muted-foreground ml-1">
-                        ({item.equipment.code})
-                      </span>
-                    )}
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    Qty: {oldQuantity} → {newQuantity}
-                  </span>
-                </div>
-              </Card>
-            ))}
-        </div>
-      </div>
-    ));
-  };
-
   return (
     <>
       <Card 
@@ -443,77 +326,17 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         className={`p-4 transition-colors ${getStatusBackground(event.status)}`}
       >
         <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_auto] gap-4">
-          <div className="flex items-center gap-2">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">
-              {format(event.date, 'dd.MM.yy')}
-            </span>
-          </div>
+          <EventHeader event={event} />
           
-          <div className="flex flex-col">
-            <div className="flex items-start">
-              <span className="font-medium text-base">
-                {event.name}
-              </span>
-            </div>
-            {event.location && (
-              <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
-                <MapPin className="h-3 w-3" />
-                <span>{event.location}</span>
-              </div>
-            )}
-          </div>
-
           <div className="flex items-center justify-center">
             {event.type.needs_equipment && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      {isEditingDisabled(event.status) ? (
-                        getEquipmentIcon()
-                      ) : (
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 p-0"
-                              disabled={isEditingDisabled(event.status)}
-                            >
-                              {getEquipmentIcon()}
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="start">
-                            {!hasEventEquipment && !isEditingDisabled(event.status) && (
-                              <DropdownMenuItem onClick={handleEquipmentOption}>
-                                Sync from project equipment
-                              </DropdownMenuItem>
-                            )}
-                            {!isSynced && !isEditingDisabled(event.status) && (
-                              <>
-                                <DropdownMenuItem onClick={viewOutOfSyncEquipment}>
-                                  View equipment list
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={handleEquipmentOption}>
-                                  Sync from project equipment
-                                </DropdownMenuItem>
-                              </>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      )}
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    {hasEventEquipment && isSynced 
-                      ? "Equipment list is NSYNC" 
-                      : !hasEventEquipment 
-                        ? "No equipment assigned"
-                        : "Equipment list out of sync"}
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <EquipmentIcon
+                hasEventEquipment={hasEventEquipment}
+                isSynced={isSynced}
+                isEditingDisabled={isEditingDisabled(event.status)}
+                onViewEquipment={viewOutOfSyncEquipment}
+                onSyncEquipment={handleEquipmentOption}
+              />
             )}
           </div>
 
@@ -531,96 +354,20 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="flex items-center gap-2"
-                >
-                  {getStatusIcon(event.status)}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem 
-                  onClick={() => onStatusChange(event, 'proposed')}
-                  className="flex items-center gap-2"
-                >
-                  {getStatusIcon('proposed')}
-                  Proposed
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => onStatusChange(event, 'confirmed')}
-                  className="flex items-center gap-2"
-                >
-                  {getStatusIcon('confirmed')}
-                  Confirmed
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => onStatusChange(event, 'invoice ready')}
-                  className="flex items-center gap-2"
-                >
-                  {getStatusIcon('invoice ready')}
-                  Invoice Ready
-                </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={() => onStatusChange(event, 'cancelled')}
-                  className="flex items-center gap-2"
-                >
-                  {getStatusIcon('cancelled')}
-                  Cancelled
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {onEdit && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onEdit(event)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
+          <EventActions
+            event={event}
+            onStatusChange={onStatusChange}
+            onEdit={onEdit}
+            isEditingDisabled={isEditingDisabled(event.status)}
+          />
         </div>
       </Card>
 
-      <Dialog open={isEquipmentDialogOpen} onOpenChange={setIsEquipmentDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Equipment List Differences</DialogTitle>
-          </DialogHeader>
-          <ScrollArea className="max-h-[60vh]">
-            <div className="space-y-6 p-4">
-              {equipmentDifference.added.length > 0 && (
-                <div>
-                  <h2 className="text-lg font-semibold text-green-500 mb-4">Added Equipment</h2>
-                  {renderEquipmentList(equipmentDifference.added, 'added')}
-                </div>
-              )}
-              {equipmentDifference.changed.length > 0 && (
-                <div>
-                  <h2 className="text-lg font-semibold text-blue-500 mb-4">Changed Quantities</h2>
-                  {renderChangedEquipmentList(equipmentDifference.changed)}
-                </div>
-              )}
-              {equipmentDifference.removed.length > 0 && (
-                <div>
-                  <h2 className="text-lg font-semibold text-red-500 mb-4">Removed Equipment</h2>
-                  {renderEquipmentList(equipmentDifference.removed, 'removed')}
-                </div>
-              )}
-              {equipmentDifference.added.length === 0 && 
-               equipmentDifference.removed.length === 0 && 
-               equipmentDifference.changed.length === 0 && (
-                <p className="text-center text-muted-foreground">No differences found in equipment lists</p>
-              )}
-            </div>
-          </ScrollArea>
-        </DialogContent>
-      </Dialog>
+      <EquipmentDialog
+        isOpen={isEquipmentDialogOpen}
+        onOpenChange={setIsEquipmentDialogOpen}
+        equipmentDifference={equipmentDifference}
+      />
     </>
   );
 }
