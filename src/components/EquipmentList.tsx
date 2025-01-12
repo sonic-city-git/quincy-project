@@ -8,7 +8,8 @@ import { EquipmentListHeader } from "./equipment/EquipmentListHeader";
 import { useEquipmentFilters } from "./equipment/filters/useEquipmentFilters";
 import { useFolders } from "@/hooks/useFolders";
 import { Equipment } from "@/integrations/supabase/types/equipment";
-import { Table, TableBody, TableHead, TableHeader, TableRow } from "./ui/table";
+import { Table, TableBody } from "./ui/table";
+import { EquipmentTableHeader } from "./equipment/EquipmentTableHeader";
 
 export function EquipmentList() {
   const { equipment = [], loading, refetch } = useEquipment();
@@ -76,15 +77,7 @@ export function EquipmentList() {
             <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0">
               <div className="h-full overflow-auto">
                 <Table>
-                  <TableHeader className="sticky top-0 bg-zinc-900/95 border-b border-zinc-800 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75 z-10">
-                    <TableRow>
-                      <TableHead className="w-12"></TableHead>
-                      <TableHead className="w-[200px]">Name</TableHead>
-                      <TableHead className="w-[150px]">Code</TableHead>
-                      <TableHead className="w-[100px]">Stock</TableHead>
-                      <TableHead className="w-[150px]">Price</TableHead>
-                    </TableRow>
-                  </TableHeader>
+                  <EquipmentTableHeader />
                   <TableBody>
                     {parentFolders.map(parentFolder => {
                       const subfolders = folders.filter(f => f.parent_id === parentFolder.id);
