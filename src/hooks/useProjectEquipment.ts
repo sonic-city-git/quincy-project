@@ -7,6 +7,7 @@ import { toast } from "sonner";
 export function useProjectEquipment(projectId: string) {
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
   const { data: equipment = [], isLoading: isLoadingEquipment } = useQuery({
     queryKey: ['project-equipment', projectId],
@@ -47,7 +48,8 @@ export function useProjectEquipment(projectId: string) {
         .insert({
           project_id: projectId,
           equipment_id: item.id,
-          quantity: 1
+          quantity: 1,
+          group_id: selectedGroupId
         });
 
       if (error) throw error;
@@ -86,6 +88,8 @@ export function useProjectEquipment(projectId: string) {
     equipment,
     loading: loading || isLoadingEquipment,
     addEquipment,
-    removeEquipment
+    removeEquipment,
+    selectedGroupId,
+    setSelectedGroupId
   };
 }

@@ -4,16 +4,11 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEquipment } from "@/hooks/useEquipment";
 import { Equipment } from "@/integrations/supabase/types/equipment";
-import { Search, ChevronRight, Plus } from "lucide-react";
+import { Search, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useFolders } from "@/hooks/useFolders";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface EquipmentSelectorProps {
   onSelect: (equipment: Equipment) => void;
@@ -41,57 +36,6 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
   const [openFolders, setOpenFolders] = useState<string[]>([]);
   const [openSubfolders, setOpenSubfolders] = useState<string[]>([]);
   const { addEquipment } = useProjectEquipment(projectId);
-  const [groupSearch, setGroupSearch] = useState("");
-  const [isGroupPopoverOpen, setIsGroupPopoverOpen] = useState(false);
-  const { toast } = useToast();
-
-  // Fetch equipment groups
-  const { data: equipmentGroups = [] } = useQuery({
-    queryKey: ['equipment-groups'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('equipment_groups')
-        .select('*')
-        .order('sort_order');
-      
-      if (error) throw error;
-      return data || [];
-    }
-  });
-
-  // Create new group
-  const createGroup = async (name: string) => {
-    if (!name.trim()) return;
-    
-    try {
-      const { data, error } = await supabase
-        .from('project_equipment_groups')
-        .insert({
-          name,
-          project_id: projectId,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Group created successfully",
-      });
-
-      setGroupSearch("");
-      setIsGroupPopoverOpen(false);
-      return data;
-    } catch (error) {
-      console.error('Error creating group:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create group",
-        variant: "destructive",
-      });
-    }
-  };
 
   useEffect(() => {
     if (search) {
@@ -231,64 +175,14 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
-      <div className="space-y-4 mb-4">
-        <div className="relative">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search equipment..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-
-        <Popover open={isGroupPopoverOpen} onOpenChange={setIsGroupPopoverOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              role="combobox"
-              aria-expanded={isGroupPopoverOpen}
-              className="w-full justify-between"
-            >
-              {groupSearch || "Search or create a group..."}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-full p-0">
-            <Command>
-              <CommandInput
-                placeholder="Type to search or create..."
-                value={groupSearch}
-                onValueChange={setGroupSearch}
-              />
-              <CommandEmpty>
-                {groupSearch && (
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => createGroup(groupSearch)}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create new group "{groupSearch}"
-                  </Button>
-                )}
-              </CommandEmpty>
-              <CommandGroup>
-                {equipmentGroups
-                  .filter(group => 
-                    group.name.toLowerCase().includes(groupSearch.toLowerCase())
-                  )
-                  .map(group => (
-                    <CommandItem
-                      key={group.id}
-                      onSelect={() => createGroup(group.name)}
-                    >
-                      {group.name}
-                    </CommandItem>
-                  ))}
-              </CommandGroup>
-            </Command>
-          </PopoverContent>
-        </Popover>
+      <div className="relative mb-4">
+        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search equipment..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-8"
+        />
       </div>
 
       <ScrollArea className="flex-1">
