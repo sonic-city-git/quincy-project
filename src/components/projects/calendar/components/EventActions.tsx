@@ -32,15 +32,15 @@ export function EventActions({
   return (
     <>
       {/* Status manager column */}
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center h-full">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="h-10 w-10"
+              className="h-10 w-10 flex items-center justify-center"
             >
-              <div className="h-8 w-8">
+              <div className="h-8 w-8 flex items-center justify-center">
                 {getStatusIcon(event.status)}
               </div>
             </Button>
@@ -50,7 +50,7 @@ export function EventActions({
               onClick={() => onStatusChange(event, 'proposed')}
               className="flex items-center gap-2"
             >
-              <div className="h-8 w-8">
+              <div className="h-8 w-8 flex items-center justify-center">
                 {getStatusIcon('proposed')}
               </div>
               Proposed
@@ -59,7 +59,7 @@ export function EventActions({
               onClick={() => onStatusChange(event, 'confirmed')}
               className="flex items-center gap-2"
             >
-              <div className="h-8 w-8">
+              <div className="h-8 w-8 flex items-center justify-center">
                 {getStatusIcon('confirmed')}
               </div>
               Confirmed
@@ -68,7 +68,7 @@ export function EventActions({
               onClick={() => onStatusChange(event, 'invoice ready')}
               className="flex items-center gap-2"
             >
-              <div className="h-8 w-8">
+              <div className="h-8 w-8 flex items-center justify-center">
                 {getStatusIcon('invoice ready')}
               </div>
               Invoice Ready
@@ -77,7 +77,7 @@ export function EventActions({
               onClick={() => onStatusChange(event, 'cancelled')}
               className="flex items-center gap-2"
             >
-              <div className="h-8 w-8">
+              <div className="h-8 w-8 flex items-center justify-center">
                 {getStatusIcon('cancelled')}
               </div>
               Cancelled
@@ -87,13 +87,13 @@ export function EventActions({
       </div>
 
       {/* Edit button column */}
-      <div className="flex items-center justify-center">
+      <div className="flex items-center justify-center h-full">
         {onEdit && !isEditingDisabled && (
           <Button
             variant="ghost"
             size="icon"
             onClick={handleEdit}
-            className="h-10 w-10 text-muted-foreground hover:text-foreground"
+            className="h-10 w-10 text-muted-foreground hover:text-foreground flex items-center justify-center"
           >
             <Edit2 className="h-5 w-5" />
           </Button>
