@@ -13,10 +13,21 @@ interface EventSectionProps {
 export function EventSection({ title, events, onStatusChange, onEdit }: EventSectionProps) {
   if (!events.length) return null;
 
+  // Get the event type from the first event in the section
+  const eventType = events[0]?.type;
+
   return (
     <div className="space-y-4">
-      <EventSectionHeader title={title} eventCount={events.length} />
-      <EventSectionContent events={events} onStatusChange={onStatusChange}>
+      <EventSectionHeader 
+        title={title} 
+        eventCount={events.length}
+        eventType={eventType}
+      />
+      <EventSectionContent 
+        events={events} 
+        onStatusChange={onStatusChange}
+        onEdit={onEdit}
+      >
         {events.map((event) => (
           <EventCard
             key={event.id}
