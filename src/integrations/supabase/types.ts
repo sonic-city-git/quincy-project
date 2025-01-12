@@ -376,11 +376,11 @@ export type Database = {
           color: string
           created_at: string
           crew_rate_multiplier: number | null
-          equipment_available: boolean | null
           equipment_rate_multiplier: number | null
           id: string
           name: string
           needs_crew: boolean | null
+          needs_equipment: boolean | null
           updated_at: string
         }
         Insert: {
@@ -388,11 +388,11 @@ export type Database = {
           color: string
           created_at?: string
           crew_rate_multiplier?: number | null
-          equipment_available?: boolean | null
           equipment_rate_multiplier?: number | null
           id?: string
           name: string
           needs_crew?: boolean | null
+          needs_equipment?: boolean | null
           updated_at?: string
         }
         Update: {
@@ -400,11 +400,11 @@ export type Database = {
           color?: string
           created_at?: string
           crew_rate_multiplier?: number | null
-          equipment_available?: boolean | null
           equipment_rate_multiplier?: number | null
           id?: string
           name?: string
           needs_crew?: boolean | null
+          needs_equipment?: boolean | null
           updated_at?: string
         }
         Relationships: []
