@@ -96,7 +96,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
         }
       }
 
-      toast.success('Equipment synchronized for all events');
+      toast.success(`Equipment synchronized for all ${status} events`);
     } catch (error) {
       console.error('Error syncing equipment:', error);
       toast.error('Failed to sync equipment');
@@ -213,7 +213,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
                     </Button>
                   </TooltipTrigger>
                   <TooltipContent>
-                    Sync equipment with project list
+                    Sync all {status} from project equipment
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
