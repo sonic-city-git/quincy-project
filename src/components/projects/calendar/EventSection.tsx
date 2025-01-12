@@ -29,15 +29,15 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   const getStatusBackground = (status: string) => {
     switch (status) {
       case 'proposed':
-        return 'bg-zinc-800/25 hover:bg-zinc-800/30';
+        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       case 'confirmed':
-        return 'bg-zinc-800/30 hover:bg-zinc-800/35';
+        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       case 'invoice ready':
-        return 'bg-zinc-800/35 hover:bg-zinc-800/40';
+        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       case 'cancelled':
-        return 'bg-zinc-800/25 hover:bg-zinc-800/30';
+        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       default:
-        return 'bg-zinc-800/20 hover:bg-zinc-800/25';
+        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
     }
   };
 
