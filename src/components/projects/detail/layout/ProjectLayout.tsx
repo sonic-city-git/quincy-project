@@ -10,7 +10,7 @@ interface ProjectLayoutProps {
   project: Project;
   projectId: string;
   events?: CalendarEvent[];
-  onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
+  onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => Promise<void>;
 }
 
 export function ProjectLayout({ 
