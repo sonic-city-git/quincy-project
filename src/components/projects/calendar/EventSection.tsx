@@ -1,4 +1,4 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Brush as BrushIcon } from "lucide-react";
 import { useState } from "react";
 import { CalendarEvent } from "@/types/events";
 import {
@@ -32,7 +32,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   const canSync = status === 'proposed' || status === 'confirmed';
 
   const sectionIcon = isDoneAndDusted ? (
-    <Brush className="h-6 w-6 text-gray-400" />
+    <BrushIcon className="h-6 w-6 text-gray-400" />
   ) : (
     <div className="h-6 w-6 flex items-center justify-center">
       {getStatusIcon(status)}
