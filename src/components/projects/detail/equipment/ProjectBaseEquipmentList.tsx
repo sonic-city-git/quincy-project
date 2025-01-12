@@ -84,14 +84,16 @@ export function ProjectBaseEquipmentList({
     const relatedTarget = e.relatedTarget as Node;
     const currentTarget = e.currentTarget as HTMLElement;
     
-    // Only remove highlight if we're actually leaving the drop target
-    // and not just entering a child element
     if (!currentTarget.contains(relatedTarget)) {
       currentTarget.classList.remove('bg-accent/20', 'border-accent');
     }
   };
 
-  const ungroupedEquipment = equipment?.filter(item => !item.group_id) || [];
+  const sortEquipment = (items: any[]) => {
+    return [...items].sort((a, b) => a.name.localeCompare(b.name));
+  };
+
+  const ungroupedEquipment = sortEquipment(equipment?.filter(item => !item.group_id) || []);
   
   if (loading) {
     return (
@@ -103,7 +105,7 @@ export function ProjectBaseEquipmentList({
     <ScrollArea className="h-full">
       <div className="space-y-6 pr-4">
         {groups.map(group => {
-          const groupEquipment = equipment?.filter(item => item.group_id === group.id) || [];
+          const groupEquipment = sortEquipment(equipment?.filter(item => item.group_id === group.id) || []);
           const isSelected = selectedGroupId === group.id;
           
           return (
