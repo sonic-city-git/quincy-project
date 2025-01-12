@@ -51,7 +51,7 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
   const [isGroupPopoverOpen, setIsGroupPopoverOpen] = useState(false);
   const { toast } = useToast();
 
-  // Fetch equipment groups
+  // Fetch equipment groups with proper error handling
   const { data: equipmentGroups = [] } = useQuery({
     queryKey: ['equipment-groups'],
     queryFn: async () => {
@@ -61,12 +61,14 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
         .order('sort_order');
       
       if (error) throw error;
-      return data as EquipmentGroup[];
+      return data || []; // Ensure we always return an array
     }
   });
 
   // Create new group
   const createGroup = async (name: string) => {
+    if (!name.trim()) return; // Don't create empty groups
+    
     try {
       const { data, error } = await supabase
         .from('project_equipment_groups')
@@ -298,17 +300,19 @@ export function EquipmentSelector({ onSelect, className, projectId }: EquipmentS
                 onValueChange={setGroupSearch}
               />
               <CommandEmpty>
-                <Button
-                  variant="ghost"
-                  className="w-full justify-start"
-                  onClick={() => createGroup(groupSearch)}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Create "{groupSearch}"
-                </Button>
+                {groupSearch && (
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start"
+                    onClick={() => createGroup(groupSearch)}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create "{groupSearch}"
+                  </Button>
+                )}
               </CommandEmpty>
               <CommandGroup>
-                {equipmentGroups
+                {(equipmentGroups || [])
                   .filter(group => 
                     group.name.toLowerCase().includes(groupSearch.toLowerCase())
                   )
