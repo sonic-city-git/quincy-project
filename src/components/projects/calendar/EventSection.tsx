@@ -22,6 +22,8 @@ export function EventSection({ title, events, onStatusChange, onEdit }: EventSec
         title={title} 
         eventCount={events.length}
         eventType={eventType}
+        events={events}
+        onStatusChange={onStatusChange}
       />
       <EventSectionContent 
         events={events} 
