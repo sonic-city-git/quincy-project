@@ -282,6 +282,16 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     );
   };
 
+  const formatPrice = (amount: number | null | undefined) => {
+    if (amount === null || amount === undefined) return "-";
+    return new Intl.NumberFormat('nb-NO', {
+      style: 'currency',
+      currency: 'NOK',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(amount);
+  };
+
   const content = (
     <div className="space-y-2">
       {events.map((event) => (
@@ -318,7 +328,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     <div className="space-y-3">
       <div className={`rounded-lg ${getStatusBackground(status)}`}>
         <div className="p-4">
-          <div className="grid grid-cols-[100px_minmax(100px,200px)_30px_30px_1fr_auto] gap-0 items-center">
+          <div className="grid grid-cols-[100px_minmax(100px,200px)_30px_30px_1fr_100px_auto] gap-0 items-center">
             <div className="flex items-center gap-2">
               {sectionIcon}
               <h3 className="text-lg font-semibold whitespace-nowrap">{getStatusText(status)}</h3>
@@ -347,6 +357,10 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
             </div>
 
             <div className="ml-5" /> {/* Empty space for event type column */}
+
+            <div className="flex items-center justify-end text-sm font-medium">
+              {/* Price column header - intentionally left empty */}
+            </div>
 
             <EventStatusManager
               status={status}
