@@ -68,7 +68,7 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
   };
 
   return (
-    <Card className="relative p-2 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 group">
+    <Card className="relative p-2 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/30 group">
       <div className="flex items-center justify-between h-full">
         <div className="flex items-center gap-2">
           <Button 
@@ -82,36 +82,36 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
           </Button>
           <h3 className="text-sm font-medium leading-none text-zinc-200">{item.name}</h3>
         </div>
-        <div className="flex items-center gap-0.5">
-          <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1 bg-zinc-900/50 rounded-md p-0.5">
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-5 w-5 hover:bg-zinc-700/50" 
+              className="h-6 w-6 hover:bg-zinc-700/50" 
               onClick={() => handleQuantityChange(-1)}
               disabled={isUpdating || item.quantity <= 1}
             >
-              <Minus className="h-3 w-3" />
+              <Minus className="h-3.5 w-3.5" />
             </Button>
-            <span className="w-6 text-center text-sm text-zinc-300">{item.quantity}</span>
+            <span className="w-7 text-center text-sm font-medium text-primary">{item.quantity}</span>
             <Button 
               variant="ghost" 
               size="icon" 
-              className="h-5 w-5 hover:bg-zinc-700/50"
+              className="h-6 w-6 hover:bg-zinc-700/50"
               onClick={() => handleQuantityChange(1)}
               disabled={isUpdating}
             >
-              <Plus className="h-3 w-3" />
+              <Plus className="h-3.5 w-3.5" />
             </Button>
           </div>
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-5 w-5 text-red-400 hover:text-red-300 hover:bg-red-900/20" 
+            className="h-6 w-6 text-red-400 hover:text-red-300 hover:bg-red-900/20" 
             onClick={onRemove}
             disabled={isUpdating}
           >
-            <X className="h-3 w-3" />
+            <X className="h-3.5 w-3.5" />
           </Button>
         </div>
       </div>
