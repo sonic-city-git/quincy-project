@@ -72,7 +72,7 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
               )}
             </Avatar>
           )}
-          {project.owner?.name || 'No Owner'}
+          <span>{project.owner?.name || 'No Owner'}</span>
         </div>
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
