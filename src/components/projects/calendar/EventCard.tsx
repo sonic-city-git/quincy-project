@@ -227,7 +227,8 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     }
   };
 
-  const handleEditClick = () => {
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event bubbling
     console.log('Handling edit click for event:', event);
     if (onEdit) {
       onEdit(event);
