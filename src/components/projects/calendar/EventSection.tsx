@@ -53,7 +53,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   };
 
   const getStatusText = (status: string) => {
-    return `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
+    return status === 'invoice ready' ? 'Invoice Ready' : `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
   };
 
   const handleSyncEquipment = async () => {
@@ -174,7 +174,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
           <CollapsibleTrigger className="flex items-center justify-between w-full group p-4">
             <div className="flex items-center gap-2">
               {sectionIcon}
-              <h3 className="text-lg font-semibold">{getStatusText(status)}</h3>
+              <h3 className="text-lg font-semibold whitespace-nowrap">{getStatusText(status)}</h3>
             </div>
             <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''} ml-2`} />
           </CollapsibleTrigger>
@@ -193,7 +193,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
           <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_auto] gap-4 items-center">
             <div className="flex items-center gap-2">
               {sectionIcon}
-              <h3 className="text-lg font-semibold">{getStatusText(status)}</h3>
+              <h3 className="text-lg font-semibold whitespace-nowrap">{getStatusText(status)}</h3>
             </div>
             
             <div /> {/* Empty space for name column */}
