@@ -7,7 +7,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
-  const iconClasses = "h-7 w-7 flex-shrink-0";
+  const iconClasses = "h-6 w-6 flex-shrink-0";
   
   return (
     <>

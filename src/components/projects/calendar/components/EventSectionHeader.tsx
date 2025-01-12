@@ -19,15 +19,13 @@ export function EventSectionHeader({
   onStatusChange 
 }: EventSectionHeaderProps) {
   const isCancelled = title.toLowerCase() === 'cancelled';
-
-  // Calculate total revenue for the section
   const totalRevenue = events.reduce((sum, event) => sum + (event.revenue || 0), 0);
 
   return (
     <div className="border border-zinc-800 rounded-lg bg-zinc-900/50 backdrop-blur-sm p-3 mb-4">
       <EventSectionHeaderGrid>
         <div className="col-span-2 flex items-center gap-2 justify-start">
-          <div className="h-7 w-7 flex items-center justify-center">
+          <div className="h-6 w-6 flex items-center justify-center">
             {getStatusIcon(title.toLowerCase() as CalendarEvent['status'])}
           </div>
           <h3 className="text-lg font-semibold">{title}</h3>
@@ -42,14 +40,14 @@ export function EventSectionHeader({
         {/* Equipment icon column */}
         <div className="flex items-center justify-center">
           {eventType?.needs_equipment && (
-            <Package className="h-7 w-7 text-muted-foreground" />
+            <Package className="h-6 w-6 text-muted-foreground" />
           )}
         </div>
         
         {/* Crew icon column */}
         <div className="flex items-center justify-center">
           {eventType?.needs_crew && (
-            <Users className="h-7 w-7 text-muted-foreground" />
+            <Users className="h-6 w-6 text-muted-foreground" />
           )}
         </div>
 
