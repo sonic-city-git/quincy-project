@@ -34,14 +34,14 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
       <Card className="bg-zinc-800/45 p-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Calendar Section */}
-          <Card className="bg-primary/10">
+          <Card className="rounded-lg bg-zinc-800/45">
             <div className="p-6">
               <ProjectCalendar projectId={projectId} />
             </div>
           </Card>
           
           {/* General Info Section */}
-          <Card className="bg-primary/10">
+          <Card className="rounded-lg bg-zinc-800/45">
             <div className="p-6">
               <ProjectInfo project={project} />
             </div>
