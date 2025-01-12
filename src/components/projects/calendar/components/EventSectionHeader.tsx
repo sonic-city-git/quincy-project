@@ -32,33 +32,36 @@ export function EventSectionHeader({
           <h3 className="text-lg font-semibold">{title}</h3>
         </div>
         
+        {/* Empty space for location icon */}
+        <div />
+        
         {/* Empty space */}
-        <div className="col-span-2" />
+        <div />
         
         {/* Equipment icon column */}
-        <div className="col-span-1 flex items-center">
+        <div className="flex items-center justify-center">
           {eventType?.needs_equipment && (
             <Package className={`${iconClasses} text-muted-foreground`} />
           )}
         </div>
         
         {/* Crew icon column */}
-        <div className="col-span-1 flex items-center">
+        <div className="flex items-center justify-center">
           {eventType?.needs_crew && (
             <Users className={`${iconClasses} text-muted-foreground`} />
           )}
         </div>
 
         {/* Event type column */}
-        <div className="col-span-1" />
+        <div />
 
         {/* Revenue column */}
-        <div className="col-span-1 text-right font-medium text-muted-foreground">
+        <div className="text-right font-medium text-muted-foreground">
           {formatPrice(totalRevenue)}
         </div>
 
-        {/* Status manager column - now second to last */}
-        <div className="col-span-1 flex justify-end">
+        {/* Status manager column */}
+        <div className="flex justify-center">
           {onStatusChange && (
             <EventStatusManager
               status={title.toLowerCase()}
@@ -70,7 +73,7 @@ export function EventSectionHeader({
         </div>
 
         {/* Empty column for edit button alignment */}
-        <div className="col-span-1" />
+        <div />
       </EventSectionHeaderGrid>
     </div>
   );
