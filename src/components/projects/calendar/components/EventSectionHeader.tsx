@@ -5,24 +5,26 @@ import { CalendarEvent } from "@/types/events";
 import { formatPrice } from "@/utils/priceFormatters";
 
 interface EventSectionHeaderProps {
-  status: string;
-  events: CalendarEvent[];
-  sectionIcon: React.ReactNode;
-  sectionSyncStatus: 'synced' | 'out-of-sync' | 'no-equipment';
-  totalPrice: number;
-  canSync: boolean;
-  isSyncing: boolean;
-  handleSyncCrew: () => Promise<void>;
-  onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
-  isCancelled: boolean;
+  status?: string;
+  title?: string;
+  events?: CalendarEvent[];
+  sectionIcon?: React.ReactNode;
+  sectionSyncStatus?: 'synced' | 'out-of-sync' | 'no-equipment';
+  totalPrice?: number;
+  canSync?: boolean;
+  isSyncing?: boolean;
+  handleSyncCrew?: () => Promise<void>;
+  onStatusChange?: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
+  isCancelled?: boolean;
 }
 
 export function EventSectionHeader({
   status,
-  events,
+  title,
+  events = [],
   sectionIcon,
   sectionSyncStatus,
-  totalPrice,
+  totalPrice = 0,
   canSync,
   isSyncing,
   handleSyncCrew,
@@ -32,13 +34,16 @@ export function EventSectionHeader({
   const iconContainerClasses = "h-10 w-10 flex items-center justify-center";
   const iconClasses = "h-6 w-6";
 
+  // Use title if provided, otherwise format the status
+  const headerText = title || (status ? status.charAt(0).toUpperCase() + status.slice(1) : '');
+
   return (
     <div className="p-3">
       <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px_40px_40px] gap-2 items-center">
         <div className="flex items-center gap-2">
           {sectionIcon}
           <h3 className="text-lg font-semibold whitespace-nowrap">
-            {status.charAt(0).toUpperCase() + status.slice(1)}
+            {headerText}
           </h3>
         </div>
         
@@ -81,12 +86,14 @@ export function EventSectionHeader({
         </div>
 
         <div className="flex items-center justify-end">
-          <EventStatusManager
-            status={status}
-            events={events}
-            onStatusChange={onStatusChange}
-            isCancelled={isCancelled}
-          />
+          {status && events && onStatusChange && (
+            <EventStatusManager
+              status={status}
+              events={events}
+              onStatusChange={onStatusChange}
+              isCancelled={isCancelled}
+            />
+          )}
         </div>
 
         <div /> {/* Empty space for edit button column */}
