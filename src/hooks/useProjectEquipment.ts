@@ -42,17 +42,18 @@ export function useProjectEquipment(projectId: string) {
   const addEquipment = async (item: Equipment, groupId: string | null = null) => {
     setLoading(true);
     try {
-      // First check if the equipment already exists in the project
-      const { data: existingEquipment } = await supabase
+      // First check if the equipment exists in any group of the project
+      const { data: existingEquipment, error: queryError } = await supabase
         .from('project_equipment')
         .select('*')
         .eq('project_id', projectId)
         .eq('equipment_id', item.id)
-        .eq('group_id', groupId)
-        .single();
+        .maybeSingle();
+
+      if (queryError) throw queryError;
 
       if (existingEquipment) {
-        // If it exists, update the quantity
+        // If it exists, update the quantity and group
         const { error: updateError } = await supabase
           .from('project_equipment')
           .update({
@@ -79,9 +80,9 @@ export function useProjectEquipment(projectId: string) {
       }
 
       queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding equipment:', error);
-      toast.error('Failed to add equipment');
+      toast.error(error.message || 'Failed to add equipment');
     } finally {
       setLoading(false);
     }
@@ -99,9 +100,9 @@ export function useProjectEquipment(projectId: string) {
 
       queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] });
       toast.success('Equipment removed from project');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error removing equipment:', error);
-      toast.error('Failed to remove equipment');
+      toast.error(error.message || 'Failed to remove equipment');
     } finally {
       setLoading(false);
     }
