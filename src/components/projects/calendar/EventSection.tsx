@@ -12,19 +12,7 @@ import { EventStatusManager } from "./EventStatusManager";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 interface EventSectionProps {
   status: CalendarEvent['status'] | 'done and dusted';
@@ -46,7 +34,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   const sectionIcon = isDoneAndDusted ? (
     <Brush className="h-6 w-6 text-gray-400" />
   ) : (
-    getStatusIcon(status, 24)
+    getStatusIcon(status)
   );
 
   const getSectionEquipmentIcon = () => {
