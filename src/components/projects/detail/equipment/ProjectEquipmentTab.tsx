@@ -15,14 +15,14 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
   return (
     <div className="space-y-6">
       <Card className="p-6">
-        <div className="grid grid-cols-12 gap-6">
+        <div className="grid grid-cols-12 gap-6 h-[calc(100vh-220px)]">
           {/* Available Equipment Column - 1/3 width */}
-          <div className="col-span-4 flex flex-col h-[700px] border-r border-border pr-6">
+          <div className="col-span-4 flex flex-col border-r border-border pr-6 h-full overflow-hidden">
             <div className="flex items-center gap-2 mb-4">
               <Box className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold">Available Equipment</h2>
             </div>
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-auto">
               <EquipmentSelector 
                 onSelect={() => {}} 
                 projectId={projectId}
@@ -31,7 +31,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
             </div>
           </div>
 
-          <div className="col-span-8 flex flex-col h-[700px] pl-6">
+          <div className="col-span-8 flex flex-col pl-6 h-full overflow-hidden">
             <div className="flex items-center gap-2 mb-4">
               <ListCheck className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold">Project Equipment</h2>
@@ -41,7 +41,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
               selectedGroupId={selectedGroupId}
               onGroupSelect={setSelectedGroupId}
             />
-            <div className="flex-1 overflow-hidden mt-4">
+            <div className="flex-1 overflow-auto mt-4">
               <ProjectBaseEquipmentList 
                 projectId={projectId} 
                 selectedGroupId={selectedGroupId}
