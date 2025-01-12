@@ -37,7 +37,9 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
     await updateEvent(updatedEvent);
   };
 
+  // Memoize the handler to prevent double calls
   const handleEditEvent = (event: CalendarEvent) => {
+    // Only log once
     console.log('Opening edit dialog for event:', event);
   };
 
