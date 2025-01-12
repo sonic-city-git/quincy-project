@@ -6,16 +6,16 @@ import { useToast } from "@/hooks/use-toast";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Plus } from "lucide-react";
-import { create } from "domain";
 
 interface GroupSelectorProps {
   projectId: string;
+  selectedGroupId: string | null;
+  onGroupSelect: (groupId: string | null) => void;
 }
 
-export function GroupSelector({ projectId }: GroupSelectorProps) {
+export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: GroupSelectorProps) {
   const [groupSearch, setGroupSearch] = useState("");
   const [isGroupPopoverOpen, setIsGroupPopoverOpen] = useState(false);
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -72,7 +72,7 @@ export function GroupSelector({ projectId }: GroupSelectorProps) {
       queryClient.invalidateQueries({ queryKey: ['project-equipment-groups', projectId] });
       setGroupSearch("");
       setIsGroupPopoverOpen(false);
-      setSelectedGroupId(data.id);
+      onGroupSelect(data.id);
       return data;
     } catch (error) {
       console.error('Error creating group:', error);
@@ -92,15 +92,15 @@ export function GroupSelector({ projectId }: GroupSelectorProps) {
             variant="outline"
             role="combobox"
             aria-expanded={isGroupPopoverOpen}
-            className="w-full justify-between"
+            className="w-[200px] justify-between"
           >
-            {groupSearch || "Search or create a group..."}
+            {groupSearch || "Add new group..."}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-full p-0">
+        <PopoverContent className="w-[200px] p-0">
           <Command>
             <CommandInput
-              placeholder="Type to search or create..."
+              placeholder="Search or create..."
               value={groupSearch}
               onValueChange={setGroupSearch}
             />
@@ -112,7 +112,7 @@ export function GroupSelector({ projectId }: GroupSelectorProps) {
                   onClick={() => createGroup(groupSearch)}
                 >
                   <Plus className="mr-2 h-4 w-4" />
-                  Create new group "{groupSearch}"
+                  Create "{groupSearch}"
                 </Button>
               )}
             </CommandEmpty>
@@ -139,7 +139,7 @@ export function GroupSelector({ projectId }: GroupSelectorProps) {
           <Button
             key={group.id}
             variant={selectedGroupId === group.id ? "default" : "outline"}
-            onClick={() => setSelectedGroupId(group.id === selectedGroupId ? null : group.id)}
+            onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
             className="whitespace-nowrap"
           >
             {group.name}

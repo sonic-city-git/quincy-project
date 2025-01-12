@@ -3,12 +3,15 @@ import { ProjectBaseEquipmentList } from "./ProjectBaseEquipmentList";
 import { EquipmentSelector } from "./EquipmentSelector";
 import { Box, ListCheck } from "lucide-react";
 import { GroupSelector } from "./GroupSelector";
+import { useState } from "react";
 
 interface ProjectEquipmentTabProps {
   projectId: string;
 }
 
 export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+
   return (
     <div className="space-y-6">
       <Card className="p-6">
@@ -20,7 +23,11 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
               <h2 className="text-lg font-semibold">Available Equipment</h2>
             </div>
             <div className="flex-1 overflow-hidden">
-              <EquipmentSelector onSelect={() => {}} projectId={projectId} />
+              <EquipmentSelector 
+                onSelect={() => {}} 
+                projectId={projectId} 
+                selectedGroupId={selectedGroupId}
+              />
             </div>
           </div>
 
@@ -30,9 +37,16 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
               <ListCheck className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold">Project Equipment</h2>
             </div>
-            <GroupSelector projectId={projectId} />
+            <GroupSelector 
+              projectId={projectId} 
+              selectedGroupId={selectedGroupId}
+              onGroupSelect={setSelectedGroupId}
+            />
             <div className="flex-1 overflow-hidden mt-4">
-              <ProjectBaseEquipmentList projectId={projectId} />
+              <ProjectBaseEquipmentList 
+                projectId={projectId} 
+                selectedGroupId={selectedGroupId}
+              />
             </div>
           </div>
         </div>

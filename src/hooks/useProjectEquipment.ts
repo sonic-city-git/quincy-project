@@ -7,7 +7,6 @@ import { toast } from "sonner";
 export function useProjectEquipment(projectId: string) {
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
-  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
   const { data: equipment = [], isLoading: isLoadingEquipment } = useQuery({
     queryKey: ['project-equipment', projectId],
@@ -40,7 +39,7 @@ export function useProjectEquipment(projectId: string) {
     enabled: !!projectId
   });
 
-  const addEquipment = async (item: Equipment) => {
+  const addEquipment = async (item: Equipment, groupId: string | null = null) => {
     setLoading(true);
     try {
       const { error } = await supabase
@@ -49,7 +48,7 @@ export function useProjectEquipment(projectId: string) {
           project_id: projectId,
           equipment_id: item.id,
           quantity: 1,
-          group_id: selectedGroupId
+          group_id: groupId
         });
 
       if (error) throw error;
@@ -88,8 +87,6 @@ export function useProjectEquipment(projectId: string) {
     equipment,
     loading: loading || isLoadingEquipment,
     addEquipment,
-    removeEquipment,
-    selectedGroupId,
-    setSelectedGroupId
+    removeEquipment
   };
 }
