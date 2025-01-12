@@ -105,7 +105,7 @@ export function ProjectBaseEquipmentList({
             <div 
               key={group.id} 
               className={cn(
-                "rounded-lg border border-border bg-background/50 transition-all duration-200",
+                "rounded-lg border border-border bg-background/50 transition-all duration-200 relative",
                 isSelected && "ring-2 ring-primary/20"
               )}
               onDragOver={handleDragOver}
@@ -113,17 +113,19 @@ export function ProjectBaseEquipmentList({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, group.id)}
             >
-              <h3 
-                className={cn(
-                  "text-sm font-medium px-4 py-2 cursor-pointer transition-colors sticky top-0 z-10",
-                  isSelected 
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                    : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
-                )}
-                onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
-              >
-                {group.name}
-              </h3>
+              <div className="sticky top-0 z-10 bg-inherit rounded-t-lg">
+                <h3 
+                  className={cn(
+                    "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
+                    isSelected 
+                      ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                      : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
+                  )}
+                  onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
+                >
+                  {group.name}
+                </h3>
+              </div>
               <div className="p-3 space-y-2">
                 {groupEquipment.map((item) => (
                   <ProjectEquipmentItem
@@ -145,7 +147,7 @@ export function ProjectBaseEquipmentList({
         {ungroupedEquipment.length > 0 && (
           <div 
             className={cn(
-              "rounded-lg border border-border bg-background/50 transition-all duration-200",
+              "rounded-lg border border-border bg-background/50 transition-all duration-200 relative",
               selectedGroupId === null && "ring-2 ring-primary/20"
             )}
             onDragOver={handleDragOver}
@@ -153,17 +155,19 @@ export function ProjectBaseEquipmentList({
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, null)}
           >
-            <h3 
-              className={cn(
-                "text-sm font-medium px-4 py-2 cursor-pointer transition-colors sticky top-0 z-10",
-                selectedGroupId === null 
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                  : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
-              )}
-              onClick={() => onGroupSelect(null)}
-            >
-              Ungrouped Equipment
-            </h3>
+            <div className="sticky top-0 z-10 bg-inherit rounded-t-lg">
+              <h3 
+                className={cn(
+                  "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
+                  selectedGroupId === null 
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                    : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
+                )}
+                onClick={() => onGroupSelect(null)}
+              >
+                Ungrouped Equipment
+              </h3>
+            </div>
             <div className="p-3 space-y-2">
               {ungroupedEquipment.map((item) => (
                 <ProjectEquipmentItem
