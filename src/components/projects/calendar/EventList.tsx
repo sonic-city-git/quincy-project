@@ -10,7 +10,7 @@ import { useEventStatusChange } from "./hooks/useEventStatusChange";
 import { groupEventsByStatus } from "./utils/eventGroups";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -23,7 +23,6 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
   const { handleStatusChange } = useEventStatusChange(projectId);
   const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   
   const { 
     isEditDialogOpen, 
