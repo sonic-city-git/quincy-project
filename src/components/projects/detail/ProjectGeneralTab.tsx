@@ -2,11 +2,10 @@ import { Card } from "@/components/ui/card";
 import { ProjectCalendar } from "@/components/projects/calendar/ProjectCalendar";
 import { EventList } from "@/components/projects/calendar/EventList";
 import { Project } from "@/types/projects";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { fetchEvents } from "@/utils/eventQueries";
 import { useEffect } from "react";
 import { ProjectInfo } from "./ProjectInfo";
-import { CalendarEvent } from "@/types/events";
 import { useEventUpdate } from "@/hooks/useEventUpdate";
 
 interface ProjectGeneralTabProps {
@@ -15,7 +14,6 @@ interface ProjectGeneralTabProps {
 }
 
 export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps) {
-  const queryClient = useQueryClient();
   const { updateEvent } = useEventUpdate(projectId);
   
   const { data: events = [], isLoading, refetch } = useQuery({
@@ -28,18 +26,15 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
     if (projectId) {
       console.log('Fetching events for project:', projectId);
       refetch();
-      queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] });
     }
-  }, [projectId, refetch, queryClient]);
+  }, [projectId, refetch]);
 
-  const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
+  const handleStatusChange = async (event, newStatus) => {
     const updatedEvent = { ...event, status: newStatus };
     await updateEvent(updatedEvent);
   };
 
-  // Memoize the handler to prevent double calls
-  const handleEditEvent = (event: CalendarEvent) => {
-    // Only log once
+  const handleEditEvent = (event) => {
     console.log('Opening edit dialog for event:', event);
   };
 

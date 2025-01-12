@@ -1,13 +1,10 @@
 import { ProjectHeader } from "../ProjectHeader";
 import { ProjectTabs } from "../ProjectTabs";
 import { Project } from "@/types/projects";
-import { CalendarEvent } from "@/types/events";
 
 interface ProjectLayoutProps {
   project: Project;
   projectId: string;
-  events?: CalendarEvent[];
-  onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => Promise<void>;
 }
 
 export function ProjectLayout({ 
