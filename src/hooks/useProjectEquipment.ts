@@ -42,30 +42,30 @@ export function useProjectEquipment(projectId: string) {
   const addEquipment = async (item: Equipment, groupId: string | null = null) => {
     setLoading(true);
     try {
-      // First check if the equipment exists in any group of the project
+      // Check if the equipment exists in the specified group
       const { data: existingEquipment, error: queryError } = await supabase
         .from('project_equipment')
         .select('*')
         .eq('project_id', projectId)
         .eq('equipment_id', item.id)
+        .eq('group_id', groupId)
         .maybeSingle();
 
       if (queryError) throw queryError;
 
       if (existingEquipment) {
-        // If it exists, update the quantity and group
+        // If it exists in the same group, update the quantity
         const { error: updateError } = await supabase
           .from('project_equipment')
           .update({
-            quantity: existingEquipment.quantity + 1,
-            group_id: groupId
+            quantity: existingEquipment.quantity + 1
           })
           .eq('id', existingEquipment.id);
 
         if (updateError) throw updateError;
         toast.success('Equipment quantity updated');
       } else {
-        // If it doesn't exist, create a new entry
+        // If it doesn't exist in this group, create a new entry
         const { error: insertError } = await supabase
           .from('project_equipment')
           .insert({
