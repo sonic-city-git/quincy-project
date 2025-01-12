@@ -232,11 +232,11 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
               
               <div /> {/* Empty space for name column */}
               
-              <div className="flex items-center justify-center -ml-8">
+              <div className="flex items-center justify-center">
                 {canSync ? getSectionEquipmentIcon() : <div />}
               </div>
 
-              <div className="flex items-center justify-center -ml-6">
+              <div className="flex items-center justify-center">
                 {canSync ? (
                   <Button
                     variant="ghost"
