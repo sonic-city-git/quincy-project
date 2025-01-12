@@ -68,6 +68,18 @@ export function ProjectBaseEquipmentList({
     e.dataTransfer.dropEffect = 'move';
   };
 
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    const target = e.currentTarget as HTMLElement;
+    target.classList.add('ring-2', 'ring-primary', 'ring-opacity-50');
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    const target = e.currentTarget as HTMLElement;
+    target.classList.remove('ring-2', 'ring-primary', 'ring-opacity-50');
+  };
+
   const ungroupedEquipment = equipment?.filter(item => !item.group_id) || [];
   
   if (loading) {
@@ -87,10 +99,12 @@ export function ProjectBaseEquipmentList({
             <div 
               key={group.id} 
               className={cn(
-                "rounded-lg border border-border bg-background/50",
+                "rounded-lg border border-border bg-background/50 transition-all duration-200",
                 isSelected && "ring-2 ring-primary/20"
               )}
               onDragOver={handleDragOver}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, group.id)}
             >
               <h3 
@@ -124,10 +138,12 @@ export function ProjectBaseEquipmentList({
         
         <div 
           className={cn(
-            "rounded-lg border border-border bg-background/50",
+            "rounded-lg border border-border bg-background/50 transition-all duration-200",
             selectedGroupId === null && "ring-2 ring-primary/20"
           )}
           onDragOver={handleDragOver}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, null)}
         >
           <h3 
