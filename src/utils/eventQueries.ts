@@ -15,6 +15,7 @@ export const fetchEvents = async (projectId: string) => {
         name,
         color,
         needs_crew,
+        needs_equipment,
         crew_rate_multiplier
       )
     `)
@@ -32,7 +33,8 @@ export const fetchEvents = async (projectId: string) => {
     name: event.name,
     type: event.event_types,
     status: event.status as CalendarEvent['status'],
-    revenue: event.revenue
+    revenue: event.revenue,
+    location: event.location
   }));
 };
 
