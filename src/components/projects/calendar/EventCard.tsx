@@ -67,113 +67,81 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     }
   };
 
-  useEffect(() => {
-    let isSubscribed = true;
+  const fetchEquipmentStatus = async () => {
+    if (!event.type.needs_equipment) return;
 
-    const fetchStatus = async () => {
-      if (!isSubscribed) return;
+    try {
+      // Check project equipment
+      const { data: projectEquipment } = await supabase
+        .from('project_equipment')
+        .select('id')
+        .eq('project_id', event.project_id)
+        .limit(1);
+      
+      setHasProjectEquipment(!!projectEquipment?.length);
 
-      try {
-        console.log('Fetching equipment status for event:', event.id);
+      // Check event equipment and sync status
+      const { data: eventEquipment, error } = await supabase
+        .from('project_event_equipment')
+        .select('*')
+        .eq('event_id', event.id);
+
+      if (!error) {
+        const hasEquipment = eventEquipment && eventEquipment.length > 0;
+        const syncStatus = hasEquipment ? eventEquipment.every(item => item.is_synced) : true;
         
-        // Check project equipment
-        const { data: projectEquipment } = await supabase
-          .from('project_equipment')
-          .select('id')
-          .eq('project_id', event.project_id)
-          .limit(1);
-        
-        if (isSubscribed) {
-          const hasProject = !!projectEquipment?.length;
-          console.log('Project equipment status:', { hasProject });
-          setHasProjectEquipment(hasProject);
-        }
-
-        // Check event equipment and sync status
-        const { data: eventEquipment, error } = await supabase
-          .from('project_event_equipment')
-          .select('*')
-          .eq('event_id', event.id);
-
-        if (!error && isSubscribed) {
-          const hasEquipment = eventEquipment && eventEquipment.length > 0;
-          const syncStatus = hasEquipment ? eventEquipment.every(item => item.is_synced) : true;
-          
-          console.log('Event equipment status:', {
-            eventId: event.id,
-            hasEquipment,
-            syncStatus,
-            items: eventEquipment
-          });
-          
-          setHasEventEquipment(hasEquipment);
-          setIsSynced(syncStatus);
-        } else if (error) {
-          console.error('Error fetching equipment status:', error);
-          if (isSubscribed) {
-            setHasEventEquipment(false);
-            setIsSynced(true);
-          }
-        }
-      } catch (error) {
-        console.error('Error in fetchStatus:', error);
-        if (isSubscribed) {
-          setHasEventEquipment(false);
-          setIsSynced(true);
-        }
+        setHasEventEquipment(hasEquipment);
+        setIsSynced(syncStatus);
       }
+    } catch (error) {
+      console.error('Error fetching equipment status:', error);
+      setHasEventEquipment(false);
+      setIsSynced(true);
+    }
+  };
+
+  useEffect(() => {
+    let projectChannel: ReturnType<typeof supabase.channel>;
+    let eventChannel: ReturnType<typeof supabase.channel>;
+
+    const setupSubscriptions = () => {
+      // Subscribe to project equipment changes
+      projectChannel = supabase
+        .channel(`project-equipment-${event.project_id}`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'project_equipment',
+          filter: `project_id=eq.${event.project_id}`
+        }, () => {
+          fetchEquipmentStatus();
+        })
+        .subscribe();
+
+      // Subscribe to event equipment changes
+      eventChannel = supabase
+        .channel(`event-equipment-${event.id}`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'project_event_equipment',
+          filter: `event_id=eq.${event.id}`
+        }, () => {
+          fetchEquipmentStatus();
+        })
+        .subscribe();
     };
 
     if (event.type.needs_equipment) {
-      console.log('Initial fetch for event:', event.id);
-      fetchStatus();
+      fetchEquipmentStatus();
+      setupSubscriptions();
     }
 
-    const channel = supabase
-      .channel(`event-equipment-${event.id}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'project_event_equipment',
-        filter: `event_id=eq.${event.id}`
-      }, (payload) => {
-        console.log('Received real-time update for event equipment:', {
-          eventId: event.id,
-          payload
-        });
-        if (isSubscribed) {
-          fetchStatus();
-          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
-        }
-      })
-      .subscribe();
-
-    const projectChannel = supabase
-      .channel(`project-equipment-${event.project_id}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'project_equipment',
-        filter: `project_id=eq.${event.project_id}`
-      }, (payload) => {
-        console.log('Received real-time update for project equipment:', {
-          projectId: event.project_id,
-          payload
-        });
-        if (isSubscribed) {
-          fetchStatus();
-          queryClient.invalidateQueries({ queryKey: ['project-equipment', event.project_id] });
-        }
-      })
-      .subscribe();
-
     return () => {
-      console.log('Cleaning up subscriptions for event:', event.id);
-      isSubscribed = false;
-      channel.unsubscribe();
-      projectChannel.unsubscribe();
+      if (projectChannel) projectChannel.unsubscribe();
+      if (eventChannel) eventChannel.unsubscribe();
     };
-  }, [event.id, event.project_id, event.type.needs_equipment, queryClient]);
+  }, [event.id, event.project_id, event.type.needs_equipment]);
 
   const handleEquipmentOption = async () => {
     try {
@@ -208,16 +176,12 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         if (upsertError) throw upsertError;
       }
 
-      setIsSynced(true);
-      setHasEventEquipment(projectEquipment && projectEquipment.length > 0);
-
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
         queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
         queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
       ]);
 
-      console.log('Equipment sync completed successfully for event:', event.id);
       toast.success('Equipment list synchronized successfully');
     } catch (error) {
       console.error('Error syncing equipment:', error);
@@ -227,8 +191,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
   const viewOutOfSyncEquipment = async () => {
     try {
-      console.log('Fetching equipment differences...');
-      
       const { data: projectEquipment, error: projectError } = await supabase
         .from('project_equipment')
         .select(`
@@ -263,9 +225,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
       if (eventError) throw eventError;
 
-      console.log('Project equipment:', projectEquipment);
-      console.log('Event equipment:', eventEquipment);
-
       const added: EquipmentItem[] = [];
       const removed: EquipmentItem[] = [];
       const changed: EquipmentDifference['changed'] = [];
@@ -277,15 +236,8 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         const eventItem = eventMap.get(projectItem.equipment.name);
         
         if (!eventItem) {
-          console.log('Added new:', projectItem.equipment.name, {
-            quantity: projectItem.quantity
-          });
           added.push(projectItem as EquipmentItem);
         } else if (eventItem.quantity !== projectItem.quantity) {
-          console.log('Changed:', projectItem.equipment.name, {
-            oldQty: eventItem.quantity,
-            newQty: projectItem.quantity
-          });
           changed.push({
             item: projectItem as EquipmentItem,
             oldQuantity: eventItem.quantity,
@@ -298,14 +250,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         const projectItem = projectMap.get(eventItem.equipment.name);
         
         if (!projectItem) {
-          console.log('Removed:', eventItem.equipment.name, {
-            quantity: eventItem.quantity
-          });
           removed.push(eventItem as EquipmentItem);
         }
       });
-
-      console.log('Differences found:', { added, removed, changed });
 
       setEquipmentDifference({ added, removed, changed });
       setIsEquipmentDialogOpen(true);

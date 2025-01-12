@@ -19,6 +19,7 @@ interface EquipmentIconProps {
   isEditingDisabled: boolean;
   onViewEquipment: () => void;
   onSyncEquipment: () => void;
+  className?: string;
 }
 
 export function EquipmentIcon({
@@ -26,16 +27,17 @@ export function EquipmentIcon({
   isSynced,
   isEditingDisabled,
   onViewEquipment,
-  onSyncEquipment
+  onSyncEquipment,
+  className
 }: EquipmentIconProps) {
   const getEquipmentIcon = () => {
     if (!hasEventEquipment) {
-      return <Package className="h-6 w-6 text-gray-400" />;
+      return <Package className={`h-6 w-6 text-gray-400 ${className}`} />;
     }
     if (!isSynced) {
-      return <Package className="h-6 w-6 text-blue-500" />;
+      return <Package className={`h-6 w-6 text-blue-500 ${className}`} />;
     }
-    return <Package className="h-6 w-6 text-green-500" />;
+    return <Package className={`h-6 w-6 text-green-500 ${className}`} />;
   };
 
   return (
@@ -80,7 +82,7 @@ export function EquipmentIcon({
         </TooltipTrigger>
         <TooltipContent>
           {hasEventEquipment && isSynced 
-            ? "Equipment list is NSYNC" 
+            ? "Equipment list is synced" 
             : !hasEventEquipment 
               ? "No equipment assigned"
               : "Equipment list out of sync"}
