@@ -2,6 +2,7 @@ import { Calendar } from "@/components/ui/calendar/Calendar";
 import { CalendarEvent, EventType } from "@/types/events";
 import { useState } from "react";
 import { MultiEventDialog } from "./MultiEventDialog";
+import { EventDialog } from "./EventDialog";
 
 interface CalendarViewProps {
   currentDate: Date;
@@ -24,6 +25,8 @@ export function CalendarView({
   const [dragStartTime, setDragStartTime] = useState<number | null>(null);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [isMultiEventDialogOpen, setIsMultiEventDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleDayClick = (date: Date) => {
     // Find if there's an event on this date by comparing just the date parts
@@ -38,7 +41,8 @@ export function CalendarView({
     
     if (eventOnDate) {
       console.log('Found event, opening edit dialog for event:', eventOnDate);
-      onDayClick(new Date(eventOnDate.date));
+      setSelectedEvent(eventOnDate);
+      setIsEditDialogOpen(true);
     } else {
       console.log('No event found, opening add dialog');
       onDayClick(date);
@@ -142,6 +146,16 @@ export function CalendarView({
         dates={selectedDates}
         eventTypes={eventTypes || []}
         onAddEvents={handleAddMultipleEvents}
+      />
+
+      <EventDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => {
+          setIsEditDialogOpen(false);
+          setSelectedEvent(null);
+        }}
+        event={selectedEvent}
+        eventTypes={eventTypes}
       />
     </>
   );
