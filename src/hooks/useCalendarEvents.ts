@@ -8,7 +8,7 @@ import { compareDates } from '@/utils/dateFormatters';
 
 export const useCalendarEvents = (projectId: string | undefined) => {
   const queryClient = useQueryClient();
-  const { addEvent: addEventHandler, updateEvent: updateEventHandler } = useEventManagement(projectId);
+  const { addEvent: addEventHandler } = useEventManagement(projectId);
 
   // Drag state
   const [isDragging, setIsDragging] = useState(false);
@@ -64,8 +64,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     return newEvent;
   };
 
-  const updateEventHandler = async (updatedEvent: CalendarEvent) => {
-    const updated = await updateEventHandler(updatedEvent);
+  const handleEventUpdate = async (updatedEvent: CalendarEvent) => {
+    const updated = await updateEvent(updatedEvent);
     
     queryClient.setQueryData(['events', projectId], (old: CalendarEvent[] | undefined) => 
       old?.map(event => 
@@ -76,7 +76,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     );
   };
 
-  const deleteEventHandler = async (event: CalendarEvent) => {
+  const handleEventDelete = async (event: CalendarEvent) => {
     if (!projectId) return;
 
     try {
@@ -90,16 +90,14 @@ export const useCalendarEvents = (projectId: string | undefined) => {
         queryClient.invalidateQueries({ queryKey: ['project-event-roles', event.id] })
       ]);
 
-      toast({
-        title: "Event Deleted",
+      toast("Event Deleted", {
         description: "The event has been successfully deleted"
       });
 
       return true;
     } catch (error) {
       console.error('Error in deleteEvent:', error);
-      toast({
-        title: "Error",
+      toast("Error", {
         description: error instanceof Error ? error.message : "Failed to delete event",
         variant: "destructive"
       });
@@ -121,7 +119,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     resetSelection,
     findEventOnDate,
     addEvent,
-    updateEvent: updateEventHandler,
-    deleteEvent: deleteEventHandler
+    updateEvent: handleEventUpdate,
+    deleteEvent: handleEventDelete
   };
 };
