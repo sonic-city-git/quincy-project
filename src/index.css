@@ -41,3 +41,20 @@ body {
     font-family: 'Inter', sans-serif;
   }
 }
+
+/* Calendar specific styles */
+.rdp {
+  @apply bg-zinc-900/50 rounded-lg border border-zinc-700 p-4;
+}
+
+.rdp-button:hover:not([disabled]):not(.rdp-day_selected) {
+  @apply bg-zinc-800/50;
+}
+
+.rdp-day_selected {
+  @apply bg-primary text-primary-foreground;
+}
+
+.rdp-day_today {
+  @apply font-bold text-primary;
+}

@@ -31,7 +31,7 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
 
   return (
     <div className="space-y-8">
-      <Card>
+      <Card className="bg-zinc-800/45 hover:bg-zinc-800/50 transition-colors">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6">
           <div className="w-full">
             <ProjectCalendar projectId={projectId} />
@@ -43,7 +43,7 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
         </div>
       </Card>
 
-      <Card className="p-6">
+      <Card className="bg-zinc-800/45 hover:bg-zinc-800/50 transition-colors p-6">
         <EventList 
           events={events} 
           projectId={projectId}

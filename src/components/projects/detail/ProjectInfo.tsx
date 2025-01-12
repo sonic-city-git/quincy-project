@@ -29,36 +29,40 @@ export function ProjectInfo({ project }: ProjectInfoProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <label className="text-sm font-medium mb-1 block">Customer</label>
-        <CustomerSelect
-          value={project.customer_id || ''}
-          onChange={() => {}}
-          required={false}
-        />
-      </div>
-
-      <div>
-        <label className="text-sm font-medium mb-1 block">Owner</label>
-        <OwnerSelect
-          value={project.owner_id || ''}
-          onChange={() => {}}
-          required={false}
-        />
-      </div>
-
-      <div>
-        <label className="text-sm font-medium mb-1 block">Last Invoiced</label>
-        <div className="text-sm text-muted-foreground">
-          {formatDate(project.created_at)}
+    <div className="space-y-6">
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-muted-foreground">Customer</label>
+          <CustomerSelect
+            value={project.customer_id || ''}
+            onChange={() => {}}
+            required={false}
+            className="bg-zinc-900/50 border-zinc-700 hover:border-zinc-600 transition-colors"
+          />
         </div>
-      </div>
 
-      <div>
-        <label className="text-sm font-medium mb-1 block">To be Invoiced</label>
-        <div className="text-sm text-muted-foreground">
-          {formatCurrency(project.to_be_invoiced)}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-muted-foreground">Owner</label>
+          <OwnerSelect
+            value={project.owner_id || ''}
+            onChange={() => {}}
+            required={false}
+            className="bg-zinc-900/50 border-zinc-700 hover:border-zinc-600 transition-colors"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-muted-foreground">Last Invoiced</label>
+          <div className="text-sm">
+            {formatDate(project.created_at)}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-muted-foreground">To be Invoiced</label>
+          <div className="text-sm font-medium">
+            {formatCurrency(project.to_be_invoiced)}
+          </div>
         </div>
       </div>
     </div>
