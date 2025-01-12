@@ -1,5 +1,7 @@
+import { TableCell, TableRow } from "@/components/ui/table";
 import { CalendarEvent } from "@/types/events";
-import { Card } from "@/components/ui/card";
+import { formatDisplayDate } from "@/utils/dateFormatters";
+import { useNavigate } from "react-router-dom";
 import { Users, MapPin } from "lucide-react";
 import { EVENT_COLORS } from "@/constants/eventColors";
 import { supabase } from "@/integrations/supabase/client";
@@ -257,7 +259,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     <>
       <Card 
         key={`${event.date}-${event.name}`} 
-        className={`p-4 transition-colors ${getStatusBackground(event.status)}`}
+        className={`p-3 transition-colors mb-2 ${getStatusBackground(event.status)}`}
       >
         <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px_40px_40px] gap-2 items-center">
           <EventHeader event={event} />
@@ -266,9 +268,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="h-10 w-10 flex items-center justify-center">
+                  <div className="h-8 w-8 flex items-center justify-center">
                     <MapPin 
-                      className={`h-6 w-6 ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
+                      className={`h-5 w-5 ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
                     />
                   </div>
                 </TooltipTrigger>
@@ -281,7 +283,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
           <div className="flex items-center justify-center my-auto">
             {event.type.needs_equipment && (
-              <div className="h-10 w-10 flex items-center justify-center">
+              <div className="h-8 w-8 flex items-center justify-center">
                 <EquipmentIcon
                   isSynced={isSynced}
                   isEditingDisabled={isEditingDisabled(event.status)}
@@ -294,8 +296,8 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
           <div className="flex items-center justify-center my-auto">
             {event.type.needs_crew && (
-              <div className="h-10 w-10 flex items-center justify-center">
-                <Users className={`h-6 w-6 ${isEditingDisabled(event.status) ? 'text-green-500' : 'text-muted-foreground'}`} />
+              <div className="h-8 w-8 flex items-center justify-center">
+                <Users className={`h-5 w-5 ${isEditingDisabled(event.status) ? 'text-green-500' : 'text-muted-foreground'}`} />
               </div>
             )}
           </div>
@@ -308,7 +310,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             </span>
           </div>
 
-          <div className="flex items-center justify-end text-sm font-medium">
+          <div className="flex items-center justify-end text-sm">
             {formatPrice(event.revenue)}
           </div>
 

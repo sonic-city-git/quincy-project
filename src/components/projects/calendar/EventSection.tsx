@@ -6,19 +6,13 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Brush, ChevronDown, Package, Users, MapPin } from "lucide-react";
+import { Brush, ChevronDown, Package, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { EventStatusManager } from "./EventStatusManager";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 interface EventSectionProps {
   status: CalendarEvent['status'] | 'done and dusted';
@@ -229,55 +223,49 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     <div className="space-y-3">
       <div className={`rounded-lg ${getStatusBackground(status)}`}>
         <div className="p-4">
-          <div className="p-4">
-            <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px_40px_40px] gap-2 items-center">
-              <div className="flex items-center gap-2">
-                {sectionIcon}
-                <h3 className="text-lg font-semibold whitespace-nowrap">{getStatusText(status)}</h3>
-              </div>
-              
-              <div /> {/* Empty space for name column */}
-              
-              <div className="flex items-center justify-center">
-                <div className="h-6 w-6 flex items-center justify-center">
-                  <MapPin className="h-6 w-6 text-muted-foreground" />
-                </div>
-              </div>
+          <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px_40px_40px] gap-2 items-center">
+            <div className="flex items-center gap-2">
+              {sectionIcon}
+              <h3 className="text-lg font-semibold whitespace-nowrap">{getStatusText(status)}</h3>
+            </div>
+            
+            <div /> {/* Empty space for name column */}
+            
+            <div /> {/* Removed map pin */}
 
-              <div className="flex items-center justify-center">
-                {canSync ? getSectionEquipmentIcon() : <div />}
-              </div>
+            <div className="flex items-center justify-center">
+              {canSync ? getSectionEquipmentIcon() : <div />}
+            </div>
 
-              <div className="flex items-center justify-center">
-                {canSync ? (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 p-0"
-                    onClick={handleSyncCrew}
-                    disabled={isSyncing}
-                  >
-                    <Users className="h-6 w-6 text-muted-foreground hover:text-foreground" />
-                  </Button>
-                ) : (
-                  <div />
-                )}
-              </div>
+            <div className="flex items-center justify-center">
+              {canSync ? (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 p-0"
+                  onClick={handleSyncCrew}
+                  disabled={isSyncing}
+                >
+                  <Users className="h-6 w-6 text-muted-foreground hover:text-foreground" />
+                </Button>
+              ) : (
+                <div />
+              )}
+            </div>
 
-              <div /> {/* Empty space for event type column */}
+            <div /> {/* Empty space for event type column */}
 
-              <div className="flex items-center justify-end text-sm font-medium">
-                {formatPrice(totalPrice)}
-              </div>
+            <div className="flex items-center justify-end text-sm">
+              {formatPrice(totalPrice)}
+            </div>
 
-              <div className="flex items-center justify-end col-span-2">
-                <EventStatusManager
-                  status={status}
-                  events={events}
-                  onStatusChange={onStatusChange}
-                  isCancelled={isCancelled}
-                />
-              </div>
+            <div className="flex items-center justify-end col-span-2">
+              <EventStatusManager
+                status={status}
+                events={events}
+                onStatusChange={onStatusChange}
+                isCancelled={isCancelled}
+              />
             </div>
           </div>
         </div>
