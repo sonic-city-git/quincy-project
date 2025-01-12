@@ -17,8 +17,8 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
       <Card className="p-6">
         <div className="grid grid-cols-12 gap-6 h-[calc(100vh-220px)]">
           {/* Available Equipment Column - 1/3 width */}
-          <div className="col-span-4 flex flex-col border-r border-border pr-6 h-full overflow-hidden">
-            <div className="flex items-center gap-2 mb-4">
+          <div className="col-span-4 flex flex-col border-r border-border pr-4 h-full overflow-hidden">
+            <div className="flex items-center gap-2 mb-4 pl-2">
               <Box className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold">Available Equipment</h2>
             </div>
