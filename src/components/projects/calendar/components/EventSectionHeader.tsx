@@ -1,4 +1,4 @@
-import { Package, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import { EventStatusManager } from "../EventStatusManager";
 import { CalendarEvent, EventType } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
@@ -33,11 +33,7 @@ export function EventSectionHeader({
         <div className="col-span-1" />
         
         {/* Icons column alignment */}
-        <div className="flex items-center justify-center">
-          {eventType?.needs_equipment && (
-            <Package className="h-6 w-6 text-muted-foreground" />
-          )}
-        </div>
+        <div className="col-span-1" />
         <div className="flex items-center justify-center">
           {eventType?.needs_crew && (
             <Users className="h-6 w-6 text-muted-foreground" />
