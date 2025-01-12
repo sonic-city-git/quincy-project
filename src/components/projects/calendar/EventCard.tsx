@@ -28,19 +28,23 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   // Fetch initial sync status
   useEffect(() => {
     const fetchSyncStatus = async () => {
-      const { data, error } = await supabase
-        .from('project_event_equipment')
-        .select('is_synced')
-        .eq('event_id', event.id)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('project_event_equipment')
+          .select('is_synced')
+          .eq('event_id', event.id)
+          .maybeSingle();
 
-      if (!error) {
-        // If there's no equipment, consider it synced
-        setIsSynced(data?.is_synced ?? true);
-      } else {
-        console.error('Error fetching sync status:', error);
-        // In case of error, assume it's synced to avoid showing warning state
-        setIsSynced(true);
+        if (!error) {
+          // If there's no equipment data yet, consider it not synced
+          setIsSynced(data?.is_synced ?? false);
+        } else {
+          console.error('Error fetching sync status:', error);
+          setIsSynced(false);
+        }
+      } catch (error) {
+        console.error('Error in fetchSyncStatus:', error);
+        setIsSynced(false);
       }
     };
 
@@ -130,7 +134,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
                   className="h-6 w-6 p-0"
                 >
                   <Package 
-                    className={`h-6 w-6 ${hasEquipment ? (isSynced ? 'text-green-500' : 'text-yellow-500') : 'text-muted-foreground'}`}
+                    className={`h-6 w-6 ${isSynced ? 'text-green-500' : 'text-yellow-500'}`}
                   />
                 </Button>
               </DropdownMenuTrigger>
