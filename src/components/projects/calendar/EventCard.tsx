@@ -231,6 +231,13 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     }
   };
 
+  const handleEditClick = () => {
+    console.log('Edit clicked for event:', event);
+    if (onEdit) {
+      onEdit(event);
+    }
+  };
+
   return (
     <>
       <Card 
@@ -263,7 +270,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           <EventActions
             event={event}
             onStatusChange={onStatusChange}
-            onEdit={onEdit}
+            onEdit={handleEditClick}
             isEditingDisabled={isEditingDisabled(event.status)}
           />
         </div>

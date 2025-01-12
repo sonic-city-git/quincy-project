@@ -1,6 +1,6 @@
 import { CalendarEvent } from "@/types/events";
 import { Button } from "@/components/ui/button";
-import { Edit } from "lucide-react";
+import { Edit2 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,7 +82,7 @@ export function EventActions({
             onClick={handleEdit}
             className="text-muted-foreground hover:text-foreground"
           >
-            <Edit className="h-4 w-4" />
+            <Edit2 className="h-4 w-4" />
           </Button>
         )}
       </div>
