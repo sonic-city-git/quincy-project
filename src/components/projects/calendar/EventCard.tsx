@@ -13,6 +13,7 @@ import { getStatusIcon } from "@/utils/eventFormatters";
 import { EVENT_COLORS } from "@/constants/eventColors";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useState, useEffect } from 'react';
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -48,7 +49,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       const { data: projectEquipment, error: fetchError } = await supabase
         .from('project_equipment')
         .select('*')
-        .eq('project_id', event.project_id);
+        .eq('project_id', (event as any).project_id);
 
       if (fetchError) throw fetchError;
 
@@ -63,7 +64,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       // Insert new equipment records
       if (projectEquipment && projectEquipment.length > 0) {
         const eventEquipment = projectEquipment.map(item => ({
-          project_id: event.project_id,
+          project_id: (event as any).project_id,
           event_id: event.id,
           equipment_id: item.equipment_id,
           quantity: item.quantity,

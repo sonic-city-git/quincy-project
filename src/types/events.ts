@@ -22,4 +22,5 @@ export interface CalendarEvent {
   revenue?: number;
   location?: string;
   equipment?: Array<{ id: string; name: string }>;
+  project_id: string;  // Added this field
 }
