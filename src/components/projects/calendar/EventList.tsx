@@ -70,9 +70,10 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
 
       if (error) throw error;
 
-      // Invalidate and refetch
-      await queryClient.invalidateQueries({ queryKey: ['events', projectId] });
-      await queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
+        queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] })
+      ]);
 
       toast({
         title: "Event Updated",
@@ -92,17 +93,40 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
     if (!projectId) return;
 
     try {
-      const { error } = await supabase
+      // First, delete all related equipment for this event
+      const { error: equipmentDeleteError } = await supabase
+        .from('project_event_equipment')
+        .delete()
+        .eq('event_id', event.id)
+        .eq('project_id', projectId);
+
+      if (equipmentDeleteError) throw equipmentDeleteError;
+
+      // Then, delete all related roles for this event
+      const { error: rolesDeleteError } = await supabase
+        .from('project_event_roles')
+        .delete()
+        .eq('event_id', event.id)
+        .eq('project_id', projectId);
+
+      if (rolesDeleteError) throw rolesDeleteError;
+
+      // Finally, delete the event itself
+      const { error: eventDeleteError } = await supabase
         .from('project_events')
         .delete()
         .eq('id', event.id)
         .eq('project_id', projectId);
 
-      if (error) throw error;
+      if (eventDeleteError) throw eventDeleteError;
 
-      // Invalidate and refetch
-      await queryClient.invalidateQueries({ queryKey: ['events', projectId] });
-      await queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] });
+      // Invalidate and refetch all relevant queries
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
+        queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] }),
+        queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
+        queryClient.invalidateQueries({ queryKey: ['project-event-roles', event.id] })
+      ]);
 
       toast({
         title: "Event Deleted",
