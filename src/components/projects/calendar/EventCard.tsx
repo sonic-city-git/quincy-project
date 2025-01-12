@@ -53,9 +53,17 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         </div>
 
         <div className="flex items-center justify-center">
-          <div className="flex gap-2">
-            {event.type.needs_equipment && <Package className="h-4 w-4 text-muted-foreground" />}
-            {event.type.needs_crew && <Users className="h-4 w-4 text-muted-foreground" />}
+          <div className="flex gap-4 w-full justify-center">
+            {event.type.needs_equipment && (
+              <div className="w-4">
+                <Package className="h-4 w-4 text-muted-foreground" />
+              </div>
+            )}
+            {event.type.needs_crew && (
+              <div className="w-4">
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </div>
+            )}
           </div>
         </div>
 
