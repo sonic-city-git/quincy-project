@@ -47,18 +47,49 @@ export function ProjectBaseEquipmentList({
     if (currentGroupId === newGroupId) return;
 
     try {
-      const { error } = await supabase
+      // First check if the equipment already exists in the target group
+      const { data: existingEquipment } = await supabase
         .from('project_equipment')
-        .update({ group_id: newGroupId })
-        .eq('id', id);
+        .select('*')
+        .eq('project_id', projectId)
+        .eq('equipment_id', equipment?.find(item => item.id === id)?.equipment_id)
+        .eq('group_id', newGroupId)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (existingEquipment) {
+        // If it exists, update its quantity and delete the old entry
+        const { error: updateError } = await supabase
+          .from('project_equipment')
+          .update({ 
+            quantity: existingEquipment.quantity + (equipment?.find(item => item.id === id)?.quantity || 0) 
+          })
+          .eq('id', existingEquipment.id);
+
+        if (updateError) throw updateError;
+
+        // Delete the old entry
+        const { error: deleteError } = await supabase
+          .from('project_equipment')
+          .delete()
+          .eq('id', id);
+
+        if (deleteError) throw deleteError;
+
+        toast.success('Equipment merged with existing item');
+      } else {
+        // If it doesn't exist, just update the group_id
+        const { error } = await supabase
+          .from('project_equipment')
+          .update({ group_id: newGroupId })
+          .eq('id', id);
+
+        if (error) throw error;
+        toast.success('Equipment moved successfully');
+      }
       
       await queryClient.invalidateQueries({ 
         queryKey: ['project-equipment', projectId]
       });
-      
-      toast.success('Equipment moved successfully');
     } catch (error) {
       console.error('Error moving equipment:', error);
       toast.error('Failed to move equipment');
@@ -94,7 +125,7 @@ export function ProjectBaseEquipmentList({
   };
 
   const ungroupedEquipment = sortEquipment(equipment?.filter(item => !item.group_id) || []);
-  
+
   if (loading) {
     return (
       <div className="text-sm text-muted-foreground">Loading equipment...</div>
