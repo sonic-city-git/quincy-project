@@ -15,19 +15,19 @@ export function EquipmentTableRow({ item, isSelected, onSelect }: EquipmentTable
         isSelected ? 'bg-zinc-800/75' : ''
       }`}
     >
-      <TableCell className="w-[48px] sticky left-0 bg-zinc-900/95 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75 z-20">
+      <TableCell className="w-[48px]">
         <Checkbox 
           checked={isSelected}
           onCheckedChange={onSelect}
           className="border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
         />
       </TableCell>
-      <TableCell className="w-[300px] sticky left-[48px] bg-zinc-900/95 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75 z-20">
+      <TableCell className="w-[300px]">
         <div className="text-sm font-medium truncate">
           {item.name}
         </div>
       </TableCell>
-      <TableCell className="w-[200px] sticky left-[348px] bg-zinc-900/95 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75 z-20">
+      <TableCell className="w-[200px]">
         <span className="text-sm text-muted-foreground truncate block">
           {item.code || '-'}
         </span>
