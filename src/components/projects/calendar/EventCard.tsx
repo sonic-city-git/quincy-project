@@ -23,6 +23,18 @@ import { toast } from "sonner";
 import { useState, useEffect, useCallback } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
+interface OutOfSyncEquipment {
+  id: string;
+  quantity: number;
+  equipment: {
+    name: string;
+    code: string | null;
+  };
+  group: {
+    name: string;
+  } | null;
+}
+
 interface EventCardProps {
   event: CalendarEvent;
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
@@ -34,7 +46,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const [hasEventEquipment, setHasEventEquipment] = useState(false);
   const [hasProjectEquipment, setHasProjectEquipment] = useState(false);
   const [isEquipmentDialogOpen, setIsEquipmentDialogOpen] = useState(false);
-  const [outOfSyncEquipment, setOutOfSyncEquipment] = useState<any[]>([]);
+  const [outOfSyncEquipment, setOutOfSyncEquipment] = useState<OutOfSyncEquipment[]>([]);
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -139,7 +151,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       if (error) throw error;
 
       if (eventEquipment && eventEquipment.length > 0) {
-        setOutOfSyncEquipment(eventEquipment);
+        setOutOfSyncEquipment(eventEquipment as OutOfSyncEquipment[]);
         setIsEquipmentDialogOpen(true);
       } else {
         toast.info('No out of sync equipment found');
