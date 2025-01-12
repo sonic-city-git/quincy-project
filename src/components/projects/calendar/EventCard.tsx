@@ -25,6 +25,8 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     };
   };
 
+  console.log('Event type:', event.type);  // Add this to debug
+
   return (
     <Card key={`${event.date}-${event.name}`} className="p-4">
       <div className="grid grid-cols-[120px_1fr_auto_auto_auto_auto] items-center gap-2">
