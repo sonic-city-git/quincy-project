@@ -25,6 +25,9 @@ export function OwnerSelect({ value, onChange, error, required }: OwnerSelectPro
     member.email !== 'dev@soniccity.no'
   );
 
+  console.log('Sonic City Folder:', sonicCityFolder);
+  console.log('Filtered crew members:', filteredCrew);
+
   return (
     <div className="space-y-2">
       <Select
