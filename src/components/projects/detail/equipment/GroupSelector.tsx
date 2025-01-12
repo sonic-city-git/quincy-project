@@ -19,7 +19,6 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch equipment groups with proper error handling
   const { data: equipmentGroups = [], isLoading } = useQuery({
     queryKey: ['equipment-groups'],
     queryFn: async () => {
@@ -33,7 +32,6 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
     }
   });
 
-  // Fetch project equipment groups with proper error handling
   const { data: projectGroups = [], isLoading: isLoadingProjectGroups } = useQuery({
     queryKey: ['project-equipment-groups', projectId],
     queryFn: async () => {
@@ -45,10 +43,10 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
       
       if (error) throw error;
       return data || [];
-    }
+    },
+    enabled: !!projectId
   });
 
-  // Create new group
   const createGroup = async (name: string) => {
     if (!name.trim()) return;
     
@@ -73,7 +71,6 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
       setGroupSearch("");
       setIsGroupPopoverOpen(false);
       if (data) onGroupSelect(data.id);
-      return data;
     } catch (error) {
       console.error('Error creating group:', error);
       toast({
@@ -129,16 +126,18 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
                 </Button>
               )}
             </CommandEmpty>
-            <CommandGroup>
-              {filteredGroups.map(group => (
-                <CommandItem
-                  key={group.id}
-                  onSelect={() => createGroup(group.name)}
-                >
-                  {group.name}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            {filteredGroups.length > 0 && (
+              <CommandGroup>
+                {filteredGroups.map(group => (
+                  <CommandItem
+                    key={group.id}
+                    onSelect={() => createGroup(group.name)}
+                  >
+                    {group.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
           </Command>
         </PopoverContent>
       </Popover>
