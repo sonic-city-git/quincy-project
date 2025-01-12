@@ -21,9 +21,9 @@ interface EventCardProps {
 export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const hasEquipment = event.equipment && event.equipment.length > 0;
 
-  const handleEquipmentOption = (option: 'assign' | 'custom') => {
-    console.log('Equipment option selected:', option, event);
-    // TODO: Implement the actual functionality for each option
+  const handleEquipmentOption = () => {
+    console.log('Equipment option selected:', event);
+    // TODO: Implement the actual functionality
   };
 
   return (
@@ -65,11 +65,8 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={() => handleEquipmentOption('assign')}>
+                <DropdownMenuItem onClick={handleEquipmentOption}>
                   Assign and track project equipment
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleEquipmentOption('custom')}>
-                  Create custom equipment list
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
