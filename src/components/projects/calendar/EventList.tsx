@@ -26,9 +26,9 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
   const { proposed, confirmed, ready, cancelled, doneAndDusted } = groupEventsByStatus(events);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4">
       {proposed.length > 0 && (
-        <Card className="rounded-lg bg-zinc-800/50 p-6">
+        <Card className="rounded-lg bg-zinc-800/50 p-4">
           <EventSection
             title="Proposed"
             events={proposed}
@@ -38,7 +38,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
         </Card>
       )}
       {confirmed.length > 0 && (
-        <Card className="rounded-lg bg-zinc-800/50 p-6">
+        <Card className="rounded-lg bg-zinc-800/50 p-4">
           <EventSection
             title="Confirmed"
             events={confirmed}
@@ -48,7 +48,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
         </Card>
       )}
       {ready.length > 0 && (
-        <Card className="rounded-lg bg-zinc-800/50 p-6">
+        <Card className="rounded-lg bg-zinc-800/50 p-4">
           <EventSection
             title="Invoice Ready"
             events={ready}
@@ -58,7 +58,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
         </Card>
       )}
       {cancelled.length > 0 && (
-        <Card className="rounded-lg bg-zinc-800/50 p-6">
+        <Card className="rounded-lg bg-zinc-800/50 p-4">
           <EventSection
             title="Cancelled"
             events={cancelled}
@@ -69,7 +69,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
       )}
       {doneAndDusted.length > 0 && (
         <Collapsible defaultOpen={false} className="mb-16">
-          <Card className="rounded-lg bg-zinc-800/45 p-6">
+          <Card className="rounded-lg bg-zinc-800/45 p-4">
             <CollapsibleTrigger className="flex items-center gap-2 w-full">
               <div className="flex items-center gap-2">
                 <Brush className="h-5 w-5 text-muted-foreground" />
@@ -77,7 +77,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
               </div>
               <ChevronDown className="h-4 w-4 ml-auto text-muted-foreground transition-transform duration-200" />
             </CollapsibleTrigger>
-            <CollapsibleContent className="pt-6 space-y-4">
+            <CollapsibleContent className="pt-4 space-y-4">
               {doneAndDusted.map((event) => (
                 <EventSection
                   key={event.id}
