@@ -36,8 +36,13 @@ interface EquipmentItem {
 }
 
 interface EquipmentDifference {
-  added: EquipmentItem[];
-  removed: EquipmentItem[];
+  added: EquipmentItem[];    // Completely new items
+  removed: EquipmentItem[];  // Items that no longer exist
+  changed: {                 // Items with quantity changes
+    item: EquipmentItem;
+    oldQuantity: number;
+    newQuantity: number;
+  }[];
 }
 
 interface EventCardProps {
@@ -53,7 +58,8 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const [isEquipmentDialogOpen, setIsEquipmentDialogOpen] = useState(false);
   const [equipmentDifference, setEquipmentDifference] = useState<EquipmentDifference>({
     added: [],
-    removed: []
+    removed: [],
+    changed: []
   });
 
   useEffect(() => {
@@ -181,6 +187,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
       const added: EquipmentItem[] = [];
       const removed: EquipmentItem[] = [];
+      const changed: EquipmentDifference['changed'] = [];
 
       // Create maps with equipment name as key and full item as value
       const projectMap = new Map(projectEquipment?.map(item => [item.equipment.name, item]) || []);
@@ -190,13 +197,23 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       projectEquipment?.forEach(projectItem => {
         const eventItem = eventMap.get(projectItem.equipment.name);
         
-        // If item doesn't exist in event or quantities differ, add to differences
-        if (!eventItem || eventItem.quantity !== projectItem.quantity) {
-          console.log('Added or changed:', projectItem.equipment.name, {
-            projectQty: projectItem.quantity,
-            eventQty: eventItem?.quantity
+        if (!eventItem) {
+          // Item is completely new
+          console.log('Added new:', projectItem.equipment.name, {
+            quantity: projectItem.quantity
           });
           added.push(projectItem as EquipmentItem);
+        } else if (eventItem.quantity !== projectItem.quantity) {
+          // Item exists but quantity changed
+          console.log('Changed:', projectItem.equipment.name, {
+            oldQty: eventItem.quantity,
+            newQty: projectItem.quantity
+          });
+          changed.push({
+            item: projectItem as EquipmentItem,
+            oldQuantity: eventItem.quantity,
+            newQuantity: projectItem.quantity
+          });
         }
       });
 
@@ -204,20 +221,21 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       eventEquipment?.forEach(eventItem => {
         const projectItem = projectMap.get(eventItem.equipment.name);
         
-        // Only add to removed if item doesn't exist in project
-        // (quantity differences are handled in the added array)
         if (!projectItem) {
-          console.log('Removed:', eventItem.equipment.name);
+          // Item was completely removed
+          console.log('Removed:', eventItem.equipment.name, {
+            quantity: eventItem.quantity
+          });
           removed.push(eventItem as EquipmentItem);
         }
       });
 
-      console.log('Differences found:', { added, removed });
+      console.log('Differences found:', { added, removed, changed });
 
-      setEquipmentDifference({ added, removed });
+      setEquipmentDifference({ added, removed, changed });
       setIsEquipmentDialogOpen(true);
 
-      if (added.length === 0 && removed.length === 0) {
+      if (added.length === 0 && removed.length === 0 && changed.length === 0) {
         toast.info('No differences found in equipment lists');
       }
     } catch (error) {
@@ -264,23 +282,45 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     ));
   };
 
-  const getEquipmentIcon = useCallback(() => {
-    if (!event.type.needs_equipment) return null;
-    
-    if (!hasEventEquipment && !hasProjectEquipment) {
-      return <Package className="h-6 w-6 text-muted-foreground" />;
-    }
-    
-    if (!hasEventEquipment) {
-      return <Package className="h-6 w-6 text-muted-foreground" />;
-    }
-    
-    return (
-      <Package 
-        className={`h-6 w-6 ${isSynced ? 'text-green-500' : 'text-blue-500'}`}
-      />
-    );
-  }, [event.type.needs_equipment, hasEventEquipment, hasProjectEquipment, isSynced]);
+  const renderChangedEquipmentList = (items: EquipmentDifference['changed']) => {
+    const groupedEquipment = items.reduce((acc, { item }) => {
+      const groupName = item.group?.name || 'Ungrouped';
+      if (!acc[groupName]) {
+        acc[groupName] = [];
+      }
+      acc[groupName].push(item);
+      return acc;
+    }, {} as Record<string, EquipmentItem[]>);
+
+    return Object.entries(groupedEquipment).map(([groupName, groupItems]) => (
+      <div key={groupName} className="mb-4">
+        <h3 className="text-sm font-medium mb-2 px-2 py-1 bg-secondary/10 rounded-md">
+          {groupName}
+        </h3>
+        <div className="space-y-2">
+          {items
+            .filter(({ item }) => (item.group?.name || 'Ungrouped') === groupName)
+            .map(({ item, oldQuantity, newQuantity }) => (
+              <Card key={item.id} className="p-2 border-blue-500">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm">
+                    {item.equipment.name}
+                    {item.equipment.code && (
+                      <span className="text-muted-foreground ml-1">
+                        ({item.equipment.code})
+                      </span>
+                    )}
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    Qty: {oldQuantity} → {newQuantity}
+                  </span>
+                </div>
+              </Card>
+            ))}
+        </div>
+      </div>
+    ));
+  };
 
   return (
     <>
@@ -437,17 +477,25 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             <div className="space-y-6 p-4">
               {equipmentDifference.added.length > 0 && (
                 <div>
-                  <h2 className="text-lg font-semibold text-green-500 mb-4">Added in Project</h2>
+                  <h2 className="text-lg font-semibold text-green-500 mb-4">Added Equipment</h2>
                   {renderEquipmentList(equipmentDifference.added, 'added')}
+                </div>
+              )}
+              {equipmentDifference.changed.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold text-blue-500 mb-4">Changed Quantities</h2>
+                  {renderChangedEquipmentList(equipmentDifference.changed)}
                 </div>
               )}
               {equipmentDifference.removed.length > 0 && (
                 <div>
-                  <h2 className="text-lg font-semibold text-red-500 mb-4">Removed from Project</h2>
+                  <h2 className="text-lg font-semibold text-red-500 mb-4">Removed Equipment</h2>
                   {renderEquipmentList(equipmentDifference.removed, 'removed')}
                 </div>
               )}
-              {equipmentDifference.added.length === 0 && equipmentDifference.removed.length === 0 && (
+              {equipmentDifference.added.length === 0 && 
+               equipmentDifference.removed.length === 0 && 
+               equipmentDifference.changed.length === 0 && (
                 <p className="text-center text-muted-foreground">No differences found in equipment lists</p>
               )}
             </div>
