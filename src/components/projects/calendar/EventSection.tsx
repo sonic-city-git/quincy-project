@@ -6,7 +6,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { ChevronDown, Package, Users } from "lucide-react";
+import { Brush, ChevronDown, Package, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { EventStatusManager } from "./EventStatusManager";
 import { Button } from "@/components/ui/button";
@@ -43,9 +43,12 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   const isCancelled = status === 'cancelled';
   const canSync = status === 'proposed' || status === 'confirmed';
 
-  const sectionIcon = getStatusIcon(status);
+  const sectionIcon = isDoneAndDusted ? (
+    <Brush className="h-5 w-5 text-gray-400" />
+  ) : (
+    getStatusIcon(status)
+  );
 
-  // Get the appropriate section icon based on sync status
   const getSectionEquipmentIcon = () => {
     if (sectionSyncStatus === 'no-equipment') {
       return <Package className="h-6 w-6 text-muted-foreground" />;
@@ -91,7 +94,6 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
 
     checkSectionSyncStatus();
 
-    // Set up subscription for all events in this section
     const channels = events.map(event => {
       return supabase
         .channel(`section-equipment-${event.id}`)
@@ -178,7 +180,6 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
           if (upsertError) throw upsertError;
         }
 
-        // Invalidate queries for this specific event
         await Promise.all([
           queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
           queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
@@ -201,7 +202,6 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
 
     try {
       for (const event of events) {
-        // Delete existing roles for the event
         const { error: deleteError } = await supabase
           .from('project_event_roles')
           .delete()
@@ -209,7 +209,6 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
 
         if (deleteError) throw deleteError;
 
-        // Get project roles
         const { data: projectRoles, error: fetchError } = await supabase
           .from('project_roles')
           .select('*')
