@@ -90,7 +90,7 @@ export function EquipmentList() {
 
                   return (
                     <div key={parentFolder.id} className="mb-4">
-                      <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-zinc-800/50 to-zinc-900/50 border-l-4 border-l-primary transition-colors hover:bg-zinc-800/70">
+                      <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-zinc-800/30 to-zinc-900/30 border-l-4 border-l-primary transition-colors hover:bg-zinc-800/50">
                         <Folder className="h-4 w-4 text-primary" />
                         <span className="font-medium">{parentFolder.name}</span>
                       </div>
