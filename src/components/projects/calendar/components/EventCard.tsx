@@ -7,7 +7,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ event }: EventCardProps) {
-  const iconClasses = "h-6 w-6 flex-shrink-0";
+  const iconClasses = "h-7 w-7 flex-shrink-0";
   
   return (
     <>
@@ -18,9 +18,9 @@ export function EventCard({ event }: EventCardProps) {
         </span>
       </div>
       
-      <div className="flex flex-col">
-        <div className="flex items-start">
-          <span className="font-medium text-base">
+      <div className="flex flex-col justify-center">
+        <div className="flex items-center">
+          <span className="font-medium text-base truncate">
             {event.name}
           </span>
         </div>
@@ -29,7 +29,7 @@ export function EventCard({ event }: EventCardProps) {
       <div className="flex items-center justify-between">
         {event.location && (
           <div className="flex items-center text-muted-foreground">
-            <span className="text-sm">{event.location}</span>
+            <span className="text-sm truncate">{event.location}</span>
           </div>
         )}
       </div>
