@@ -38,7 +38,7 @@ export function ProjectBaseEquipmentList({
   const handleDrop = async (e: React.DragEvent, newGroupId: string | null) => {
     e.preventDefault();
     const target = e.currentTarget as HTMLElement;
-    target.classList.remove('bg-accent/10', 'border-accent');
+    target.classList.remove('bg-accent', 'border-accent');
     
     const data = e.dataTransfer.getData('application/json');
     if (!data) return;
@@ -73,13 +73,13 @@ export function ProjectBaseEquipmentList({
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
     const target = e.currentTarget as HTMLElement;
-    target.classList.add('bg-accent/10', 'border-accent');
+    target.classList.add('bg-accent', 'border-accent');
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     const target = e.currentTarget as HTMLElement;
-    target.classList.remove('bg-accent/10', 'border-accent');
+    target.classList.remove('bg-accent', 'border-accent');
   };
 
   const ungroupedEquipment = equipment?.filter(item => !item.group_id) || [];
