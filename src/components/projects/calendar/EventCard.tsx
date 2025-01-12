@@ -66,7 +66,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuItem onClick={handleEquipmentOption}>
-                  Assign and track project equipment
+                  Assign project equipment list
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
