@@ -25,7 +25,7 @@ export function EventSectionHeader({
   const totalRevenue = events.reduce((sum, event) => sum + (event.revenue || 0), 0);
 
   return (
-    <div className="mb-4">
+    <div className="border border-zinc-800 rounded-lg bg-zinc-900/50 backdrop-blur-sm p-3 mb-4">
       <EventSectionHeaderGrid>
         <div className="col-span-2 flex items-center gap-2 justify-start">
           {getStatusIcon(title.toLowerCase() as CalendarEvent['status'])}
