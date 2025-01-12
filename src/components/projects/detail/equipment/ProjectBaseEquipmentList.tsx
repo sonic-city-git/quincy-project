@@ -4,7 +4,6 @@ import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
@@ -67,17 +66,21 @@ export function ProjectBaseEquipmentList({
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     e.dataTransfer.dropEffect = 'move';
   };
 
   const handleDragEnter = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     const target = e.currentTarget as HTMLElement;
     target.classList.add('bg-accent/20', 'border-accent');
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
     const target = e.currentTarget as HTMLElement;
     target.classList.remove('bg-accent/20', 'border-accent');
   };
