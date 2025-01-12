@@ -31,11 +31,15 @@ export function EquipmentTableRow({ item, isSelected, onSelect }: EquipmentTable
           {item.code || '-'}
         </span>
       </TableCell>
-      <TableCell className="w-[100px] text-sm text-muted-foreground">
-        {item.stock || 0}
+      <TableCell className="w-[100px]">
+        <span className="text-sm text-muted-foreground">
+          {item.stock || 0}
+        </span>
       </TableCell>
-      <TableCell className="w-[150px] text-sm text-muted-foreground">
-        {item.rental_price ? `${item.rental_price} kr` : '-'}
+      <TableCell className="w-[150px]">
+        <span className="text-sm text-muted-foreground">
+          {item.rental_price ? `${item.rental_price} kr` : '-'}
+        </span>
       </TableCell>
     </TableRow>
   );
