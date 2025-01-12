@@ -71,36 +71,36 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
   };
 
   return (
-    <Card className="p-1 h-[28px]">
+    <Card className="relative p-2 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 group">
       <div className="flex items-center justify-between h-full">
         <div className="flex items-center gap-2">
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-5 w-5 cursor-grab active:cursor-grabbing" 
+            className="h-5 w-5 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity" 
             draggable
             onDragStart={handleDragStart}
           >
             <GripVertical className="h-3 w-3 text-muted-foreground" />
           </Button>
-          <h3 className="text-sm font-medium leading-none">{item.name}</h3>
+          <h3 className="text-sm font-medium leading-none text-zinc-200">{item.name}</h3>
         </div>
         <div className="flex items-center gap-0.5">
           <div className="flex items-center gap-0.5">
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="icon" 
-              className="h-5 w-5" 
+              className="h-5 w-5 hover:bg-zinc-700/50" 
               onClick={() => handleQuantityChange(-1)}
               disabled={isUpdating || item.quantity <= 1}
             >
               <Minus className="h-3 w-3" />
             </Button>
-            <span className="w-6 text-center text-sm">{item.quantity}</span>
+            <span className="w-6 text-center text-sm text-zinc-300">{item.quantity}</span>
             <Button 
-              variant="outline" 
+              variant="ghost" 
               size="icon" 
-              className="h-5 w-5"
+              className="h-5 w-5 hover:bg-zinc-700/50"
               onClick={() => handleQuantityChange(1)}
               disabled={isUpdating}
             >
@@ -110,7 +110,7 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
           <Button 
             variant="ghost" 
             size="icon" 
-            className="h-5 w-5" 
+            className="h-5 w-5 text-red-400 hover:text-red-300 hover:bg-red-900/20" 
             onClick={onRemove}
             disabled={isUpdating}
           >

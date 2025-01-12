@@ -4,7 +4,6 @@ import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
@@ -112,8 +111,10 @@ export function ProjectBaseEquipmentList({
             <div 
               key={group.id} 
               className={cn(
-                "rounded-lg border border-border bg-background/50 transition-all duration-200",
-                isSelected && "ring-2 ring-primary/20"
+                "rounded-lg border transition-all duration-200",
+                isSelected 
+                  ? "border-primary/20 bg-primary/5" 
+                  : "border-zinc-800/50 bg-zinc-900/50"
               )}
               onDragOver={handleDragOver}
               onDragEnter={handleDragEnter}
@@ -125,8 +126,8 @@ export function ProjectBaseEquipmentList({
                   className={cn(
                     "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
                     isSelected 
-                      ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                      : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
+                      ? "bg-primary/20 text-primary hover:bg-primary/30" 
+                      : "bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800/70"
                   )}
                   onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
                 >
@@ -153,8 +154,10 @@ export function ProjectBaseEquipmentList({
         
         <div 
           className={cn(
-            "rounded-lg border border-border bg-background/50 transition-all duration-200",
-            selectedGroupId === null && "ring-2 ring-primary/20"
+            "rounded-lg border transition-all duration-200",
+            selectedGroupId === null 
+              ? "border-primary/20 bg-primary/5" 
+              : "border-zinc-800/50 bg-zinc-900/50"
           )}
           onDragOver={handleDragOver}
           onDragEnter={handleDragEnter}
@@ -166,8 +169,8 @@ export function ProjectBaseEquipmentList({
               className={cn(
                 "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
                 selectedGroupId === null 
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                  : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
+                  ? "bg-primary/20 text-primary hover:bg-primary/30" 
+                  : "bg-zinc-800/50 text-zinc-300 hover:bg-zinc-800/70"
               )}
               onClick={() => onGroupSelect(null)}
             >
