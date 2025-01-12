@@ -9,6 +9,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { EVENT_COLORS } from "@/constants/eventColors";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,11 +33,12 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const [isSynced, setIsSynced] = useState(true);
   const [hasEventEquipment, setHasEventEquipment] = useState(false);
   const [hasProjectEquipment, setHasProjectEquipment] = useState(false);
+  const [isEquipmentDialogOpen, setIsEquipmentDialogOpen] = useState(false);
+  const [outOfSyncEquipment, setOutOfSyncEquipment] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchStatus = async () => {
       try {
-        // Check project equipment
         const { data: projectEquipment } = await supabase
           .from('project_equipment')
           .select('id')
@@ -39,7 +47,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         
         setHasProjectEquipment(!!projectEquipment?.length);
 
-        // Check event equipment and sync status
         const { data: eventEquipment, error } = await supabase
           .from('project_event_equipment')
           .select('*')
@@ -68,7 +75,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
   const handleEquipmentOption = async () => {
     try {
-      // First, fetch all project equipment
       const { data: projectEquipment, error: fetchError } = await supabase
         .from('project_equipment')
         .select('*')
@@ -76,7 +82,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
       if (fetchError) throw fetchError;
 
-      // Delete existing event equipment
       const { error: deleteError } = await supabase
         .from('project_event_equipment')
         .delete()
@@ -84,7 +89,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
       if (deleteError) throw deleteError;
 
-      // Insert new equipment records using upsert
       if (projectEquipment && projectEquipment.length > 0) {
         const eventEquipment = projectEquipment.map(item => ({
           project_id: event.project_id,
@@ -123,22 +127,20 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           equipment:equipment_id (
             name,
             code
+          ),
+          group:group_id (
+            name
           )
         `)
         .eq('event_id', event.id)
-        .eq('is_synced', false);
+        .eq('is_synced', false)
+        .order('group_id');
 
       if (error) throw error;
 
       if (eventEquipment && eventEquipment.length > 0) {
-        const equipmentList = eventEquipment.map(item => 
-          `${item.equipment.name}${item.equipment.code ? ` (${item.equipment.code})` : ''}`
-        ).join('\n');
-        
-        toast.info('Out of sync equipment:', {
-          description: equipmentList,
-          duration: 5000,
-        });
+        setOutOfSyncEquipment(eventEquipment);
+        setIsEquipmentDialogOpen(true);
       } else {
         toast.info('No out of sync equipment found');
       }
@@ -166,149 +168,202 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     );
   }, [event.type.needs_equipment, hasEventEquipment, hasProjectEquipment, isSynced]);
 
-  return (
-    <Card key={`${event.date}-${event.name}`} className="p-4">
-      <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_auto] gap-4">
-        <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">
-            {format(event.date, 'dd.MM.yy')}
-          </span>
+  const renderEquipmentList = () => {
+    const groupedEquipment = outOfSyncEquipment.reduce((acc, item) => {
+      const groupName = item.group?.name || 'Ungrouped';
+      if (!acc[groupName]) {
+        acc[groupName] = [];
+      }
+      acc[groupName].push(item);
+      return acc;
+    }, {} as Record<string, any[]>);
+
+    return Object.entries(groupedEquipment).map(([groupName, items]) => (
+      <div key={groupName} className="mb-4">
+        <h3 className="text-sm font-medium mb-2 px-2 py-1 bg-secondary/10 rounded-md">
+          {groupName}
+        </h3>
+        <div className="space-y-2">
+          {items.map((item) => (
+            <Card key={item.id} className="p-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">
+                  {item.equipment.name}
+                  {item.equipment.code && (
+                    <span className="text-muted-foreground ml-1">
+                      ({item.equipment.code})
+                    </span>
+                  )}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  Qty: {item.quantity}
+                </span>
+              </div>
+            </Card>
+          ))}
         </div>
-        
-        <div className="flex flex-col">
-          <div className="flex items-start">
-            <span className="font-medium text-base">
-              {event.name}
+      </div>
+    ));
+  };
+
+  return (
+    <>
+      <Card key={`${event.date}-${event.name}`} className="p-4">
+        <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_auto] gap-4">
+          <div className="flex items-center gap-2">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              {format(event.date, 'dd.MM.yy')}
             </span>
           </div>
-          {event.location && (
-            <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
-              <MapPin className="h-3 w-3" />
-              <span>{event.location}</span>
+          
+          <div className="flex flex-col">
+            <div className="flex items-start">
+              <span className="font-medium text-base">
+                {event.name}
+              </span>
             </div>
-          )}
-        </div>
+            {event.location && (
+              <div className="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
+                <MapPin className="h-3 w-3" />
+                <span>{event.location}</span>
+              </div>
+            )}
+          </div>
 
-        <div className="flex items-center justify-center">
-          {event.type.needs_equipment && (
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    {hasEventEquipment && isSynced ? (
-                      <Package className="h-6 w-6 text-green-500" />
-                    ) : (
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 p-0"
-                          >
-                            {getEquipmentIcon()}
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="start">
-                          {!hasEventEquipment ? (
-                            <DropdownMenuItem onClick={handleEquipmentOption}>
-                              Sync from project equipment
-                            </DropdownMenuItem>
-                          ) : !isSynced ? (
-                            <>
-                              <DropdownMenuItem onClick={viewOutOfSyncEquipment}>
-                                View equipment list
-                              </DropdownMenuItem>
+          <div className="flex items-center justify-center">
+            {event.type.needs_equipment && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      {hasEventEquipment && isSynced ? (
+                        <Package className="h-6 w-6 text-green-500" />
+                      ) : (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 p-0"
+                            >
+                              {getEquipmentIcon()}
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="start">
+                            {!hasEventEquipment ? (
                               <DropdownMenuItem onClick={handleEquipmentOption}>
                                 Sync from project equipment
                               </DropdownMenuItem>
-                            </>
-                          ) : null}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    )}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  {hasEventEquipment && isSynced 
-                    ? "Equipment list is NSYNC" 
-                    : !hasEventEquipment 
-                      ? "No equipment assigned"
-                      : "Equipment list out of sync"}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          )}
-        </div>
+                            ) : !isSynced ? (
+                              <>
+                                <DropdownMenuItem onClick={viewOutOfSyncEquipment}>
+                                  View equipment list
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleEquipmentOption}>
+                                  Sync from project equipment
+                                </DropdownMenuItem>
+                              </>
+                            ) : null}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {hasEventEquipment && isSynced 
+                      ? "Equipment list is NSYNC" 
+                      : !hasEventEquipment 
+                        ? "No equipment assigned"
+                        : "Equipment list out of sync"}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
 
-        <div className="flex items-center justify-center">
-          {event.type.needs_crew && (
-            <Users className="h-6 w-6 text-muted-foreground" />
-          )}
-        </div>
+          <div className="flex items-center justify-center">
+            {event.type.needs_crew && (
+              <Users className="h-6 w-6 text-muted-foreground" />
+            )}
+          </div>
 
-        <div className="flex items-center">
-          <span 
-            className={`text-sm px-2 py-1 rounded-md ${EVENT_COLORS[event.type.name]}`}
-          >
-            {event.type.name}
-          </span>
-        </div>
+          <div className="flex items-center">
+            <span 
+              className={`text-sm px-2 py-1 rounded-md ${EVENT_COLORS[event.type.name]}`}
+            >
+              {event.type.name}
+            </span>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <div className="flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="flex items-center gap-2"
+                >
+                  {getStatusIcon(event.status)}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem 
+                  onClick={() => onStatusChange(event, 'proposed')}
+                  className="flex items-center gap-2"
+                >
+                  {getStatusIcon('proposed')}
+                  Proposed
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onStatusChange(event, 'confirmed')}
+                  className="flex items-center gap-2"
+                >
+                  {getStatusIcon('confirmed')}
+                  Confirmed
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onStatusChange(event, 'invoice ready')}
+                  className="flex items-center gap-2"
+                >
+                  {getStatusIcon('invoice ready')}
+                  Invoice Ready
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => onStatusChange(event, 'cancelled')}
+                  className="flex items-center gap-2"
+                >
+                  {getStatusIcon('cancelled')}
+                  Cancelled
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            {onEdit && (
               <Button
                 variant="ghost"
                 size="icon"
-                className="flex items-center gap-2"
+                onClick={() => onEdit(event)}
+                className="text-muted-foreground hover:text-foreground"
               >
-                {getStatusIcon(event.status)}
+                <Edit className="h-4 w-4" />
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem 
-                onClick={() => onStatusChange(event, 'proposed')}
-                className="flex items-center gap-2"
-              >
-                {getStatusIcon('proposed')}
-                Proposed
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => onStatusChange(event, 'confirmed')}
-                className="flex items-center gap-2"
-              >
-                {getStatusIcon('confirmed')}
-                Confirmed
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => onStatusChange(event, 'invoice ready')}
-                className="flex items-center gap-2"
-              >
-                {getStatusIcon('invoice ready')}
-                Invoice Ready
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => onStatusChange(event, 'cancelled')}
-                className="flex items-center gap-2"
-              >
-                {getStatusIcon('cancelled')}
-                Cancelled
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          {onEdit && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(event)}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <Edit className="h-4 w-4" />
-            </Button>
-          )}
+            )}
+          </div>
         </div>
-      </div>
-    </Card>
+      </Card>
+
+      <Dialog open={isEquipmentDialogOpen} onOpenChange={setIsEquipmentDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Out of Sync Equipment</DialogTitle>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            <div className="space-y-4 p-4">
+              {renderEquipmentList()}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
