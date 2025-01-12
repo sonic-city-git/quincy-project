@@ -1,5 +1,4 @@
 import { CalendarEvent } from "@/types/events";
-import { Card } from "@/components/ui/card";
 import { EventSection } from "./EventSection";
 import { EventDialog } from "./EventDialog";
 import { InvoiceDialog } from "../invoice/InvoiceDialog";
@@ -9,9 +8,9 @@ import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventStatusChange } from "./hooks/useEventStatusChange";
 import { groupEventsByStatus } from "./utils/eventGroups";
 import { useEventDeletion } from "@/hooks/useEventDeletion";
-import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useEventUpdate } from "@/hooks/useEventUpdate";
+import { EventListEmpty } from "./components/EventListEmpty";
+import { EventListLoading } from "./components/EventListLoading";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -23,8 +22,8 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
   const { data: eventTypes = [] } = useEventTypes();
   const { handleStatusChange } = useEventStatusChange(projectId);
   const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
-  const queryClient = useQueryClient();
   const { deleteEvent } = useEventDeletion(projectId);
+  const { updateEvent } = useEventUpdate(projectId);
   
   const { 
     isEditDialogOpen, 
@@ -34,58 +33,14 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
   } = useEventDialog();
 
   if (isLoading) {
-    return (
-      <Card className="p-6">
-        <div className="h-[200px] flex items-center justify-center text-muted-foreground">
-          Loading events...
-        </div>
-      </Card>
-    );
+    return <EventListLoading />;
   }
 
   if (!events.length) {
-    return (
-      <Card className="p-6">
-        <div className="h-[200px] flex items-center justify-center text-muted-foreground">
-          No events found. Click on the calendar to add events.
-        </div>
-      </Card>
-    );
+    return <EventListEmpty />;
   }
 
   const { proposed, confirmed, invoice_ready, cancelled, pastEvents } = groupEventsByStatus(events);
-
-  const handleUpdateEvent = async (updatedEvent: CalendarEvent) => {
-    if (!projectId) return;
-
-    try {
-      const { error } = await supabase
-        .from('project_events')
-        .update({ 
-          name: updatedEvent.name,
-          event_type_id: updatedEvent.type.id,
-          status: updatedEvent.status
-        })
-        .eq('id', updatedEvent.id);
-
-      if (error) throw error;
-
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
-        queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] })
-      ]);
-
-      toast("Event Updated", {
-        description: "The event has been successfully updated"
-      });
-    } catch (error) {
-      console.error('Error updating event:', error);
-      toast("Error", {
-        description: "Failed to update event",
-        style: { background: 'red', color: 'white' }
-      });
-    }
-  };
 
   const handleDeleteEvent = async (event: CalendarEvent) => {
     const success = await deleteEvent(event);
@@ -136,7 +91,7 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
         onClose={closeEditDialog}
         event={selectedEvent}
         eventTypes={eventTypes}
-        onUpdateEvent={handleUpdateEvent}
+        onUpdateEvent={updateEvent}
         onDeleteEvent={handleDeleteEvent}
       />
 
