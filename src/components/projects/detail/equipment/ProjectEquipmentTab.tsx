@@ -16,8 +16,8 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
     <div className="space-y-6">
       <Card className="p-6">
         <div className="grid grid-cols-12 gap-6 h-[calc(100vh-220px)]">
-          {/* Available Equipment Column - 1/3 width */}
-          <div className="col-span-4 flex flex-col border-r border-border pr-6 h-full overflow-hidden">
+          {/* Available Equipment Column - slightly wider */}
+          <div className="col-span-5 flex flex-col border-r border-border pr-6 h-full overflow-hidden">
             <div className="flex items-center gap-2 mb-4">
               <Box className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold">Available Equipment</h2>
@@ -31,7 +31,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
             </div>
           </div>
 
-          <div className="col-span-8 flex flex-col pl-6 h-full overflow-hidden">
+          <div className="col-span-7 flex flex-col pl-6 h-full overflow-hidden">
             <div className="flex items-center gap-2 mb-4">
               <ListCheck className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold">Project Equipment</h2>
