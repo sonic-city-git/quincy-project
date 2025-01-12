@@ -25,7 +25,7 @@ export function EventCardIcons({
         />
       </div>
 
-      <div>
+      <div className="flex justify-start">
         {event.type.needs_equipment && (
           <EquipmentIcon
             isSynced={isSynced}
@@ -37,7 +37,7 @@ export function EventCardIcons({
         )}
       </div>
 
-      <div>
+      <div className="flex justify-start">
         {event.type.needs_crew && (
           <Users className={`h-6 w-6 ${isEditingDisabled ? 'text-green-500' : 'text-muted-foreground'}`} />
         )}
