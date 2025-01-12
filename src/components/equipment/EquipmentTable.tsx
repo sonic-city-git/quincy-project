@@ -6,9 +6,21 @@ interface EquipmentTableProps {
   equipment: Equipment[];
   selectedItem: string | null;
   onItemSelect: (id: string) => void;
+  searchQuery?: string;
+  selectedFolders?: string[];
+  projectId?: string;
+  selectedGroupId?: string | null;
 }
 
-export function EquipmentTable({ equipment, selectedItem, onItemSelect }: EquipmentTableProps) {
+export function EquipmentTable({ 
+  equipment, 
+  selectedItem, 
+  onItemSelect,
+  searchQuery,
+  selectedFolders,
+  projectId,
+  selectedGroupId
+}: EquipmentTableProps) {
   return (
     <div className="relative">
       <Table>
