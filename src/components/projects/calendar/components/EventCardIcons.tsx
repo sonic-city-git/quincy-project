@@ -17,8 +17,8 @@ export function EventCardIcons({
   onViewEquipment,
   onSyncEquipment
 }: EventCardIconsProps) {
-  const iconContainerClasses = "h-8 w-8 flex items-center justify-center";
-  const iconClasses = "h-5 w-5";
+  const iconContainerClasses = "h-10 w-10 flex items-center justify-center";
+  const iconClasses = "h-6 w-6";
 
   return (
     <>
@@ -38,6 +38,7 @@ export function EventCardIcons({
               isEditingDisabled={isEditingDisabled}
               onViewEquipment={onViewEquipment}
               onSyncEquipment={onSyncEquipment}
+              className={iconClasses}
             />
           </div>
         )}

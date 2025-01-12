@@ -37,8 +37,8 @@ export function EventSectionHeader({
     }).format(amount).replace('NOK', 'kr').replace('.', ',');
   };
 
-  const iconContainerClasses = "h-8 w-8 flex items-center justify-center";
-  const iconClasses = "h-5 w-5";
+  const iconContainerClasses = "h-10 w-10 flex items-center justify-center";
+  const iconClasses = "h-6 w-6";
 
   const getSectionEquipmentIcon = () => {
     if (sectionSyncStatus === 'no-equipment') {
