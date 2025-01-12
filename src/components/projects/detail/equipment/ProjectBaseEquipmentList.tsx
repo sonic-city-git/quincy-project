@@ -1,7 +1,7 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProjectEquipmentItem } from "./ProjectEquipmentItem";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
@@ -18,6 +18,7 @@ export function ProjectBaseEquipmentList({
   onGroupSelect 
 }: ProjectBaseEquipmentListProps) {
   const { equipment, loading, removeEquipment } = useProjectEquipment(projectId);
+  const queryClient = useQueryClient();
 
   const { data: groups = [] } = useQuery({
     queryKey: ['project-equipment-groups', projectId],
@@ -39,7 +40,7 @@ export function ProjectBaseEquipmentList({
     const data = e.dataTransfer.getData('application/json');
     if (!data) return;
 
-    const { id, currentGroupId } = JSON.parse(data);
+    const { id, currentGroupId } = JSON.parse(data) as { id: string; currentGroupId: string | null };
     if (currentGroupId === newGroupId) return;
 
     try {
@@ -49,6 +50,12 @@ export function ProjectBaseEquipmentList({
         .eq('id', id);
 
       if (error) throw error;
+      
+      // Invalidate queries to refresh the data
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment', projectId]
+      });
+      
       toast.success('Equipment moved successfully');
     } catch (error) {
       console.error('Error moving equipment:', error);
