@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import { useState, useEffect, useCallback } from 'react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
-interface OutOfSyncEquipment {
+interface EquipmentItem {
   id: string;
   quantity: number;
   equipment: {
@@ -33,6 +33,11 @@ interface OutOfSyncEquipment {
   group: {
     name: string;
   } | null;
+}
+
+interface EquipmentDifference {
+  added: EquipmentItem[];
+  removed: EquipmentItem[];
 }
 
 interface EventCardProps {
@@ -46,7 +51,10 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const [hasEventEquipment, setHasEventEquipment] = useState(false);
   const [hasProjectEquipment, setHasProjectEquipment] = useState(false);
   const [isEquipmentDialogOpen, setIsEquipmentDialogOpen] = useState(false);
-  const [outOfSyncEquipment, setOutOfSyncEquipment] = useState<OutOfSyncEquipment[]>([]);
+  const [equipmentDifference, setEquipmentDifference] = useState<EquipmentDifference>({
+    added: [],
+    removed: []
+  });
 
   useEffect(() => {
     const fetchStatus = async () => {
@@ -132,10 +140,12 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
   const viewOutOfSyncEquipment = async () => {
     try {
-      const { data: eventEquipment, error } = await supabase
-        .from('project_event_equipment')
+      // Fetch project equipment
+      const { data: projectEquipment, error: projectError } = await supabase
+        .from('project_equipment')
         .select(`
-          *,
+          id,
+          quantity,
           equipment:equipment_id (
             name,
             code
@@ -144,51 +154,70 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             name
           )
         `)
-        .eq('event_id', event.id)
-        .eq('is_synced', false)
-        .order('group_id');
+        .eq('project_id', event.project_id);
 
-      if (error) throw error;
+      if (projectError) throw projectError;
 
-      if (eventEquipment && eventEquipment.length > 0) {
-        setOutOfSyncEquipment(eventEquipment as OutOfSyncEquipment[]);
-        setIsEquipmentDialogOpen(true);
-      } else {
-        toast.info('No out of sync equipment found');
+      // Fetch event equipment
+      const { data: eventEquipment, error: eventError } = await supabase
+        .from('project_event_equipment')
+        .select(`
+          id,
+          quantity,
+          equipment:equipment_id (
+            name,
+            code
+          ),
+          group:group_id (
+            name
+          )
+        `)
+        .eq('event_id', event.id);
+
+      if (eventError) throw eventError;
+
+      // Calculate differences
+      const projectMap = new Map(projectEquipment?.map(item => [item.equipment.name, item]) || []);
+      const eventMap = new Map(eventEquipment?.map(item => [item.equipment.name, item]) || []);
+
+      const added: EquipmentItem[] = [];
+      const removed: EquipmentItem[] = [];
+
+      // Find added items (in project but not in event)
+      projectMap.forEach((item, name) => {
+        if (!eventMap.has(name)) {
+          added.push(item as EquipmentItem);
+        }
+      });
+
+      // Find removed items (in event but not in project)
+      eventMap.forEach((item, name) => {
+        if (!projectMap.has(name)) {
+          removed.push(item as EquipmentItem);
+        }
+      });
+
+      setEquipmentDifference({ added, removed });
+      setIsEquipmentDialogOpen(true);
+
+      if (added.length === 0 && removed.length === 0) {
+        toast.info('No differences found in equipment lists');
       }
     } catch (error) {
-      console.error('Error fetching out of sync equipment:', error);
-      toast.error('Failed to fetch equipment list');
+      console.error('Error fetching equipment differences:', error);
+      toast.error('Failed to fetch equipment differences');
     }
   };
 
-  const getEquipmentIcon = useCallback(() => {
-    if (!event.type.needs_equipment) return null;
-    
-    if (!hasEventEquipment && !hasProjectEquipment) {
-      return <Package className="h-6 w-6 text-muted-foreground" />;
-    }
-    
-    if (!hasEventEquipment) {
-      return <Package className="h-6 w-6 text-muted-foreground" />;
-    }
-    
-    return (
-      <Package 
-        className={`h-6 w-6 ${isSynced ? 'text-green-500' : 'text-blue-500'}`}
-      />
-    );
-  }, [event.type.needs_equipment, hasEventEquipment, hasProjectEquipment, isSynced]);
-
-  const renderEquipmentList = () => {
-    const groupedEquipment = outOfSyncEquipment.reduce((acc, item) => {
+  const renderEquipmentList = (items: EquipmentItem[], type: 'added' | 'removed') => {
+    const groupedEquipment = items.reduce((acc, item) => {
       const groupName = item.group?.name || 'Ungrouped';
       if (!acc[groupName]) {
         acc[groupName] = [];
       }
       acc[groupName].push(item);
       return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, EquipmentItem[]>);
 
     return Object.entries(groupedEquipment).map(([groupName, items]) => (
       <div key={groupName} className="mb-4">
@@ -197,7 +226,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         </h3>
         <div className="space-y-2">
           {items.map((item) => (
-            <Card key={item.id} className="p-2">
+            <Card key={item.id} className={`p-2 ${type === 'added' ? 'border-green-500' : 'border-red-500'}`}>
               <div className="flex items-center justify-between">
                 <span className="text-sm">
                   {item.equipment.name}
@@ -217,6 +246,24 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       </div>
     ));
   };
+
+  const getEquipmentIcon = useCallback(() => {
+    if (!event.type.needs_equipment) return null;
+    
+    if (!hasEventEquipment && !hasProjectEquipment) {
+      return <Package className="h-6 w-6 text-muted-foreground" />;
+    }
+    
+    if (!hasEventEquipment) {
+      return <Package className="h-6 w-6 text-muted-foreground" />;
+    }
+    
+    return (
+      <Package 
+        className={`h-6 w-6 ${isSynced ? 'text-green-500' : 'text-blue-500'}`}
+      />
+    );
+  }, [event.type.needs_equipment, hasEventEquipment, hasProjectEquipment, isSynced]);
 
   return (
     <>
@@ -367,11 +414,25 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       <Dialog open={isEquipmentDialogOpen} onOpenChange={setIsEquipmentDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Out of Sync Equipment</DialogTitle>
+            <DialogTitle>Equipment List Differences</DialogTitle>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh]">
-            <div className="space-y-4 p-4">
-              {renderEquipmentList()}
+            <div className="space-y-6 p-4">
+              {equipmentDifference.added.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold text-green-500 mb-4">Added in Project</h2>
+                  {renderEquipmentList(equipmentDifference.added, 'added')}
+                </div>
+              )}
+              {equipmentDifference.removed.length > 0 && (
+                <div>
+                  <h2 className="text-lg font-semibold text-red-500 mb-4">Removed from Project</h2>
+                  {renderEquipmentList(equipmentDifference.removed, 'removed')}
+                </div>
+              )}
+              {equipmentDifference.added.length === 0 && equipmentDifference.removed.length === 0 && (
+                <p className="text-center text-muted-foreground">No differences found in equipment lists</p>
+              )}
             </div>
           </ScrollArea>
         </DialogContent>
