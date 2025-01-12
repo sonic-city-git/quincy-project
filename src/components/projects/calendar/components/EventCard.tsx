@@ -1,4 +1,4 @@
-import { Calendar, Users } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { format } from "date-fns";
 import { CalendarEvent } from "@/types/events";
 
@@ -28,11 +28,6 @@ export function EventCard({ event }: EventCardProps) {
         {event.location && (
           <div className="flex items-center text-muted-foreground">
             <span className="text-sm">{event.location}</span>
-          </div>
-        )}
-        {event.type?.needs_crew && (
-          <div className="flex items-center text-muted-foreground">
-            <Users className="h-6 w-6" />
           </div>
         )}
       </div>
