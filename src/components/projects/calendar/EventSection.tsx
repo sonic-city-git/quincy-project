@@ -231,10 +231,18 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
             
             <div /> {/* Empty space for name column */}
             
-            <div /> {/* Empty space for map pin column */}
+            <div className="flex items-center justify-center">
+              <div className="h-8 w-8 flex items-center justify-center">
+                <MapPin className="h-5 w-5 text-muted-foreground" />
+              </div>
+            </div>
 
             <div className="flex items-center justify-center">
-              {canSync ? getSectionEquipmentIcon() : <div />}
+              {canSync ? (
+                <div className="h-8 w-8 flex items-center justify-center">
+                  {getSectionEquipmentIcon()}
+                </div>
+              ) : <div />}
             </div>
 
             <div className="flex items-center justify-center">
@@ -242,7 +250,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 p-0"
+                  className="h-8 w-8 p-0"
                   onClick={handleSyncCrew}
                   disabled={isSyncing}
                 >
