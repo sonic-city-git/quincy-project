@@ -1,7 +1,9 @@
-import { HelpCircle, CheckCircle, Send, XCircle, Package, Users } from "lucide-react";
+import { Package, Users } from "lucide-react";
 import { EventType } from "@/types/events";
 import { EventStatusManager } from "../EventStatusManager";
 import { CalendarEvent } from "@/types/events";
+import { getStatusIcon } from "@/utils/eventFormatters";
+import { EventSectionGrid } from "./EventSectionGrid";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -18,24 +20,11 @@ export function EventSectionHeader({
   events = [],
   onStatusChange 
 }: EventSectionHeaderProps) {
-  const getStatusIcon = () => {
-    switch (title.toLowerCase()) {
-      case 'confirmed':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'invoice ready':
-        return <Send className="h-5 w-5 text-blue-500" />;
-      case 'cancelled':
-        return <XCircle className="h-5 w-5 text-red-500" />;
-      default: // 'proposed'
-        return <HelpCircle className="h-5 w-5 text-yellow-500" />;
-    }
-  };
-
   const isCancelled = title.toLowerCase() === 'cancelled';
 
   return (
     <div className="border-b border-border pb-2">
-      <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px_40px_40px] gap-2 items-center">
+      <EventSectionGrid>
         <div className="flex items-center gap-2">
           {getStatusIcon()}
           <h3 className="text-lg font-semibold">{title}</h3>
@@ -77,7 +66,7 @@ export function EventSectionHeader({
             />
           )}
         </div>
-      </div>
+      </EventSectionGrid>
     </div>
   );
 }
