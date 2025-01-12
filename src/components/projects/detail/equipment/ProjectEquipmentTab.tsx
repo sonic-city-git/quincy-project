@@ -32,18 +32,16 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
           </div>
 
           <div className="col-span-8 flex flex-col pl-6 h-full overflow-hidden">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <ListCheck className="h-5 w-5 text-muted-foreground" />
-                <h2 className="text-lg font-semibold">Project Equipment</h2>
-              </div>
-              <GroupSelector 
-                projectId={projectId} 
-                selectedGroupId={selectedGroupId}
-                onGroupSelect={setSelectedGroupId}
-              />
+            <div className="flex items-center gap-2 mb-4">
+              <ListCheck className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-lg font-semibold">Project Equipment</h2>
             </div>
-            <div className="flex-1 overflow-auto">
+            <GroupSelector 
+              projectId={projectId} 
+              selectedGroupId={selectedGroupId}
+              onGroupSelect={setSelectedGroupId}
+            />
+            <div className="flex-1 overflow-auto mt-4">
               <ProjectBaseEquipmentList 
                 projectId={projectId} 
                 selectedGroupId={selectedGroupId}
