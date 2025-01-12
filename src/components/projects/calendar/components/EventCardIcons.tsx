@@ -19,27 +19,31 @@ export function EventCardIcons({
 }: EventCardIconsProps) {
   return (
     <>
-      <div>
+      <div className="flex items-center justify-center">
         <MapPin 
-          className={`h-6 w-6 ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
+          className={`h-5 w-5 ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
         />
       </div>
 
-      <div>
+      <div className="flex items-center justify-center">
+        <div className="w-5" /> {/* Empty space column */}
+      </div>
+
+      <div className="flex items-center justify-center">
         {event.type.needs_equipment && (
           <EquipmentIcon
             isSynced={isSynced}
             isEditingDisabled={isEditingDisabled}
             onViewEquipment={onViewEquipment}
             onSyncEquipment={onSyncEquipment}
-            className="h-6 w-6"
+            className="h-5 w-5"
           />
         )}
       </div>
 
-      <div>
+      <div className="flex items-center justify-center">
         {event.type.needs_crew && (
-          <Users className={`h-6 w-6 ${isEditingDisabled ? 'text-green-500' : 'text-muted-foreground'}`} />
+          <Users className={`h-5 w-5 ${isEditingDisabled ? 'text-green-500' : 'text-muted-foreground'}`} />
         )}
       </div>
     </>
