@@ -17,7 +17,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
       <Card className="p-6">
         <div className="grid grid-cols-12 gap-6">
           {/* Available Equipment Column - 1/3 width */}
-          <div className="col-span-4 border-r border-zinc-800 pr-6">
+          <div className="col-span-4 flex flex-col h-[700px]">
             <div className="flex items-center gap-2 mb-4">
               <Box className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold">Available Equipment</h2>
@@ -26,29 +26,25 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
               <EquipmentSelector 
                 onSelect={() => {}} 
                 projectId={projectId}
-                selectedGroupId={selectedGroupId}
               />
             </div>
           </div>
 
           {/* Project Equipment List Column - 2/3 width */}
-          <div className="col-span-8">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <ListCheck className="h-5 w-5 text-muted-foreground" />
-                <h2 className="text-lg font-semibold">Project Equipment</h2>
-              </div>
-              <GroupSelector 
-                projectId={projectId} 
-                selectedGroupId={selectedGroupId}
-                onGroupSelect={setSelectedGroupId}
-              />
+          <div className="col-span-8 flex flex-col h-[700px]">
+            <div className="flex items-center gap-2 mb-4">
+              <ListCheck className="h-5 w-5 text-muted-foreground" />
+              <h2 className="text-lg font-semibold">Project Equipment</h2>
             </div>
-            <div className="flex-1 overflow-hidden">
+            <GroupSelector 
+              projectId={projectId} 
+              selectedGroupId={selectedGroupId}
+              onGroupSelect={setSelectedGroupId}
+            />
+            <div className="flex-1 overflow-hidden mt-4">
               <ProjectBaseEquipmentList 
                 projectId={projectId} 
                 selectedGroupId={selectedGroupId}
-                onGroupSelect={setSelectedGroupId}
               />
             </div>
           </div>

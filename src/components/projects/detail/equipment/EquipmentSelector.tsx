@@ -1,196 +1,243 @@
-import { EquipmentListHeader } from "@/components/equipment/EquipmentListHeader";
-import { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useEquipmentFilters } from "@/components/equipment/filters/useEquipmentFilters";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronRight } from "lucide-react";
-import { 
-  Collapsible, 
-  CollapsibleContent, 
-  CollapsibleTrigger 
-} from "@/components/ui/collapsible";
+import { useEquipment } from "@/hooks/useEquipment";
+import { Equipment } from "@/integrations/supabase/types/equipment";
+import { Search, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useFolders } from "@/hooks/useFolders";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 
 interface EquipmentSelectorProps {
-  onSelect: (equipmentId: string) => void;
+  onSelect: (equipment: Equipment) => void;
+  className?: string;
   projectId: string;
-  selectedGroupId: string | null;
 }
 
-interface Folder {
-  id: string;
-  name: string;
-  parent_id: string | null;
+interface FolderStructure {
+  [key: string]: {
+    name: string;
+    equipment: Equipment[];
+    subfolders: {
+      [key: string]: {
+        name: string;
+        equipment: Equipment[];
+      }
+    }
+  }
 }
 
-const FOLDER_ORDER = [
-  "Mixers",
-  "Microphones",
-  "DI-boxes",
-  "Cables/Split",
-  "WL",
-  "Outboard",
-  "Stands/Clamps",
-  "Misc",
-  "Flightcases",
-  "Consumables",
-  "Kits",
-  "Mindnes"
-];
+export function EquipmentSelector({ onSelect, className, projectId }: EquipmentSelectorProps) {
+  const [search, setSearch] = useState("");
+  const { equipment = [], loading } = useEquipment();
+  const { folders = [] } = useFolders();
+  const [openFolders, setOpenFolders] = useState<string[]>([]);
+  const [openSubfolders, setOpenSubfolders] = useState<string[]>([]);
+  const { addEquipment } = useProjectEquipment(projectId);
 
-const SUBFOLDER_ORDER: Record<string, string[]> = {
-  "Mixers": ["Mixrack", "Surface", "Expansion", "Small format"],
-  "Microphones": ["Dynamic", "Condenser", "Ribbon", "Shotgun", "WL capsule", "Special/Misc"],
-  "DI-boxes": ["Active", "Passive", "Special"],
-  "Cables/Split": ["CAT", "XLR", "LK37/SB", "Jack", "Coax", "Fibre", "Schuko"],
-  "WL": ["MIC", "IEM", "Antenna"]
-};
+  useEffect(() => {
+    if (search) {
+      // Get all folder IDs that contain matching equipment
+      const relevantFolders = new Set<string>();
+      equipment.forEach(item => {
+        const searchLower = search.toLowerCase();
+        const matches = item.name?.toLowerCase().includes(searchLower) ||
+                       (item.code && item.code.toLowerCase().includes(searchLower));
+        
+        if (matches && item.folder_id) {
+          // Add the direct folder
+          relevantFolders.add(item.folder_id);
+          
+          // Find and add parent folder if it exists
+          const parentFolder = folders.find(f => {
+            const subfolder = folders.find(sf => sf.id === item.folder_id);
+            return subfolder?.parent_id === f.id;
+          });
+          if (parentFolder) {
+            relevantFolders.add(parentFolder.id);
+          }
+        }
+      });
 
-export function EquipmentSelector({ onSelect, projectId, selectedGroupId }: EquipmentSelectorProps) {
-  const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const {
-    searchQuery,
-    setSearchQuery,
-    selectedFolders,
-    handleFolderToggle,
-    clearFilters,
-    filterEquipment
-  } = useEquipmentFilters();
+      setOpenFolders(Array.from(relevantFolders));
+      setOpenSubfolders(Array.from(relevantFolders));
+    } else {
+      // Clear open folders when search is empty
+      setOpenFolders([]);
+      setOpenSubfolders([]);
+    }
+  }, [search, equipment, folders]);
 
-  const { data: equipment = [] } = useQuery({
-    queryKey: ['available-equipment', searchQuery, selectedFolders],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('equipment')
-        .select(`
-          *,
-          equipment_folders (
-            id,
-            name,
-            parent_id
-          )
-        `)
-        .order('name');
-
-      if (error) throw error;
-      return data || [];
-    },
+  // Filter equipment based on search
+  const filteredEquipment = equipment.filter(item => {
+    const searchLower = search.toLowerCase();
+    return (
+      item.name?.toLowerCase().includes(searchLower) ||
+      (item.code && item.code.toLowerCase().includes(searchLower))
+    );
   });
 
-  const { data: folders = [] } = useQuery({
-    queryKey: ['equipment-folders'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('equipment_folders')
-        .select('*')
-        .order('name');
+  const organizeEquipment = () => {
+    const structure: FolderStructure = {};
 
-      if (error) throw error;
-      return data || [];
-    },
-  });
-
-  const mainFolders = useMemo(() => 
-    folders
-      .filter(folder => !folder.parent_id)
-      .sort((a, b) => {
-        const indexA = FOLDER_ORDER.indexOf(a.name);
-        const indexB = FOLDER_ORDER.indexOf(b.name);
-        return indexA - indexB;
-      }), [folders]);
-
-  const getSubfolders = (parentId: string) => {
-    const parentFolder = folders.find(f => f.id === parentId);
-    if (!parentFolder) return [];
-
-    const subfolders = folders.filter(folder => folder.parent_id === parentId);
-    const orderArray = SUBFOLDER_ORDER[parentFolder.name] || [];
-
-    return subfolders.sort((a, b) => {
-      const indexA = orderArray.indexOf(a.name);
-      const indexB = orderArray.indexOf(b.name);
-      return indexA - indexB;
+    // Get main folders
+    const mainFolders = folders.filter(f => !f.parent_id);
+    mainFolders.forEach(folder => {
+      structure[folder.id] = {
+        name: folder.name,
+        equipment: [],
+        subfolders: {}
+      };
     });
+
+    // Get subfolders and initialize them
+    folders.filter(f => f.parent_id).forEach(subfolder => {
+      if (subfolder.parent_id && structure[subfolder.parent_id]) {
+        structure[subfolder.parent_id].subfolders[subfolder.id] = {
+          name: subfolder.name,
+          equipment: []
+        };
+      }
+    });
+
+    // Organize filtered equipment into folders
+    filteredEquipment.forEach(item => {
+      if (item.folder_id) {
+        // Check if it belongs to a subfolder
+        const parentFolder = folders.find(f => {
+          const subfolder = folders.find(sf => sf.id === item.folder_id);
+          return subfolder?.parent_id === f.id;
+        });
+
+        if (parentFolder && structure[parentFolder.id]?.subfolders[item.folder_id]) {
+          // Add to subfolder
+          structure[parentFolder.id].subfolders[item.folder_id].equipment.push(item);
+        } else if (structure[item.folder_id]) {
+          // Add to main folder
+          structure[item.folder_id].equipment.push(item);
+        }
+      }
+    });
+
+    return structure;
   };
 
-  const filteredEquipment = useMemo(() => filterEquipment(equipment), [equipment, searchQuery, selectedFolders]);
+  // Calculate folder structure
+  const folderStructure = organizeEquipment();
 
-  const getFolderEquipment = (folderId: string) => {
-    return filteredEquipment.filter(item => item.folder_id === folderId);
+  const toggleFolder = (folderId: string) => {
+    setOpenFolders(prev => 
+      prev.includes(folderId) 
+        ? prev.filter(id => id !== folderId)
+        : [...prev, folderId]
+    );
   };
 
-  const renderFolderContent = (folder: Folder) => {
-    const subfolders = getSubfolders(folder.id);
-    const folderEquipment = getFolderEquipment(folder.id);
-    const hasMatchingEquipment = folderEquipment.length > 0;
-    const hasMatchingSubfolders = subfolders.some(subfolder => 
-      getFolderEquipment(subfolder.id).length > 0
+  const toggleSubfolder = (subfolderId: string) => {
+    setOpenSubfolders(prev => 
+      prev.includes(subfolderId)
+        ? prev.filter(id => id !== subfolderId)
+        : [...prev, subfolderId]
+    );
+  };
+
+  const handleDoubleClick = async (item: Equipment) => {
+    await addEquipment(item);
+  };
+
+  const renderEquipmentItem = (item: Equipment) => (
+    <Button
+      key={item.id}
+      variant="ghost"
+      className="w-full justify-start h-[28px] py-0.5"
+      onClick={() => onSelect(item)}
+      onDoubleClick={() => handleDoubleClick(item)}
+    >
+      <div className="text-left">
+        <div className="text-sm font-medium leading-none">{item.name}</div>
+      </div>
+    </Button>
+  );
+
+  const hasContent = (folderId: string) => {
+    const folder = folderStructure[folderId];
+    if (!folder) return false;
+
+    const hasMatchingEquipment = folder.equipment.length > 0;
+    const hasMatchingSubfolders = Object.values(folder.subfolders).some(
+      subfolder => subfolder.equipment.length > 0
     );
 
-    if (!searchQuery || hasMatchingEquipment || hasMatchingSubfolders) {
-      return (
-        <div key={folder.id} className="space-y-1">
-          <Collapsible defaultOpen={!!searchQuery && (hasMatchingEquipment || hasMatchingSubfolders)}>
-            <CollapsibleTrigger className="flex items-center w-full hover:bg-accent/50 px-2 h-[28px] text-sm font-medium rounded-md">
-              <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 ui-open:rotate-90" />
-              <span className="ml-1">{folder.name}</span>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pl-4 space-y-1">
-              {subfolders.map(subfolder => {
-                const subfolderEquipment = getFolderEquipment(subfolder.id);
-                if (searchQuery && subfolderEquipment.length === 0) return null;
-
-                return (
-                  <Collapsible key={subfolder.id} defaultOpen={!!searchQuery && subfolderEquipment.length > 0}>
-                    <CollapsibleTrigger className="flex items-center w-full hover:bg-accent/50 px-2 h-[28px] text-sm font-medium rounded-md">
-                      <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 ui-open:rotate-90" />
-                      <span className="ml-1">{subfolder.name}</span>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="pl-4 space-y-1">
-                      {subfolderEquipment.map(item => (
-                        <button
-                          key={item.id}
-                          onClick={() => onSelect(item.id)}
-                          className="w-full text-left px-4 h-[28px] text-sm font-medium hover:bg-accent rounded-md transition-colors"
-                        >
-                          {item.name}
-                        </button>
-                      ))}
-                    </CollapsibleContent>
-                  </Collapsible>
-                );
-              })}
-              {folderEquipment.map(item => (
-                <button
-                  key={item.id}
-                  onClick={() => onSelect(item.id)}
-                  className="w-full text-left px-4 h-[28px] text-sm font-medium hover:bg-accent rounded-md transition-colors"
-                >
-                  {item.name}
-                </button>
-              ))}
-            </CollapsibleContent>
-          </Collapsible>
-        </div>
-      );
-    }
-    return null;
+    return hasMatchingEquipment || hasMatchingSubfolders;
   };
 
   return (
-    <div className="space-y-4">
-      <EquipmentListHeader
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        onClearFilters={clearFilters}
-        selectedItem={selectedItem}
-        onEquipmentDeleted={() => setSelectedItem(null)}
-        selectedFolders={selectedFolders}
-        onFolderToggle={handleFolderToggle}
-      />
-      <ScrollArea className="h-[calc(100vh-300px)]">
-        <div className="space-y-1">
-          {mainFolders.map(folder => renderFolderContent(folder))}
+    <div className={cn("flex flex-col h-full", className)}>
+      <div className="relative mb-4">
+        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+        <Input
+          placeholder="Search equipment..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="pl-8"
+        />
+      </div>
+
+      <ScrollArea className="flex-1">
+        <div className="space-y-2 pr-4">
+          {loading ? (
+            <div className="text-sm text-muted-foreground">Loading equipment...</div>
+          ) : Object.keys(folderStructure).length === 0 ? (
+            <div className="text-sm text-muted-foreground">No equipment found</div>
+          ) : (
+            Object.entries(folderStructure)
+              .filter(([folderId]) => hasContent(folderId))
+              .map(([folderId, folder]) => (
+                <Collapsible
+                  key={folderId}
+                  open={openFolders.includes(folderId)}
+                  onOpenChange={() => toggleFolder(folderId)}
+                >
+                  <CollapsibleTrigger className="flex items-center w-full text-left py-2">
+                    <ChevronRight className={cn(
+                      "h-4 w-4 shrink-0 transition-transform duration-200",
+                      openFolders.includes(folderId) && "rotate-90"
+                    )} />
+                    <span className="font-semibold text-sm ml-2">{folder.name}</span>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pl-6 space-y-1">
+                    {/* Main folder equipment */}
+                    {folder.equipment.map(renderEquipmentItem)}
+
+                    {/* Subfolders */}
+                    {Object.entries(folder.subfolders)
+                      .filter(([, subfolder]) => subfolder.equipment.length > 0)
+                      .map(([subId, sub]) => (
+                        <Collapsible
+                          key={subId}
+                          open={openSubfolders.includes(subId)}
+                          onOpenChange={() => toggleSubfolder(subId)}
+                        >
+                          <CollapsibleTrigger className="flex items-center w-full text-left py-1">
+                            <ChevronRight className={cn(
+                              "h-4 w-4 shrink-0 transition-transform duration-200",
+                              openSubfolders.includes(subId) && "rotate-90"
+                            )} />
+                            <span className="font-medium text-sm ml-2 text-muted-foreground">
+                              {sub.name}
+                            </span>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent className="pl-6 space-y-1">
+                            {sub.equipment.map(renderEquipmentItem)}
+                          </CollapsibleContent>
+                        </Collapsible>
+                      ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              ))
+          )}
         </div>
       </ScrollArea>
     </div>
