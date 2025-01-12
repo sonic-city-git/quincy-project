@@ -56,7 +56,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         </div>
 
         <div className="flex items-center">
-          <span className={`text-sm ${EVENT_COLORS[event.type.name]} bg-opacity-10`}>
+          <span className={`text-sm px-2 py-1 rounded-md ${EVENT_COLORS[event.type.name]}`}>
             {event.type.name}
           </span>
         </div>
