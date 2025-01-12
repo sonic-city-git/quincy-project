@@ -19,7 +19,7 @@ export function EventCardIcons({
 }: EventCardIconsProps) {
   return (
     <>
-      <div>
+      <div className="flex justify-start">
         <MapPin 
           className={`h-6 w-6 ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
         />
