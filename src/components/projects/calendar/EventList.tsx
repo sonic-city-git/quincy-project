@@ -28,7 +28,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
   return (
     <div className="space-y-8">
       {proposed.length > 0 && (
-        <Card className="rounded-lg bg-zinc-800/45 p-6">
+        <Card className="rounded-lg bg-violet-500/5 p-6">
           <EventSection
             title="Proposed"
             events={proposed}
@@ -38,7 +38,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
         </Card>
       )}
       {confirmed.length > 0 && (
-        <Card className="rounded-lg bg-zinc-800/45 p-6">
+        <Card className="rounded-lg bg-blue-500/5 p-6">
           <EventSection
             title="Confirmed"
             events={confirmed}
@@ -48,7 +48,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
         </Card>
       )}
       {ready.length > 0 && (
-        <Card className="rounded-lg bg-zinc-800/45 p-6">
+        <Card className="rounded-lg bg-green-500/5 p-6">
           <EventSection
             title="Invoice Ready"
             events={ready}
@@ -58,7 +58,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
         </Card>
       )}
       {cancelled.length > 0 && (
-        <Card className="rounded-lg bg-zinc-800/45 p-6">
+        <Card className="rounded-lg bg-red-500/5 p-6">
           <EventSection
             title="Cancelled"
             events={cancelled}
@@ -69,7 +69,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
       )}
       {doneAndDusted.length > 0 && (
         <Collapsible defaultOpen={false}>
-          <Card className="rounded-lg bg-zinc-800/45 p-6">
+          <Card className="rounded-lg bg-gray-500/5 p-6">
             <CollapsibleTrigger className="flex items-center gap-2 w-full">
               <div className="flex items-center gap-2">
                 <Brush className="h-5 w-5 text-gray-400" />
