@@ -21,6 +21,9 @@ interface EventSectionProps {
 }
 
 export function EventSection({ status, events, onStatusChange, onEdit }: EventSectionProps) {
+  // If there are no events in this section, don't render anything
+  if (events.length === 0) return null;
+
   const [isOpen, setIsOpen] = useState(status !== 'done and dusted');
   const [isSyncing, setIsSyncing] = useState(false);
   const [sectionSyncStatus, setSectionSyncStatus] = useState<'synced' | 'out-of-sync' | 'no-equipment'>('no-equipment');
