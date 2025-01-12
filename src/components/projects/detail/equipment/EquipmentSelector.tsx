@@ -152,7 +152,7 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
     <Button
       key={item.id}
       variant="ghost"
-      className="w-full justify-start h-[28px] py-0.5"
+      className="w-full justify-start h-[26px] py-0"
       onClick={() => onSelect(item)}
       onDoubleClick={() => handleDoubleClick(item)}
     >
@@ -208,7 +208,7 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
                     )} />
                     <span className="font-semibold text-sm ml-1">{folder.name}</span>
                   </CollapsibleTrigger>
-                  <CollapsibleContent className="pl-4 space-y-0.5">
+                  <CollapsibleContent className="pl-3 space-y-0.5">
                     {folder.equipment.map(renderEquipmentItem)}
 
                     {Object.entries(folder.subfolders)
@@ -228,7 +228,7 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
                               {sub.name}
                             </span>
                           </CollapsibleTrigger>
-                          <CollapsibleContent className="pl-4 space-y-0.5">
+                          <CollapsibleContent className="pl-3 space-y-0.5">
                             {sub.equipment.map(renderEquipmentItem)}
                           </CollapsibleContent>
                         </Collapsible>
