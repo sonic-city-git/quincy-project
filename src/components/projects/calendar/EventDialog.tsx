@@ -18,7 +18,7 @@ interface EventDialogProps {
   date?: Date | null;
   event?: CalendarEvent | null;
   eventTypes: EventType[];
-  onAddEvent?: (date: Date, name: string, eventType: EventType) => void;
+  onAddEvent?: (date: Date, name: string, eventType: EventType, status: CalendarEvent['status']) => void;
   onUpdateEvent?: (event: CalendarEvent) => void;
   onDeleteEvent?: (event: CalendarEvent) => void;
   addEventCallback?: ((date: Date, name: string, eventType: EventType) => void) | null;
@@ -82,7 +82,7 @@ export function EventDialog({
       if (addEventCallback) {
         await addEventCallback(date, name, eventType);
       } else {
-        await onAddEvent(date, name, eventType);
+        await onAddEvent(date, name, eventType, status);
       }
     }
 

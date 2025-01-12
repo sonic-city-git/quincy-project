@@ -6,6 +6,7 @@ import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { useCallback } from "react";
 import { CalendarView } from "./CalendarView";
 import { Card } from "@/components/ui/card";
+import { CalendarEvent } from "@/types/events";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -47,9 +48,9 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     }
   }, [findEventOnDate, openEditDialog, openAddDialog]);
 
-  const handleAddMultipleEvents = async (dates: Date[], name: string, eventType: any) => {
+  const handleAddMultipleEvents = async (dates: Date[], name: string, eventType: any, status: CalendarEvent['status']) => {
     for (const date of dates) {
-      await addEvent(date, name, eventType);
+      await addEvent(date, name, eventType, status);
     }
   };
 

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { EventType } from "@/types/events";
+import { EventType, CalendarEvent } from "@/types/events";
 import { useState } from "react";
 
 const ALLOWED_EVENT_TYPES = ['Preprod', 'INT Storage', 'EXT Storage', 'Hours'];
@@ -12,7 +12,7 @@ interface MultiEventDialogProps {
   onClose: () => void;
   dates: Date[];
   eventTypes: EventType[];
-  onAddEvents: (name: string, eventType: EventType) => void;
+  onAddEvents: (name: string, eventType: EventType, status: CalendarEvent['status']) => void;
 }
 
 export function MultiEventDialog({
@@ -24,6 +24,7 @@ export function MultiEventDialog({
 }: MultiEventDialogProps) {
   const [name, setName] = useState("");
   const [selectedEventTypeId, setSelectedEventTypeId] = useState<string>("");
+  const [status, setStatus] = useState<CalendarEvent['status']>('proposed');
 
   const filteredEventTypes = eventTypes.filter(type => 
     ALLOWED_EVENT_TYPES.includes(type.name)
@@ -33,7 +34,7 @@ export function MultiEventDialog({
     e.preventDefault();
     const eventType = eventTypes.find(type => type.id === selectedEventTypeId);
     if (eventType) {
-      onAddEvents(name, eventType);
+      onAddEvents(name, eventType, status);
       onClose();
     }
   };
@@ -75,6 +76,26 @@ export function MultiEventDialog({
                       {type.name}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="status" className="text-sm font-medium">
+                Status
+              </label>
+              <Select
+                value={status}
+                onValueChange={(value) => setStatus(value as CalendarEvent['status'])}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="proposed">Proposed</SelectItem>
+                  <SelectItem value="confirmed">Confirmed</SelectItem>
+                  <SelectItem value="invoice ready">Invoice Ready</SelectItem>
+                  <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
             </div>
