@@ -79,15 +79,14 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
             </CollapsibleTrigger>
             <CollapsibleContent className="pt-6 space-y-4">
               {doneAndDusted.map((event) => (
-                <Card key={event.id} className="p-4 bg-zinc-800/45">
-                  <EventSection
-                    title="Done and Dusted"
-                    events={[event]}
-                    onStatusChange={onStatusChange}
-                    hideEdit
-                    hideHeader
-                  />
-                </Card>
+                <EventSection
+                  key={event.id}
+                  title="Done and Dusted"
+                  events={[event]}
+                  onStatusChange={onStatusChange}
+                  hideEdit
+                  hideHeader
+                />
               ))}
             </CollapsibleContent>
           </Card>
