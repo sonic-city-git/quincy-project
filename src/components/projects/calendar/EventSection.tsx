@@ -242,6 +242,46 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     } finally {
       setIsSyncing(false);
     }
+  };
+
+  const renderEquipmentIcon = () => {
+    if (sectionSyncStatus === 'synced') {
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div>
+                {getSectionEquipmentIcon()}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              All equipment lists are synced
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    }
+
+    return (
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 p-0"
+            disabled={isSyncing}
+          >
+            {getSectionEquipmentIcon()}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start">
+          <DropdownMenuItem onClick={handleSyncEquipment}>
+            Sync all {status} from project equipment
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    );
+  };
 
   const content = (
     <div className="space-y-2">
