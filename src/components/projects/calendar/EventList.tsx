@@ -74,16 +74,14 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
         queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] })
       ]);
 
-      toast({
-        title: "Event Updated",
-        description: "The event has been successfully updated",
+      toast("Event Updated", {
+        description: "The event has been successfully updated"
       });
     } catch (error) {
       console.error('Error updating event:', error);
-      toast({
-        title: "Error",
+      toast("Error", {
         description: "Failed to update event",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
@@ -127,18 +125,16 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
         queryClient.invalidateQueries({ queryKey: ['project-event-roles', event.id] })
       ]);
 
-      toast({
-        title: "Event Deleted",
-        description: "The event has been successfully deleted",
+      toast("Event Deleted", {
+        description: "The event has been successfully deleted"
       });
 
       closeEditDialog();
     } catch (error) {
       console.error('Error deleting event:', error);
-      toast({
-        title: "Error",
+      toast("Error", {
         description: "Failed to delete event",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
