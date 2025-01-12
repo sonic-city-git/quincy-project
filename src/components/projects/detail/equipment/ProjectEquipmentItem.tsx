@@ -33,7 +33,7 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
     setIsUpdating(true);
 
     // Optimistically update the UI
-    queryClient.setQueryData(['project-equipment', item.project_id], (oldData: ProjectEquipment[] | undefined) => {
+    queryClient.setQueryData(['project-equipment', item.id], (oldData: ProjectEquipment[] | undefined) => {
       if (!oldData) return [{ ...item, quantity: newQuantity }];
       return oldData.map(equipment => 
         equipment.id === item.id ? { ...equipment, quantity: newQuantity } : equipment
@@ -50,7 +50,7 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
       
       // Invalidate and refetch to ensure consistency
       await queryClient.invalidateQueries({ 
-        queryKey: ['project-equipment', item.project_id] 
+        queryKey: ['project-equipment'] 
       });
       
       toast.success('Quantity updated');
@@ -59,7 +59,7 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
       toast.error('Failed to update quantity');
       
       // Revert optimistic update on error
-      queryClient.setQueryData(['project-equipment', item.project_id], (oldData: ProjectEquipment[] | undefined) => {
+      queryClient.setQueryData(['project-equipment', item.id], (oldData: ProjectEquipment[] | undefined) => {
         if (!oldData) return [item];
         return oldData.map(equipment => 
           equipment.id === item.id ? item : equipment
