@@ -85,6 +85,7 @@ export function useCrew(folderId?: string) {
               updated_at: member.updated_at,
               folder_id: member.folder_id,
               folderName: member.crew_folders?.name || null,
+              avatar_url: member.avatar_url || null,
               roles: roleData?.map(role => role.role_id) || []
             };
           })

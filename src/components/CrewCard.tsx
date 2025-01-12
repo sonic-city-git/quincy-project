@@ -9,10 +9,10 @@ interface CrewCardProps {
   phone: string;
   folderName?: string;
   roles?: CrewRole[];
-  avatarUrl?: string;
+  avatar_url?: string;
 }
 
-export function CrewCard({ name, email, phone, folderName, roles = [], avatarUrl }: CrewCardProps) {
+export function CrewCard({ name, email, phone, folderName, roles = [], avatar_url }: CrewCardProps) {
   // Get initials for avatar fallback
   const initials = name
     .split(' ')
@@ -26,8 +26,8 @@ export function CrewCard({ name, email, phone, folderName, roles = [], avatarUrl
         <CardTitle className="flex justify-between items-center">
           <div className="flex items-center gap-3">
             <Avatar>
-              {avatarUrl ? (
-                <AvatarImage src={avatarUrl} alt={name} />
+              {avatar_url ? (
+                <AvatarImage src={avatar_url} alt={name} />
               ) : (
                 email && <AvatarImage src={`https://www.gravatar.com/avatar/${Buffer.from(email).toString('hex')}?d=404`} />
               )}

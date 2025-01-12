@@ -8,5 +8,5 @@ export interface CrewMember {
   folder_id: string | null;
   folderName?: string | null;
   roles?: string[];
-  avatarUrl?: string;
+  avatar_url?: string;
 }
