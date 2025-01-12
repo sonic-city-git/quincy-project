@@ -81,9 +81,14 @@ export function ProjectBaseEquipmentList({
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
-    const target = e.currentTarget as HTMLElement;
-    target.classList.remove('bg-accent/20', 'border-accent');
+    const relatedTarget = e.relatedTarget as Node;
+    const currentTarget = e.currentTarget as HTMLElement;
+    
+    // Only remove highlight if we're actually leaving the drop target
+    // and not just entering a child element
+    if (!currentTarget.contains(relatedTarget)) {
+      currentTarget.classList.remove('bg-accent/20', 'border-accent');
+    }
   };
 
   const ungroupedEquipment = equipment?.filter(item => !item.group_id) || [];
@@ -144,41 +149,39 @@ export function ProjectBaseEquipmentList({
           );
         })}
         
-        {ungroupedEquipment.length > 0 && (
-          <div 
-            className={cn(
-              "rounded-lg border border-border bg-background/50 transition-all duration-200",
-              selectedGroupId === null && "ring-2 ring-primary/20"
-            )}
-            onDragOver={handleDragOver}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, null)}
-          >
-            <div className="bg-inherit rounded-t-lg">
-              <h3 
-                className={cn(
-                  "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
-                  selectedGroupId === null 
-                    ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                    : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
-                )}
-                onClick={() => onGroupSelect(null)}
-              >
-                Ungrouped Equipment
-              </h3>
-            </div>
-            <div className="p-3 space-y-2">
-              {ungroupedEquipment.map((item) => (
-                <ProjectEquipmentItem
-                  key={item.id}
-                  item={item}
-                  onRemove={() => removeEquipment(item.id)}
-                />
-              ))}
-            </div>
+        <div 
+          className={cn(
+            "rounded-lg border border-border bg-background/50 transition-all duration-200",
+            selectedGroupId === null && "ring-2 ring-primary/20"
+          )}
+          onDragOver={handleDragOver}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDrop={(e) => handleDrop(e, null)}
+        >
+          <div className="bg-inherit rounded-t-lg">
+            <h3 
+              className={cn(
+                "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
+                selectedGroupId === null 
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                  : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
+              )}
+              onClick={() => onGroupSelect(null)}
+            >
+              Ungrouped Equipment
+            </h3>
           </div>
-        )}
+          <div className="p-3 space-y-2">
+            {ungroupedEquipment.map((item) => (
+              <ProjectEquipmentItem
+                key={item.id}
+                item={item}
+                onRemove={() => removeEquipment(item.id)}
+              />
+            ))}
+          </div>
+        </div>
       </div>
     </ScrollArea>
   );
