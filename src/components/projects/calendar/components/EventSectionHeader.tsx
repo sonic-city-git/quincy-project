@@ -29,12 +29,14 @@ export function EventSectionHeader({
           <h3 className="text-lg font-semibold">{title}</h3>
         </div>
         
-        {/* Empty space for location icon column */}
+        {/* Location icon column */}
         <div className="col-span-1" />
         
-        {/* Icons column alignment */}
+        {/* Equipment icon column */}
         <div className="col-span-1" />
-        <div className="flex items-center justify-center">
+        
+        {/* Crew icon column */}
+        <div className="col-span-1">
           {eventType?.needs_crew && (
             <Users className="h-6 w-6 text-muted-foreground" />
           )}
@@ -43,8 +45,8 @@ export function EventSectionHeader({
         {/* Empty space for revenue */}
         <div className="col-span-1" />
 
-        {/* Status manager in second to last column */}
-        <div className="flex justify-end">
+        {/* Status manager column */}
+        <div className="col-span-2 flex justify-end">
           {onStatusChange && (
             <EventStatusManager
               status={title.toLowerCase()}
