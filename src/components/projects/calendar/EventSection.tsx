@@ -34,7 +34,9 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
   const sectionIcon = isDoneAndDusted ? (
     <Brush className="h-6 w-6 text-gray-400" />
   ) : (
-    getStatusIcon(status)
+    <div className="h-6 w-6 flex items-center justify-center">
+      {getStatusIcon(status)}
+    </div>
   );
 
   const getSectionEquipmentIcon = () => {
