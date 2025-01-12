@@ -102,11 +102,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       if (fetchError) throw fetchError;
 
       if (projectEquipment && projectEquipment.length > 0) {
-        // Create a Map to deduplicate equipment by equipment_id
         const uniqueEquipment = new Map();
         
         projectEquipment.forEach(item => {
-          // If equipment already exists, update quantity
           if (uniqueEquipment.has(item.equipment_id)) {
             const existing = uniqueEquipment.get(item.equipment_id);
             existing.quantity += item.quantity;
@@ -125,7 +123,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           is_synced: true
         }));
 
-        // First, delete existing equipment for this event
         const { error: deleteError } = await supabase
           .from('project_event_equipment')
           .delete()
@@ -133,7 +130,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
         if (deleteError) throw deleteError;
 
-        // Then insert the new equipment
         const { error: insertError } = await supabase
           .from('project_event_equipment')
           .insert(eventEquipment);
@@ -232,7 +228,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   };
 
   const handleEditClick = () => {
-    console.log('Edit clicked for event:', event);
+    console.log('Handling edit click for event:', event);
     if (onEdit) {
       onEdit(event);
     }
