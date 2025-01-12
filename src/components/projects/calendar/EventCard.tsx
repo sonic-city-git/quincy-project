@@ -229,7 +229,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
   const handleEditClick = () => {
     if (onEdit && !isEditingDisabled(event.status)) {
-      console.log('Handling edit click for event:', event);
       onEdit(event);
     }
   };
