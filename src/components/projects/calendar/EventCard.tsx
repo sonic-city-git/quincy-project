@@ -1,6 +1,6 @@
 import { CalendarEvent } from "@/types/events";
 import { Card } from "@/components/ui/card";
-import { Calendar, Edit, MapPin } from "lucide-react";
+import { Calendar, Edit, MapPin, Package } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,13 +50,16 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             </div>
           )}
         </div>
-        <div>
+        <div className="flex items-center gap-2">
           <span 
             className="text-sm px-3 py-1 rounded-md inline-block"
             style={getColorStyles(event.type.color)}
           >
             {event.type.name}
           </span>
+          {event.type.needs_equipment && (
+            <Package className="h-4 w-4 text-muted-foreground" />
+          )}
         </div>
         <div className="text-sm text-muted-foreground font-medium">
           {formatRevenue(event.revenue)}
