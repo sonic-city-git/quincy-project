@@ -6,7 +6,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Brush, ChevronDown, Package, Users } from "lucide-react";
+import { Brush, ChevronDown, Package, Users, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import { EventStatusManager } from "./EventStatusManager";
 import { Button } from "@/components/ui/button";
