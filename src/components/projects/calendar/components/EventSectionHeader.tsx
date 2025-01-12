@@ -34,7 +34,7 @@ export function EventSectionHeader({
 
   return (
     <div className="p-3">
-      <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px] gap-2 items-center">
+      <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px_80px] gap-2 items-center">
         <div className="flex items-center gap-2">
           {sectionIcon}
           <h3 className="text-lg font-semibold whitespace-nowrap">
@@ -74,6 +74,12 @@ export function EventSectionHeader({
           )}
         </div>
 
+        <div /> {/* Empty space for event type column */}
+
+        <div className="flex items-center justify-end text-sm">
+          {formatPrice(totalPrice)}
+        </div>
+
         <div className="flex items-center justify-end">
           <EventStatusManager
             status={status}
@@ -81,10 +87,6 @@ export function EventSectionHeader({
             onStatusChange={onStatusChange}
             isCancelled={isCancelled}
           />
-        </div>
-
-        <div className="flex items-center justify-end text-sm">
-          {formatPrice(totalPrice)}
         </div>
       </div>
     </div>
