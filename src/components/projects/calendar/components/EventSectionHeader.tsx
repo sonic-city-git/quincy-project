@@ -3,6 +3,7 @@ import { CalendarEvent, EventType } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
 import { Package, Users } from "lucide-react";
+import { formatPrice } from "@/utils/priceFormatters";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -20,6 +21,7 @@ export function EventSectionHeader({
   const isCancelled = title.toLowerCase() === 'cancelled';
   const isInvoiceReady = title.toLowerCase() === 'invoice ready';
   const isDoneAndDusted = title.toLowerCase() === 'done and dusted';
+  const totalRevenue = events.reduce((sum, event) => sum + (event.revenue || 0), 0);
 
   // Use a simpler layout for Done and Dusted section
   if (isDoneAndDusted) {
@@ -28,6 +30,9 @@ export function EventSectionHeader({
         <div className="flex items-center justify-between">
           {getStatusIcon(title.toLowerCase() as CalendarEvent['status'])}
           {title}
+          <div className="text-right font-medium text-muted-foreground">
+            {formatPrice(totalRevenue)}
+          </div>
         </div>
       </div>
     );
