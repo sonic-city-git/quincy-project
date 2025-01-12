@@ -22,8 +22,8 @@ export function CalendarView({
 }: CalendarViewProps) {
   return (
     <EventList 
-      events={events} 
-      onStatusChange={() => {}} 
+      events={events}
+      projectId={events[0]?.project_id || ''} 
       onEdit={onEditEvent}
     />
   );
