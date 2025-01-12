@@ -61,15 +61,22 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
   const handleAddGroup = async (name: string, sortOrder: number = 0) => {
     setIsSubmitting(true);
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('project_equipment_groups')
         .insert({
           project_id: projectId,
           name,
           sort_order: sortOrder
-        });
+        })
+        .select()
+        .single();
       
       if (error) throw error;
+      
+      // Select the newly created group
+      if (data) {
+        onGroupSelect(data.id);
+      }
       
       setCustomGroupName("");
       setIsCustomDialogOpen(false);
@@ -139,12 +146,20 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
               placeholder="Enter group name"
               value={customGroupName}
               onChange={(e) => setCustomGroupName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && customGroupName.trim()) {
+                  handleAddGroup(customGroupName);
+                }
+              }}
             />
           </div>
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setIsCustomDialogOpen(false)}
+              onClick={() => {
+                setIsCustomDialogOpen(false);
+                setCustomGroupName("");
+              }}
             >
               Cancel
             </Button>
