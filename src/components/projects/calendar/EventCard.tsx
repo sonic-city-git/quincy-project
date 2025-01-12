@@ -113,6 +113,40 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     }
   };
 
+  const viewOutOfSyncEquipment = async () => {
+    try {
+      const { data: eventEquipment, error } = await supabase
+        .from('project_event_equipment')
+        .select(`
+          *,
+          equipment:equipment_id (
+            name,
+            code
+          )
+        `)
+        .eq('event_id', event.id)
+        .eq('is_synced', false);
+
+      if (error) throw error;
+
+      if (eventEquipment && eventEquipment.length > 0) {
+        const equipmentList = eventEquipment.map(item => 
+          `${item.equipment.name}${item.equipment.code ? ` (${item.equipment.code})` : ''}`
+        ).join('\n');
+        
+        toast.info('Out of sync equipment:', {
+          description: equipmentList,
+          duration: 5000,
+        });
+      } else {
+        toast.info('No out of sync equipment found');
+      }
+    } catch (error) {
+      console.error('Error fetching out of sync equipment:', error);
+      toast.error('Failed to fetch equipment list');
+    }
+  };
+
   const getEquipmentIcon = useCallback(() => {
     if (!event.type.needs_equipment) return null;
     
@@ -164,9 +198,20 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={handleEquipmentOption}>
-                  Assign project equipment list
-                </DropdownMenuItem>
+                {!isSynced && hasEventEquipment ? (
+                  <>
+                    <DropdownMenuItem onClick={viewOutOfSyncEquipment}>
+                      View out of sync equipment list
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleEquipmentOption}>
+                      Sync to project equipment list
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <DropdownMenuItem onClick={handleEquipmentOption}>
+                    Assign project equipment list
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           )}
