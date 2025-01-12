@@ -28,7 +28,7 @@ export function EquipmentIcon({
   onSyncEquipment,
   className
 }: EquipmentIconProps) {
-  const iconClasses = `h-5 w-5 ${isSynced ? 'text-green-500' : 'text-blue-500'} ${className || ''}`;
+  const iconClasses = `h-6 w-6 flex-shrink-0 ${isSynced ? 'text-green-500' : 'text-blue-500'} ${className || ''}`;
 
   // If synced or editing is disabled, just show the icon without any interaction
   if (isSynced || isEditingDisabled) {
@@ -36,7 +36,9 @@ export function EquipmentIcon({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div><Package className={iconClasses} /></div>
+            <div className="flex items-center justify-center">
+              <Package className={iconClasses} />
+            </div>
           </TooltipTrigger>
           <TooltipContent>
             {isSynced ? "Equipment list is synced" : "Equipment list out of sync"}
@@ -50,7 +52,7 @@ export function EquipmentIcon({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div>
+          <div className="flex items-center justify-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
