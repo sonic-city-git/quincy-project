@@ -63,16 +63,12 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
       </Card>
 
       {/* Event List Section */}
-      <Card className="rounded-lg bg-zinc-800/45 p-6">
-        <div className="rounded-lg bg-zinc-800/45 p-6">
-          <EventList 
-            events={events} 
-            isLoading={isLoading}
-            onStatusChange={handleStatusChange}
-            onEdit={handleEditEvent}
-          />
-        </div>
-      </Card>
+      <EventList 
+        events={events} 
+        isLoading={isLoading}
+        onStatusChange={handleStatusChange}
+        onEdit={handleEditEvent}
+      />
     </div>
   );
 }

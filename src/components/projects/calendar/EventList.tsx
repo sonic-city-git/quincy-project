@@ -3,6 +3,7 @@ import { EventSection } from "./EventSection";
 import { EventListEmpty } from "./components/EventListEmpty";
 import { EventListLoading } from "./components/EventListLoading";
 import { groupEventsByStatus } from "./utils/eventGroups";
+import { Card } from "@/components/ui/card";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -24,30 +25,46 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
 
   return (
     <div className="space-y-8">
-      <EventSection
-        title="Proposed"
-        events={proposed}
-        onStatusChange={onStatusChange}
-        onEdit={onEdit}
-      />
-      <EventSection
-        title="Confirmed"
-        events={confirmed}
-        onStatusChange={onStatusChange}
-        onEdit={onEdit}
-      />
-      <EventSection
-        title="Invoice Ready"
-        events={ready}
-        onStatusChange={onStatusChange}
-        onEdit={onEdit}
-      />
-      <EventSection
-        title="Cancelled"
-        events={cancelled}
-        onStatusChange={onStatusChange}
-        onEdit={onEdit}
-      />
+      {proposed.length > 0 && (
+        <Card className="rounded-lg bg-zinc-800/45 p-6">
+          <EventSection
+            title="Proposed"
+            events={proposed}
+            onStatusChange={onStatusChange}
+            onEdit={onEdit}
+          />
+        </Card>
+      )}
+      {confirmed.length > 0 && (
+        <Card className="rounded-lg bg-zinc-800/45 p-6">
+          <EventSection
+            title="Confirmed"
+            events={confirmed}
+            onStatusChange={onStatusChange}
+            onEdit={onEdit}
+          />
+        </Card>
+      )}
+      {ready.length > 0 && (
+        <Card className="rounded-lg bg-zinc-800/45 p-6">
+          <EventSection
+            title="Invoice Ready"
+            events={ready}
+            onStatusChange={onStatusChange}
+            onEdit={onEdit}
+          />
+        </Card>
+      )}
+      {cancelled.length > 0 && (
+        <Card className="rounded-lg bg-zinc-800/45 p-6">
+          <EventSection
+            title="Cancelled"
+            events={cancelled}
+            onStatusChange={onStatusChange}
+            onEdit={onEdit}
+          />
+        </Card>
+      )}
     </div>
   );
 }
