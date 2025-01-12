@@ -241,7 +241,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             onSyncEquipment={handleEquipmentOption}
           />
 
-          <div className="flex items-center">
+          <div className="flex items-center px-2">
             <span 
               className={`text-sm px-2 py-1 rounded-md bg-opacity-75 ${EVENT_COLORS[event.type.name]}`}
             >
