@@ -15,6 +15,7 @@ export interface Project {
   owner?: {
     id: string;
     name: string;
+    avatar_url?: string;
   } | null;
 }
 
