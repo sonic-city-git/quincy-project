@@ -75,7 +75,7 @@ export function EquipmentList() {
             <Separator className="bg-zinc-800" />
             
             <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0">
-              <div className="h-full overflow-auto">
+              <div className="relative h-full overflow-auto">
                 <Table>
                   <EquipmentTableHeader />
                 </Table>
