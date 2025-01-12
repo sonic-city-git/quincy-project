@@ -246,7 +246,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         <div className="grid grid-cols-[100px_minmax(100px,200px)_30px_30px_1fr_40px_40px] gap-0">
           <EventHeader event={event} />
           
-          <div className="flex items-center justify-center -ml-6">
+          <div className="flex items-center justify-center -ml-8">
             {event.type.needs_equipment && (
               <EquipmentIcon
                 isSynced={isSynced}
