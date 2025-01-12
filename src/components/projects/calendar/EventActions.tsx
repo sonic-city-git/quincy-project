@@ -40,7 +40,9 @@ export function EventActions({
               size="icon"
               className="h-6 w-6"
             >
-              {getStatusIcon(event.status, 'h-4 w-4')}
+              <div className="h-4 w-4">
+                {getStatusIcon(event.status)}
+              </div>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -48,28 +50,36 @@ export function EventActions({
               onClick={() => onStatusChange(event, 'proposed')}
               className="flex items-center gap-2"
             >
-              {getStatusIcon('proposed', 'h-4 w-4')}
+              <div className="h-4 w-4">
+                {getStatusIcon('proposed')}
+              </div>
               Proposed
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => onStatusChange(event, 'confirmed')}
               className="flex items-center gap-2"
             >
-              {getStatusIcon('confirmed', 'h-4 w-4')}
+              <div className="h-4 w-4">
+                {getStatusIcon('confirmed')}
+              </div>
               Confirmed
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => onStatusChange(event, 'invoice ready')}
               className="flex items-center gap-2"
             >
-              {getStatusIcon('invoice ready', 'h-4 w-4')}
+              <div className="h-4 w-4">
+                {getStatusIcon('invoice ready')}
+              </div>
               Invoice Ready
             </DropdownMenuItem>
             <DropdownMenuItem 
               onClick={() => onStatusChange(event, 'cancelled')}
               className="flex items-center gap-2"
             >
-              {getStatusIcon('cancelled', 'h-4 w-4')}
+              <div className="h-4 w-4">
+                {getStatusIcon('cancelled')}
+              </div>
               Cancelled
             </DropdownMenuItem>
           </DropdownMenuContent>
