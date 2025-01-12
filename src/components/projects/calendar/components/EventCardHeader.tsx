@@ -9,7 +9,7 @@ interface EventCardHeaderProps {
 export function EventCardHeader({ event }: EventCardHeaderProps) {
   return (
     <>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 justify-start">
         <Calendar className="h-4 w-4 text-muted-foreground" />
         <span className="text-sm text-muted-foreground">
           {format(event.date, 'dd.MM.yy')}

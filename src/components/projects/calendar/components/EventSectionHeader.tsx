@@ -24,7 +24,7 @@ export function EventSectionHeader({
   return (
     <div className="border border-zinc-800 rounded-lg bg-zinc-900/50 backdrop-blur-sm p-3 mb-4">
       <EventSectionHeaderGrid>
-        <div className="col-span-2 flex items-center gap-2">
+        <div className="col-span-2 flex items-center gap-2 justify-start">
           {getStatusIcon(title.toLowerCase() as CalendarEvent['status'])}
           <h3 className="text-lg font-semibold">{title}</h3>
         </div>
