@@ -2,6 +2,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { Project } from "@/types/projects";
 import { formatDisplayDate } from "@/utils/dateFormatters";
 import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface ProjectTableRowProps {
   project: Project;
@@ -28,6 +29,14 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
     };
   };
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase();
+  };
+
   const colorStyles = getColorStyles(project.color);
 
   return (
@@ -47,7 +56,24 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
         </div>
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
-        {project.owner?.name || 'No Owner'}
+        <div className="flex items-center gap-2">
+          {project.owner && (
+            <Avatar className="h-6 w-6">
+              {project.owner.avatar_url ? (
+                <AvatarImage 
+                  src={project.owner.avatar_url} 
+                  alt={project.owner.name} 
+                  className="object-cover"
+                />
+              ) : (
+                <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
+                  {getInitials(project.owner.name)}
+                </AvatarFallback>
+              )}
+            </Avatar>
+          )}
+          {project.owner?.name || 'No Owner'}
+        </div>
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
         {formatDate(project.created_at)}
