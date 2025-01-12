@@ -1,6 +1,6 @@
 import { Package, Users } from "lucide-react";
 import { EventStatusManager } from "../EventStatusManager";
-import { CalendarEvent } from "@/types/events";
+import { CalendarEvent, EventType } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
 
