@@ -267,7 +267,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="h-6 w-6 flex items-center justify-center">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <MapPin 
+                      className={`h-4 w-4 ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
+                    />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
