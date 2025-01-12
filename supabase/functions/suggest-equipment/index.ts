@@ -16,11 +16,20 @@ serve(async (req) => {
 
   try {
     const { equipment } = await req.json();
-    console.log('Requesting suggestions for equipment:', equipment);
+    console.log('Received equipment data:', equipment);
 
-    if (!equipment || !equipment.name) {
-      throw new Error('Invalid equipment data: missing required name property');
+    if (!equipment) {
+      throw new Error('No equipment data provided');
     }
+
+    // Check if equipment is an object and has required properties
+    if (typeof equipment !== 'object' || !equipment.equipment?.name) {
+      console.error('Invalid equipment data received:', equipment);
+      throw new Error('Invalid equipment data structure');
+    }
+
+    const equipmentName = equipment.equipment.name;
+    const rentalPrice = equipment.equipment.rental_price || 'unknown';
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -40,9 +49,9 @@ serve(async (req) => {
           },
           {
             role: 'user',
-            content: `Suggest 3 alternative equipment options for: ${equipment.name}
+            content: `Suggest 3 alternative equipment options for: ${equipmentName}
             Consider these aspects:
-            - Similar price range (around ${equipment.rental_price || 'unknown'} per day)
+            - Similar price range (around ${rentalPrice} per day)
             - Similar technical specifications
             - Common use cases
             - Advantages and disadvantages compared to the original
@@ -55,7 +64,8 @@ serve(async (req) => {
     const data = await response.json();
     console.log('OpenAI response received:', data);
 
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    if (!data.choices?.[0]?.message?.content) {
+      console.error('Invalid response from OpenAI:', data);
       throw new Error('Invalid response from OpenAI');
     }
 
