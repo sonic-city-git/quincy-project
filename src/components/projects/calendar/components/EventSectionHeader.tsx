@@ -3,11 +3,10 @@ import { CalendarEvent, EventType } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
 import { Package, Users } from "lucide-react";
-import { formatRevenue } from "@/utils/priceFormatters";
+import { formatPrice } from "@/utils/priceFormatters";
 
 interface EventSectionHeaderProps {
   title: string;
-  eventCount: number;
   eventType?: EventType;
   events?: CalendarEvent[];
   onStatusChange?: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
@@ -15,7 +14,6 @@ interface EventSectionHeaderProps {
 
 export function EventSectionHeader({ 
   title, 
-  eventCount, 
   eventType,
   events = [],
   onStatusChange 
@@ -56,11 +54,14 @@ export function EventSectionHeader({
 
         {/* Revenue column */}
         <div className="col-span-1 text-right font-medium text-muted-foreground">
-          {formatRevenue(totalRevenue)}
+          {formatPrice(totalRevenue)}
         </div>
 
-        {/* Status manager column */}
-        <div className="col-span-2 flex justify-end">
+        {/* Edit button column */}
+        <div className="col-span-1" />
+
+        {/* Status manager column - now single column */}
+        <div className="col-span-1 flex justify-end">
           {onStatusChange && (
             <EventStatusManager
               status={title.toLowerCase()}
