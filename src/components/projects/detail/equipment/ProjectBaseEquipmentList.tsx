@@ -31,16 +31,8 @@ export function ProjectBaseEquipmentList({ projectId }: ProjectBaseEquipmentList
     return <div className="text-sm text-muted-foreground">Loading equipment...</div>;
   }
 
-  if (!equipment?.length) {
-    return (
-      <div className="text-sm text-muted-foreground">
-        No equipment added yet
-      </div>
-    );
-  }
-
   // Group equipment by group_id
-  const groupedEquipment = equipment.reduce((acc, item) => {
+  const groupedEquipment = equipment?.reduce((acc, item) => {
     const groupId = item.group_id || 'ungrouped';
     if (!acc[groupId]) {
       acc[groupId] = [];
@@ -52,31 +44,26 @@ export function ProjectBaseEquipmentList({ projectId }: ProjectBaseEquipmentList
   return (
     <ScrollArea className="h-[700px]">
       <div className="space-y-6 pr-4">
-        {/* First render grouped equipment */}
-        {groups.map((group) => {
-          const groupEquipment = groupedEquipment[group.id] || [];
-          if (groupEquipment.length === 0) return null;
-
-          return (
-            <div key={group.id} className="space-y-2">
-              <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
-                {group.name}
-              </h3>
-              <div className="space-y-2">
-                {groupEquipment.map((item) => (
-                  <ProjectEquipmentItem
-                    key={item.id}
-                    item={item}
-                    onRemove={() => removeEquipment(item.id)}
-                  />
-                ))}
-              </div>
+        {/* Always render all groups, even if empty */}
+        {groups.map((group) => (
+          <div key={group.id} className="space-y-2">
+            <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
+              {group.name}
+            </h3>
+            <div className="space-y-2">
+              {(groupedEquipment[group.id] || []).map((item) => (
+                <ProjectEquipmentItem
+                  key={item.id}
+                  item={item}
+                  onRemove={() => removeEquipment(item.id)}
+                />
+              ))}
             </div>
-          );
-        })}
+          </div>
+        ))}
 
-        {/* Then render ungrouped equipment */}
-        {groupedEquipment['ungrouped'] && (
+        {/* Render ungrouped equipment last */}
+        {groupedEquipment['ungrouped'] && groupedEquipment['ungrouped'].length > 0 && (
           <div className="space-y-2">
             <h3 className="font-medium text-sm text-muted-foreground uppercase tracking-wide">
               Ungrouped
