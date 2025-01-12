@@ -49,17 +49,25 @@ export function ProjectBaseEquipmentList({
           const isSelected = selectedGroupId === group.id;
           
           return (
-            <div key={group.id}>
+            <div 
+              key={group.id} 
+              className={cn(
+                "rounded-lg border border-border bg-background/50 overflow-hidden",
+                isSelected && "ring-2 ring-primary/20"
+              )}
+            >
               <h3 
                 className={cn(
-                  "text-sm font-medium mb-2 px-3 py-1.5 rounded-md cursor-pointer hover:bg-accent/50 transition-colors",
-                  isSelected && "bg-accent text-accent-foreground hover:bg-accent"
+                  "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
+                  isSelected 
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                    : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
                 )}
                 onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
               >
                 {group.name}
               </h3>
-              <div className="space-y-2">
+              <div className="p-3 space-y-2">
                 {groupEquipment.map((item) => (
                   <ProjectEquipmentItem
                     key={item.id}
@@ -67,22 +75,34 @@ export function ProjectBaseEquipmentList({
                     onRemove={() => removeEquipment(item.id)}
                   />
                 ))}
+                {groupEquipment.length === 0 && (
+                  <div className="text-sm text-muted-foreground px-1">
+                    No equipment in this group
+                  </div>
+                )}
               </div>
             </div>
           );
         })}
         
-        <div>
+        <div 
+          className={cn(
+            "rounded-lg border border-border bg-background/50 overflow-hidden",
+            selectedGroupId === null && "ring-2 ring-primary/20"
+          )}
+        >
           <h3 
             className={cn(
-              "text-sm font-medium mb-2 px-3 py-1.5 rounded-md cursor-pointer hover:bg-accent/50 transition-colors",
-              selectedGroupId === null && "bg-accent text-accent-foreground hover:bg-accent"
+              "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
+              selectedGroupId === null 
+                ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                : "bg-secondary/10 text-secondary-foreground hover:bg-secondary/20"
             )}
             onClick={() => onGroupSelect(null)}
           >
             Ungrouped Equipment
           </h3>
-          <div className="space-y-2">
+          <div className="p-3 space-y-2">
             {ungroupedEquipment.map((item) => (
               <ProjectEquipmentItem
                 key={item.id}
@@ -90,6 +110,11 @@ export function ProjectBaseEquipmentList({
                 onRemove={() => removeEquipment(item.id)}
               />
             ))}
+            {ungroupedEquipment.length === 0 && (
+              <div className="text-sm text-muted-foreground px-1">
+                No ungrouped equipment
+              </div>
+            )}
           </div>
         </div>
       </div>
