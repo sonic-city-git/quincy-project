@@ -114,6 +114,12 @@ export function AddEquipmentDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>
+          <Package className="h-4 w-4 mr-2" />
+          Add Equipment
+        </Button>
+      </DialogTrigger>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Equipment</DialogTitle>
