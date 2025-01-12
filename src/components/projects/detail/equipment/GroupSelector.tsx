@@ -58,7 +58,7 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
       );
 
   return (
-    <div className="flex gap-2">
+    <div className="space-y-4">
       <div className="w-[200px]">
         <Input
           placeholder="Search groups..."
@@ -68,7 +68,7 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
         />
       </div>
 
-      <div className="flex gap-2 overflow-x-auto">
+      <div className="flex flex-wrap gap-2">
         {projectGroups.map(group => (
           <Button
             key={group.id}
@@ -77,6 +77,36 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
             className="whitespace-nowrap"
           >
             {group.name}
+          </Button>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {filteredGroups.map(group => (
+          <Button
+            key={group.id}
+            variant="outline"
+            onClick={() => {
+              // Add the group to project groups
+              const addGroupToProject = async () => {
+                const { error } = await supabase
+                  .from('project_equipment_groups')
+                  .insert({
+                    project_id: projectId,
+                    name: group.name,
+                    sort_order: group.sort_order
+                  });
+                
+                if (error) {
+                  console.error('Error adding group:', error);
+                }
+              };
+              
+              addGroupToProject();
+            }}
+            className="whitespace-nowrap"
+          >
+            + {group.name}
           </Button>
         ))}
       </div>
