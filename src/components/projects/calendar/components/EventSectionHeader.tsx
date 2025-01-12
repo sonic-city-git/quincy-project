@@ -29,6 +29,9 @@ export function EventSectionHeader({
           <h3 className="text-lg font-semibold">{title}</h3>
         </div>
         
+        {/* Empty space before icons */}
+        <div className="col-span-1" />
+        
         {/* Icons column alignment */}
         <div className="flex items-center justify-center">
           {eventType?.needs_equipment && (
@@ -40,12 +43,6 @@ export function EventSectionHeader({
             <Users className="h-6 w-6 text-muted-foreground" />
           )}
         </div>
-        
-        {/* Empty space for third icon */}
-        <div className="col-span-1" />
-        
-        {/* Empty space for name */}
-        <div className="col-span-1" />
         
         {/* Empty space for revenue */}
         <div className="col-span-1" />
