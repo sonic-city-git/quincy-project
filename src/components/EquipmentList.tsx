@@ -75,7 +75,7 @@ export function EquipmentList() {
             <Separator className="bg-zinc-800" />
             
             <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0">
-              <div className="h-full overflow-auto">
+              <div className="h-full overflow-auto space-y-2">
                 <Table>
                   <EquipmentTableHeader />
                 </Table>
@@ -90,7 +90,7 @@ export function EquipmentList() {
 
                   return (
                     <div key={parentFolder.id} className="mb-4">
-                      <div className="flex items-center gap-2 p-3 bg-zinc-800/50">
+                      <div className="flex items-center gap-2 p-3 bg-gradient-to-r from-zinc-800/50 to-zinc-900/50 border-l-4 border-l-primary transition-colors hover:bg-zinc-800/70">
                         <Folder className="h-4 w-4 text-primary" />
                         <span className="font-medium">{parentFolder.name}</span>
                       </div>
@@ -112,7 +112,7 @@ export function EquipmentList() {
 
                           return (
                             <div key={subfolder.id} className="border-l border-zinc-800">
-                              <div className="flex items-center gap-2 p-3 bg-zinc-800/50">
+                              <div className="flex items-center gap-2 p-3 bg-zinc-800/30 border-l-2 border-l-secondary transition-colors hover:bg-zinc-800/50">
                                 <Folder className="h-4 w-4 text-primary" />
                                 <span className="text-sm font-medium">
                                   {subfolder.name}
@@ -135,7 +135,7 @@ export function EquipmentList() {
                 
                 {groupedEquipment['unassigned']?.length > 0 && (
                   <div className="p-2">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 p-3 bg-zinc-900/30 rounded-md border border-zinc-800/50 transition-colors hover:bg-zinc-800/30">
                       <Folder className="h-4 w-4 text-muted-foreground" />
                       <span className="font-medium text-muted-foreground">Unassigned</span>
                     </div>
