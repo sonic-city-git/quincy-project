@@ -2,7 +2,7 @@ import { CalendarEvent } from "@/types/events";
 import { CheckCircle, HelpCircle, Send, XCircle, DollarSign } from "lucide-react";
 
 export const getStatusIcon = (status: string) => {
-  switch (status) {
+  switch (status.toLowerCase()) {
     case 'confirmed':
       return <CheckCircle className="h-5 w-5 text-green-500" />;
     case 'invoice ready':
