@@ -13,11 +13,31 @@ export function ProjectTabs({ project, projectId }: ProjectTabsProps) {
   return (
     <Tabs defaultValue="general" className="w-full">
       <div className="flex items-center justify-between">
-        <TabsList className="bg-zinc-800/45">
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="equipment">Equipment</TabsTrigger>
-          <TabsTrigger value="crew">Crew</TabsTrigger>
-          <TabsTrigger value="financial">Financial</TabsTrigger>
+        <TabsList className="bg-zinc-800/45 p-1 rounded-lg">
+          <TabsTrigger 
+            value="general" 
+            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-primary transition-colors"
+          >
+            General
+          </TabsTrigger>
+          <TabsTrigger 
+            value="equipment"
+            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-primary transition-colors"
+          >
+            Equipment
+          </TabsTrigger>
+          <TabsTrigger 
+            value="crew"
+            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-primary transition-colors"
+          >
+            Crew
+          </TabsTrigger>
+          <TabsTrigger 
+            value="financial"
+            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-primary transition-colors"
+          >
+            Financial
+          </TabsTrigger>
         </TabsList>
       </div>
 
