@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface GroupSelectorProps {
   projectId: string;
@@ -13,6 +14,7 @@ interface GroupSelectorProps {
 
 export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: GroupSelectorProps) {
   const [groupSearch, setGroupSearch] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
 
   const { data: equipmentGroups = [], isLoading: isLoadingGroups } = useQuery({
     queryKey: ['equipment-groups'],
@@ -59,15 +61,6 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
 
   return (
     <div className="space-y-4">
-      <div className="w-[200px]">
-        <Input
-          placeholder="Search groups..."
-          value={groupSearch}
-          onChange={(e) => setGroupSearch(e.target.value)}
-          className="bg-zinc-800/50"
-        />
-      </div>
-
       <div className="flex flex-wrap gap-2">
         {projectGroups.map(group => (
           <Button
@@ -81,34 +74,54 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
         ))}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {filteredGroups.map(group => (
-          <Button
-            key={group.id}
-            variant="outline"
-            onClick={() => {
-              // Add the group to project groups
-              const addGroupToProject = async () => {
-                const { error } = await supabase
-                  .from('project_equipment_groups')
-                  .insert({
-                    project_id: projectId,
-                    name: group.name,
-                    sort_order: group.sort_order
-                  });
-                
-                if (error) {
-                  console.error('Error adding group:', error);
-                }
-              };
-              
-              addGroupToProject();
-            }}
-            className="whitespace-nowrap"
+      <div className="w-[200px] relative">
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+          <PopoverTrigger asChild>
+            <div>
+              <Input
+                placeholder="Search groups..."
+                value={groupSearch}
+                onChange={(e) => setGroupSearch(e.target.value)}
+                onFocus={() => setIsOpen(true)}
+                className="bg-zinc-800/50"
+              />
+            </div>
+          </PopoverTrigger>
+          <PopoverContent 
+            className="w-[200px] p-0" 
+            align="start"
           >
-            + {group.name}
-          </Button>
-        ))}
+            <div className="py-2">
+              {filteredGroups.map(group => (
+                <button
+                  key={group.id}
+                  className="w-full px-4 py-2 text-left hover:bg-accent hover:text-accent-foreground text-sm"
+                  onClick={async () => {
+                    const { error } = await supabase
+                      .from('project_equipment_groups')
+                      .insert({
+                        project_id: projectId,
+                        name: group.name,
+                        sort_order: group.sort_order
+                      });
+                    
+                    if (error) {
+                      console.error('Error adding group:', error);
+                    }
+                    setIsOpen(false);
+                  }}
+                >
+                  + {group.name}
+                </button>
+              ))}
+              {filteredGroups.length === 0 && (
+                <div className="px-4 py-2 text-sm text-muted-foreground">
+                  No groups found
+                </div>
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
       </div>
     </div>
   );
