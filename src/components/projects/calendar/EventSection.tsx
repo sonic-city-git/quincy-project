@@ -200,8 +200,8 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     <div className="space-y-3">
       <div className={`rounded-lg ${getStatusBackground(status)}`}>
         <div className="p-4">
-          <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_auto] gap-4 items-center">
-            <div className="flex items-center gap-2">
+          <div className="grid grid-cols-[auto_1fr_40px_40px_1fr_auto] gap-4 items-center">
+            <div className="flex items-center gap-2 min-w-[120px]">
               {sectionIcon}
               <h3 className="text-lg font-semibold whitespace-nowrap">{getStatusText(status)}</h3>
             </div>
