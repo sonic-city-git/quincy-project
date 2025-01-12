@@ -32,16 +32,22 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         .from('project_event_equipment')
         .select('is_synced')
         .eq('event_id', event.id)
-        .limit(1)
-        .single();
+        .maybeSingle();
 
-      if (!error && data) {
-        setIsSynced(data.is_synced);
+      if (!error) {
+        // If there's no equipment, consider it synced
+        setIsSynced(data?.is_synced ?? true);
+      } else {
+        console.error('Error fetching sync status:', error);
+        // In case of error, assume it's synced to avoid showing warning state
+        setIsSynced(true);
       }
     };
 
-    fetchSyncStatus();
-  }, [event.id]);
+    if (event.type.needs_equipment) {
+      fetchSyncStatus();
+    }
+  }, [event.id, event.type.needs_equipment]);
 
   const handleEquipmentOption = async () => {
     try {
@@ -49,7 +55,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       const { data: projectEquipment, error: fetchError } = await supabase
         .from('project_equipment')
         .select('*')
-        .eq('project_id', (event as any).project_id);
+        .eq('project_id', event.project_id);
 
       if (fetchError) throw fetchError;
 
@@ -64,7 +70,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       // Insert new equipment records
       if (projectEquipment && projectEquipment.length > 0) {
         const eventEquipment = projectEquipment.map(item => ({
-          project_id: (event as any).project_id,
+          project_id: event.project_id,
           event_id: event.id,
           equipment_id: item.equipment_id,
           quantity: item.quantity,
