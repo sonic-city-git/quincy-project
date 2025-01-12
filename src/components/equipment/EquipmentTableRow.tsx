@@ -26,17 +26,6 @@ export function EquipmentTableRow({ item, isSelected, onSelect }: EquipmentTable
           {item.name}
         </div>
       </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
-        <span className="truncate block max-w-[150px]">
-          {item.code || '-'}
-        </span>
-      </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
-        {item.stock || 0}
-      </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
-        {item.rental_price ? `${item.rental_price} kr` : '-'}
-      </TableCell>
     </TableRow>
   );
 }
