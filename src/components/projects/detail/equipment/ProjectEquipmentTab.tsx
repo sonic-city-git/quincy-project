@@ -4,7 +4,6 @@ import { EquipmentSelector } from "./EquipmentSelector";
 import { Box, ListCheck } from "lucide-react";
 import { GroupSelector } from "./GroupSelector";
 import { useState } from "react";
-import { Separator } from "@/components/ui/separator";
 
 interface ProjectEquipmentTabProps {
   projectId: string;
@@ -45,6 +44,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
               <ProjectBaseEquipmentList 
                 projectId={projectId} 
                 selectedGroupId={selectedGroupId}
+                onGroupSelect={setSelectedGroupId}
               />
             </div>
           </div>
