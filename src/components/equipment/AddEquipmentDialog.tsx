@@ -99,7 +99,7 @@ export function AddEquipmentDialog() {
         if (serialNumberError) throw serialNumberError;
       }
 
-      queryClient.invalidateQueries({ queryKey: ['equipment'] });
+      queryClient.invalidateQueries({ queryKey: ['project-equipment'] });
       setOpen(false);
       form.reset();
       toast.success("Equipment added successfully");
@@ -184,7 +184,7 @@ export function AddEquipmentDialog() {
                             <SelectItem 
                               key={folder.id} 
                               value={folder.id}
-                              className={!folder.parent_id ? "pl-6 italic" : ""}
+                              className={!folder.parent_id ? "pl-8 font-medium" : ""}
                             >
                               {folder.name}
                             </SelectItem>
