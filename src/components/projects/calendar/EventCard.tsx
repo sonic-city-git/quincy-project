@@ -12,6 +12,7 @@ import { EquipmentIcon } from "./components/EquipmentIcon";
 import { EquipmentDialog } from "./components/EquipmentDialog";
 import { EventHeader } from "./components/EventHeader";
 import { EventActions } from "./components/EventActions";
+import { Card } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
