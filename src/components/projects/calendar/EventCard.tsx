@@ -155,9 +155,13 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       return <Package className="h-6 w-6 text-muted-foreground" />;
     }
     
+    if (!hasEventEquipment) {
+      return <Package className="h-6 w-6 text-muted-foreground" />;
+    }
+    
     return (
       <Package 
-        className={`h-6 w-6 ${hasEventEquipment && isSynced ? 'text-green-500' : 'text-blue-500'}`}
+        className={`h-6 w-6 ${isSynced ? 'text-green-500' : 'text-blue-500'}`}
       />
     );
   }, [event.type.needs_equipment, hasEventEquipment, hasProjectEquipment, isSynced]);
