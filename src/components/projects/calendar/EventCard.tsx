@@ -100,6 +100,16 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     }
   };
 
+  const getEquipmentIcon = () => {
+    if (!event.type.needs_equipment) return null;
+    if (!hasEquipment) return <Package className="h-6 w-6 text-muted-foreground" />;
+    return (
+      <Package 
+        className={`h-6 w-6 ${isSynced ? 'text-green-500' : 'text-yellow-500'}`}
+      />
+    );
+  };
+
   return (
     <Card key={`${event.date}-${event.name}`} className="p-4">
       <div className="grid grid-cols-[120px_1fr_40px_40px_1fr_auto] gap-4">
@@ -133,9 +143,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
                   size="icon"
                   className="h-6 w-6 p-0"
                 >
-                  <Package 
-                    className={`h-6 w-6 ${isSynced ? 'text-green-500' : 'text-yellow-500'}`}
-                  />
+                  {getEquipmentIcon()}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
