@@ -1,15 +1,17 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCustomers } from "@/hooks/useCustomers";
+import { cn } from "@/lib/utils";
 
 interface CustomerSelectProps {
   value?: string;
   onChange: (value: string) => void;
   error?: string;
   required?: boolean;
+  className?: string;
 }
 
-export function CustomerSelect({ value, onChange, error, required }: CustomerSelectProps) {
+export function CustomerSelect({ value, onChange, error, required, className }: CustomerSelectProps) {
   const { customers, loading } = useCustomers(true);
 
   return (
@@ -20,7 +22,7 @@ export function CustomerSelect({ value, onChange, error, required }: CustomerSel
         disabled={loading}
         required={required}
       >
-        <SelectTrigger className={error ? "border-red-500" : ""}>
+        <SelectTrigger className={cn(error ? "border-red-500" : "", className)}>
           <SelectValue placeholder="Select customer" />
         </SelectTrigger>
         <SelectContent>

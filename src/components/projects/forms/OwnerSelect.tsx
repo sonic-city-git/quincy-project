@@ -2,15 +2,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCrew } from "@/hooks/useCrew";
 import { useFolders } from "@/hooks/useFolders";
+import { cn } from "@/lib/utils";
 
 interface OwnerSelectProps {
   value?: string;
   onChange: (value: string) => void;
   error?: string;
   required?: boolean;
+  className?: string;
 }
 
-export function OwnerSelect({ value, onChange, error, required }: OwnerSelectProps) {
+export function OwnerSelect({ value, onChange, error, required, className }: OwnerSelectProps) {
   const { crew, loading } = useCrew();
   const { folders } = useFolders();
   
@@ -40,7 +42,7 @@ export function OwnerSelect({ value, onChange, error, required }: OwnerSelectPro
         disabled={loading}
         required={required}
       >
-        <SelectTrigger className={error ? "border-red-500" : ""}>
+        <SelectTrigger className={cn(error ? "border-red-500" : "", className)}>
           <SelectValue placeholder="Select owner" />
         </SelectTrigger>
         <SelectContent>
