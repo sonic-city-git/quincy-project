@@ -3,7 +3,7 @@ import { EventType } from "@/types/events";
 import { EventStatusManager } from "../EventStatusManager";
 import { CalendarEvent } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
-import { EventSectionGrid } from "./EventSectionGrid";
+import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -24,9 +24,9 @@ export function EventSectionHeader({
 
   return (
     <div className="border-b border-border pb-2">
-      <EventSectionGrid>
+      <EventSectionHeaderGrid>
         <div className="flex items-center gap-2">
-          {getStatusIcon()}
+          {getStatusIcon(title.toLowerCase() as CalendarEvent['status'])}
           <h3 className="text-lg font-semibold">{title}</h3>
           <span className="text-sm text-muted-foreground">({eventCount})</span>
         </div>
@@ -56,7 +56,7 @@ export function EventSectionHeader({
         <div className="col-span-1" />
         
         {/* Status manager alignment */}
-        <div className="col-span-2 flex justify-end">
+        <div className="flex justify-end">
           {onStatusChange && (
             <EventStatusManager
               status={title.toLowerCase()}
@@ -66,7 +66,7 @@ export function EventSectionHeader({
             />
           )}
         </div>
-      </EventSectionGrid>
+      </EventSectionHeaderGrid>
     </div>
   );
 }

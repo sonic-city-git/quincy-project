@@ -10,7 +10,7 @@ import { Card } from "@/components/ui/card";
 import { EventCardHeader } from "./components/EventCardHeader";
 import { EventCardIcons } from "./components/EventCardIcons";
 import { formatPrice } from "@/utils/priceFormatters";
-import { EventSectionGrid } from "./components/EventSectionGrid";
+import { EventCardGrid } from "./components/EventCardGrid";
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -240,7 +240,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         key={`${event.date}-${event.name}`} 
         className={`p-3 transition-colors mb-2 ${getStatusBackground(event.status)}`}
       >
-        <EventSectionGrid>
+        <EventCardGrid>
           <EventCardHeader event={event} />
           
           <EventCardIcons
@@ -269,7 +269,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             onEdit={handleEditClick}
             isEditingDisabled={isEditingDisabled(event.status)}
           />
-        </EventSectionGrid>
+        </EventCardGrid>
       </Card>
 
       <EquipmentDialog
