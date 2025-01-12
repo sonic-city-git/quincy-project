@@ -38,10 +38,7 @@ export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInf
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-start mb-4">
-        <h3 className="text-lg font-medium">Project Information</h3>
-        <ProjectInvoiceButton onClick={() => setIsInvoiceDialogOpen(true)} />
-      </div>
+      <h3 className="text-lg font-medium">Project Information</h3>
 
       <div className="space-y-4">
         <div className="space-y-2">
@@ -77,6 +74,10 @@ export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInf
             {formatCurrency(project.to_be_invoiced)}
           </div>
         </div>
+      </div>
+
+      <div className="flex justify-end pt-4">
+        <ProjectInvoiceButton onClick={() => setIsInvoiceDialogOpen(true)} />
       </div>
 
       <InvoiceDialog 
