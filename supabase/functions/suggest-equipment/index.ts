@@ -18,18 +18,10 @@ serve(async (req) => {
     const { equipment } = await req.json();
     console.log('Received equipment data:', equipment);
 
-    if (!equipment) {
+    if (!equipment || !equipment.name) {
+      console.error('Invalid equipment data:', equipment);
       throw new Error('No equipment data provided');
     }
-
-    // Check if equipment is an object and has required properties
-    if (typeof equipment !== 'object' || !equipment.equipment?.name) {
-      console.error('Invalid equipment data received:', equipment);
-      throw new Error('Invalid equipment data structure');
-    }
-
-    const equipmentName = equipment.equipment.name;
-    const rentalPrice = equipment.equipment.rental_price || 'unknown';
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -49,9 +41,9 @@ serve(async (req) => {
           },
           {
             role: 'user',
-            content: `Suggest 3 alternative equipment options for: ${equipmentName}
+            content: `Suggest 3 alternative equipment options for: ${equipment.name}
             Consider these aspects:
-            - Similar price range (around ${rentalPrice} per day)
+            - Similar price range (around ${equipment.rental_price || 'unknown'} per day)
             - Similar technical specifications
             - Common use cases
             - Advantages and disadvantages compared to the original
@@ -69,14 +61,18 @@ serve(async (req) => {
       throw new Error('Invalid response from OpenAI');
     }
 
-    return new Response(JSON.stringify({ suggestions: data.choices[0].message.content }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ suggestions: data.choices[0].message.content }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   } catch (error) {
     console.error('Error in suggest-equipment function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ error: error.message }),
+      { 
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
   }
 });

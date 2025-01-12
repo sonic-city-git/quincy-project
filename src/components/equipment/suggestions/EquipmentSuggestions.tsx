@@ -18,15 +18,31 @@ export function EquipmentSuggestions({ equipment, onClose }: EquipmentSuggestion
   const getSuggestions = async () => {
     setLoading(true);
     try {
+      console.log('Sending equipment data:', equipment);
+      
       const { data, error } = await supabase.functions.invoke('suggest-equipment', {
-        body: { equipment }
+        body: { 
+          equipment: {
+            name: equipment.name,
+            rental_price: equipment.rental_price,
+            code: equipment.code
+          }
+        }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      if (!data?.suggestions) {
+        throw new Error('No suggestions received from the function');
+      }
+
       setSuggestions(data.suggestions);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error getting suggestions:', error);
-      toast.error('Failed to get equipment suggestions');
+      toast.error(error.message || 'Failed to get equipment suggestions');
     } finally {
       setLoading(false);
     }
