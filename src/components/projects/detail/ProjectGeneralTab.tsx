@@ -6,6 +6,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchEvents } from "@/utils/eventQueries";
 import { useEffect } from "react";
 import { ProjectInfo } from "./ProjectInfo";
+import { CalendarEvent } from "@/types/events";
+import { useEventUpdate } from "@/hooks/useEventUpdate";
 
 interface ProjectGeneralTabProps {
   project: Project;
@@ -14,6 +16,7 @@ interface ProjectGeneralTabProps {
 
 export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps) {
   const queryClient = useQueryClient();
+  const { updateEvent } = useEventUpdate(projectId);
   
   const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ['events', projectId],
@@ -29,8 +32,13 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
     }
   }, [projectId, refetch, queryClient]);
 
-  const handleStatusChange = async (event: any, newStatus: any) => {
-    // Implement your status change logic here
+  const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
+    const updatedEvent = { ...event, status: newStatus };
+    await updateEvent(updatedEvent);
+  };
+
+  const handleEditEvent = (event: CalendarEvent) => {
+    console.log('Opening edit dialog for event:', event);
   };
 
   return (
@@ -61,8 +69,9 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
       <Card className="rounded-lg bg-zinc-800/45 p-6">
         <EventList 
           events={events} 
-          projectId={projectId}
           isLoading={isLoading}
+          onStatusChange={handleStatusChange}
+          onEdit={handleEditEvent}
         />
       </Card>
     </div>
