@@ -2,7 +2,7 @@ import { EventStatusManager } from "../EventStatusManager";
 import { CalendarEvent, EventType } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
-import { Package } from "lucide-react";
+import { Package, MapPin } from "lucide-react";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -30,6 +30,11 @@ export function EventSectionHeader({
         </div>
         
         {/* Location icon column */}
+        <div className="col-span-1">
+          <MapPin className="h-5 w-5 text-muted-foreground" />
+        </div>
+        
+        {/* Empty space */}
         <div className="col-span-1" />
         
         {/* Equipment icon column */}
@@ -39,10 +44,7 @@ export function EventSectionHeader({
           )}
         </div>
         
-        {/* Empty column (was crew) */}
-        <div className="col-span-1" />
-        
-        {/* Empty space */}
+        {/* Crew icon column */}
         <div className="col-span-1" />
 
         {/* Event type column */}
