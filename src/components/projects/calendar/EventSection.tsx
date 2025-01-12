@@ -20,7 +20,6 @@ export function EventSection({ title, events, onStatusChange, onEdit }: EventSec
     <div className="space-y-4">
       <EventSectionHeader 
         title={title} 
-        eventCount={events.length}
         eventType={eventType}
         events={events}
         onStatusChange={onStatusChange}
