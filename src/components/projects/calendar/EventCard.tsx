@@ -40,8 +40,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
-  const [isSynced, setIsSynced] = useState(true);
-  const [hasEventEquipment, setHasEventEquipment] = useState(false);
+  const [sectionSyncStatus, setSectionSyncStatus] = useState<'synced' | 'out-of-sync' | 'no-equipment'>('no-equipment');
   const [isEquipmentDialogOpen, setIsEquipmentDialogOpen] = useState(false);
   const [equipmentDifference, setEquipmentDifference] = useState<EquipmentDifference>({
     added: [],
@@ -66,7 +65,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     }
   };
 
-  const fetchEquipmentStatus = async () => {
+  const checkEquipmentStatus = async () => {
     if (!event.type.needs_equipment) return;
     
     try {
@@ -78,12 +77,10 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       const hasEquipment = eventEquipment && eventEquipment.length > 0;
       const syncStatus = hasEquipment ? eventEquipment.every(item => item.is_synced) : true;
       
-      setHasEventEquipment(hasEquipment);
-      setIsSynced(syncStatus);
+      setSectionSyncStatus(hasEquipment ? (syncStatus ? 'synced' : 'out-of-sync') : 'no-equipment');
     } catch (error) {
-      console.error('Error fetching equipment status:', error);
-      setHasEventEquipment(false);
-      setIsSynced(true);
+      console.error('Error checking equipment status:', error);
+      setSectionSyncStatus('no-equipment');
     }
   };
 
@@ -91,9 +88,8 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     let channel: ReturnType<typeof supabase.channel>;
 
     if (event.type.needs_equipment) {
-      fetchEquipmentStatus();
+      checkEquipmentStatus();
 
-      // Subscribe to event equipment changes
       channel = supabase
         .channel(`event-equipment-${event.id}`)
         .on('postgres_changes', {
@@ -102,7 +98,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           table: 'project_event_equipment',
           filter: `event_id=eq.${event.id}`
         }, () => {
-          fetchEquipmentStatus();
+          checkEquipmentStatus();
           queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
         })
         .subscribe();
@@ -248,8 +244,8 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           <div className="flex items-center justify-center">
             {event.type.needs_equipment && (
               <EquipmentIcon
-                hasEventEquipment={hasEventEquipment}
-                isSynced={isSynced}
+                hasEventEquipment={sectionSyncStatus !== 'no-equipment'}
+                isSynced={sectionSyncStatus === 'synced'}
                 isEditingDisabled={isEditingDisabled(event.status)}
                 onViewEquipment={viewOutOfSyncEquipment}
                 onSyncEquipment={handleEquipmentOption}
