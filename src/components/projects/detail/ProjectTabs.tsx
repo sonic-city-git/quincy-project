@@ -13,7 +13,7 @@ export function ProjectTabs({ project, projectId }: ProjectTabsProps) {
   return (
     <Tabs defaultValue="general" className="w-full">
       <div className="flex items-center justify-between">
-        <TabsList>
+        <TabsList className="bg-zinc-800/45">
           <TabsTrigger value="general">General</TabsTrigger>
           <TabsTrigger value="equipment">Equipment</TabsTrigger>
           <TabsTrigger value="crew">Crew</TabsTrigger>
@@ -33,13 +33,13 @@ export function ProjectTabs({ project, projectId }: ProjectTabsProps) {
       </TabsContent>
 
       <TabsContent value="crew">
-        <Card className="p-6">
+        <Card className="rounded-lg bg-zinc-800/45 p-6">
           <h2 className="text-xl font-semibold">Crew</h2>
         </Card>
       </TabsContent>
 
       <TabsContent value="financial">
-        <Card className="p-6">
+        <Card className="rounded-lg bg-zinc-800/45 p-6">
           <h2 className="text-xl font-semibold">Financial</h2>
         </Card>
       </TabsContent>
