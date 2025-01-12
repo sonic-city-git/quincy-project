@@ -62,16 +62,20 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     changed: []
   });
 
+  const isEditingDisabled = (status: CalendarEvent['status']) => {
+    return ['cancelled', 'invoice ready'].includes(status);
+  };
+
   const getStatusBackground = (status: string) => {
     switch (status) {
       case 'proposed':
-        return 'bg-yellow-500/5 hover:bg-yellow-500/10';
+        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       case 'confirmed':
-        return 'bg-green-500/5 hover:bg-green-500/10';
+        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       case 'invoice ready':
-        return 'bg-blue-500/5 hover:bg-blue-500/10';
+        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       case 'cancelled':
-        return 'bg-red-500/5 hover:bg-red-500/10';
+        return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       default:
         return 'hover:bg-zinc-800/50';
     }
@@ -381,7 +385,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div>
-                      {(hasEventEquipment && isSynced) || event.status === 'invoice ready' ? (
+                      {(hasEventEquipment && isSynced) || isEditingDisabled(event.status) ? (
                         <Package className="h-6 w-6 text-green-500" />
                       ) : (
                         <DropdownMenu>
@@ -390,18 +394,18 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
                               variant="ghost"
                               size="icon"
                               className="h-6 w-6 p-0"
-                              disabled={event.status === 'invoice ready'}
+                              disabled={isEditingDisabled(event.status)}
                             >
                               {getEquipmentIcon()}
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="start">
-                            {!hasEventEquipment && event.status !== 'invoice ready' && (
+                            {!hasEventEquipment && !isEditingDisabled(event.status) && (
                               <DropdownMenuItem onClick={handleEquipmentOption}>
                                 Sync from project equipment
                               </DropdownMenuItem>
                             )}
-                            {!isSynced && event.status !== 'invoice ready' && (
+                            {!isSynced && !isEditingDisabled(event.status) && (
                               <>
                                 <DropdownMenuItem onClick={viewOutOfSyncEquipment}>
                                   View equipment list
@@ -430,7 +434,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
           <div className="flex items-center justify-center">
             {event.type.needs_crew && (
-              <Users className="h-6 w-6 text-muted-foreground" />
+              <Users className={`h-6 w-6 ${isEditingDisabled(event.status) ? 'text-green-500' : 'text-muted-foreground'}`} />
             )}
           </div>
 
