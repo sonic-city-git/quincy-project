@@ -58,7 +58,7 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
     enabled: !!projectId
   });
 
-  const handleAddGroup = async (name: string, sortOrder: number = 0) => {
+  const handleAddGroup = async (name: string, sortOrder: number = projectGroups.length) => {
     setIsSubmitting(true);
     try {
       const { data, error } = await supabase
