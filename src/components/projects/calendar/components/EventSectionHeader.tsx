@@ -35,14 +35,14 @@ export function EventSectionHeader({
         {/* Equipment icon column */}
         <div className="col-span-1">
           {eventType?.needs_equipment && (
-            <Package className="h-5 w-5 text-muted-foreground" />
+            <Package className="h-6 w-6 text-muted-foreground" />
           )}
         </div>
         
         {/* Crew icon column */}
         <div className="col-span-1">
           {eventType?.needs_crew && (
-            <Users className="h-5 w-5 text-muted-foreground" />
+            <Users className="h-6 w-6 text-muted-foreground" />
           )}
         </div>
 
