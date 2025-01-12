@@ -18,6 +18,10 @@ serve(async (req) => {
     const { equipment } = await req.json();
     console.log('Requesting suggestions for equipment:', equipment);
 
+    if (!equipment || !equipment.name) {
+      throw new Error('Invalid equipment data: missing required name property');
+    }
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
