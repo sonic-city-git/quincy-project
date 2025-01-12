@@ -21,7 +21,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
     return <EventListEmpty />;
   }
 
-  const { proposed, confirmed, ready, cancelled } = groupEventsByStatus(events);
+  const { proposed, confirmed, ready, cancelled, doneAndDusted } = groupEventsByStatus(events);
 
   return (
     <div className="space-y-8">
@@ -60,6 +60,16 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
           <EventSection
             title="Cancelled"
             events={cancelled}
+            onStatusChange={onStatusChange}
+            onEdit={onEdit}
+          />
+        </Card>
+      )}
+      {doneAndDusted.length > 0 && (
+        <Card className="rounded-lg bg-zinc-800/45 p-6">
+          <EventSection
+            title="Done and Dusted"
+            events={doneAndDusted}
             onStatusChange={onStatusChange}
             onEdit={onEdit}
           />
