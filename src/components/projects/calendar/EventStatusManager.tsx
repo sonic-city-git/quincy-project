@@ -31,7 +31,7 @@ export function EventStatusManager({ status, events, onStatusChange, isCancelled
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-6 w-6"
         >
           <Settings2 className="h-4 w-4" />
         </Button>
@@ -41,28 +41,28 @@ export function EventStatusManager({ status, events, onStatusChange, isCancelled
           onClick={() => handleStatusChangeAll('proposed')}
           className="flex items-center gap-2"
         >
-          {getStatusIcon('proposed')}
+          {getStatusIcon('proposed', 'h-4 w-4')}
           Proposed
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => handleStatusChangeAll('confirmed')}
           className="flex items-center gap-2"
         >
-          {getStatusIcon('confirmed')}
+          {getStatusIcon('confirmed', 'h-4 w-4')}
           Confirmed
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => handleStatusChangeAll('invoice ready')}
           className="flex items-center gap-2"
         >
-          {getStatusIcon('invoice ready')}
+          {getStatusIcon('invoice ready', 'h-4 w-4')}
           Invoice Ready
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => handleStatusChangeAll('cancelled')}
           className="flex items-center gap-2"
         >
-          {getStatusIcon('cancelled')}
+          {getStatusIcon('cancelled', 'h-4 w-4')}
           Cancelled
         </DropdownMenuItem>
       </DropdownMenuContent>

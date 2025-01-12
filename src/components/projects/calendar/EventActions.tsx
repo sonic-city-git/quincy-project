@@ -1,0 +1,94 @@
+import { CalendarEvent } from "@/types/events";
+import { Button } from "@/components/ui/button";
+import { Edit2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { getStatusIcon } from "@/utils/eventFormatters";
+
+interface EventActionsProps {
+  event: CalendarEvent;
+  onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
+  onEdit?: (event: CalendarEvent) => void;
+  isEditingDisabled: boolean;
+}
+
+export function EventActions({ 
+  event, 
+  onStatusChange, 
+  onEdit,
+  isEditingDisabled 
+}: EventActionsProps) {
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onEdit && !isEditingDisabled) {
+      onEdit(event);
+    }
+  };
+
+  return (
+    <>
+      {/* Status manager column */}
+      <div className="flex items-center justify-center">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6"
+            >
+              {getStatusIcon(event.status, 'h-4 w-4')}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem 
+              onClick={() => onStatusChange(event, 'proposed')}
+              className="flex items-center gap-2"
+            >
+              {getStatusIcon('proposed', 'h-4 w-4')}
+              Proposed
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => onStatusChange(event, 'confirmed')}
+              className="flex items-center gap-2"
+            >
+              {getStatusIcon('confirmed', 'h-4 w-4')}
+              Confirmed
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => onStatusChange(event, 'invoice ready')}
+              className="flex items-center gap-2"
+            >
+              {getStatusIcon('invoice ready', 'h-4 w-4')}
+              Invoice Ready
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              onClick={() => onStatusChange(event, 'cancelled')}
+              className="flex items-center gap-2"
+            >
+              {getStatusIcon('cancelled', 'h-4 w-4')}
+              Cancelled
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      {/* Edit button column */}
+      <div className="flex items-center justify-center">
+        {onEdit && !isEditingDisabled && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleEdit}
+            className="h-6 w-6 text-muted-foreground hover:text-foreground"
+          >
+            <Edit2 className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    </>
+  );
+}
