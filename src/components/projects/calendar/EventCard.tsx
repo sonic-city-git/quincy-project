@@ -150,7 +150,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         key={`${event.date}-${event.name}`} 
         className={`p-3 transition-colors mb-2 ${getStatusBackground(event.status)}`}
       >
-        <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px_40px_40px] gap-2 items-center">
+        <div className="grid grid-cols-[100px_1fr_30px_30px_30px_100px_100px_80px] gap-2 items-center min-w-0">
           <EventCardHeader event={event} />
           
           <EventCardIcons
