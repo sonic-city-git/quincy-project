@@ -101,13 +101,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
       if (fetchError) throw fetchError;
 
-      const { error: deleteError } = await supabase
-        .from('project_event_equipment')
-        .delete()
-        .eq('event_id', event.id);
-
-      if (deleteError) throw deleteError;
-
       if (projectEquipment && projectEquipment.length > 0) {
         const eventEquipment = projectEquipment.map(item => ({
           project_id: event.project_id,
@@ -118,9 +111,13 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           is_synced: true
         }));
 
+        // Use upsert with ON CONFLICT DO UPDATE
         const { error: upsertError } = await supabase
           .from('project_event_equipment')
-          .upsert(eventEquipment);
+          .upsert(eventEquipment, {
+            onConflict: 'event_id,equipment_id',
+            ignoreDuplicates: false
+          });
 
         if (upsertError) throw upsertError;
       }
