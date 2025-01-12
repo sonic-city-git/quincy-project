@@ -70,7 +70,7 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
   return (
     <Card className="relative p-1.5 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/50 group">
       <div className="flex items-center justify-between h-full">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <Button 
             variant="ghost" 
             size="icon" 
