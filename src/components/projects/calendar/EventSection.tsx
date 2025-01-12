@@ -57,6 +57,8 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     switch (status) {
       case 'invoice ready':
         return 'Invoice Ready';
+      case 'cancelled':
+        return 'Cancelled';
       default:
         return `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
     }
