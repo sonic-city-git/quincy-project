@@ -81,7 +81,7 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
       console.error('Error updating event:', error);
       toast("Error", {
         description: "Failed to update event",
-        variant: "destructive"
+        style: { background: 'red', color: 'white' }
       });
     }
   };
@@ -134,7 +134,7 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
       console.error('Error deleting event:', error);
       toast("Error", {
         description: "Failed to delete event",
-        variant: "destructive"
+        style: { background: 'red', color: 'white' }
       });
     }
   };
