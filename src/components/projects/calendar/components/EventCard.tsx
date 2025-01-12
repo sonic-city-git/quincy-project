@@ -1,6 +1,6 @@
-import { CalendarEvent } from "@/types/events";
 import { Calendar, Users } from "lucide-react";
 import { format } from "date-fns";
+import { CalendarEvent } from "@/types/events";
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -10,7 +10,7 @@ export function EventCard({ event }: EventCardProps) {
   return (
     <>
       <div className="flex items-center gap-2">
-        <Calendar className="h-4 w-4 text-muted-foreground" />
+        <Calendar className="h-6 w-6 text-muted-foreground" />
         <span className="text-sm text-muted-foreground">
           {format(event.date, 'dd.MM.yy')}
         </span>
@@ -32,7 +32,7 @@ export function EventCard({ event }: EventCardProps) {
         )}
         {event.type?.needs_crew && (
           <div className="flex items-center text-muted-foreground">
-            <Users className="h-4 w-4" />
+            <Users className="h-6 w-6" />
           </div>
         )}
       </div>
