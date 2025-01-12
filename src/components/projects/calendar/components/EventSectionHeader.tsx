@@ -37,14 +37,17 @@ export function EventSectionHeader({
     }).format(amount).replace('NOK', 'kr').replace('.', ',');
   };
 
+  const iconContainerClasses = "h-8 w-8 flex items-center justify-center";
+  const iconClasses = "h-5 w-5";
+
   const getSectionEquipmentIcon = () => {
     if (sectionSyncStatus === 'no-equipment') {
-      return <Package className="h-5 w-5 text-muted-foreground" />;
+      return <Package className={`${iconClasses} text-muted-foreground`} />;
     }
     if (sectionSyncStatus === 'out-of-sync') {
-      return <Package className="h-5 w-5 text-blue-500" />;
+      return <Package className={`${iconClasses} text-blue-500`} />;
     }
-    return <Package className="h-5 w-5 text-green-500" />;
+    return <Package className={`${iconClasses} text-green-500`} />;
   };
 
   return (
@@ -59,11 +62,11 @@ export function EventSectionHeader({
         
         <div /> {/* Empty space for name column */}
         
-        <div /> {/* Removed MapPin, keeping empty div for grid alignment */}
+        <div /> {/* Empty space for location column */}
 
         <div className="flex items-center justify-center">
           {canSync ? (
-            <div className="h-8 w-8 flex items-center justify-center">
+            <div className={iconContainerClasses}>
               {getSectionEquipmentIcon()}
             </div>
           ) : <div />}
@@ -74,11 +77,11 @@ export function EventSectionHeader({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 p-0"
+              className={iconContainerClasses}
               onClick={handleSyncCrew}
               disabled={isSyncing}
             >
-              <Users className="h-5 w-5 text-muted-foreground hover:text-foreground" />
+              <Users className={`${iconClasses} text-muted-foreground hover:text-foreground`} />
             </Button>
           ) : (
             <div />

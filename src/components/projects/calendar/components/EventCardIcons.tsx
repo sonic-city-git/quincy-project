@@ -17,19 +17,22 @@ export function EventCardIcons({
   onViewEquipment,
   onSyncEquipment
 }: EventCardIconsProps) {
+  const iconContainerClasses = "h-8 w-8 flex items-center justify-center";
+  const iconClasses = "h-5 w-5";
+
   return (
     <>
-      <div className="flex items-center justify-center my-auto">
-        <div className="h-8 w-8 flex items-center justify-center">
+      <div className="flex items-center justify-center">
+        <div className={iconContainerClasses}>
           <MapPin 
-            className={`h-5 w-5 ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
+            className={`${iconClasses} ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
           />
         </div>
       </div>
 
-      <div className="flex items-center justify-center my-auto">
+      <div className="flex items-center justify-center">
         {event.type.needs_equipment && (
-          <div className="h-8 w-8 flex items-center justify-center">
+          <div className={iconContainerClasses}>
             <EquipmentIcon
               isSynced={isSynced}
               isEditingDisabled={isEditingDisabled}
@@ -40,10 +43,10 @@ export function EventCardIcons({
         )}
       </div>
 
-      <div className="flex items-center justify-center my-auto">
+      <div className="flex items-center justify-center">
         {event.type.needs_crew && (
-          <div className="h-8 w-8 flex items-center justify-center">
-            <Users className={`h-5 w-5 ${isEditingDisabled ? 'text-green-500' : 'text-muted-foreground'}`} />
+          <div className={iconContainerClasses}>
+            <Users className={`${iconClasses} ${isEditingDisabled ? 'text-green-500' : 'text-muted-foreground'}`} />
           </div>
         )}
       </div>
