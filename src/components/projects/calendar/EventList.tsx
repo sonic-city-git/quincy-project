@@ -28,7 +28,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
   return (
     <div className="space-y-8">
       {proposed.length > 0 && (
-        <Card className="rounded-lg bg-violet-500/5 p-6">
+        <Card className="rounded-lg bg-zinc-800/50 p-6">
           <EventSection
             title="Proposed"
             events={proposed}
@@ -38,7 +38,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
         </Card>
       )}
       {confirmed.length > 0 && (
-        <Card className="rounded-lg bg-blue-500/5 p-6">
+        <Card className="rounded-lg bg-zinc-800/50 p-6">
           <EventSection
             title="Confirmed"
             events={confirmed}
@@ -48,7 +48,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
         </Card>
       )}
       {ready.length > 0 && (
-        <Card className="rounded-lg bg-green-500/5 p-6">
+        <Card className="rounded-lg bg-zinc-800/50 p-6">
           <EventSection
             title="Invoice Ready"
             events={ready}
@@ -58,7 +58,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
         </Card>
       )}
       {cancelled.length > 0 && (
-        <Card className="rounded-lg bg-red-500/5 p-6">
+        <Card className="rounded-lg bg-zinc-800/50 p-6">
           <EventSection
             title="Cancelled"
             events={cancelled}
