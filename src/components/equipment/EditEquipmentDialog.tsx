@@ -11,6 +11,7 @@ import { useFolders } from "@/hooks/useFolders";
 import { DeleteEquipmentAlert } from "./edit/DeleteEquipmentAlert";
 import { RestockDialog } from "./edit/RestockDialog";
 import { EditEquipmentForm } from "./edit/EditEquipmentForm";
+import { EquipmentSuggestions } from "./suggestions/EquipmentSuggestions";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -172,15 +173,22 @@ export function EditEquipmentDialog({
             </DialogDescription>
           </DialogHeader>
           
-          <EditEquipmentForm
-            form={form}
-            folders={folders}
-            foldersLoading={foldersLoading}
-            isPending={isPending}
-            onShowDeleteAlert={() => setShowDeleteAlert(true)}
-            onShowRestockDialog={() => setShowRestockDialog(true)}
-            onSubmit={onSubmit}
-          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <EditEquipmentForm
+                form={form}
+                folders={folders}
+                foldersLoading={foldersLoading}
+                isPending={isPending}
+                onShowDeleteAlert={() => setShowDeleteAlert(true)}
+                onShowRestockDialog={() => setShowRestockDialog(true)}
+                onSubmit={onSubmit}
+              />
+            </div>
+            <div>
+              <EquipmentSuggestions equipment={equipment} />
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
