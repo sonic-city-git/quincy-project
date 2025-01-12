@@ -1,10 +1,10 @@
 import { CalendarEvent } from "@/types/events";
-import { EventSectionContent } from "./components/EventSectionContent";
-import { EventSectionHeader } from "./components/EventSectionHeader";
+import { EventSection } from "./EventSection";
 import { EventListEmpty } from "./components/EventListEmpty";
 import { EventListLoading } from "./components/EventListLoading";
 import { useEventUpdate } from "@/hooks/useEventUpdate";
 import { useEventDialog } from "@/hooks/useEventDialog";
+import { groupEventsByStatus } from "./utils/eventGroups";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -32,32 +32,40 @@ export function EventList({ events, projectId, isLoading }: EventListProps) {
     openEditDialog(event);
   };
 
-  const upcomingEvents = events.filter(event => new Date(event.date) >= new Date());
-  const pastEvents = events.filter(event => new Date(event.date) < new Date());
+  const groupedEvents = groupEventsByStatus(events);
 
   return (
     <div className="space-y-6">
-      {upcomingEvents.length > 0 && (
-        <div>
-          <EventSectionHeader title="Upcoming Events" />
-          <EventSectionContent 
-            events={upcomingEvents} 
-            onStatusChange={handleStatusChange}
-            onEdit={handleEdit}
-          />
-        </div>
-      )}
-
-      {pastEvents.length > 0 && (
-        <div>
-          <EventSectionHeader title="Past Events" />
-          <EventSectionContent 
-            events={pastEvents} 
-            onStatusChange={handleStatusChange}
-            onEdit={handleEdit}
-          />
-        </div>
-      )}
+      <EventSection
+        status="proposed"
+        events={groupedEvents.proposed}
+        onStatusChange={handleStatusChange}
+        onEdit={handleEdit}
+      />
+      <EventSection
+        status="confirmed"
+        events={groupedEvents.confirmed}
+        onStatusChange={handleStatusChange}
+        onEdit={handleEdit}
+      />
+      <EventSection
+        status="invoice ready"
+        events={groupedEvents.invoice_ready}
+        onStatusChange={handleStatusChange}
+        onEdit={handleEdit}
+      />
+      <EventSection
+        status="cancelled"
+        events={groupedEvents.cancelled}
+        onStatusChange={handleStatusChange}
+        onEdit={handleEdit}
+      />
+      <EventSection
+        status="done and dusted"
+        events={groupedEvents.pastEvents}
+        onStatusChange={handleStatusChange}
+        onEdit={handleEdit}
+      />
     </div>
   );
 }
