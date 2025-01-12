@@ -95,7 +95,7 @@ export function EventActions({
             onClick={handleEdit}
             className="h-10 w-10 text-muted-foreground hover:text-foreground"
           >
-            <Edit2 className="h-6 w-6" />
+            <Edit2 className="h-5 w-5" />
           </Button>
         )}
       </div>
