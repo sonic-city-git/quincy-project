@@ -1,6 +1,7 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Equipment } from "@/integrations/supabase/types/equipment";
+import { formatPrice } from "@/utils/priceFormatters";
 
 interface EquipmentTableRowProps {
   item: Equipment;
@@ -39,7 +40,7 @@ export function EquipmentTableRow({ item, isSelected, onSelect }: EquipmentTable
       </TableCell>
       <TableCell className="w-[150px] text-right">
         <span className="text-sm text-muted-foreground">
-          {item.rental_price ? `${item.rental_price} kr` : '-'}
+          {item.rental_price ? formatPrice(item.rental_price) : '-'}
         </span>
       </TableCell>
     </TableRow>
