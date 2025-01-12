@@ -64,8 +64,7 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
           event_type_id: updatedEvent.type.id,
           status: updatedEvent.status
         })
-        .eq('id', updatedEvent.id)
-        .eq('project_id', projectId);
+        .eq('id', updatedEvent.id);
 
       if (error) throw error;
 
@@ -90,32 +89,39 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
     if (!projectId) return;
 
     try {
-      // First, delete all related equipment for this event
+      console.log('Deleting event equipment...');
       const { error: equipmentDeleteError } = await supabase
         .from('project_event_equipment')
         .delete()
         .eq('event_id', event.id);
 
-      if (equipmentDeleteError) throw equipmentDeleteError;
+      if (equipmentDeleteError) {
+        console.error('Error deleting event equipment:', equipmentDeleteError);
+        throw equipmentDeleteError;
+      }
 
-      // Then, delete all related roles for this event
+      console.log('Deleting event roles...');
       const { error: rolesDeleteError } = await supabase
         .from('project_event_roles')
         .delete()
         .eq('event_id', event.id);
 
-      if (rolesDeleteError) throw rolesDeleteError;
+      if (rolesDeleteError) {
+        console.error('Error deleting event roles:', rolesDeleteError);
+        throw rolesDeleteError;
+      }
 
-      // Finally, delete the event itself
+      console.log('Deleting event...');
       const { error: eventDeleteError } = await supabase
         .from('project_events')
         .delete()
-        .eq('id', event.id)
-        .eq('project_id', projectId);
+        .eq('id', event.id);
 
-      if (eventDeleteError) throw eventDeleteError;
+      if (eventDeleteError) {
+        console.error('Error deleting event:', eventDeleteError);
+        throw eventDeleteError;
+      }
 
-      // Invalidate and refetch all relevant queries
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
         queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] }),
@@ -129,7 +135,7 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
 
       closeEditDialog();
     } catch (error) {
-      console.error('Error deleting event:', error);
+      console.error('Error in handleDeleteEvent:', error);
       toast("Error", {
         description: "Failed to delete event",
         style: { background: 'red', color: 'white' }
