@@ -40,7 +40,6 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
 
   useEffect(() => {
     if (search) {
-      // Get all folder IDs that contain matching equipment
       const relevantFolders = new Set<string>();
       equipment.forEach(item => {
         const searchLower = search.toLowerCase();
@@ -48,10 +47,7 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
                        (item.code && item.code.toLowerCase().includes(searchLower));
         
         if (matches && item.folder_id) {
-          // Add the direct folder
           relevantFolders.add(item.folder_id);
-          
-          // Find and add parent folder if it exists
           const parentFolder = folders.find(f => {
             const subfolder = folders.find(sf => sf.id === item.folder_id);
             return subfolder?.parent_id === f.id;
@@ -65,13 +61,11 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
       setOpenFolders(Array.from(relevantFolders));
       setOpenSubfolders(Array.from(relevantFolders));
     } else {
-      // Clear open folders when search is empty
       setOpenFolders([]);
       setOpenSubfolders([]);
     }
   }, [search, equipment, folders]);
 
-  // Filter equipment based on search
   const filteredEquipment = equipment.filter(item => {
     const searchLower = search.toLowerCase();
     return (
@@ -82,8 +76,6 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
 
   const organizeEquipment = () => {
     const structure: FolderStructure = {};
-
-    // Get main folders
     const mainFolders = folders.filter(f => !f.parent_id);
     mainFolders.forEach(folder => {
       structure[folder.id] = {
@@ -93,7 +85,6 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
       };
     });
 
-    // Get subfolders and initialize them
     folders.filter(f => f.parent_id).forEach(subfolder => {
       if (subfolder.parent_id && structure[subfolder.parent_id]) {
         structure[subfolder.parent_id].subfolders[subfolder.id] = {
@@ -103,20 +94,16 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
       }
     });
 
-    // Organize filtered equipment into folders
     filteredEquipment.forEach(item => {
       if (item.folder_id) {
-        // Check if it belongs to a subfolder
         const parentFolder = folders.find(f => {
           const subfolder = folders.find(sf => sf.id === item.folder_id);
           return subfolder?.parent_id === f.id;
         });
 
         if (parentFolder && structure[parentFolder.id]?.subfolders[item.folder_id]) {
-          // Add to subfolder
           structure[parentFolder.id].subfolders[item.folder_id].equipment.push(item);
         } else if (structure[item.folder_id]) {
-          // Add to main folder
           structure[item.folder_id].equipment.push(item);
         }
       }
@@ -125,7 +112,6 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
     return structure;
   };
 
-  // Calculate folder structure
   const folderStructure = organizeEquipment();
 
   const toggleFolder = (folderId: string) => {
@@ -228,7 +214,7 @@ export function EquipmentSelector({ onSelect, className, projectId, selectedGrou
                               {sub.name}
                             </span>
                           </CollapsibleTrigger>
-                          <CollapsibleContent className="pl-3 space-y-0.5">
+                          <CollapsibleContent className="pl-4 space-y-0.5">
                             {sub.equipment.map(renderEquipmentItem)}
                           </CollapsibleContent>
                         </Collapsible>
