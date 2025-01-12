@@ -253,7 +253,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         key={`${event.date}-${event.name}`} 
         className={`p-4 transition-colors ${getStatusBackground(event.status)}`}
       >
-        <div className="grid grid-cols-[100px_minmax(100px,200px)_30px_30px_1fr_100px_40px_40px] gap-0">
+        <div className="grid grid-cols-[100px_minmax(100px,200px)_30px_30px_1fr_100px_40px_40px] gap-0 items-center">
           <EventHeader event={event} />
           
           <div className="flex items-center justify-center -ml-8">
@@ -273,7 +273,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             )}
           </div>
 
-          <div className="flex items-center -ml-6 ml-5">
+          <div className="flex items-center ml-5">
             <span 
               className={`text-sm px-2 py-1 rounded-md ${EVENT_COLORS[event.type.name]}`}
             >
