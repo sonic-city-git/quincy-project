@@ -346,7 +346,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
               )}
             </div>
 
-            <div /> {/* Empty space for event type column */}
+            <div className="ml-5" /> {/* Empty space for event type column */}
 
             <EventStatusManager
               status={status}
