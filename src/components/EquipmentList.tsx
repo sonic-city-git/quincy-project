@@ -7,7 +7,7 @@ import { EquipmentTable } from "./equipment/EquipmentTable";
 import { EquipmentListHeader } from "./equipment/EquipmentListHeader";
 import { useEquipmentFilters } from "./equipment/filters/useEquipmentFilters";
 import { useFolders } from "@/hooks/useFolders";
-import { Equipment } from "@/types/equipment";
+import { Equipment } from "@/integrations/supabase/types/equipment";
 
 export function EquipmentList() {
   const { equipment = [], loading, refetch } = useEquipment();
@@ -76,6 +76,11 @@ export function EquipmentList() {
               <div className="h-full overflow-auto">
                 {parentFolders.map(parentFolder => {
                   const subfolders = folders.filter(f => f.parent_id === parentFolder.id);
+                  const hasVisibleSubfolders = subfolders.some(subfolder => 
+                    (groupedEquipment[subfolder.id] || []).length > 0
+                  );
+
+                  if (!hasVisibleSubfolders) return null;
 
                   return (
                     <div key={parentFolder.id} className="mb-4">
@@ -111,7 +116,6 @@ export function EquipmentList() {
                   );
                 })}
                 
-                {/* Show unassigned equipment if any */}
                 {groupedEquipment['unassigned']?.length > 0 && (
                   <div className="p-2">
                     <div className="flex items-center gap-2 mb-2">
