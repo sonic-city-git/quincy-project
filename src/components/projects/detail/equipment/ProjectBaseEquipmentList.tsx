@@ -112,7 +112,7 @@ export function ProjectBaseEquipmentList({
             <div 
               key={group.id} 
               className={cn(
-                "rounded-lg border transition-all duration-200",
+                "rounded-lg border transition-all duration-200 relative",
                 isSelected 
                   ? "border-primary/20 bg-primary/5" 
                   : "border-zinc-800/50 bg-zinc-900/50"
@@ -122,7 +122,7 @@ export function ProjectBaseEquipmentList({
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, group.id)}
             >
-              <div className="bg-inherit rounded-t-lg">
+              <div className="bg-inherit rounded-t-lg relative z-10">
                 <h3 
                   className={cn(
                     "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
@@ -135,7 +135,7 @@ export function ProjectBaseEquipmentList({
                   {group.name}
                 </h3>
               </div>
-              <div className="p-3 space-y-2">
+              <div className="p-3 space-y-2 relative z-10">
                 {groupEquipment.map((item) => (
                   <ProjectEquipmentItem
                     key={item.id}
@@ -155,7 +155,7 @@ export function ProjectBaseEquipmentList({
         
         <div 
           className={cn(
-            "rounded-lg border transition-all duration-200",
+            "rounded-lg border transition-all duration-200 relative",
             selectedGroupId === null 
               ? "border-primary/20 bg-primary/5" 
               : "border-zinc-800/50 bg-zinc-900/50"
@@ -165,7 +165,7 @@ export function ProjectBaseEquipmentList({
           onDragLeave={handleDragLeave}
           onDrop={(e) => handleDrop(e, null)}
         >
-          <div className="bg-inherit rounded-t-lg">
+          <div className="bg-inherit rounded-t-lg relative z-10">
             <h3 
               className={cn(
                 "text-sm font-medium px-4 py-2 cursor-pointer transition-colors",
@@ -178,7 +178,7 @@ export function ProjectBaseEquipmentList({
               Ungrouped Equipment
             </h3>
           </div>
-          <div className="p-3 space-y-2">
+          <div className="p-3 space-y-2 relative z-10">
             {ungroupedEquipment.map((item) => (
               <ProjectEquipmentItem
                 key={item.id}
