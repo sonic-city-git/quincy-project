@@ -49,9 +49,9 @@ export function EventSectionHeader({
         
         {/* Empty space for revenue */}
         <div className="col-span-1" />
-        
-        {/* Status manager alignment - now spans two columns to match EventCardGrid */}
-        <div className="col-span-2 flex justify-end">
+
+        {/* Status manager in second to last column */}
+        <div className="flex justify-end">
           {onStatusChange && (
             <EventStatusManager
               status={title.toLowerCase()}
@@ -61,6 +61,9 @@ export function EventSectionHeader({
             />
           )}
         </div>
+
+        {/* Empty last column */}
+        <div className="col-span-1" />
       </EventSectionHeaderGrid>
     </div>
   );
