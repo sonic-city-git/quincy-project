@@ -14,13 +14,15 @@ export function OwnerSelect({ value, onChange, error, required }: OwnerSelectPro
   const { crew, loading } = useCrew();
   const { folders } = useFolders();
   
-  // Find the Sonic City folder
-  const sonicCityFolder = folders?.find(folder => folder.name === 'Sonic City');
+  // Find the Sonic City folder ID
+  const sonicCityFolderId = folders?.find(folder => 
+    folder.name === 'Sonic City'
+  )?.id;
   
   // Filter crew members to only include those from Sonic City folder
   // and exclude the dev@soniccity.no email
   const filteredCrew = crew?.filter(member => 
-    member.folder_id === sonicCityFolder?.id &&
+    member.folder_id === sonicCityFolderId &&
     member.email !== 'dev@soniccity.no'
   ) || [];
 
