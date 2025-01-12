@@ -108,47 +108,41 @@ export function GroupSelector({ projectId, selectedGroupId, onGroupSelect }: Gro
             aria-expanded={isGroupPopoverOpen}
             className="w-[200px] justify-between"
           >
-            {groupSearch || "Select or create group..."}
+            {selectedGroupId ? projectGroups.find(g => g.id === selectedGroupId)?.name : "Select group..."}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
-          {isLoadingGroups ? (
-            <div className="p-4 flex items-center justify-center">
-              <Loader2 className="h-4 w-4 animate-spin" />
-            </div>
-          ) : (
-            <Command>
-              <CommandInput
-                placeholder="Search groups..."
-                value={groupSearch}
-                onValueChange={setGroupSearch}
-              />
-              {noMatchingGroups && showCreateOption && (
-                <CommandEmpty>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start"
-                    onClick={() => createGroup(groupSearch)}
+          <Command>
+            <CommandInput
+              placeholder="Search groups..."
+              value={groupSearch}
+              onValueChange={setGroupSearch}
+            />
+            <CommandEmpty>
+              {showCreateOption && (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => createGroup(groupSearch)}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create "{groupSearch}"
+                </Button>
+              )}
+            </CommandEmpty>
+            {filteredGroups.length > 0 && (
+              <CommandGroup>
+                {filteredGroups.map(group => (
+                  <CommandItem
+                    key={group.id}
+                    onSelect={() => createGroup(group.name)}
                   >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Create "{groupSearch}"
-                  </Button>
-                </CommandEmpty>
-              )}
-              {filteredGroups.length > 0 && (
-                <CommandGroup>
-                  {filteredGroups.map(group => (
-                    <CommandItem
-                      key={group.id}
-                      onSelect={() => createGroup(group.name)}
-                    >
-                      {group.name}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              )}
-            </Command>
-          )}
+                    {group.name}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            )}
+          </Command>
         </PopoverContent>
       </Popover>
 
