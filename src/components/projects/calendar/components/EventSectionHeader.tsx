@@ -19,7 +19,6 @@ export function EventSectionHeader({
   onStatusChange 
 }: EventSectionHeaderProps) {
   const isCancelled = title.toLowerCase() === 'cancelled';
-  const isInvoiceReady = title.toLowerCase() === 'invoice ready';
   const totalRevenue = events.reduce((sum, event) => sum + (event.revenue || 0), 0);
 
   return (
@@ -40,14 +39,14 @@ export function EventSectionHeader({
         
         {/* Equipment icon column */}
         <div className="flex items-center justify-center">
-          {!isCancelled && !isInvoiceReady && eventType?.needs_equipment && (
+          {!isCancelled && eventType?.needs_equipment && (
             <Package className="h-6 w-6 text-muted-foreground" />
           )}
         </div>
         
         {/* Crew icon column */}
         <div className="flex items-center justify-center">
-          {!isCancelled && !isInvoiceReady && eventType?.needs_crew && (
+          {!isCancelled && eventType?.needs_crew && (
             <Users className="h-6 w-6 text-muted-foreground" />
           )}
         </div>
