@@ -259,7 +259,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         key={`${event.date}-${event.name}`} 
         className={`p-4 transition-colors ${getStatusBackground(event.status)}`}
       >
-        <div className="grid grid-cols-[100px_200px_30px_30px_30px_1fr_100px_40px_40px] gap-2 items-center">
+        <div className="grid grid-cols-[100px_200px_30px_30px_30px_1fr_100px_40px_40px] items-center gap-0">
           <EventHeader event={event} />
           
           <div className="flex items-center justify-center my-auto">
@@ -298,14 +298,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
                 <Users className={`h-6 w-6 ${isEditingDisabled(event.status) ? 'text-green-500' : 'text-muted-foreground'}`} />
               </div>
             )}
-          </div>
-
-          <div className="flex items-center">
-            <span 
-              className={`text-sm px-2 py-1 rounded-md ${EVENT_COLORS[event.type.name]}`}
-            >
-              {event.type.name}
-            </span>
           </div>
 
           <div className="flex items-center justify-end text-sm font-medium">
