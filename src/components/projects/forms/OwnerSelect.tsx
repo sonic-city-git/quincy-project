@@ -2,6 +2,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCrew } from "@/hooks/useCrew";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface OwnerSelectProps {
   value?: string;
@@ -33,15 +34,32 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
         <SelectContent>
           <ScrollArea className="h-[200px] w-full">
             <div className="p-1">
-              {filteredCrew.map(member => (
-                <SelectItem 
-                  key={member.id} 
-                  value={member.id}
-                  className="cursor-pointer rounded-sm hover:bg-accent"
-                >
-                  {member.name}
-                </SelectItem>
-              ))}
+              {filteredCrew.map(member => {
+                const initials = member.name
+                  .split(' ')
+                  .map(n => n[0])
+                  .join('')
+                  .toUpperCase();
+
+                return (
+                  <SelectItem 
+                    key={member.id} 
+                    value={member.id}
+                    className="cursor-pointer rounded-sm hover:bg-accent flex items-center gap-2 py-2"
+                  >
+                    <Avatar className="h-6 w-6">
+                      {member.email && (
+                        <AvatarImage 
+                          src={`https://www.gravatar.com/avatar/${Buffer.from(member.email).toString('hex')}?d=404`}
+                          alt={member.name}
+                        />
+                      )}
+                      <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                    </Avatar>
+                    {member.name}
+                  </SelectItem>
+                );
+              })}
             </div>
           </ScrollArea>
         </SelectContent>

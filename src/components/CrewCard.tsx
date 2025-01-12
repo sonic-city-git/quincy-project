@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Phone, Folder } from "lucide-react";
 import { CrewRole } from "@/hooks/useCrewRoles";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface CrewCardProps {
   name: string;
@@ -11,11 +12,24 @@ interface CrewCardProps {
 }
 
 export function CrewCard({ name, email, phone, folderName, roles = [] }: CrewCardProps) {
+  // Get initials for avatar fallback
+  const initials = name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
+
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
       <CardHeader>
         <CardTitle className="flex justify-between items-center">
-          <span className="text-lg font-semibold">{name}</span>
+          <div className="flex items-center gap-3">
+            <Avatar>
+              {email && <AvatarImage src={`https://www.gravatar.com/avatar/${Buffer.from(email).toString('hex')}?d=404`} />}
+              <AvatarFallback>{initials}</AvatarFallback>
+            </Avatar>
+            <span className="text-lg font-semibold">{name}</span>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>
