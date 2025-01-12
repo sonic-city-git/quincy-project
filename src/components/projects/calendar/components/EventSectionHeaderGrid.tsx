@@ -6,7 +6,7 @@ interface EventSectionHeaderGridProps {
 
 export function EventSectionHeaderGrid({ children }: EventSectionHeaderGridProps) {
   return (
-    <div className="grid grid-cols-[100px_165px_30px_30px_30px_30px_150px_100px_40px_40px] gap-2 items-center">
+    <div className="grid grid-cols-[100px_140px_30px_30px_30px_30px_150px_100px_40px_40px] gap-2 items-center">
       {/* Column widths breakdown:
         1. Date: 100px
         2. Event name: 165px
