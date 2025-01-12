@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ProjectEquipmentItemProps {
   item: ProjectEquipment;
@@ -15,6 +16,7 @@ interface ProjectEquipmentItemProps {
 
 export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectEquipmentItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const queryClient = useQueryClient();
 
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('application/json', JSON.stringify({
@@ -29,6 +31,15 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
     if (newQuantity < 1) return;
     
     setIsUpdating(true);
+
+    // Optimistically update the UI
+    queryClient.setQueryData(['project-equipment', item.project_id], (oldData: ProjectEquipment[] | undefined) => {
+      if (!oldData) return [{ ...item, quantity: newQuantity }];
+      return oldData.map(equipment => 
+        equipment.id === item.id ? { ...equipment, quantity: newQuantity } : equipment
+      );
+    });
+    
     try {
       const { error } = await supabase
         .from('project_equipment')
@@ -37,10 +48,23 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
 
       if (error) throw error;
       
+      // Invalidate and refetch to ensure consistency
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment', item.project_id] 
+      });
+      
       toast.success('Quantity updated');
     } catch (error) {
       console.error('Error updating quantity:', error);
       toast.error('Failed to update quantity');
+      
+      // Revert optimistic update on error
+      queryClient.setQueryData(['project-equipment', item.project_id], (oldData: ProjectEquipment[] | undefined) => {
+        if (!oldData) return [item];
+        return oldData.map(equipment => 
+          equipment.id === item.id ? item : equipment
+        );
+      });
     } finally {
       setIsUpdating(false);
     }
