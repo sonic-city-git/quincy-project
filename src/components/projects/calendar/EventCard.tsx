@@ -266,9 +266,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="h-6 w-6 flex items-center justify-center">
+                  <div className="h-8 w-8 flex items-center justify-center">
                     <MapPin 
-                      className={`h-4 w-4 ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
+                      className={`h-5 w-5 ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
                     />
                   </div>
                 </TooltipTrigger>
@@ -281,7 +281,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
           <div className="flex items-center justify-center">
             {event.type.needs_equipment && (
-              <div className="h-6 w-6 flex items-center justify-center">
+              <div className="h-8 w-8 flex items-center justify-center">
                 <EquipmentIcon
                   isSynced={isSynced}
                   isEditingDisabled={isEditingDisabled(event.status)}
@@ -294,8 +294,8 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
           <div className="flex items-center justify-center">
             {event.type.needs_crew && (
-              <div className="h-6 w-6 flex items-center justify-center">
-                <Users className={isEditingDisabled(event.status) ? 'text-green-500' : 'text-muted-foreground'} />
+              <div className="h-8 w-8 flex items-center justify-center">
+                <Users className={`h-5 w-5 ${isEditingDisabled(event.status) ? 'text-green-500' : 'text-muted-foreground'}`} />
               </div>
             )}
           </div>
