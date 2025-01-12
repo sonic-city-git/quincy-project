@@ -2,7 +2,7 @@ import { EventStatusManager } from "../EventStatusManager";
 import { CalendarEvent, EventType } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
-import { Package, MapPin, Users } from "lucide-react";
+import { Package, MapPin } from "lucide-react";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -30,28 +30,22 @@ export function EventSectionHeader({
         </div>
         
         {/* Location icon column */}
-        <div className="flex items-center justify-center">
+        <div className="col-span-1">
           <MapPin className="h-5 w-5 text-muted-foreground" />
         </div>
         
         {/* Empty space */}
-        <div className="flex items-center justify-center">
-          <div className="w-5" />
-        </div>
+        <div className="col-span-1" />
         
         {/* Equipment icon column */}
-        <div className="flex items-center justify-center">
+        <div className="col-span-1">
           {eventType?.needs_equipment && (
             <Package className="h-5 w-5 text-muted-foreground" />
           )}
         </div>
         
         {/* Crew icon column */}
-        <div className="flex items-center justify-center">
-          {eventType?.needs_crew && (
-            <Users className="h-5 w-5 text-muted-foreground" />
-          )}
-        </div>
+        <div className="col-span-1" />
 
         {/* Event type column */}
         <div className="col-span-1" />
