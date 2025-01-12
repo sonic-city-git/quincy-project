@@ -1,7 +1,8 @@
-import { Brush, ChevronDown, Package, Users } from "lucide-react";
+import { Brush, Package, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EventStatusManager } from "../EventStatusManager";
 import { CalendarEvent } from "@/types/events";
+import { formatPrice } from "@/utils/priceFormatters";
 
 interface EventSectionHeaderProps {
   status: string;
@@ -28,27 +29,8 @@ export function EventSectionHeader({
   onStatusChange,
   isCancelled
 }: EventSectionHeaderProps) {
-  const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat('nb-NO', {
-      style: 'currency',
-      currency: 'NOK',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount).replace('NOK', 'kr').replace('.', ',');
-  };
-
   const iconContainerClasses = "h-10 w-10 flex items-center justify-center";
   const iconClasses = "h-6 w-6";
-
-  const getSectionEquipmentIcon = () => {
-    if (sectionSyncStatus === 'no-equipment') {
-      return <Package className={`${iconClasses} text-muted-foreground`} />;
-    }
-    if (sectionSyncStatus === 'out-of-sync') {
-      return <Package className={`${iconClasses} text-blue-500`} />;
-    }
-    return <Package className={`${iconClasses} text-green-500`} />;
-  };
 
   return (
     <div className="p-3">
@@ -65,15 +47,21 @@ export function EventSectionHeader({
         <div /> {/* Empty space for location column */}
 
         <div className="flex items-center justify-center">
-          {canSync ? (
+          {canSync && (
             <div className={iconContainerClasses}>
-              {getSectionEquipmentIcon()}
+              {sectionSyncStatus === 'no-equipment' ? (
+                <Package className={`${iconClasses} text-muted-foreground`} />
+              ) : sectionSyncStatus === 'out-of-sync' ? (
+                <Package className={`${iconClasses} text-blue-500`} />
+              ) : (
+                <Package className={`${iconClasses} text-green-500`} />
+              )}
             </div>
-          ) : <div />}
+          )}
         </div>
 
         <div className="flex items-center justify-center">
-          {canSync ? (
+          {canSync && (
             <Button
               variant="ghost"
               size="icon"
@@ -83,8 +71,6 @@ export function EventSectionHeader({
             >
               <Users className={`${iconClasses} text-muted-foreground hover:text-foreground`} />
             </Button>
-          ) : (
-            <div />
           )}
         </div>
 

@@ -9,6 +9,7 @@ import { EventActions } from "./components/EventActions";
 import { Card } from "@/components/ui/card";
 import { EventCardHeader } from "./components/EventCardHeader";
 import { EventCardIcons } from "./components/EventCardIcons";
+import { formatPrice } from "@/utils/priceFormatters";
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -212,16 +213,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
       console.error('Error fetching equipment differences:', error);
       toast.error('Failed to fetch equipment differences');
     }
-  };
-
-  const formatPrice = (amount: number | null | undefined) => {
-    if (amount === null || amount === undefined) return "-";
-    return new Intl.NumberFormat('nb-NO', {
-      style: 'currency',
-      currency: 'NOK',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(amount);
   };
 
   return (
