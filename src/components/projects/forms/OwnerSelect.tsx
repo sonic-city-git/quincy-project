@@ -53,20 +53,22 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
                     value={member.id}
                     className="flex items-center gap-3 py-2 px-3 cursor-pointer rounded-sm hover:bg-accent"
                   >
-                    <Avatar className="h-8 w-8 flex-shrink-0">
-                      {member.avatar_url ? (
-                        <AvatarImage 
-                          src={member.avatar_url} 
-                          alt={member.name} 
-                          className="object-cover"
-                        />
-                      ) : (
-                        <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
-                          {initials}
-                        </AvatarFallback>
-                      )}
-                    </Avatar>
-                    <span className="truncate">{member.name}</span>
+                    <div className="flex items-center gap-3 w-full">
+                      <Avatar className="h-8 w-8 flex-shrink-0">
+                        {member.avatar_url ? (
+                          <AvatarImage 
+                            src={member.avatar_url} 
+                            alt={member.name} 
+                            className="object-cover"
+                          />
+                        ) : (
+                          <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
+                            {initials}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <span className="truncate">{member.name}</span>
+                    </div>
                   </SelectItem>
                 );
               })}
