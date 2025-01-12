@@ -1,15 +1,15 @@
 import { CalendarEvent } from "@/types/events";
+import { EVENT_COLORS } from "@/constants/eventColors";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { useState, useEffect } from 'react';
+import { useQueryClient } from "@tanstack/react-query";
+import { EquipmentDialog } from "./components/EquipmentDialog";
+import { EventActions } from "./components/EventActions";
 import { Card } from "@/components/ui/card";
 import { EventCardHeader } from "./components/EventCardHeader";
 import { EventCardIcons } from "./components/EventCardIcons";
-import { EventStatusBadge } from "./components/EventStatusBadge";
-import { EventRevenue } from "./components/EventRevenue";
-import { EventActions } from "./components/EventActions";
-import { EventEquipmentSync } from "./components/EventEquipmentSync";
-import { useState } from 'react';
-import { EquipmentDialog } from "./components/EquipmentDialog";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { formatPrice } from "@/utils/priceFormatters";
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -17,30 +17,15 @@ interface EventCardProps {
   onEdit?: (event: CalendarEvent) => void;
 }
 
-interface ProjectEquipment {
-  id: string;
-  quantity: number;
-  equipment: {
-    name: string;
-    code: string;
-  };
-  group: {
-    name: string;
-  };
-}
-
 export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
+  const [isSynced, setIsSynced] = useState(true);
   const [isEquipmentDialogOpen, setIsEquipmentDialogOpen] = useState(false);
   const [equipmentDifference, setEquipmentDifference] = useState({
-    added: [] as ProjectEquipment[],
-    removed: [] as ProjectEquipment[],
-    changed: [] as Array<{
-      item: ProjectEquipment;
-      oldQuantity: number;
-      newQuantity: number;
-    }>
+    added: [],
+    removed: [],
+    changed: []
   });
-  const [isSynced, setIsSynced] = useState(true);
+  const queryClient = useQueryClient();
 
   const isEditingDisabled = (status: string) => {
     return ['cancelled', 'invoice ready'].includes(status);
@@ -55,6 +40,113 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         return 'bg-zinc-800/45 hover:bg-zinc-800/50';
       default:
         return 'hover:bg-zinc-800/50';
+    }
+  };
+
+  const checkEquipmentStatus = async () => {
+    if (!event.type.needs_equipment) return;
+    
+    try {
+      const { data: eventEquipment } = await supabase
+        .from('project_event_equipment')
+        .select('is_synced')
+        .eq('event_id', event.id);
+
+      const syncStatus = eventEquipment?.every(item => item.is_synced) ?? true;
+      setIsSynced(syncStatus);
+      console.log('Equipment sync status updated:', { eventId: event.id, syncStatus });
+    } catch (error) {
+      console.error('Error checking equipment status:', error);
+      setIsSynced(true);
+    }
+  };
+
+  useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel>;
+
+    if (event.type.needs_equipment) {
+      checkEquipmentStatus();
+
+      channel = supabase
+        .channel(`event-equipment-${event.id}`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'project_event_equipment',
+          filter: `event_id=eq.${event.id}`
+        }, (payload) => {
+          console.log('Received real-time update:', payload);
+          checkEquipmentStatus();
+          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
+        })
+        .subscribe((status) => {
+          console.log(`Subscription status for event ${event.id}:`, status);
+        });
+    }
+
+    return () => {
+      if (channel) {
+        console.log(`Unsubscribing from event ${event.id}`);
+        channel.unsubscribe();
+      }
+    };
+  }, [event.id, event.type.needs_equipment, queryClient]);
+
+  const handleEquipmentOption = async () => {
+    try {
+      const { data: projectEquipment, error: fetchError } = await supabase
+        .from('project_equipment')
+        .select('*')
+        .eq('project_id', event.project_id);
+
+      if (fetchError) throw fetchError;
+
+      if (projectEquipment && projectEquipment.length > 0) {
+        const uniqueEquipment = new Map();
+        
+        projectEquipment.forEach(item => {
+          if (uniqueEquipment.has(item.equipment_id)) {
+            const existing = uniqueEquipment.get(item.equipment_id);
+            existing.quantity += item.quantity;
+            uniqueEquipment.set(item.equipment_id, existing);
+          } else {
+            uniqueEquipment.set(item.equipment_id, item);
+          }
+        });
+
+        const eventEquipment = Array.from(uniqueEquipment.values()).map(item => ({
+          project_id: event.project_id,
+          event_id: event.id,
+          equipment_id: item.equipment_id,
+          quantity: item.quantity,
+          group_id: item.group_id,
+          is_synced: true
+        }));
+
+        const { error: deleteError } = await supabase
+          .from('project_event_equipment')
+          .delete()
+          .eq('event_id', event.id);
+
+        if (deleteError) throw deleteError;
+
+        const { error: insertError } = await supabase
+          .from('project_event_equipment')
+          .insert(eventEquipment);
+
+        if (insertError) throw insertError;
+      }
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
+        queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
+        queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
+      ]);
+
+      toast.success('Equipment list synchronized successfully');
+    } catch (error) {
+      console.error('Error syncing equipment:', error);
+      toast.error('Failed to sync equipment list');
     }
   };
 
@@ -94,13 +186,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
       if (eventError) throw eventError;
 
-      const added: ProjectEquipment[] = [];
-      const removed: ProjectEquipment[] = [];
-      const changed: Array<{
-        item: ProjectEquipment;
-        oldQuantity: number;
-        newQuantity: number;
-      }> = [];
+      const added = [];
+      const removed = [];
+      const changed = [];
 
       const projectMap = new Map(projectEquipment?.map(item => [item.equipment.name, item]) || []);
       const eventMap = new Map(eventEquipment?.map(item => [item.equipment.name, item]) || []);
@@ -139,9 +227,10 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
     }
   };
 
-  const handleSyncEquipment = async () => {
-    toast.success('Equipment synced successfully');
-    setIsSynced(true);
+  const handleEditClick = () => {
+    if (onEdit && !isEditingDisabled(event.status)) {
+      onEdit(event);
+    }
   };
 
   return (
@@ -150,7 +239,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
         key={`${event.date}-${event.name}`} 
         className={`p-3 transition-colors mb-2 ${getStatusBackground(event.status)}`}
       >
-        <div className="grid grid-cols-[100px_1fr_30px_30px_30px_100px_100px_80px] gap-2 items-center min-w-0">
+        <div className="grid grid-cols-[100px_165px_30px_30px_30px_1fr_100px_40px_40px] gap-2 items-center">
           <EventCardHeader event={event} />
           
           <EventCardIcons
@@ -158,25 +247,25 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             isSynced={isSynced}
             isEditingDisabled={isEditingDisabled(event.status)}
             onViewEquipment={viewOutOfSyncEquipment}
-            onSyncEquipment={handleSyncEquipment}
-          />
-
-          <EventEquipmentSync
-            eventId={event.id}
-            projectId={event.project_id}
-            needsEquipment={event.type.needs_equipment}
+            onSyncEquipment={handleEquipmentOption}
           />
 
           <div className="flex items-center px-2">
-            <EventStatusBadge typeName={event.type.name} />
+            <span 
+              className={`text-sm px-2 py-1 rounded-md bg-opacity-75 ${EVENT_COLORS[event.type.name]}`}
+            >
+              {event.type.name}
+            </span>
           </div>
 
-          <EventRevenue revenue={event.revenue} />
+          <div className="flex items-center justify-end text-sm">
+            {formatPrice(event.revenue)}
+          </div>
 
           <EventActions
             event={event}
             onStatusChange={onStatusChange}
-            onEdit={onEdit}
+            onEdit={handleEditClick}
             isEditingDisabled={isEditingDisabled(event.status)}
           />
         </div>
