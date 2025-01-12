@@ -24,13 +24,10 @@ export function EventSectionHeader({
   return (
     <div className="border-b border-border pb-2">
       <EventSectionHeaderGrid>
-        <div className="flex items-center gap-2">
+        <div className="col-span-2 flex items-center gap-2">
           {getStatusIcon(title.toLowerCase() as CalendarEvent['status'])}
           <h3 className="text-lg font-semibold">{title}</h3>
         </div>
-        
-        {/* Empty space for event name */}
-        <div className="col-span-1" />
         
         {/* Icons column alignment */}
         <div className="flex items-center justify-center">
