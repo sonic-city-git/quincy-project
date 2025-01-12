@@ -11,6 +11,7 @@ interface CalendarViewProps {
   onDayClick: (date: Date) => void;
   eventTypes?: EventType[];
   onAddMultipleEvents: (dates: Date[], name: string, eventType: EventType, status: CalendarEvent['status']) => void;
+  onEditEvent: (event: CalendarEvent) => void;
 }
 
 export function CalendarView({
@@ -19,14 +20,13 @@ export function CalendarView({
   events,
   onDayClick,
   eventTypes = [],
-  onAddMultipleEvents
+  onAddMultipleEvents,
+  onEditEvent
 }: CalendarViewProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartTime, setDragStartTime] = useState<number | null>(null);
   const [selectedDates, setSelectedDates] = useState<Date[]>([]);
   const [isMultiEventDialogOpen, setIsMultiEventDialogOpen] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleDayClick = (date: Date) => {
     // Find if there's an event on this date by comparing just the date parts
@@ -41,8 +41,7 @@ export function CalendarView({
     
     if (eventOnDate) {
       console.log('Found event, opening edit dialog for event:', eventOnDate);
-      setSelectedEvent(eventOnDate);
-      setIsEditDialogOpen(true);
+      onEditEvent(eventOnDate);
     } else {
       console.log('No event found, opening add dialog');
       onDayClick(date);
@@ -146,16 +145,6 @@ export function CalendarView({
         dates={selectedDates}
         eventTypes={eventTypes || []}
         onAddEvents={handleAddMultipleEvents}
-      />
-
-      <EventDialog
-        isOpen={isEditDialogOpen}
-        onClose={() => {
-          setIsEditDialogOpen(false);
-          setSelectedEvent(null);
-        }}
-        event={selectedEvent}
-        eventTypes={eventTypes}
       />
     </>
   );

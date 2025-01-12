@@ -14,7 +14,7 @@ import { formatPrice } from "@/utils/priceFormatters";
 interface EventCardProps {
   event: CalendarEvent;
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
-  onEdit?: (event: CalendarEvent) => void;
+  onEdit: (event: CalendarEvent) => void;
 }
 
 export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
@@ -228,7 +228,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   };
 
   const handleEditClick = () => {
-    if (onEdit && !isEditingDisabled(event.status)) {
+    if (!isEditingDisabled(event.status)) {
       onEdit(event);
     }
   };

@@ -77,6 +77,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onDayClick={handleDayClick}
         eventTypes={eventTypes}
         onAddMultipleEvents={handleAddMultipleEvents}
+        onEditEvent={openEditDialog}
       />
 
       <EventDialog
