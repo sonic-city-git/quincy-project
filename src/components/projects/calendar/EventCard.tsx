@@ -64,13 +64,10 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
   const getEquipmentIcon = () => {
     if (!hasEventEquipment) {
-      return <Package className="h-6 w-6 text-yellow-500" />;
+      return <Package className="h-6 w-6 text-gray-400" />;
     }
     if (!isSynced) {
-      if (equipmentDifference.changed.length > 0) {
-        return <RefreshCw className="h-6 w-6 text-blue-500" />;
-      }
-      return <AlertTriangle className="h-6 w-6 text-orange-500" />;
+      return <Package className="h-6 w-6 text-blue-500" />;
     }
     return <Package className="h-6 w-6 text-green-500" />;
   };
