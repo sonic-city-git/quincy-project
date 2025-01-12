@@ -60,7 +60,7 @@ export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) 
     enabled: !!projectId
   });
 
-  const handleAddGroup = async (name: string, sortOrder: number = projectGroups.length) => {
+  const handleAddGroup = async (name: string) => {
     setIsSubmitting(true);
     try {
       // First check if the group already exists
@@ -80,13 +80,18 @@ export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) 
         return;
       }
 
+      // Calculate the next sort order
+      const maxSortOrder = projectGroups.reduce((max, group) => 
+        Math.max(max, group.sort_order || 0), -1);
+      const nextSortOrder = maxSortOrder + 1;
+
       // If the group doesn't exist, create it
       const { data, error } = await supabase
         .from('project_equipment_groups')
         .insert({
           project_id: projectId,
           name,
-          sort_order: sortOrder
+          sort_order: nextSortOrder
         })
         .select()
         .single();
@@ -135,7 +140,7 @@ export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) 
           {equipmentGroups.map(group => (
             <DropdownMenuItem
               key={group.id}
-              onClick={() => handleAddGroup(group.name, group.sort_order)}
+              onClick={() => handleAddGroup(group.name)}
             >
               {group.name}
             </DropdownMenuItem>
