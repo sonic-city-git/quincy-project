@@ -4,6 +4,7 @@ import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
