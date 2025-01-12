@@ -19,6 +19,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useQueryClient } from "@tanstack/react-query";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface EventSectionProps {
   status: CalendarEvent['status'] | 'done and dusted';
@@ -236,7 +242,6 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
     } finally {
       setIsSyncing(false);
     }
-  };
 
   const content = (
     <div className="space-y-2">
@@ -283,23 +288,7 @@ export function EventSection({ status, events, onStatusChange, onEdit }: EventSe
             <div /> {/* Empty space for name column */}
             
             {canSync ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 p-0"
-                    disabled={isSyncing}
-                  >
-                    {getSectionEquipmentIcon()}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <DropdownMenuItem onClick={handleSyncEquipment}>
-                    Sync all {status} from project equipment
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              renderEquipmentIcon()
             ) : (
               <div /> /* Placeholder for equipment column */
             )}
