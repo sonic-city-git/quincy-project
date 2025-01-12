@@ -29,7 +29,6 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   useEffect(() => {
     const fetchSyncStatus = async () => {
       try {
-        console.log('Fetching sync status for event:', event.id);
         const { data, error } = await supabase
           .from('project_event_equipment')
           .select('is_synced')
@@ -105,11 +104,17 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
   const getEquipmentIcon = () => {
     if (!event.type.needs_equipment) return null;
     
-    // Check if there's any equipment in project_event_equipment
-    const hasAssignedEquipment = hasEquipment;
-    console.log('Equipment status:', { hasAssignedEquipment, isSynced });
+    // Check if there's any equipment data
+    const { data: projectEquipment } = await supabase
+      .from('project_equipment')
+      .select('id')
+      .eq('project_id', event.project_id)
+      .limit(1);
     
-    if (!hasAssignedEquipment) {
+    const hasProjectEquipment = projectEquipment && projectEquipment.length > 0;
+    console.log('Equipment status:', { hasProjectEquipment, isSynced });
+    
+    if (!hasProjectEquipment) {
       return <Package className="h-6 w-6 text-muted-foreground" />;
     }
     
