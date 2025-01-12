@@ -13,44 +13,49 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
   return (
-    <div className="space-y-6">
-      <Card className="p-6">
-        <div className="grid grid-cols-12 gap-6 h-[calc(100vh-220px)]">
-          {/* Available Equipment Column - 1/3 width */}
-          <div className="col-span-4 flex flex-col border-r border-border pr-4 h-full overflow-hidden">
-            <div className="flex items-center gap-2 mb-4 pl-2">
-              <Box className="h-5 w-5 text-muted-foreground" />
-              <h2 className="text-lg font-semibold">Available Equipment</h2>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <EquipmentSelector 
-                onSelect={() => {}} 
-                projectId={projectId}
-                selectedGroupId={selectedGroupId}
-              />
-            </div>
-          </div>
-
-          <div className="col-span-8 flex flex-col pl-6 h-full overflow-hidden">
-            <div className="flex items-center justify-between pl-2 mb-4">
-              <div className="flex items-center gap-2">
-                <ListCheck className="h-5 w-5 text-muted-foreground" />
-                <h2 className="text-lg font-semibold">Project Equipment</h2>
+    <div className="space-y-8">
+      <Card className="rounded-lg bg-zinc-800/45 p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Available Equipment Column */}
+          <Card className="rounded-lg bg-zinc-800/45">
+            <div className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Box className="h-5 w-5 text-muted-foreground" />
+                <h2 className="text-lg font-semibold">Available Equipment</h2>
               </div>
-              <GroupSelector 
-                projectId={projectId} 
-                selectedGroupId={selectedGroupId}
-                onGroupSelect={setSelectedGroupId}
-              />
+              <div className="h-[600px]">
+                <EquipmentSelector 
+                  onSelect={() => {}} 
+                  projectId={projectId}
+                  selectedGroupId={selectedGroupId}
+                />
+              </div>
             </div>
-            <div className="flex-1 overflow-hidden">
-              <ProjectBaseEquipmentList 
-                projectId={projectId} 
-                selectedGroupId={selectedGroupId}
-                onGroupSelect={setSelectedGroupId}
-              />
+          </Card>
+          
+          {/* Project Equipment Column */}
+          <Card className="rounded-lg bg-zinc-800/45">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <ListCheck className="h-5 w-5 text-muted-foreground" />
+                  <h2 className="text-lg font-semibold">Project Equipment</h2>
+                </div>
+                <GroupSelector 
+                  projectId={projectId} 
+                  selectedGroupId={selectedGroupId}
+                  onGroupSelect={setSelectedGroupId}
+                />
+              </div>
+              <div className="h-[600px]">
+                <ProjectBaseEquipmentList 
+                  projectId={projectId} 
+                  selectedGroupId={selectedGroupId}
+                  onGroupSelect={setSelectedGroupId}
+                />
+              </div>
             </div>
-          </div>
+          </Card>
         </div>
       </Card>
     </div>
