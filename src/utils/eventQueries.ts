@@ -29,6 +29,7 @@ export const fetchEvents = async (projectId: string) => {
   console.log('Fetched events:', data);
   return (data || []).map(event => ({
     id: event.id,
+    project_id: event.project_id,
     date: new Date(event.date),
     name: event.name,
     type: event.event_types,
@@ -94,6 +95,7 @@ export const createEvent = async (
 
     return {
       id: eventData.id,
+      project_id: eventData.project_id,
       date: new Date(eventData.date),
       name: eventData.name,
       type: eventData.event_types,
