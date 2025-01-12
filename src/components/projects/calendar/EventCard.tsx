@@ -140,7 +140,9 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
   const viewOutOfSyncEquipment = async () => {
     try {
-      // Fetch project equipment
+      console.log('Fetching equipment differences...');
+      
+      // Fetch project equipment with detailed information
       const { data: projectEquipment, error: projectError } = await supabase
         .from('project_equipment')
         .select(`
@@ -158,7 +160,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
       if (projectError) throw projectError;
 
-      // Fetch event equipment
+      // Fetch event equipment with detailed information
       const { data: eventEquipment, error: eventError } = await supabase
         .from('project_event_equipment')
         .select(`
@@ -176,26 +178,31 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
 
       if (eventError) throw eventError;
 
-      // Calculate differences
+      console.log('Project equipment:', projectEquipment);
+      console.log('Event equipment:', eventEquipment);
+
+      // Create maps using equipment name as key for easier comparison
       const projectMap = new Map(projectEquipment?.map(item => [item.equipment.name, item]) || []);
       const eventMap = new Map(eventEquipment?.map(item => [item.equipment.name, item]) || []);
 
       const added: EquipmentItem[] = [];
       const removed: EquipmentItem[] = [];
 
-      // Find added items (in project but not in event)
+      // Find items in project but not in event (added)
       projectMap.forEach((item, name) => {
         if (!eventMap.has(name)) {
           added.push(item as EquipmentItem);
         }
       });
 
-      // Find removed items (in event but not in project)
+      // Find items in event but not in project (removed)
       eventMap.forEach((item, name) => {
         if (!projectMap.has(name)) {
           removed.push(item as EquipmentItem);
         }
       });
+
+      console.log('Differences found:', { added, removed });
 
       setEquipmentDifference({ added, removed });
       setIsEquipmentDialogOpen(true);
