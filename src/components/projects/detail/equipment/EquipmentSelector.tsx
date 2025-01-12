@@ -1,5 +1,5 @@
 import { EquipmentListHeader } from "@/components/equipment/EquipmentListHeader";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEquipmentFilters } from "@/components/equipment/filters/useEquipmentFilters";
@@ -90,13 +90,14 @@ export function EquipmentSelector({ onSelect, projectId, selectedGroupId }: Equi
     },
   });
 
-  const mainFolders = folders
-    .filter(folder => !folder.parent_id)
-    .sort((a, b) => {
-      const indexA = FOLDER_ORDER.indexOf(a.name);
-      const indexB = FOLDER_ORDER.indexOf(b.name);
-      return indexA - indexB;
-    });
+  const mainFolders = useMemo(() => 
+    folders
+      .filter(folder => !folder.parent_id)
+      .sort((a, b) => {
+        const indexA = FOLDER_ORDER.indexOf(a.name);
+        const indexB = FOLDER_ORDER.indexOf(b.name);
+        return indexA - indexB;
+      }), [folders]);
 
   const getSubfolders = (parentId: string) => {
     const parentFolder = folders.find(f => f.id === parentId);
@@ -112,69 +113,68 @@ export function EquipmentSelector({ onSelect, projectId, selectedGroupId }: Equi
     });
   };
 
+  const filteredEquipment = useMemo(() => filterEquipment(equipment), [equipment, searchQuery, selectedFolders]);
+
   const getFolderEquipment = (folderId: string) => {
-    return filterEquipment(equipment).filter(item => item.folder_id === folderId);
-  };
-
-  // Helper function to check if a folder or its subfolders contain matching equipment
-  const folderHasMatchingEquipment = (folder: Folder): boolean => {
-    const directMatches = getFolderEquipment(folder.id).length > 0;
-    if (directMatches) return true;
-
-    const subfolders = getSubfolders(folder.id);
-    return subfolders.some(subfolder => getFolderEquipment(subfolder.id).length > 0);
+    return filteredEquipment.filter(item => item.folder_id === folderId);
   };
 
   const renderFolderContent = (folder: Folder) => {
     const subfolders = getSubfolders(folder.id);
     const folderEquipment = getFolderEquipment(folder.id);
-    const hasMatchingContent = searchQuery ? folderHasMatchingEquipment(folder) : false;
-
-    return (
-      <div key={folder.id} className="space-y-1">
-        <Collapsible defaultOpen={hasMatchingContent}>
-          <CollapsibleTrigger className="flex items-center w-full hover:bg-accent/50 px-2 h-[28px] text-sm font-medium rounded-md">
-            <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 ui-open:rotate-90" />
-            <span className="ml-1">{folder.name}</span>
-          </CollapsibleTrigger>
-          <CollapsibleContent className="pl-4 space-y-1">
-            {subfolders.map(subfolder => {
-              const subfolderEquipment = getFolderEquipment(subfolder.id);
-              const hasMatchingSubfolderContent = searchQuery ? subfolderEquipment.length > 0 : false;
-
-              return (
-                <Collapsible key={subfolder.id} defaultOpen={hasMatchingSubfolderContent}>
-                  <CollapsibleTrigger className="flex items-center w-full hover:bg-accent/50 px-2 h-[28px] text-sm font-medium rounded-md">
-                    <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 ui-open:rotate-90" />
-                    <span className="ml-1">{subfolder.name}</span>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="pl-4 space-y-1">
-                    {subfolderEquipment.map(item => (
-                      <button
-                        key={item.id}
-                        onClick={() => onSelect(item.id)}
-                        className="w-full text-left px-4 h-[28px] text-sm font-medium hover:bg-accent rounded-md transition-colors"
-                      >
-                        {item.name}
-                      </button>
-                    ))}
-                  </CollapsibleContent>
-                </Collapsible>
-              );
-            })}
-            {folderEquipment.map(item => (
-              <button
-                key={item.id}
-                onClick={() => onSelect(item.id)}
-                className="w-full text-left px-4 h-[28px] text-sm font-medium hover:bg-accent rounded-md transition-colors"
-              >
-                {item.name}
-              </button>
-            ))}
-          </CollapsibleContent>
-        </Collapsible>
-      </div>
+    const hasMatchingEquipment = folderEquipment.length > 0;
+    const hasMatchingSubfolders = subfolders.some(subfolder => 
+      getFolderEquipment(subfolder.id).length > 0
     );
+
+    if (!searchQuery || hasMatchingEquipment || hasMatchingSubfolders) {
+      return (
+        <div key={folder.id} className="space-y-1">
+          <Collapsible defaultOpen={!!searchQuery && (hasMatchingEquipment || hasMatchingSubfolders)}>
+            <CollapsibleTrigger className="flex items-center w-full hover:bg-accent/50 px-2 h-[28px] text-sm font-medium rounded-md">
+              <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 ui-open:rotate-90" />
+              <span className="ml-1">{folder.name}</span>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="pl-4 space-y-1">
+              {subfolders.map(subfolder => {
+                const subfolderEquipment = getFolderEquipment(subfolder.id);
+                if (searchQuery && subfolderEquipment.length === 0) return null;
+
+                return (
+                  <Collapsible key={subfolder.id} defaultOpen={!!searchQuery && subfolderEquipment.length > 0}>
+                    <CollapsibleTrigger className="flex items-center w-full hover:bg-accent/50 px-2 h-[28px] text-sm font-medium rounded-md">
+                      <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 ui-open:rotate-90" />
+                      <span className="ml-1">{subfolder.name}</span>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="pl-4 space-y-1">
+                      {subfolderEquipment.map(item => (
+                        <button
+                          key={item.id}
+                          onClick={() => onSelect(item.id)}
+                          className="w-full text-left px-4 h-[28px] text-sm font-medium hover:bg-accent rounded-md transition-colors"
+                        >
+                          {item.name}
+                        </button>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+                );
+              })}
+              {folderEquipment.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => onSelect(item.id)}
+                  className="w-full text-left px-4 h-[28px] text-sm font-medium hover:bg-accent rounded-md transition-colors"
+                >
+                  {item.name}
+                </button>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
