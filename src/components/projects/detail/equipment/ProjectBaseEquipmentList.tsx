@@ -5,6 +5,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Wand2 } from "lucide-react";
+import { EquipmentSuggestions } from "@/components/equipment/suggestions/EquipmentSuggestions";
+import { useState } from "react";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
@@ -19,6 +23,7 @@ export function ProjectBaseEquipmentList({
 }: ProjectBaseEquipmentListProps) {
   const { equipment, loading, removeEquipment } = useProjectEquipment(projectId);
   const queryClient = useQueryClient();
+  const [selectedEquipmentForSuggestions, setSelectedEquipmentForSuggestions] = useState<string | null>(null);
 
   const { data: groups = [] } = useQuery({
     queryKey: ['project-equipment-groups', projectId],
@@ -175,11 +180,28 @@ export function ProjectBaseEquipmentList({
                 </div>
                 <div className="p-3 space-y-2 relative z-30 bg-background/95">
                   {groupEquipment.map((item) => (
-                    <ProjectEquipmentItem
-                      key={item.id}
-                      item={item}
-                      onRemove={() => removeEquipment(item.id)}
-                    />
+                    <div key={item.id} className="flex items-start gap-2">
+                      <ProjectEquipmentItem
+                        item={item}
+                        onRemove={() => removeEquipment(item.id)}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="flex-shrink-0 h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() => setSelectedEquipmentForSuggestions(item.id)}
+                      >
+                        <Wand2 className="h-4 w-4" />
+                      </Button>
+                      {selectedEquipmentForSuggestions === item.id && (
+                        <div className="absolute right-0 top-0 w-[300px] bg-background border border-border rounded-lg shadow-lg p-4 z-50">
+                          <EquipmentSuggestions 
+                            equipment={item}
+                            onClose={() => setSelectedEquipmentForSuggestions(null)}
+                          />
+                        </div>
+                      )}
+                    </div>
                   ))}
                   {groupEquipment.length === 0 && (
                     <div className="text-sm text-muted-foreground px-1">
@@ -226,11 +248,29 @@ export function ProjectBaseEquipmentList({
             </div>
             <div className="p-3 space-y-2 relative z-30 bg-background/95">
               {ungroupedEquipment.map((item) => (
-                <ProjectEquipmentItem
-                  key={item.id}
-                  item={item}
-                  onRemove={() => removeEquipment(item.id)}
-                />
+                <div key={item.id} className="flex items-start gap-2">
+                  <ProjectEquipmentItem
+                    key={item.id}
+                    item={item}
+                    onRemove={() => removeEquipment(item.id)}
+                  />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="flex-shrink-0 h-8 w-8 text-muted-foreground hover:text-primary"
+                    onClick={() => setSelectedEquipmentForSuggestions(item.id)}
+                  >
+                    <Wand2 className="h-4 w-4" />
+                  </Button>
+                  {selectedEquipmentForSuggestions === item.id && (
+                    <div className="absolute right-0 top-0 w-[300px] bg-background border border-border rounded-lg shadow-lg p-4 z-50">
+                      <EquipmentSuggestions 
+                        equipment={item}
+                        onClose={() => setSelectedEquipmentForSuggestions(null)}
+                      />
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
           </div>
