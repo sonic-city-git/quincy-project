@@ -21,7 +21,7 @@ export function EventCardIcons({
     <>
       <div className="flex justify-center items-center">
         <MapPin 
-          className={`h-4 w-4 ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
+          className={`h-5 w-5 ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
         />
       </div>
 
@@ -38,7 +38,7 @@ export function EventCardIcons({
 
       <div className="flex justify-center items-center">
         {event.type.needs_crew && (
-          <Users className={`h-4 w-4 ${isEditingDisabled ? 'text-green-500' : 'text-muted-foreground'}`} />
+          <Users className={`h-5 w-5 ${isEditingDisabled ? 'text-green-500' : 'text-muted-foreground'}`} />
         )}
       </div>
     </>

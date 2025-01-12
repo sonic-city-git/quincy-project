@@ -26,7 +26,7 @@ export function EquipmentIcon({
   onViewEquipment,
   onSyncEquipment,
 }: EquipmentIconProps) {
-  const iconClasses = `h-4 w-4 ${isSynced ? 'text-green-500' : 'text-blue-500'}`;
+  const iconClasses = `h-5 w-5 ${isSynced ? 'text-green-500' : 'text-blue-500'}`;
 
   // If synced or editing is disabled, just show the icon without any interaction
   if (isSynced || isEditingDisabled) {
@@ -56,7 +56,7 @@ export function EquipmentIcon({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 p-0"
+                  className="h-8 w-8 p-0"
                 >
                   <Package className={iconClasses} />
                 </Button>
