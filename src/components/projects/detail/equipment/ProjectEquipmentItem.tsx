@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { GripVertical, Minus, Plus, X } from "lucide-react";
+import { Minus, Plus, X } from "lucide-react";
 import { ProjectEquipment } from "@/types/equipment";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -16,6 +16,7 @@ interface ProjectEquipmentItemProps {
 
 export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectEquipmentItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const queryClient = useQueryClient();
 
   const handleDragStart = (e: React.DragEvent) => {
@@ -24,6 +25,11 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
       currentGroupId: item.group_id
     }));
     e.dataTransfer.effectAllowed = 'move';
+    setIsDragging(true);
+  };
+
+  const handleDragEnd = () => {
+    setIsDragging(false);
   };
 
   const handleQuantityChange = async (delta: number) => {
@@ -68,20 +74,19 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
   };
 
   return (
-    <Card className="relative p-1.5 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/50 group">
+    <Card className={cn(
+      "relative p-1.5 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/50 group",
+      isDragging && "opacity-50"
+    )}>
       <div className="flex items-center justify-between h-full">
-        <div className="flex items-center gap-1">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-5 w-5 cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity" 
-            draggable
-            onDragStart={handleDragStart}
-          >
-            <GripVertical className="h-3 w-3 text-muted-foreground" />
-          </Button>
-          <h3 className="text-sm font-medium leading-none text-zinc-200">{item.name}</h3>
-        </div>
+        <h3 
+          className="text-sm font-medium leading-none text-zinc-200 cursor-grab active:cursor-grabbing px-1"
+          draggable
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          {item.name}
+        </h3>
         <div className="flex items-center gap-1">
           <div className="flex items-center gap-1 bg-zinc-900/50 rounded-md p-0.5">
             <Button 
