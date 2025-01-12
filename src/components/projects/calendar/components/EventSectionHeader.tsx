@@ -1,4 +1,3 @@
-import { Users } from "lucide-react";
 import { EventStatusManager } from "../EventStatusManager";
 import { CalendarEvent, EventType } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
@@ -35,12 +34,8 @@ export function EventSectionHeader({
         {/* Equipment icon column */}
         <div className="col-span-1" />
         
-        {/* Crew icon column */}
-        <div className="col-span-1">
-          {eventType?.needs_crew && (
-            <Users className="h-6 w-6 text-muted-foreground" />
-          )}
-        </div>
+        {/* Crew icon column - now empty */}
+        <div className="col-span-1" />
         
         {/* Empty space for revenue */}
         <div className="col-span-1" />
