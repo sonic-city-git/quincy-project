@@ -89,43 +89,40 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
     if (!projectId) return;
 
     try {
-      // First, delete all equipment records
-      console.log('Deleting event equipment...');
-      const { error: equipmentError } = await supabase
+      // Delete equipment records
+      const equipmentResult = await supabase
         .from('project_event_equipment')
         .delete()
         .match({ event_id: event.id });
-
-      if (equipmentError) {
-        console.error('Error deleting event equipment:', equipmentError);
-        throw equipmentError;
+        
+      if (equipmentResult.error) {
+        console.error('Error deleting event equipment:', equipmentResult.error);
+        throw new Error(`Failed to delete equipment: ${equipmentResult.error.message}`);
       }
 
-      // Then, delete all role records
-      console.log('Deleting event roles...');
-      const { error: rolesError } = await supabase
+      // Delete role records
+      const rolesResult = await supabase
         .from('project_event_roles')
         .delete()
         .match({ event_id: event.id });
-
-      if (rolesError) {
-        console.error('Error deleting event roles:', rolesError);
-        throw rolesError;
+        
+      if (rolesResult.error) {
+        console.error('Error deleting event roles:', rolesResult.error);
+        throw new Error(`Failed to delete roles: ${rolesResult.error.message}`);
       }
 
-      // Finally, delete the event itself
-      console.log('Deleting event...');
-      const { error: eventError } = await supabase
+      // Delete the event
+      const eventResult = await supabase
         .from('project_events')
         .delete()
         .match({ id: event.id });
-
-      if (eventError) {
-        console.error('Error deleting event:', eventError);
-        throw eventError;
+        
+      if (eventResult.error) {
+        console.error('Error deleting event:', eventResult.error);
+        throw new Error(`Failed to delete event: ${eventResult.error.message}`);
       }
 
-      // Invalidate relevant queries
+      // Invalidate queries
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
         queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] }),
@@ -141,7 +138,7 @@ export function EventList({ events = [], projectId, isLoading }: EventListProps)
     } catch (error) {
       console.error('Error in handleDeleteEvent:', error);
       toast("Error", {
-        description: "Failed to delete event",
+        description: error instanceof Error ? error.message : "Failed to delete event",
         style: { background: 'red', color: 'white' }
       });
     }
