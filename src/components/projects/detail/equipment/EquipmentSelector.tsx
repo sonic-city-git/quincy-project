@@ -61,7 +61,7 @@ export function EquipmentSelector({ onSelect, projectId, selectedGroupId }: Equi
             <button
               key={item.id}
               onClick={() => onSelect(item.id)}
-              className="w-full text-left px-4 py-2 hover:bg-accent rounded-md transition-colors"
+              className="w-full text-left px-4 h-[28px] text-sm font-medium hover:bg-accent rounded-md transition-colors"
             >
               {item.name}
             </button>
