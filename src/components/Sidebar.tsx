@@ -72,21 +72,21 @@ export function Sidebar() {
   ];
 
   return (
-    <div className="flex flex-col h-screen w-64 bg-zinc-900">
-      <div className="px-3 py-4 border-b border-zinc-800">
-        <h1 className="text-5xl font-bold text-accent px-3">
+    <div className="flex flex-col h-screen w-56 bg-zinc-900">
+      <div className="px-2 py-3 border-b border-zinc-800">
+        <h1 className="text-[45px] font-bold text-accent px-2">
           QUINCY
         </h1>
       </div>
-      <div className="px-3 py-2 flex-1">
-        <div className="space-y-1">
+      <div className="px-2 py-1.5 flex-1">
+        <div className="space-y-0.5">
           {links.map((link) => (
             <Link
               key={link.href}
               to={link.href}
               onClick={link.onClick}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all",
+                "flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-zinc-400 transition-all text-sm",
                 link.bgColor,
                 "hover:text-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100",
                 link.isActive && "bg-zinc-800 text-zinc-100"
@@ -98,11 +98,11 @@ export function Sidebar() {
           ))}
         </div>
       </div>
-      <div className="p-3 border-t border-zinc-800">
+      <div className="p-2 border-t border-zinc-800">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="w-full flex justify-center rounded-lg p-2 text-zinc-400 transition-all hover:bg-zinc-800">
-              <Avatar className="h-8 w-8">
+            <button className="w-full flex justify-center rounded-lg p-1.5 text-zinc-400 transition-all hover:bg-zinc-800">
+              <Avatar className="h-7 w-7">
                 <AvatarImage 
                   src={session?.user?.user_metadata?.avatar_url} 
                   alt={session?.user?.email || 'User avatar'} 
