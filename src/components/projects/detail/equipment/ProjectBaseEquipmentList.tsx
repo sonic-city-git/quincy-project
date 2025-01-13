@@ -97,15 +97,46 @@ export function ProjectBaseEquipmentList({
       const item = JSON.parse(data);
 
       if (item.type === 'project-equipment') {
-        // Moving existing project equipment between groups
-        const { error } = await supabase
+        // Check if the equipment already exists in the target group
+        const { data: existingEquipment, error: queryError } = await supabase
           .from('project_equipment')
-          .update({ group_id: groupId })
-          .eq('id', item.id);
+          .select('*')
+          .eq('project_id', projectId)
+          .eq('equipment_id', item.equipment_id)
+          .eq('group_id', groupId)
+          .maybeSingle();
 
-        if (error) throw error;
+        if (queryError) throw queryError;
+
+        if (existingEquipment) {
+          // If it exists in target group, add quantities
+          const { error: updateError } = await supabase
+            .from('project_equipment')
+            .update({ 
+              quantity: (existingEquipment.quantity || 0) + (item.quantity || 1)
+            })
+            .eq('id', existingEquipment.id);
+
+          if (updateError) throw updateError;
+
+          // Delete the original equipment entry
+          const { error: deleteError } = await supabase
+            .from('project_equipment')
+            .delete()
+            .eq('id', item.id);
+
+          if (deleteError) throw deleteError;
+        } else {
+          // If it doesn't exist in target group, just update the group_id
+          const { error: updateError } = await supabase
+            .from('project_equipment')
+            .update({ group_id: groupId })
+            .eq('id', item.id);
+
+          if (updateError) throw updateError;
+        }
       } else {
-        // Check if the equipment already exists in any group for this project
+        // Adding new equipment from equipment list
         const { data: existingEquipment, error: queryError } = await supabase
           .from('project_equipment')
           .select('*')
