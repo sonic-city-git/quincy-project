@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { formatPrice } from "@/utils/priceFormatters";
-import { Trash2 } from "lucide-react";
+import { X } from "lucide-react";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
@@ -182,12 +182,6 @@ export function ProjectBaseEquipmentList({
           <div className="p-4 space-y-6">
             {loading ? (
               <div className="text-sm text-muted-foreground">Loading equipment...</div>
-            ) : equipment.length === 0 ? (
-              <div className="text-sm text-muted-foreground">
-                {selectedGroupId 
-                  ? "No equipment in this group yet" 
-                  : "Select or create a group to add equipment"}
-              </div>
             ) : (
               groups.map((group) => {
                 const groupEquipment = groupedEquipment[group.id] || [];
@@ -213,7 +207,7 @@ export function ProjectBaseEquipmentList({
                           className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-950/50"
                           onClick={() => handleDeleteGroup(group.id)}
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <X className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -225,6 +219,11 @@ export function ProjectBaseEquipmentList({
                           onRemove={() => removeEquipment(item.id)}
                         />
                       ))}
+                      {groupEquipment.length === 0 && (
+                        <div className="text-sm text-muted-foreground py-2">
+                          Drop equipment here
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
