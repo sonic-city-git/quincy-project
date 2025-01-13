@@ -95,7 +95,7 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
             type="number"
             value={item.quantity}
             onChange={(e) => handleQuantityChange(e.target.value)}
-            className="w-12 h-7 bg-zinc-900/50 border-zinc-700 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="w-10 h-7 bg-zinc-900/50 border-zinc-700 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             min={1}
             disabled={isUpdating}
           />
