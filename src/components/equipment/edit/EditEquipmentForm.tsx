@@ -53,7 +53,11 @@ export function EditEquipmentForm({
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter name" {...field} />
+                    <Input 
+                      placeholder="Enter name" 
+                      {...field} 
+                      autoFocus={false} // This prevents auto-focus
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
