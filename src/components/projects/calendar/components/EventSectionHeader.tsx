@@ -4,6 +4,7 @@ import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
 import { Package, Users } from "lucide-react";
 import { useSectionSyncStatus } from "../hooks/useSectionSyncStatus";
 import { Button } from "@/components/ui/button";
+import { EventStatusManager } from "../EventStatusManager";
 import {
   DropdownMenu,
   DropdownMenuContent,
