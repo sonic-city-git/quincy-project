@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -33,6 +34,41 @@ export function EventSectionHeader({
   const isDoneAndDusted = title.toLowerCase() === 'done and dusted';
   const sectionSyncStatus = useSectionSyncStatus(events);
   const queryClient = useQueryClient();
+
+  // Subscribe to real-time updates for project_event_equipment
+  useEffect(() => {
+    if (!events.length) return;
+
+    const channels = events.map(event => {
+      return supabase
+        .channel(`event-equipment-${event.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'project_event_equipment',
+            filter: `event_id=eq.${event.id}`
+          },
+          () => {
+            // Invalidate queries for this specific event
+            queryClient.invalidateQueries({ 
+              queryKey: ['project-event-equipment', event.id] 
+            });
+            queryClient.invalidateQueries({ 
+              queryKey: ['events', event.project_id, event.id] 
+            });
+          }
+        )
+        .subscribe();
+    });
+
+    return () => {
+      channels.forEach(channel => {
+        supabase.removeChannel(channel);
+      });
+    };
+  }, [events, queryClient]);
 
   const handleSyncAllEquipment = async () => {
     try {
@@ -78,16 +114,6 @@ export function EventSectionHeader({
           await supabase
             .from('project_event_equipment')
             .insert(eventEquipment);
-
-          // Immediately invalidate queries for this specific event
-          await Promise.all([
-            queryClient.invalidateQueries({ 
-              queryKey: ['project-event-equipment', event.id] 
-            }),
-            queryClient.invalidateQueries({ 
-              queryKey: ['events', event.project_id, event.id] 
-            })
-          ]);
         }
       }
 
