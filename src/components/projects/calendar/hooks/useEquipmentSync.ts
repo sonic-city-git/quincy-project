@@ -12,14 +12,18 @@ export function useEquipmentSync(event: CalendarEvent) {
     if (!event.type.needs_equipment) return;
     
     try {
-      const { data: eventEquipment } = await supabase
+      console.log('Checking equipment status for event:', event.id);
+      
+      const { data: eventEquipment, error } = await supabase
         .from('project_event_equipment')
         .select('is_synced')
         .eq('event_id', event.id);
 
+      if (error) throw error;
+
       const syncStatus = eventEquipment?.every(item => item.is_synced) ?? true;
+      console.log('Equipment sync status:', { eventId: event.id, syncStatus, eventEquipment });
       setIsSynced(syncStatus);
-      console.log('Equipment sync status updated:', { eventId: event.id, syncStatus });
     } catch (error) {
       console.error('Error checking equipment status:', error);
       setIsSynced(true);
@@ -77,7 +81,7 @@ export function useEquipmentSync(event: CalendarEvent) {
 
       if (insertError) throw insertError;
 
-      setIsSynced(true);
+      await checkEquipmentStatus();
       
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
@@ -89,18 +93,20 @@ export function useEquipmentSync(event: CalendarEvent) {
     } catch (error) {
       console.error('Error syncing equipment:', error);
       toast.error('Failed to sync equipment list');
-      checkEquipmentStatus();
+      await checkEquipmentStatus();
     }
   };
 
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel>;
+    let projectEquipmentChannel: ReturnType<typeof supabase.channel>;
 
-    if (event.type.needs_equipment) {
-      checkEquipmentStatus();
+    const setupSubscriptions = async () => {
+      if (!event.type.needs_equipment) return;
 
-      // Subscribe to changes in project_equipment
-      const projectEquipmentChannel = supabase
+      await checkEquipmentStatus();
+
+      projectEquipmentChannel = supabase
         .channel(`project-equipment-${event.project_id}`)
         .on(
           'postgres_changes',
@@ -110,14 +116,13 @@ export function useEquipmentSync(event: CalendarEvent) {
             table: 'project_equipment',
             filter: `project_id=eq.${event.project_id}`
           },
-          (payload) => {
+          async (payload) => {
             console.log('Project equipment changed:', payload);
-            checkEquipmentStatus();
+            await checkEquipmentStatus();
           }
         )
         .subscribe();
 
-      // Subscribe to changes in project_event_equipment
       channel = supabase
         .channel(`event-equipment-${event.id}`)
         .on(
@@ -128,20 +133,27 @@ export function useEquipmentSync(event: CalendarEvent) {
             table: 'project_event_equipment',
             filter: `event_id=eq.${event.id}`
           },
-          (payload) => {
+          async (payload) => {
             console.log('Event equipment changed:', payload);
-            checkEquipmentStatus();
-            queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
+            await checkEquipmentStatus();
+            await queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
           }
         )
         .subscribe();
+    };
 
-      return () => {
+    setupSubscriptions();
+
+    return () => {
+      if (channel) {
         console.log(`Unsubscribing from event ${event.id}`);
         channel.unsubscribe();
+      }
+      if (projectEquipmentChannel) {
+        console.log(`Unsubscribing from project equipment ${event.project_id}`);
         projectEquipmentChannel.unsubscribe();
-      };
-    }
+      }
+    };
   }, [event.id, event.project_id, event.type.needs_equipment, queryClient]);
 
   return {
