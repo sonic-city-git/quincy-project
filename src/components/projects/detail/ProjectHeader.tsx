@@ -34,7 +34,7 @@ export function ProjectHeader({
         </div>
       </div>
 
-      <Tabs defaultValue={defaultValue} onValueChange={onValueChange}>
+      <Tabs value={defaultValue} onValueChange={onValueChange}>
         <TabsList className="bg-zinc-800/45 p-1 rounded-lg">
           <TabsTrigger 
             value="general" 

@@ -7,29 +7,30 @@ import { Project } from "@/types/projects";
 interface ProjectTabsProps {
   project: Project;
   projectId: string;
+  value: string;
 }
 
-export function ProjectTabs({ project, projectId }: ProjectTabsProps) {
+export function ProjectTabs({ project, projectId, value }: ProjectTabsProps) {
   return (
     <div className="flex-1 overflow-auto">
-      <TabsContent value="general" className="h-full mt-0">
+      <TabsContent value="general" className="h-full mt-0" forceMount={value === "general"}>
         <ProjectGeneralTab 
           project={project}
           projectId={projectId}
         />
       </TabsContent>
 
-      <TabsContent value="equipment" className="h-full mt-0">
+      <TabsContent value="equipment" className="h-full mt-0" forceMount={value === "equipment"}>
         <ProjectEquipmentTab projectId={projectId} />
       </TabsContent>
 
-      <TabsContent value="crew" className="h-full mt-0">
+      <TabsContent value="crew" className="h-full mt-0" forceMount={value === "crew"}>
         <Card className="rounded-lg bg-zinc-800/45 p-6">
           <h2 className="text-xl font-semibold">Crew</h2>
         </Card>
       </TabsContent>
 
-      <TabsContent value="financial" className="h-full mt-0">
+      <TabsContent value="financial" className="h-full mt-0" forceMount={value === "financial"}>
         <Card className="rounded-lg bg-zinc-800/45 p-6">
           <h2 className="text-xl font-semibold">Financial</h2>
         </Card>
