@@ -40,9 +40,6 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
                   {item.name}
                 </h3>
               </div>
-              <div className="text-sm text-muted-foreground">
-                {item.rental_price ? `${item.rental_price.toFixed(2)} kr` : '-'}
-              </div>
             </div>
           </Card>
         ))}
