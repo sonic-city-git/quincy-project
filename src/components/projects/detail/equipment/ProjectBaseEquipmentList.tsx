@@ -89,13 +89,48 @@ export function ProjectBaseEquipmentList({
 
     try {
       if (targetGroupId) {
-        // Update existing equipment to new group instead of inserting
-        const { error: updateError } = await supabase
-          .from('project_equipment')
-          .update({ group_id: targetGroupId })
-          .eq('group_id', groupToDelete);
+        // Get equipment from source group
+        const sourceEquipment = equipment?.filter(item => item.group_id === groupToDelete) || [];
+        
+        // For each piece of equipment in source group
+        for (const item of sourceEquipment) {
+          // Check if equipment exists in target group
+          const { data: existingEquipment } = await supabase
+            .from('project_equipment')
+            .select('*')
+            .eq('project_id', projectId)
+            .eq('equipment_id', item.equipment_id)
+            .eq('group_id', targetGroupId)
+            .maybeSingle();
 
-        if (updateError) throw updateError;
+          if (existingEquipment) {
+            // If exists, update quantity
+            const { error: updateError } = await supabase
+              .from('project_equipment')
+              .update({ 
+                quantity: existingEquipment.quantity + item.quantity 
+              })
+              .eq('id', existingEquipment.id);
+
+            if (updateError) throw updateError;
+
+            // Delete the source equipment
+            const { error: deleteError } = await supabase
+              .from('project_equipment')
+              .delete()
+              .eq('id', item.id);
+
+            if (deleteError) throw deleteError;
+          } else {
+            // If doesn't exist, just update group_id
+            const { error: moveError } = await supabase
+              .from('project_equipment')
+              .update({ group_id: targetGroupId })
+              .eq('id', item.id);
+
+            if (moveError) throw moveError;
+          }
+        }
       } else {
         // Delete all equipment in the group
         const { error: deleteError } = await supabase
