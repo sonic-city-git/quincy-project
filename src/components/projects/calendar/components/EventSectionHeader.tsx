@@ -57,6 +57,13 @@ export function EventSectionHeader({
             }
           });
 
+          // Delete existing equipment for this event
+          await supabase
+            .from('project_event_equipment')
+            .delete()
+            .eq('event_id', event.id);
+
+          // Insert new equipment
           const eventEquipment = Array.from(uniqueEquipment.values()).map(item => ({
             project_id: event.project_id,
             event_id: event.id,
@@ -68,22 +75,23 @@ export function EventSectionHeader({
 
           await supabase
             .from('project_event_equipment')
-            .delete()
-            .eq('event_id', event.id);
-
-          await supabase
-            .from('project_event_equipment')
             .insert(eventEquipment);
+
+          // Immediately invalidate the query for this event
+          await queryClient.invalidateQueries({ 
+            queryKey: ['project-event-equipment', event.id] 
+          });
         }
       }
 
-      // Immediately invalidate queries for all affected events
+      // After all events are processed, invalidate the main queries
       await Promise.all([
-        ...eventsWithEquipment.map(event => 
-          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] })
-        ),
-        queryClient.invalidateQueries({ queryKey: ['events', events[0]?.project_id] }),
-        queryClient.invalidateQueries({ queryKey: ['calendar-events', events[0]?.project_id] })
+        queryClient.invalidateQueries({ 
+          queryKey: ['events', events[0]?.project_id] 
+        }),
+        queryClient.invalidateQueries({ 
+          queryKey: ['calendar-events', events[0]?.project_id] 
+        })
       ]);
 
       toast.success(`Equipment synchronized for all ${title} events`);
