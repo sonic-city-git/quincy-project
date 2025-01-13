@@ -13,7 +13,7 @@ export function ProjectTable({ projects }: ProjectTableProps) {
         <TableRow>
           <TableHead className="w-24 whitespace-nowrap">Project #</TableHead>
           <TableHead>Name</TableHead>
-          <TableHead>Owner</TableHead>
+          <TableHead className="w-[250px]">Owner ↓</TableHead>
           <TableHead>Last Invoiced</TableHead>
         </TableRow>
       </TableHeader>
