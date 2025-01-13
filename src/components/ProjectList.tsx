@@ -7,6 +7,7 @@ import { ProjectListHeader } from "./projects/ProjectListHeader";
 import { useProjectFilters } from "@/hooks/useProjectFilters";
 import { Table } from "./ui/table";
 import { TableHeader } from "./projects/TableHeader";
+import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 
 export function ProjectList() {
   const { projects, loading } = useProjects();
@@ -30,14 +31,28 @@ export function ProjectList() {
   const groupedProjects = filteredProjects.reduce((acc, project) => {
     const ownerName = project.owner?.name || 'No Owner';
     if (!acc[ownerName]) {
-      acc[ownerName] = [];
+      acc[ownerName] = {
+        name: ownerName,
+        avatar_url: project.owner?.avatar_url,
+        projects: []
+      };
     }
-    acc[ownerName].push(project);
+    acc[ownerName].projects.push(project);
     return acc;
-  }, {} as Record<string, typeof filteredProjects>);
+  }, {} as Record<string, { name: string; avatar_url?: string; projects: typeof filteredProjects }>);
 
   // Sort owner names alphabetically
-  const sortedOwners = Object.keys(groupedProjects).sort((a, b) => a.localeCompare(b));
+  const sortedOwners = Object.values(groupedProjects).sort((a, b) => 
+    a.name.localeCompare(b.name)
+  );
+
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase();
+  };
 
   return (
     <div className="h-[calc(100vh-2rem)] py-6">
@@ -59,12 +74,27 @@ export function ProjectList() {
               </div>
               <div className="overflow-y-auto flex-1">
                 <div className="divide-y divide-zinc-800">
-                  {sortedOwners.map((ownerName) => (
-                    <div key={ownerName}>
+                  {sortedOwners.map((owner) => (
+                    <div key={owner.name}>
                       <div className="bg-zinc-800/50 px-4 py-2 font-medium text-sm text-zinc-400">
-                        {ownerName}
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
+                            {owner.avatar_url ? (
+                              <AvatarImage 
+                                src={owner.avatar_url} 
+                                alt={owner.name} 
+                                className="object-cover"
+                              />
+                            ) : (
+                              <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
+                                {getInitials(owner.name)}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                          <span>{owner.name}</span>
+                        </div>
                       </div>
-                      <ProjectTable projects={groupedProjects[ownerName]} />
+                      <ProjectTable projects={owner.projects} />
                     </div>
                   ))}
                 </div>
