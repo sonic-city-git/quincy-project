@@ -27,6 +27,7 @@ export function ProjectBaseEquipmentList({
   const [showGroupDialog, setShowGroupDialog] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [pendingEquipment, setPendingEquipment] = useState<Equipment | null>(null);
+  const [draggedOverGroupId, setDraggedOverGroupId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const { data: groups = [] } = useQuery({
@@ -45,43 +46,73 @@ export function ProjectBaseEquipmentList({
 
   const handleDrop = async (e: React.DragEvent, groupId?: string) => {
     e.preventDefault();
+    setDraggedOverGroupId(null);
+    
     const data = e.dataTransfer.getData('application/json');
     if (!data) return;
 
-    const item = JSON.parse(data) as Equipment;
+    try {
+      const item = JSON.parse(data);
+      
+      // If it's equipment being moved between groups
+      if (item.currentGroupId !== undefined) {
+        const equipmentId = item.id;
+        const { error } = await supabase
+          .from('project_equipment')
+          .update({ group_id: groupId || null })
+          .eq('id', equipmentId);
 
-    // If dropped on a specific group, add to that group
-    if (groupId) {
-      try {
-        await addEquipment(item, groupId);
-        toast.success('Equipment added to group');
-      } catch (error) {
-        console.error('Error adding equipment:', error);
-        toast.error('Failed to add equipment');
+        if (error) throw error;
+        
+        await queryClient.invalidateQueries({ 
+          queryKey: ['project-equipment', projectId] 
+        });
+        
+        toast.success('Equipment moved successfully');
+        return;
       }
-      return;
-    }
 
-    // If dropped in empty space, show group creation dialog
-    setPendingEquipment(item);
-    setShowGroupDialog(true);
+      // If dropped on a specific group, add to that group
+      if (groupId) {
+        try {
+          await addEquipment(item, groupId);
+          toast.success('Equipment added to group');
+        } catch (error) {
+          console.error('Error adding equipment:', error);
+          toast.error('Failed to add equipment');
+        }
+        return;
+      }
+
+      // If dropped in empty space, show group creation dialog
+      setPendingEquipment(item);
+      setShowGroupDialog(true);
+    } catch (error) {
+      console.error('Error handling drop:', error);
+      toast.error('Failed to handle equipment drop');
+    }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent, groupId?: string) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
+    e.dataTransfer.dropEffect = 'move';
+    if (groupId) {
+      setDraggedOverGroupId(groupId);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDraggedOverGroupId(null);
   };
 
   const handleCreateGroup = async () => {
     if (!newGroupName.trim() || !pendingEquipment) return;
 
     try {
-      // Calculate the next sort order
       const maxSortOrder = groups.reduce((max, group) => 
         Math.max(max, group.sort_order || 0), -1);
       const nextSortOrder = maxSortOrder + 1;
 
-      // First create the group
       const { data: newGroup, error: groupError } = await supabase
         .from('project_equipment_groups')
         .insert({
@@ -98,18 +129,14 @@ export function ProjectBaseEquipmentList({
         throw new Error('No group was created');
       }
 
-      // Update the UI to show the new group
       await queryClient.invalidateQueries({ 
         queryKey: ['project-equipment-groups', projectId] 
       });
 
-      // Set the new group as selected
       onGroupSelect(newGroup.id);
 
-      // Add the pending equipment to the new group
       await addEquipment(pendingEquipment, newGroup.id);
       
-      // Reset the dialog state
       setShowGroupDialog(false);
       setNewGroupName("");
       setPendingEquipment(null);
@@ -123,7 +150,6 @@ export function ProjectBaseEquipmentList({
 
   const handleDeleteGroup = async (groupId: string) => {
     try {
-      // First, remove all equipment from the group
       const { error: equipmentError } = await supabase
         .from('project_equipment')
         .delete()
@@ -131,7 +157,6 @@ export function ProjectBaseEquipmentList({
 
       if (equipmentError) throw equipmentError;
 
-      // Then delete the group
       const { error: groupError } = await supabase
         .from('project_equipment_groups')
         .delete()
@@ -139,7 +164,6 @@ export function ProjectBaseEquipmentList({
 
       if (groupError) throw groupError;
 
-      // Update the UI
       await queryClient.invalidateQueries({ 
         queryKey: ['project-equipment-groups', projectId] 
       });
@@ -176,7 +200,8 @@ export function ProjectBaseEquipmentList({
       <div 
         className="h-full"
         onDrop={(e) => handleDrop(e)}
-        onDragOver={handleDragOver}
+        onDragOver={(e) => handleDragOver(e)}
+        onDragLeave={handleDragLeave}
       >
         <ScrollArea className="h-full">
           <div className="p-4 space-y-6">
@@ -189,9 +214,12 @@ export function ProjectBaseEquipmentList({
                 return (
                   <div 
                     key={group.id} 
-                    className="rounded-lg border border-zinc-800 bg-zinc-900/50 overflow-hidden"
+                    className={`rounded-lg border border-zinc-800 bg-zinc-900/50 overflow-hidden transition-colors ${
+                      draggedOverGroupId === group.id ? 'border-blue-500 bg-blue-500/10' : ''
+                    }`}
                     onDrop={(e) => handleDrop(e, group.id)}
-                    onDragOver={handleDragOver}
+                    onDragOver={(e) => handleDragOver(e, group.id)}
+                    onDragLeave={handleDragLeave}
                   >
                     <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
                       <div className="font-medium">
@@ -233,7 +261,6 @@ export function ProjectBaseEquipmentList({
         </ScrollArea>
       </div>
 
-      {/* Create Group Dialog */}
       <Dialog open={showGroupDialog} onOpenChange={setShowGroupDialog}>
         <DialogContent>
           <DialogHeader>
