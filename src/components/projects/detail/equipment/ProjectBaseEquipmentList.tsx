@@ -122,18 +122,21 @@ export function ProjectBaseEquipmentList({
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     const target = e.currentTarget as HTMLElement;
     target.classList.add('bg-primary/5', 'border-primary/20');
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     const target = e.currentTarget as HTMLElement;
     target.classList.remove('bg-primary/5', 'border-primary/20');
   };
 
   const handleDrop = async (e: React.DragEvent, groupId: string) => {
     e.preventDefault();
+    e.stopPropagation();
     const target = e.currentTarget as HTMLElement;
     target.classList.remove('bg-primary/5', 'border-primary/20');
 
