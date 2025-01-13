@@ -88,6 +88,26 @@ export function EquipmentList() {
     return subOrderA - subOrderB;
   });
 
+  // Create a set of all parent folders from FOLDER_ORDER that have items
+  const parentFoldersWithItems = new Set(
+    sortedFolders.map(path => path.split('/')[0])
+  );
+
+  // Create the final sorted folders list including empty parent folders
+  const allSortedFolders = FOLDER_ORDER.reduce((acc, parentFolder) => {
+    // Add the parent folder itself if it has items
+    if (groupedEquipment[parentFolder]) {
+      acc.push(parentFolder);
+    }
+
+    // Add all subfolders for this parent that have items
+    sortedFolders
+      .filter(path => path.startsWith(parentFolder + '/'))
+      .forEach(path => acc.push(path));
+
+    return acc;
+  }, [] as string[]);
+
   return (
     <div className="h-[calc(100vh-2rem)] py-6">
       <Card className="border-0 shadow-md bg-zinc-900/50 h-full">
@@ -109,17 +129,19 @@ export function EquipmentList() {
               </div>
               <div className="overflow-y-auto flex-1">
                 <div className="divide-y divide-zinc-800">
-                  {sortedFolders.map((folderPath) => (
-                    <div key={folderPath}>
-                      <div className="bg-zinc-800/50 px-4 py-2 font-medium text-sm text-zinc-400">
-                        {folderPath}
+                  {allSortedFolders.map((folderPath) => (
+                    groupedEquipment[folderPath] && (
+                      <div key={folderPath}>
+                        <div className="bg-zinc-800/50 px-4 py-2 font-medium text-sm text-zinc-400">
+                          {folderPath}
+                        </div>
+                        <EquipmentTable 
+                          equipment={groupedEquipment[folderPath]}
+                          selectedItem={selectedItem}
+                          onItemSelect={setSelectedItem}
+                        />
                       </div>
-                      <EquipmentTable 
-                        equipment={groupedEquipment[folderPath]}
-                        selectedItem={selectedItem}
-                        onItemSelect={setSelectedItem}
-                      />
-                    </div>
+                    )
                   ))}
                 </div>
               </div>
