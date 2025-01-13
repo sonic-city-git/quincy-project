@@ -5,6 +5,12 @@ import { Package, Users } from "lucide-react";
 import { useSectionSyncStatus } from "../hooks/useSectionSyncStatus";
 import { Button } from "@/components/ui/button";
 import { EventStatusManager } from "../EventStatusManager";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -138,18 +144,26 @@ export function EventSectionHeader({
         <div className="flex items-center justify-center">
           {!isCancelled && !isInvoiceReady && eventType?.needs_equipment && (
             sectionSyncStatus !== 'no-equipment' ? (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10 p-0"
-                onClick={handleSyncAllEquipment}
-              >
-                <Package 
-                  className={`h-6 w-6 ${
-                    sectionSyncStatus === 'synced' ? 'text-green-500' : 'text-blue-500'
-                  }`} 
-                />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-10 w-10 p-0"
+                  >
+                    <Package 
+                      className={`h-6 w-6 ${
+                        sectionSyncStatus === 'synced' ? 'text-green-500' : 'text-blue-500'
+                      }`} 
+                    />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem onClick={handleSyncAllEquipment}>
+                    Sync all equipment
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Package className="h-6 w-6 text-muted-foreground" />
             )
