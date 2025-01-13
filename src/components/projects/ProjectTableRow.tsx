@@ -41,10 +41,10 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
 
   return (
     <TableRow className="group hover:bg-zinc-800/50">
-      <TableCell className="text-sm text-muted-foreground">
+      <TableCell className="w-[100px] text-sm text-muted-foreground">
         {String(index).padStart(4, '0')}
       </TableCell>
-      <TableCell>
+      <TableCell className="w-[345px]">
         <div className="max-w-[345px]">
           <div 
             className="px-3.5 py-2 rounded-md text-[15px] font-medium truncate cursor-pointer"
@@ -55,7 +55,7 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
           </div>
         </div>
       </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
+      <TableCell className="w-[300px] text-sm text-muted-foreground">
         <div className="flex items-center gap-2">
           {project.owner && (
             <Avatar className="h-6 w-6">
