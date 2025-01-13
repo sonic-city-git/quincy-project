@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { formatPrice } from "@/utils/priceFormatters";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
@@ -122,6 +123,13 @@ export function ProjectBaseEquipmentList({
     }
   };
 
+  // Calculate total price for a group
+  const calculateGroupTotal = (groupEquipment: typeof equipment) => {
+    return groupEquipment.reduce((total, item) => {
+      return total + (item.rental_price || 0) * item.quantity;
+    }, 0);
+  };
+
   // Group equipment by their group_id
   const groupedEquipment = equipment.reduce((acc, item) => {
     const groupId = item.group_id || 'ungrouped';
@@ -140,7 +148,7 @@ export function ProjectBaseEquipmentList({
         onDragOver={handleDragOver}
       >
         <ScrollArea className="h-full">
-          <div className="p-4 space-y-4">
+          <div className="p-4 space-y-6">
             {loading ? (
               <div className="text-sm text-muted-foreground">Loading equipment...</div>
             ) : equipment.length === 0 ? (
@@ -155,11 +163,16 @@ export function ProjectBaseEquipmentList({
                 if (selectedGroupId && selectedGroupId !== group.id) return null;
                 
                 return groupEquipment.length > 0 ? (
-                  <div key={group.id} className="space-y-2">
-                    <div className="font-medium text-sm text-muted-foreground pb-2">
-                      {group.name}
+                  <div key={group.id} className="space-y-3">
+                    <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
+                      <div className="font-medium text-sm">
+                        {group.name}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {formatPrice(calculateGroupTotal(groupEquipment))}
+                      </div>
                     </div>
-                    <div className="space-y-2 pl-4">
+                    <div className="space-y-2">
                       {groupEquipment.map((item) => (
                         <ProjectEquipmentItem
                           key={item.id}
