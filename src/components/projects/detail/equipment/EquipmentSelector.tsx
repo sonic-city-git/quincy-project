@@ -10,6 +10,7 @@ import { ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState, useMemo } from "react";
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from "@/utils/folderSort";
+import { formatPrice } from "@/utils/priceFormatters";
 
 interface EquipmentSelectorProps {
   onSelect: (equipment: Equipment) => void;
@@ -41,6 +42,9 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
       .sort((a, b) => {
         const indexA = FOLDER_ORDER.indexOf(a.name);
         const indexB = FOLDER_ORDER.indexOf(b.name);
+        if (indexA === -1 && indexB === -1) return a.name.localeCompare(b.name);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
         return indexA - indexB;
       });
   }, [folders]);
@@ -55,6 +59,9 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
     return subfolders.sort((a, b) => {
       const indexA = orderArray.indexOf(a.name);
       const indexB = orderArray.indexOf(b.name);
+      if (indexA === -1 && indexB === -1) return a.name.localeCompare(b.name);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
       return indexA - indexB;
     });
   };
@@ -132,6 +139,11 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
             {item.name}
           </h3>
         </div>
+        {item.rental_price && (
+          <span className="text-sm text-muted-foreground">
+            {formatPrice(item.rental_price)}
+          </span>
+        )}
       </div>
     </Card>
   );
