@@ -10,6 +10,7 @@ import { useFolders } from "@/hooks/useFolders";
 import { Table } from "./ui/table";
 import { EquipmentTableHeader } from "./equipment/EquipmentTableHeader";
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from "@/utils/folderSort";
+import { EditEquipmentDialog } from "./equipment/EditEquipmentDialog";
 
 export function EquipmentList() {
   const { equipment = [], loading } = useEquipment();
@@ -23,6 +24,7 @@ export function EquipmentList() {
     filterEquipment
   } = useEquipmentFilters();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   if (loading) {
     return (
@@ -33,6 +35,7 @@ export function EquipmentList() {
   }
 
   const filteredEquipment = filterEquipment(equipment);
+  const selectedEquipment = equipment.find(item => item.id === selectedItem);
 
   // Group equipment by folder and subfolder
   const groupedEquipment = filteredEquipment.reduce((acc, item) => {
@@ -108,6 +111,11 @@ export function EquipmentList() {
     return acc;
   }, [] as string[]);
 
+  const handleItemSelect = (id: string) => {
+    setSelectedItem(id);
+    setEditDialogOpen(true);
+  };
+
   return (
     <div className="h-[calc(100vh-2rem)] py-6">
       <Card className="border-0 shadow-md bg-zinc-900/50 h-full">
@@ -138,7 +146,7 @@ export function EquipmentList() {
                         <EquipmentTable 
                           equipment={groupedEquipment[folderPath]}
                           selectedItem={selectedItem}
-                          onItemSelect={setSelectedItem}
+                          onItemSelect={handleItemSelect}
                         />
                       </div>
                     )
@@ -149,6 +157,14 @@ export function EquipmentList() {
           </div>
         </CardContent>
       </Card>
+
+      {selectedEquipment && (
+        <EditEquipmentDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          equipment={selectedEquipment}
+        />
+      )}
     </div>
   );
 }
