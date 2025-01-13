@@ -19,15 +19,6 @@ export function CrewActions({ selectedItems, onCrewMemberDeleted }: CrewActionsP
     <div className="flex items-center gap-2">
       {selectedItems.length === 1 && selectedMember && (
         <>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="gap-2 text-muted-foreground hover:text-foreground"
-            onClick={() => setEditDialogOpen(true)}
-          >
-            <Edit className="h-4 w-4" />
-            Edit
-          </Button>
           <EditMemberDialog
             open={editDialogOpen}
             onOpenChange={setEditDialogOpen}
