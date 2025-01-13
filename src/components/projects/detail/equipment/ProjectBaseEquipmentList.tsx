@@ -163,16 +163,16 @@ export function ProjectBaseEquipmentList({
                 if (selectedGroupId && selectedGroupId !== group.id) return null;
                 
                 return groupEquipment.length > 0 ? (
-                  <div key={group.id} className="space-y-3">
-                    <div className="flex items-center justify-between border-b border-zinc-800 pb-2">
-                      <div className="font-medium text-sm">
+                  <div key={group.id} className="rounded-lg border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
+                      <div className="font-medium">
                         {group.name}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {formatPrice(calculateGroupTotal(groupEquipment))}
                       </div>
                     </div>
-                    <div className="space-y-2">
+                    <div className="p-4 space-y-2">
                       {groupEquipment.map((item) => (
                         <ProjectEquipmentItem
                           key={item.id}
