@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -33,6 +34,53 @@ export function EventSectionHeader({
   const isDoneAndDusted = title.toLowerCase() === 'done and dusted';
   const sectionSyncStatus = useSectionSyncStatus(events);
   const queryClient = useQueryClient();
+
+  // Subscribe to real-time updates for all project_event_equipment changes
+  useEffect(() => {
+    if (!events.length) return;
+
+    const projectId = events[0].project_id;
+    const channel = supabase
+      .channel(`project-equipment-sync-${projectId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'project_event_equipment',
+          filter: `project_id=eq.${projectId}`
+        },
+        async () => {
+          // Invalidate queries for all events in both Proposed and Confirmed sections
+          const { data: allEvents } = await supabase
+            .from('project_events')
+            .select('id')
+            .eq('project_id', projectId)
+            .in('status', ['proposed', 'confirmed']);
+
+          if (allEvents) {
+            await Promise.all([
+              ...allEvents.map(event => 
+                queryClient.invalidateQueries({ 
+                  queryKey: ['project-event-equipment', event.id] 
+                })
+              ),
+              queryClient.invalidateQueries({ 
+                queryKey: ['events', projectId] 
+              }),
+              queryClient.invalidateQueries({ 
+                queryKey: ['calendar-events', projectId] 
+              })
+            ]);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [events, queryClient]);
 
   const handleSyncAllEquipment = async () => {
     try {
@@ -82,34 +130,31 @@ export function EventSectionHeader({
         }
       }
 
-      // After all events are processed, invalidate queries for all affected sections
+      // Get all events from both Proposed and Confirmed sections
       const projectId = events[0]?.project_id;
       if (projectId) {
-        // Get all events from Proposed and Confirmed sections
         const { data: allEvents } = await supabase
           .from('project_events')
-          .select('id, project_id')
+          .select('id')
           .eq('project_id', projectId)
           .in('status', ['proposed', 'confirmed']);
 
         if (allEvents) {
-          // Invalidate queries for all events in both sections
+          // Force immediate invalidation for all events
           await Promise.all([
             ...allEvents.map(event => 
               queryClient.invalidateQueries({ 
-                queryKey: ['project-event-equipment', event.id] 
-              })
-            ),
-            ...allEvents.map(event => 
-              queryClient.invalidateQueries({ 
-                queryKey: ['events', event.project_id, event.id] 
+                queryKey: ['project-event-equipment', event.id],
+                exact: true
               })
             ),
             queryClient.invalidateQueries({ 
-              queryKey: ['events', projectId] 
+              queryKey: ['events', projectId],
+              exact: true
             }),
             queryClient.invalidateQueries({ 
-              queryKey: ['calendar-events', projectId] 
+              queryKey: ['calendar-events', projectId],
+              exact: true
             })
           ]);
         }
