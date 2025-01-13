@@ -19,12 +19,11 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
           {/* Available Equipment Column - Spans 5 columns */}
           <div className="md:col-span-5 bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-colors flex flex-col h-full overflow-hidden">
             <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-700/50">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between h-9">
                 <div className="flex items-center gap-2">
                   <Box className="h-5 w-5 text-primary" />
                   <h2 className="text-lg font-semibold">Available Equipment</h2>
                 </div>
-                <div>{/* Empty div to match the height of the other header */}</div>
               </div>
             </div>
             <div className="flex-1 overflow-hidden">
@@ -40,7 +39,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
           {/* Project Equipment Column - Spans 9 columns */}
           <div className="md:col-span-9 bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-colors flex flex-col h-full overflow-hidden">
             <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-700/50">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between h-9">
                 <div className="flex items-center gap-2">
                   <ListCheck className="h-5 w-5 text-primary" />
                   <h2 className="text-lg font-semibold">Project Equipment</h2>
