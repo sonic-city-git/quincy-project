@@ -28,7 +28,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
     changed: []
   });
 
-  const { isSynced, handleEquipmentSync, calculateEventPrice } = useEquipmentSync(event);
+  const { isSynced, handleEquipmentSync } = useEquipmentSync(event);
 
   const isEditingDisabled = (status: string) => {
     return ['cancelled', 'invoice ready'].includes(status);
@@ -117,10 +117,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
     }
   };
 
-  // Use calculated price when out of sync, database price when synced
-  const displayPrice = isSynced ? event.total_price : calculateEventPrice();
-
-return (
+  return (
     <>
       <Card 
         key={`${event.date}-${event.name}`} 
@@ -147,7 +144,7 @@ return (
           </div>
 
           <div className="flex items-center justify-end text-sm">
-            {formatPrice(displayPrice)}
+            {formatPrice(event.total_price)}
           </div>
 
           <EventActions

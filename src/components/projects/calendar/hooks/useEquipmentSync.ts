@@ -8,31 +8,6 @@ export function useEquipmentSync(event: CalendarEvent) {
   const [isSynced, setIsSynced] = useState(true);
   const queryClient = useQueryClient();
 
-  const calculateEventPrice = async () => {
-    try {
-      const { data: eventEquipment, error } = await supabase
-        .from('project_event_equipment')
-        .select(`
-          quantity,
-          equipment:equipment_id (
-            rental_price
-          )
-        `)
-        .eq('event_id', event.id);
-
-      if (error) throw error;
-
-      const equipmentPrice = eventEquipment?.reduce((total, item) => {
-        return total + (item.quantity * (item.equipment?.rental_price || 0));
-      }, 0) || 0;
-
-      return equipmentPrice + (event.revenue || 0);
-    } catch (error) {
-      console.error('Error calculating event price:', error);
-      return 0;
-    }
-  };
-
   const checkEquipmentStatus = async () => {
     if (!event.type.needs_equipment) return;
     
@@ -184,7 +159,6 @@ export function useEquipmentSync(event: CalendarEvent) {
   return {
     isSynced,
     handleEquipmentSync,
-    checkEquipmentStatus,
-    calculateEventPrice
+    checkEquipmentStatus
   };
 }
