@@ -7,7 +7,7 @@ import { ProjectBaseEquipmentList } from "./ProjectBaseEquipmentList";
 import { Equipment } from "@/types/equipment";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -31,6 +31,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
   const [pendingEquipment, setPendingEquipment] = useState<Equipment | null>(null);
   const [newGroupName, setNewGroupName] = useState("");
   const { addEquipment } = useProjectEquipment(projectId);
+  const queryClient = useQueryClient();
 
   const { data: groups = [] } = useQuery({
     queryKey: ['project-equipment-groups', projectId],
@@ -72,7 +73,8 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
     if (!newGroupName.trim()) return;
 
     try {
-      const { data, error } = await supabase
+      // First create the group
+      const { data: newGroup, error: groupError } = await supabase
         .from('project_equipment_groups')
         .insert({
           project_id: projectId,
@@ -82,19 +84,34 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
         .select()
         .single();
 
-      if (error) throw error;
+      if (groupError) throw groupError;
 
-      setSelectedGroupId(data.id);
+      // Update the UI to show the new group
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment-groups', projectId] 
+      });
+
+      // Set the new group as selected
+      if (newGroup) {
+        setSelectedGroupId(newGroup.id);
+      }
+
+      // Reset the dialog state
       setShowGroupDialog(false);
       setNewGroupName("");
 
       // If there was pending equipment, add it to the new group
-      if (pendingEquipment && data.id) {
-        await addEquipment(pendingEquipment, data.id);
-        setPendingEquipment(null);
-        toast.success('Equipment added to new group');
+      if (pendingEquipment && newGroup) {
+        try {
+          await addEquipment(pendingEquipment, newGroup.id);
+          setPendingEquipment(null);
+          toast.success('Equipment added to new group');
+        } catch (error: any) {
+          console.error('Error adding equipment to new group:', error);
+          toast.error('Failed to add equipment to new group');
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating group:', error);
       toast.error('Failed to create group');
     }
