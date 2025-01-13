@@ -1,4 +1,4 @@
-import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Table, TableBody } from "@/components/ui/table";
 import { ProjectTableRow } from "./ProjectTableRow";
 import { Project } from "@/types/projects";
 
@@ -9,14 +9,6 @@ interface ProjectTableProps {
 export function ProjectTable({ projects }: ProjectTableProps) {
   return (
     <Table>
-      <TableHeader className="bg-zinc-900/50 border-b border-zinc-800">
-        <TableRow>
-          <TableHead className="w-24 whitespace-nowrap">Project #</TableHead>
-          <TableHead>Name</TableHead>
-          <TableHead>Owner</TableHead>
-          <TableHead>Last Invoiced</TableHead>
-        </TableRow>
-      </TableHeader>
       <TableBody>
         {projects.map((project) => (
           <ProjectTableRow
