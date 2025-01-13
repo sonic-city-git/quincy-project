@@ -7,7 +7,7 @@ interface EventSectionProps {
   title: string;
   events: CalendarEvent[];
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
-  onEdit: (event: CalendarEvent) => void;
+  onEdit: ((event: CalendarEvent) => void) | undefined;
   hideEdit?: boolean;
   hideHeader?: boolean;
 }

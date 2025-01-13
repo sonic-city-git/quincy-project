@@ -84,6 +84,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
                   title="Done and Dusted"
                   events={[event]}
                   onStatusChange={onStatusChange}
+                  onEdit={undefined}
                   hideEdit
                   hideHeader
                 />
