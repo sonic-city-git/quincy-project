@@ -28,7 +28,6 @@ export function ProjectBaseEquipmentList({
   const [pendingEquipment, setPendingEquipment] = useState<Equipment | null>(null);
   const queryClient = useQueryClient();
 
-  // Add this query to fetch groups
   const { data: groups = [] } = useQuery({
     queryKey: ['project-equipment-groups', projectId],
     queryFn: async () => {
@@ -160,7 +159,6 @@ export function ProjectBaseEquipmentList({
             ) : (
               groups.map((group) => {
                 const groupEquipment = groupedEquipment[group.id] || [];
-                if (selectedGroupId && selectedGroupId !== group.id) return null;
                 
                 return groupEquipment.length > 0 ? (
                   <div key={group.id} className="rounded-lg border border-zinc-800 bg-zinc-900/50 overflow-hidden">
