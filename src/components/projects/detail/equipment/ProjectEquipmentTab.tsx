@@ -43,54 +43,52 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
 
   return (
     <div className="h-full">
-      <Card className="rounded-lg border-0 bg-zinc-900/50 p-6 h-full">
-        <div className="grid grid-cols-1 md:grid-cols-14 gap-6 h-full">
-          {/* Available Equipment Column - Spans 6 columns */}
-          <div className="md:col-span-6 bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-colors flex flex-col h-[calc(100vh-16rem)]">
-            <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-700/50">
-              <div className="flex items-center justify-between h-9">
-                <div className="flex items-center gap-2">
-                  <Box className="h-5 w-5 text-primary" />
-                  <h2 className="text-lg font-semibold">Available Equipment</h2>
-                </div>
+      <div className="grid grid-cols-1 md:grid-cols-14 gap-6 h-full">
+        {/* Available Equipment Column - Spans 6 columns */}
+        <Card className="md:col-span-6 bg-zinc-800/45 rounded-lg border border-zinc-700/50 transition-colors flex flex-col h-[calc(100vh-16rem)]">
+          <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-700/50">
+            <div className="flex items-center justify-between h-9">
+              <div className="flex items-center gap-2">
+                <Box className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold">Available Equipment</h2>
               </div>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <EquipmentSelector 
-                onSelect={handleEquipmentSelect} 
-                projectId={projectId}
-                selectedGroupId={selectedGroupId}
-                className="h-full"
-              />
             </div>
           </div>
-          
-          {/* Project Equipment Column - Spans 8 columns */}
-          <div className="md:col-span-8 bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-colors flex flex-col h-[calc(100vh-16rem)]">
-            <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-700/50">
-              <div className="flex items-center justify-between h-9">
-                <div className="flex items-center gap-2">
-                  <ListCheck className="h-5 w-5 text-primary" />
-                  <h2 className="text-lg font-semibold">Project Equipment</h2>
-                </div>
-                <GroupSelector 
-                  projectId={projectId} 
-                  selectedGroupId={selectedGroupId}
-                  onGroupSelect={setSelectedGroupId}
-                />
+          <div className="flex-1 overflow-hidden">
+            <EquipmentSelector 
+              onSelect={handleEquipmentSelect} 
+              projectId={projectId}
+              selectedGroupId={selectedGroupId}
+              className="h-full"
+            />
+          </div>
+        </Card>
+        
+        {/* Project Equipment Column - Spans 8 columns */}
+        <Card className="md:col-span-8 bg-zinc-800/45 rounded-lg border border-zinc-700/50 transition-colors flex flex-col h-[calc(100vh-16rem)]">
+          <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-700/50">
+            <div className="flex items-center justify-between h-9">
+              <div className="flex items-center gap-2">
+                <ListCheck className="h-5 w-5 text-primary" />
+                <h2 className="text-lg font-semibold">Project Equipment</h2>
               </div>
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <ProjectBaseEquipmentList 
+              <GroupSelector 
                 projectId={projectId} 
                 selectedGroupId={selectedGroupId}
                 onGroupSelect={setSelectedGroupId}
-                onDrop={handleDrop}
               />
             </div>
           </div>
-        </div>
-      </Card>
+          <div className="flex-1 overflow-hidden">
+            <ProjectBaseEquipmentList 
+              projectId={projectId} 
+              selectedGroupId={selectedGroupId}
+              onGroupSelect={setSelectedGroupId}
+              onDrop={handleDrop}
+            />
+          </div>
+        </Card>
+      </div>
     </div>
   );
 }

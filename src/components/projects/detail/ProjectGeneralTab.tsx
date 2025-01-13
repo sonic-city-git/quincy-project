@@ -40,35 +40,31 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
 
   return (
     <div className="space-y-8">
-      <Card className="rounded-lg bg-zinc-800/45 p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Calendar Section */}
-          <Card className="rounded-lg bg-zinc-800/45">
-            <div className="p-6">
-              <ProjectCalendar projectId={projectId} />
-            </div>
-          </Card>
-          
-          {/* General Info Section */}
-          <Card className="rounded-lg bg-zinc-800/45">
-            <div className="p-6">
-              <ProjectInfo 
-                project={project} 
-                events={events}
-                onStatusChange={handleStatusChange}
-              />
-            </div>
-          </Card>
-        </div>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Calendar Section */}
+        <Card className="rounded-lg bg-zinc-800/45 p-6">
+          <ProjectCalendar projectId={projectId} />
+        </Card>
+        
+        {/* General Info Section */}
+        <Card className="rounded-lg bg-zinc-800/45 p-6">
+          <ProjectInfo 
+            project={project} 
+            events={events}
+            onStatusChange={handleStatusChange}
+          />
+        </Card>
+      </div>
 
       {/* Event List Section */}
-      <EventList 
-        events={events} 
-        isLoading={isLoading}
-        onStatusChange={handleStatusChange}
-        onEdit={handleEditEvent}
-      />
+      <Card className="rounded-lg bg-zinc-800/45 p-6">
+        <EventList 
+          events={events} 
+          isLoading={isLoading}
+          onStatusChange={handleStatusChange}
+          onEdit={handleEditEvent}
+        />
+      </Card>
     </div>
   );
 }
