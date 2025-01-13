@@ -1,4 +1,4 @@
-import { Table, TableBody } from "@/components/ui/table";
+import { TableBody } from "@/components/ui/table";
 import { CrewTableRow } from "./CrewTableRow";
 import { CrewMember } from "@/types/crew";
 
@@ -10,17 +10,15 @@ interface CrewTableProps {
 
 export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) {
   return (
-    <Table className="min-w-0">
-      <TableBody>
-        {crew.map((member) => (
-          <CrewTableRow
-            key={member.id}
-            member={member}
-            isSelected={selectedItem === member.id}
-            onSelect={() => onItemSelect(member.id)}
-          />
-        ))}
-      </TableBody>
-    </Table>
+    <TableBody>
+      {crew.map((member) => (
+        <CrewTableRow
+          key={member.id}
+          member={member}
+          isSelected={selectedItem === member.id}
+          onSelect={() => onItemSelect(member.id)}
+        />
+      ))}
+    </TableBody>
   );
 }
