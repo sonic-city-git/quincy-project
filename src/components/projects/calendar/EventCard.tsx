@@ -16,9 +16,10 @@ interface EventCardProps {
   event: CalendarEvent;
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
   onEdit: (event: CalendarEvent) => void;
+  sectionTitle?: string;
 }
 
-export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
+export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: EventCardProps) {
   const [isSynced, setIsSynced] = useState(true);
   const [isEquipmentDialogOpen, setIsEquipmentDialogOpen] = useState(false);
   const [equipmentDifference, setEquipmentDifference] = useState({
@@ -255,6 +256,7 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
             isEditingDisabled={isEditingDisabled(event.status)}
             onViewEquipment={viewOutOfSyncEquipment}
             onSyncEquipment={handleEquipmentOption}
+            sectionTitle={sectionTitle}
           />
 
           <div className="flex items-center px-1.5">

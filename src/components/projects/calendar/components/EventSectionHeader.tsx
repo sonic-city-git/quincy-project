@@ -97,44 +97,15 @@ export function EventSectionHeader({
       
       // Find all equipment icons in the section and click them
       const equipmentIcons = document.querySelectorAll(`[data-section="${title}"] [data-sync-button]`);
+      console.log(`Found ${equipmentIcons.length} equipment icons to sync`);
+      
       equipmentIcons.forEach((icon: Element) => {
         if (icon instanceof HTMLElement) {
           icon.click();
         }
       });
 
-      // Add a delay before invalidating queries
-      setTimeout(async () => {
-        const projectId = events[0]?.project_id;
-        if (projectId) {
-          const { data: allEvents } = await supabase
-            .from('project_events')
-            .select('id')
-            .eq('project_id', projectId)
-            .in('status', ['proposed', 'confirmed']);
-
-          if (allEvents) {
-            console.log('Invalidating queries after sync:', allEvents);
-            await Promise.all([
-              ...allEvents.map(event => 
-                queryClient.invalidateQueries({ 
-                  queryKey: ['project-event-equipment', event.id],
-                  exact: true
-                })
-              ),
-              queryClient.invalidateQueries({ 
-                queryKey: ['events', projectId],
-                exact: true
-              }),
-              queryClient.invalidateQueries({ 
-                queryKey: ['calendar-events', projectId],
-                exact: true
-              })
-            ]);
-          }
-        }
-        toast.success(`Equipment synchronized for all ${title} events`);
-      }, 1000);
+      toast.success(`Equipment synchronized for all ${title} events`);
     } catch (error) {
       console.error('Error syncing equipment:', error);
       toast.error('Failed to sync equipment');
@@ -166,27 +137,18 @@ export function EventSectionHeader({
         <div className="flex items-center justify-center">
           {!isCancelled && !isInvoiceReady && eventType?.needs_equipment && (
             sectionSyncStatus !== 'no-equipment' ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10 p-0"
-                    onClick={handleSyncAllEquipment}
-                  >
-                    <Package 
-                      className={`h-6 w-6 ${
-                        sectionSyncStatus === 'synced' ? 'text-green-500' : 'text-blue-500'
-                      }`} 
-                    />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <DropdownMenuItem onClick={handleSyncAllEquipment}>
-                    Sync all {title}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 p-0"
+                onClick={handleSyncAllEquipment}
+              >
+                <Package 
+                  className={`h-6 w-6 ${
+                    sectionSyncStatus === 'synced' ? 'text-green-500' : 'text-blue-500'
+                  }`} 
+                />
+              </Button>
             ) : (
               <Package className="h-6 w-6 text-muted-foreground" />
             )
