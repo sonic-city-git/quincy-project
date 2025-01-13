@@ -29,18 +29,16 @@ export function EditEquipmentForm({
   onSubmit
 }: EditEquipmentFormProps) {
   const stockCalculation = form.watch("stock_calculation");
+  const serialNumbers = form.watch("serial_numbers") || [];
   
   const addSerialNumber = () => {
-    const currentSerialNumbers = form.getValues("serial_numbers") || [];
-    form.setValue("serial_numbers", [...currentSerialNumbers, ""]);
+    form.setValue("serial_numbers", [...serialNumbers, ""]);
   };
 
   const removeSerialNumber = (index: number) => {
-    const currentSerialNumbers = form.getValues("serial_numbers") || [];
-    form.setValue(
-      "serial_numbers",
-      currentSerialNumbers.filter((_, i) => i !== index)
-    );
+    const updatedSerialNumbers = [...serialNumbers];
+    updatedSerialNumbers.splice(index, 1);
+    form.setValue("serial_numbers", updatedSerialNumbers);
   };
 
   return (
@@ -145,7 +143,7 @@ export function EditEquipmentForm({
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       className="flex flex-col space-y-1"
                     >
                       <FormItem className="flex items-center space-x-3 space-y-0">
@@ -225,13 +223,13 @@ export function EditEquipmentForm({
                   </Button>
                 </div>
                 <div className="space-y-2">
-                  {form.watch("serial_numbers")?.map((_, index) => (
+                  {serialNumbers.map((serialNumber, index) => (
                     <div key={index} className="flex gap-2">
                       <Input
                         placeholder={`Serial number ${index + 1}`}
-                        value={form.watch(`serial_numbers.${index}`)}
+                        value={serialNumber}
                         onChange={(e) => {
-                          const newSerialNumbers = [...(form.getValues("serial_numbers") || [])];
+                          const newSerialNumbers = [...serialNumbers];
                           newSerialNumbers[index] = e.target.value;
                           form.setValue("serial_numbers", newSerialNumbers);
                         }}
