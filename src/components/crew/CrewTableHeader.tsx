@@ -8,7 +8,6 @@ export function CrewTableHeader() {
         <TableHead className="w-full md:w-[120px]">Roles</TableHead>
         <TableHead className="w-[150px] hidden md:table-cell">Email</TableHead>
         <TableHead className="w-[120px] hidden md:table-cell">Phone</TableHead>
-        <TableHead className="w-[120px] hidden md:table-cell">Folder</TableHead>
       </TableRow>
     </TableHeader>
   );

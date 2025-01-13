@@ -51,11 +51,6 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
           {member.phone || '-'}
         </span>
       </TableCell>
-      <TableCell className="w-[120px] hidden md:table-cell">
-        <span className="text-sm text-muted-foreground truncate block">
-          {member.folderName || '-'}
-        </span>
-      </TableCell>
     </TableRow>
   );
 }
