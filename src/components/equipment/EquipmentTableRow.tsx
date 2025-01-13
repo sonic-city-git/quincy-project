@@ -16,22 +16,22 @@ export function EquipmentTableRow({ item, isSelected, onSelect }: EquipmentTable
       }`}
       onDoubleClick={onSelect}
     >
-      <TableCell className="w-full md:w-[300px]">
+      <TableCell className="w-full md:w-[200px]">
         <div className="text-sm font-medium truncate">
           {item.name}
         </div>
       </TableCell>
-      <TableCell className="w-full md:w-[200px]">
+      <TableCell className="w-full md:w-[120px]">
         <span className="text-sm text-muted-foreground truncate block">
           {item.code || '-'}
         </span>
       </TableCell>
-      <TableCell className="w-[100px] text-right hidden md:table-cell">
+      <TableCell className="w-[80px] text-right hidden md:table-cell">
         <span className="text-sm text-muted-foreground">
           {item.stock || 0}
         </span>
       </TableCell>
-      <TableCell className="w-[150px] text-right hidden md:table-cell">
+      <TableCell className="w-[100px] text-right hidden md:table-cell">
         <span className="text-sm text-muted-foreground">
           {item.rental_price ? formatPrice(item.rental_price) : '-'}
         </span>
