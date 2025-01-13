@@ -99,30 +99,50 @@ export function useEquipmentSync(event: CalendarEvent) {
     if (event.type.needs_equipment) {
       checkEquipmentStatus();
 
+      // Subscribe to changes in project_equipment
+      const projectEquipmentChannel = supabase
+        .channel(`project-equipment-${event.project_id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'project_equipment',
+            filter: `project_id=eq.${event.project_id}`
+          },
+          (payload) => {
+            console.log('Project equipment changed:', payload);
+            checkEquipmentStatus();
+          }
+        )
+        .subscribe();
+
+      // Subscribe to changes in project_event_equipment
       channel = supabase
         .channel(`event-equipment-${event.id}`)
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'project_event_equipment',
-          filter: `event_id=eq.${event.id}`
-        }, (payload) => {
-          console.log('Received real-time update:', payload);
-          checkEquipmentStatus();
-          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
-        })
-        .subscribe((status) => {
-          console.log(`Subscription status for event ${event.id}:`, status);
-        });
-    }
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'project_event_equipment',
+            filter: `event_id=eq.${event.id}`
+          },
+          (payload) => {
+            console.log('Event equipment changed:', payload);
+            checkEquipmentStatus();
+            queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
+          }
+        )
+        .subscribe();
 
-    return () => {
-      if (channel) {
+      return () => {
         console.log(`Unsubscribing from event ${event.id}`);
         channel.unsubscribe();
-      }
-    };
-  }, [event.id, event.type.needs_equipment, queryClient]);
+        projectEquipmentChannel.unsubscribe();
+      };
+    }
+  }, [event.id, event.project_id, event.type.needs_equipment, queryClient]);
 
   return {
     isSynced,
