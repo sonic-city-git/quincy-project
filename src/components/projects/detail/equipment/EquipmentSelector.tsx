@@ -130,7 +130,7 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
       className="p-3 cursor-move hover:bg-accent/5 transition-colors border-zinc-800/50"
       draggable
       onDragStart={(e) => handleDragStart(e, item)}
-      onDoubleClick={() => onSelect(item)}
+      onClick={() => onSelect(item)}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">

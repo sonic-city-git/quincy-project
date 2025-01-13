@@ -1,34 +1,40 @@
-import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProjectEquipmentItem } from "./ProjectEquipmentItem";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
-import { Equipment } from "@/types/equipment";
-import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient, useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 import { formatPrice } from "@/utils/priceFormatters";
 import { X } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
   selectedGroupId: string | null;
-  onGroupSelect: (groupId: string) => void;
+  onGroupSelect: (groupId: string | null) => void;
 }
 
 export function ProjectBaseEquipmentList({ 
   projectId, 
   selectedGroupId,
-  onGroupSelect 
+  onGroupSelect,
 }: ProjectBaseEquipmentListProps) {
-  const { equipment = [], loading, addEquipment, removeEquipment } = useProjectEquipment(projectId);
-  const [showGroupDialog, setShowGroupDialog] = useState(false);
-  const [newGroupName, setNewGroupName] = useState("");
-  const [pendingEquipment, setPendingEquipment] = useState<Equipment | null>(null);
-  const [draggedOverGroupId, setDraggedOverGroupId] = useState<string | null>(null);
+  const { equipment, loading, removeEquipment } = useProjectEquipment(projectId);
   const queryClient = useQueryClient();
+  const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
+  const [targetGroupId, setTargetGroupId] = useState<string>("");
 
   const { data: groups = [] } = useQuery({
     queryKey: ['project-equipment-groups', projectId],
@@ -44,261 +50,198 @@ export function ProjectBaseEquipmentList({
     }
   });
 
-  const handleDrop = async (e: React.DragEvent, groupId?: string) => {
-    e.preventDefault();
-    setDraggedOverGroupId(null);
-    
-    const data = e.dataTransfer.getData('application/json');
-    if (!data) return;
-
-    try {
-      const item = JSON.parse(data);
-      
-      // If it's equipment being moved between groups (check both conditions to maintain compatibility)
-      if (item.type === 'project-equipment' || item.currentGroupId !== undefined) {
-        const equipmentId = item.id;
-        const { error } = await supabase
-          .from('project_equipment')
-          .update({ group_id: groupId || null })
-          .eq('id', equipmentId);
-
-        if (error) throw error;
-        
-        await queryClient.invalidateQueries({ 
-          queryKey: ['project-equipment', projectId] 
-        });
-        
-        toast.success('Equipment moved successfully');
-        return;
-      }
-
-      // If dropped on a specific group, add to that group
-      if (groupId) {
-        try {
-          await addEquipment(item, groupId);
-          toast.success('Equipment added to group');
-        } catch (error) {
-          console.error('Error adding equipment:', error);
-          toast.error('Failed to add equipment');
-        }
-        return;
-      }
-
-      // If dropped in empty space, show group creation dialog
-      setPendingEquipment(item);
-      setShowGroupDialog(true);
-    } catch (error) {
-      console.error('Error handling drop:', error);
-      toast.error('Failed to handle equipment drop');
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent, groupId?: string) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    if (groupId) {
-      setDraggedOverGroupId(groupId);
-    }
-  };
-
-  const handleDragLeave = () => {
-    setDraggedOverGroupId(null);
-  };
-
-  const handleCreateGroup = async () => {
-    if (!newGroupName.trim() || !pendingEquipment) return;
-
-    try {
-      const maxSortOrder = groups.reduce((max, group) => 
-        Math.max(max, group.sort_order || 0), -1);
-      const nextSortOrder = maxSortOrder + 1;
-
-      const { data: newGroup, error: groupError } = await supabase
-        .from('project_equipment_groups')
-        .insert({
-          project_id: projectId,
-          name: newGroupName,
-          sort_order: nextSortOrder
-        })
-        .select()
-        .single();
-
-      if (groupError) throw groupError;
-
-      if (!newGroup) {
-        throw new Error('No group was created');
-      }
-
-      await queryClient.invalidateQueries({ 
-        queryKey: ['project-equipment-groups', projectId] 
-      });
-
-      onGroupSelect(newGroup.id);
-
-      await addEquipment(pendingEquipment, newGroup.id);
-      
-      setShowGroupDialog(false);
-      setNewGroupName("");
-      setPendingEquipment(null);
-      
-      toast.success('Group created and equipment added successfully');
-    } catch (error: any) {
-      console.error('Error creating group:', error);
-      toast.error('Failed to create group');
-    }
-  };
-
   const handleDeleteGroup = async (groupId: string) => {
+    const groupEquipment = equipment?.filter(item => item.group_id === groupId) || [];
+    
+    if (groupEquipment.length > 0) {
+      setGroupToDelete(groupId);
+    } else {
+      await deleteGroupOnly(groupId);
+    }
+  };
+
+  const deleteGroupOnly = async (groupId: string) => {
     try {
-      const { error: equipmentError } = await supabase
-        .from('project_equipment')
-        .delete()
-        .eq('group_id', groupId);
-
-      if (equipmentError) throw equipmentError;
-
-      const { error: groupError } = await supabase
+      const { error } = await supabase
         .from('project_equipment_groups')
         .delete()
         .eq('id', groupId);
 
-      if (groupError) throw groupError;
+      if (error) throw error;
+
+      if (selectedGroupId === groupId) {
+        onGroupSelect(null);
+      }
 
       await queryClient.invalidateQueries({ 
         queryKey: ['project-equipment-groups', projectId] 
       });
-      await queryClient.invalidateQueries({ 
-        queryKey: ['project-equipment', projectId] 
-      });
 
       toast.success('Group deleted successfully');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error deleting group:', error);
       toast.error('Failed to delete group');
     }
   };
 
-  // Group equipment by their group_id
-  const groupedEquipment = equipment.reduce((acc, item) => {
-    const groupId = item.group_id || 'ungrouped';
-    if (!acc[groupId]) {
-      acc[groupId] = [];
-    }
-    acc[groupId].push(item);
-    return acc;
-  }, {} as Record<string, typeof equipment>);
+  const handleConfirmDelete = async () => {
+    if (!groupToDelete) return;
 
-  // Calculate total price for a group
-  const calculateGroupTotal = (groupEquipment: typeof equipment) => {
+    try {
+      if (targetGroupId) {
+        // Move equipment to target group
+        const { error: updateError } = await supabase
+          .from('project_equipment')
+          .update({ group_id: targetGroupId })
+          .eq('group_id', groupToDelete);
+
+        if (updateError) throw updateError;
+      } else {
+        // Delete all equipment in the group
+        const { error: deleteError } = await supabase
+          .from('project_equipment')
+          .delete()
+          .eq('group_id', groupToDelete);
+
+        if (deleteError) throw deleteError;
+      }
+
+      await deleteGroupOnly(groupToDelete);
+      setGroupToDelete(null);
+      setTargetGroupId("");
+
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment', projectId] 
+      });
+
+    } catch (error) {
+      console.error('Error handling group deletion:', error);
+      toast.error('Failed to process group deletion');
+    }
+  };
+
+  const calculateGroupTotal = (groupEquipment: any[]) => {
     return groupEquipment.reduce((total, item) => {
       return total + (item.rental_price || 0) * item.quantity;
     }, 0);
   };
 
+  if (loading) {
+    return (
+      <div className="text-sm text-muted-foreground">Loading equipment...</div>
+    );
+  }
+
   return (
-    <>
-      <div 
-        className="h-full"
-        onDrop={(e) => handleDrop(e)}
-        onDragOver={(e) => handleDragOver(e)}
-        onDragLeave={handleDragLeave}
-      >
-        <ScrollArea className="h-full">
-          <div className="p-4 space-y-6">
-            {loading ? (
-              <div className="text-sm text-muted-foreground">Loading equipment...</div>
-            ) : (
-              groups.map((group) => {
-                const groupEquipment = groupedEquipment[group.id] || [];
-                
-                return (
-                  <div 
-                    key={group.id} 
-                    className={`rounded-lg border border-zinc-800 bg-zinc-900/50 overflow-hidden transition-colors ${
-                      draggedOverGroupId === group.id ? 'border-blue-500 bg-blue-500/10' : ''
-                    }`}
-                    onDrop={(e) => handleDrop(e, group.id)}
-                    onDragOver={(e) => handleDragOver(e, group.id)}
-                    onDragLeave={handleDragLeave}
-                  >
-                    <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
-                      <div className="font-medium">
-                        {group.name}
-                      </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-sm text-muted-foreground">
-                          {formatPrice(calculateGroupTotal(groupEquipment))}
-                        </div>
-                        <button
-                          className="h-8 w-8 inline-flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-md"
-                          onClick={() => handleDeleteGroup(group.id)}
-                        >
-                          <X className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="p-4 space-y-2">
-                      {groupEquipment.map((item) => (
-                        <ProjectEquipmentItem
-                          key={item.id}
-                          item={item}
-                          onRemove={() => removeEquipment(item.id)}
-                        />
-                      ))}
-                      {groupEquipment.length === 0 && (
-                        <div className="text-sm text-muted-foreground py-2">
-                          Drop equipment here
-                        </div>
+    <ScrollArea className="h-full">
+      <div className="space-y-6 pr-4">
+        {groups.map(group => {
+          const groupEquipment = equipment?.filter(item => item.group_id === group.id) || [];
+          const isSelected = selectedGroupId === group.id;
+          const groupTotal = calculateGroupTotal(groupEquipment);
+          
+          return (
+            <div 
+              key={group.id} 
+              className={cn(
+                "rounded-lg border-2 transition-all duration-200 relative overflow-hidden",
+                isSelected 
+                  ? "border-primary/20" 
+                  : "border-zinc-800/50"
+              )}
+            >
+              <div className={cn(
+                "absolute inset-0 transition-all duration-200",
+                isSelected 
+                  ? "bg-primary/5" 
+                  : "bg-zinc-900/50"
+              )} />
+              <div className="relative z-20">
+                <div className="bg-zinc-900/90">
+                  <div className="flex items-center justify-between px-4 py-2">
+                    <div 
+                      className={cn(
+                        "flex-1 cursor-pointer transition-colors text-white",
+                        isSelected 
+                          ? "hover:text-primary/90" 
+                          : "hover:text-white/90"
                       )}
+                      onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
+                    >
+                      <h3 className="text-sm font-medium">{group.name}</h3>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm text-muted-foreground">
+                        {formatPrice(groupTotal)}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteGroup(group.id)}
+                        className="text-red-500 hover:text-red-400 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
-                );
-              })
-            )}
-          </div>
-        </ScrollArea>
+                </div>
+                <div className="p-3 space-y-2 relative z-30 bg-background/95">
+                  {groupEquipment.map((item) => (
+                    <ProjectEquipmentItem
+                      key={item.id}
+                      item={item}
+                      onRemove={() => removeEquipment(item.id)}
+                    />
+                  ))}
+                  {groupEquipment.length === 0 && (
+                    <div className="text-sm text-muted-foreground px-1">
+                      No equipment in this group
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <Dialog open={showGroupDialog} onOpenChange={setShowGroupDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Create Equipment Group</DialogTitle>
-          </DialogHeader>
+      <AlertDialog 
+        open={!!groupToDelete} 
+        onOpenChange={() => {
+          setGroupToDelete(null);
+          setTargetGroupId("");
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Group</AlertDialogTitle>
+            <AlertDialogDescription>
+              This group contains equipment. Would you like to move the equipment to another group or delete it?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           <div className="py-4">
-            <p className="text-sm text-muted-foreground mb-4">
-              You need to create a group before adding equipment to the project.
-            </p>
-            <Input
-              placeholder="Enter group name"
-              value={newGroupName}
-              onChange={(e) => setNewGroupName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && newGroupName.trim()) {
-                  handleCreateGroup();
+            <Select value={targetGroupId} onValueChange={setTargetGroupId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a target group (or leave empty to delete equipment)" />
+              </SelectTrigger>
+              <SelectContent>
+                {groups
+                  .filter(g => g.id !== groupToDelete)
+                  .map(group => (
+                    <SelectItem key={group.id} value={group.id}>
+                      {group.name}
+                    </SelectItem>
+                  ))
                 }
-              }}
-            />
+              </SelectContent>
+            </Select>
           </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setShowGroupDialog(false);
-                setNewGroupName("");
-                setPendingEquipment(null);
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleCreateGroup}
-              disabled={!newGroupName.trim()}
-            >
-              Create Group
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>
+              {targetGroupId ? 'Move & Delete Group' : 'Delete All'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </ScrollArea>
   );
 }
