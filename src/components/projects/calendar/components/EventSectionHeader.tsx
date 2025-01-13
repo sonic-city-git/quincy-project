@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -32,6 +32,7 @@ export function EventSectionHeader({
   const isCancelled = title.toLowerCase() === 'cancelled';
   const isInvoiceReady = title.toLowerCase() === 'invoice ready';
   const isDoneAndDusted = title.toLowerCase() === 'done and dusted';
+  const [syncStatus, setSyncStatus] = useState<Record<string, boolean>>({});
   const sectionSyncStatus = useSectionSyncStatus(events);
   const queryClient = useQueryClient();
 
@@ -139,6 +140,12 @@ export function EventSectionHeader({
 
             if (insertError) throw insertError;
 
+            // Update local sync status immediately
+            setSyncStatus(prev => ({
+              ...prev,
+              [event.id]: true
+            }));
+
             console.log(`Successfully synced equipment for event ${event.id}`);
           }
         } catch (eventError) {
@@ -194,7 +201,9 @@ export function EventSectionHeader({
                   >
                     <Package 
                       className={`h-6 w-6 ${
-                        sectionSyncStatus === 'synced' ? 'text-green-500' : 'text-blue-500'
+                        sectionSyncStatus === 'synced' || Object.values(syncStatus).every(Boolean)
+                          ? 'text-green-500' 
+                          : 'text-blue-500'
                       }`} 
                     />
                   </Button>
