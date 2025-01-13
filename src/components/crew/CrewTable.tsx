@@ -10,19 +10,17 @@ interface CrewTableProps {
 
 export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) {
   return (
-    <div className="min-w-max">
-      <Table>
-        <TableBody>
-          {crew.map((member) => (
-            <CrewTableRow
-              key={member.id}
-              member={member}
-              isSelected={selectedItem === member.id}
-              onSelect={() => onItemSelect(member.id)}
-            />
-          ))}
-        </TableBody>
-      </Table>
-    </div>
+    <Table>
+      <TableBody>
+        {crew.map((member) => (
+          <CrewTableRow
+            key={member.id}
+            member={member}
+            isSelected={selectedItem === member.id}
+            onSelect={() => onItemSelect(member.id)}
+          />
+        ))}
+      </TableBody>
+    </Table>
   );
 }
