@@ -52,7 +52,6 @@ export function EventSectionHeader({
         async (payload) => {
           console.log('Received real-time update:', payload);
           
-          // Add a delay before invalidating queries
           setTimeout(async () => {
             const { data: allEvents } = await supabase
               .from('project_events')
@@ -90,21 +89,22 @@ export function EventSectionHeader({
   }, [events, queryClient]);
 
   const handleSyncAllEquipment = async () => {
+    if (!events.length) {
+      console.log('No events to process');
+      return;
+    }
+
     try {
-      const eventsWithEquipment = events.filter(event => event.type.needs_equipment);
-      console.log(`Processing ${eventsWithEquipment.length} events for sync`);
+      console.log(`Processing ${events.length} events for sync`);
       
-      // For each event that needs equipment
-      for (const event of eventsWithEquipment) {
+      for (const event of events) {
         try {
-          // Get project equipment
           const { data: projectEquipment } = await supabase
             .from('project_equipment')
             .select('*')
             .eq('project_id', event.project_id);
 
           if (projectEquipment && projectEquipment.length > 0) {
-            // Create a map for unique equipment
             const uniqueEquipment = new Map();
             
             projectEquipment.forEach(item => {
@@ -117,7 +117,6 @@ export function EventSectionHeader({
               }
             });
 
-            // Prepare event equipment data
             const eventEquipment = Array.from(uniqueEquipment.values()).map(item => ({
               project_id: event.project_id,
               event_id: event.id,
@@ -127,7 +126,6 @@ export function EventSectionHeader({
               is_synced: true
             }));
 
-            // Delete existing equipment for this event
             const { error: deleteError } = await supabase
               .from('project_event_equipment')
               .delete()
@@ -135,7 +133,6 @@ export function EventSectionHeader({
 
             if (deleteError) throw deleteError;
 
-            // Insert new equipment
             const { error: insertError } = await supabase
               .from('project_event_equipment')
               .insert(eventEquipment);
@@ -150,7 +147,6 @@ export function EventSectionHeader({
         }
       }
 
-      // Invalidate queries to refresh data
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['events', events[0]?.project_id] }),
         queryClient.invalidateQueries({ queryKey: ['calendar-events', events[0]?.project_id] }),
@@ -168,7 +164,6 @@ export function EventSectionHeader({
     }
   };
 
-  // Use a simpler layout for Done and Dusted section
   if (isDoneAndDusted) {
     return null;
   }
@@ -183,13 +178,10 @@ export function EventSectionHeader({
           <h3 className="text-lg font-semibold">{title}</h3>
         </div>
         
-        {/* Empty space for location icon */}
         <div />
         
-        {/* Empty space */}
         <div />
         
-        {/* Equipment icon column */}
         <div className="flex items-center justify-center">
           {!isCancelled && !isInvoiceReady && eventType?.needs_equipment && (
             sectionSyncStatus !== 'no-equipment' ? (
@@ -219,20 +211,16 @@ export function EventSectionHeader({
           )}
         </div>
         
-        {/* Crew icon column */}
         <div className="flex items-center justify-center">
           {!isCancelled && !isInvoiceReady && eventType?.needs_crew && (
             <Users className="h-6 w-6 text-muted-foreground" />
           )}
         </div>
 
-        {/* Event type column */}
         <div />
 
-        {/* Revenue column */}
         <div />
 
-        {/* Status manager column */}
         <div className="flex justify-center">
           {onStatusChange && (
             <EventStatusManager
@@ -244,7 +232,6 @@ export function EventSectionHeader({
           )}
         </div>
 
-        {/* Empty column for edit button alignment */}
         <div />
       </EventSectionHeaderGrid>
     </div>
