@@ -8,6 +8,8 @@ import { CrewTable } from "./crew/CrewTable";
 import { CrewListHeader } from "./crew/CrewListHeader";
 import { useCrewFilters } from "./crew/filters/useCrewFilters";
 import { useCrewSort } from "./crew/useCrewSort";
+import { Table } from "./ui/table";
+import { CrewTableHeader } from "./crew/CrewTableHeader";
 
 export function CrewList() {
   const { crew = [], loading, refetch } = useCrew();
@@ -55,8 +57,13 @@ export function CrewList() {
             />
             <Separator className="bg-zinc-800" />
             
-            <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0">
-              <div className="h-full overflow-auto relative isolate">
+            <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0 flex flex-col">
+              <div className="sticky top-0 z-20 bg-zinc-900/95 backdrop-blur border-b border-zinc-800">
+                <Table>
+                  <CrewTableHeader />
+                </Table>
+              </div>
+              <div className="overflow-y-auto flex-1">
                 <CrewTable 
                   crew={sortedCrew} 
                   selectedItem={selectedItem}
