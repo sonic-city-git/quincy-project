@@ -43,9 +43,9 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
 
   return (
     <div className="h-full">
-      <div className="grid grid-cols-1 md:grid-cols-14 gap-6 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-14 gap-6 h-[calc(100vh-12rem)]">
         {/* Available Equipment Column - Spans 6 columns */}
-        <Card className="md:col-span-6 bg-zinc-800/45 rounded-lg border border-zinc-700/50 transition-colors flex flex-col h-[calc(100vh-16rem)]">
+        <Card className="md:col-span-6 bg-zinc-800/45 rounded-lg border border-zinc-700/50 transition-colors flex flex-col h-full">
           <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-700/50">
             <div className="flex items-center justify-between h-9">
               <div className="flex items-center gap-2">
@@ -65,7 +65,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
         </Card>
         
         {/* Project Equipment Column - Spans 8 columns */}
-        <Card className="md:col-span-8 bg-zinc-800/45 rounded-lg border border-zinc-700/50 transition-colors flex flex-col h-[calc(100vh-16rem)]">
+        <Card className="md:col-span-8 bg-zinc-800/45 rounded-lg border border-zinc-700/50 transition-colors flex flex-col h-full">
           <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-700/50">
             <div className="flex items-center justify-between h-9">
               <div className="flex items-center gap-2">
