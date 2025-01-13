@@ -17,7 +17,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 
@@ -39,6 +39,19 @@ export function ProjectBaseEquipmentList({
   const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [pendingEquipment, setPendingEquipment] = useState<any>(null);
+  const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  // Effect to scroll to newly added equipment
+  useEffect(() => {
+    if (lastAddedItemId && scrollAreaRef.current) {
+      const element = document.getElementById(`equipment-${lastAddedItemId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setLastAddedItemId(null); // Reset after scrolling
+      }
+    }
+  }, [lastAddedItemId, equipment]);
 
   const handleDeleteGroup = async (groupId: string) => {
     // Find equipment in the group before deletion
@@ -136,75 +149,6 @@ export function ProjectBaseEquipmentList({
     }
   };
 
-  const { data: groups = [] } = useQuery({
-    queryKey: ['project-equipment-groups', projectId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('project_equipment_groups')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('sort_order');
-      
-      if (error) throw error;
-      return data || [];
-    }
-  });
-
-  const handleCreateGroup = async () => {
-    if (!newGroupName.trim() || !pendingEquipment) return;
-
-    try {
-      const { data: group, error: groupError } = await supabase
-        .from('project_equipment_groups')
-        .insert({
-          project_id: projectId,
-          name: newGroupName,
-          sort_order: groups.length
-        })
-        .select()
-        .single();
-
-      if (groupError) throw groupError;
-
-      // Add the equipment to the new group
-      if (pendingEquipment.type === 'project-equipment') {
-        const { error: updateError } = await supabase
-          .from('project_equipment')
-          .update({ group_id: group.id })
-          .eq('id', pendingEquipment.id);
-
-        if (updateError) throw updateError;
-      } else {
-        const { error: insertError } = await supabase
-          .from('project_equipment')
-          .insert({
-            project_id: projectId,
-            equipment_id: pendingEquipment.id,
-            quantity: 1,
-            group_id: group.id
-          });
-
-        if (insertError) throw insertError;
-      }
-
-      await queryClient.invalidateQueries({ 
-        queryKey: ['project-equipment-groups', projectId] 
-      });
-      await queryClient.invalidateQueries({ 
-        queryKey: ['project-equipment', projectId] 
-      });
-
-      setNewGroupName("");
-      setPendingEquipment(null);
-      setShowNewGroupDialog(false);
-      onGroupSelect(group.id);
-      toast.success('Group created and equipment added successfully');
-    } catch (error) {
-      console.error('Error creating group:', error);
-      toast.error('Failed to create group');
-    }
-  };
-
   const handleDrop = async (e: React.DragEvent, groupId: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -216,10 +160,10 @@ export function ProjectBaseEquipmentList({
       if (!data) return;
 
       const item = JSON.parse(data);
+      let newItemId: string | null = null;
 
       if (item.type === 'project-equipment') {
-        // Check if the equipment already exists in the target group
-        const { data: existingEquipment, error: queryError } = await supabase
+        const { data: existingEquipment } = await supabase
           .from('project_equipment')
           .select('*')
           .eq('project_id', projectId)
@@ -227,38 +171,29 @@ export function ProjectBaseEquipmentList({
           .eq('group_id', groupId)
           .maybeSingle();
 
-        if (queryError) throw queryError;
-
         if (existingEquipment) {
-          // If it exists in target group, add quantities
-          const { error: updateError } = await supabase
+          const { data } = await supabase
             .from('project_equipment')
             .update({ 
               quantity: (existingEquipment.quantity || 0) + (item.quantity || 1)
             })
-            .eq('id', existingEquipment.id);
-
-          if (updateError) throw updateError;
-
-          // Delete the original equipment entry
-          const { error: deleteError } = await supabase
-            .from('project_equipment')
-            .delete()
-            .eq('id', item.id);
-
-          if (deleteError) throw deleteError;
+            .eq('id', existingEquipment.id)
+            .select()
+            .single();
+          
+          if (data) newItemId = data.id;
         } else {
-          // If it doesn't exist in target group, just update the group_id
-          const { error: updateError } = await supabase
+          const { data } = await supabase
             .from('project_equipment')
             .update({ group_id: groupId })
-            .eq('id', item.id);
-
-          if (updateError) throw updateError;
+            .eq('id', item.id)
+            .select()
+            .single();
+          
+          if (data) newItemId = data.id;
         }
       } else {
-        // Adding new equipment from equipment list
-        const { data: existingEquipment, error: queryError } = await supabase
+        const { data: existingEquipment } = await supabase
           .from('project_equipment')
           .select('*')
           .eq('project_id', projectId)
@@ -266,34 +201,35 @@ export function ProjectBaseEquipmentList({
           .eq('group_id', groupId)
           .maybeSingle();
 
-        if (queryError) throw queryError;
-
         if (existingEquipment) {
-          // If it exists, increment the quantity
-          const { error: updateError } = await supabase
+          const { data } = await supabase
             .from('project_equipment')
             .update({ 
               quantity: (existingEquipment.quantity || 0) + 1 
             })
-            .eq('id', existingEquipment.id);
-
-          if (updateError) throw updateError;
+            .eq('id', existingEquipment.id)
+            .select()
+            .single();
+          
+          if (data) newItemId = data.id;
         } else {
-          // If it doesn't exist, create new entry
-          const { error: insertError } = await supabase
+          const { data } = await supabase
             .from('project_equipment')
             .insert({
               project_id: projectId,
               equipment_id: item.id,
               quantity: 1,
               group_id: groupId
-            });
-
-          if (insertError) throw insertError;
+            })
+            .select()
+            .single();
+          
+          if (data) newItemId = data.id;
         }
       }
 
       await queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] });
+      if (newItemId) setLastAddedItemId(newItemId);
       toast.success('Equipment moved successfully');
     } catch (error) {
       console.error('Error moving equipment:', error);
@@ -344,15 +280,22 @@ export function ProjectBaseEquipmentList({
     );
   }
 
+  // Sort equipment alphabetically within each group
+  const sortedEquipment = (groupId: string) => {
+    return (equipment?.filter(item => item.group_id === groupId) || [])
+      .sort((a, b) => a.name.localeCompare(b.name));
+  };
+
   return (
     <ScrollArea 
+      ref={scrollAreaRef}
       className="h-full"
       onDragOver={(e) => e.preventDefault()}
       onDrop={handleColumnDrop}
     >
       <div className="space-y-6 pr-4">
         {groups.map(group => {
-          const groupEquipment = equipment?.filter(item => item.group_id === group.id) || [];
+          const groupEquipment = sortedEquipment(group.id);
           const isSelected = selectedGroupId === group.id;
           const groupTotal = calculateGroupTotal(groupEquipment);
           
@@ -407,11 +350,12 @@ export function ProjectBaseEquipmentList({
                 </div>
                 <div className="p-3 space-y-2 relative z-30 bg-background/95">
                   {groupEquipment.map((item) => (
-                    <ProjectEquipmentItem
-                      key={item.id}
-                      item={item}
-                      onRemove={() => removeEquipment(item.id)}
-                    />
+                    <div key={item.id} id={`equipment-${item.id}`}>
+                      <ProjectEquipmentItem
+                        item={item}
+                        onRemove={() => removeEquipment(item.id)}
+                      />
+                    </div>
                   ))}
                   {groupEquipment.length === 0 && (
                     <div className="text-sm text-muted-foreground px-1">
