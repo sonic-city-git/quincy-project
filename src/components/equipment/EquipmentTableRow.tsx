@@ -1,5 +1,4 @@
 import { TableCell, TableRow } from "@/components/ui/table";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Equipment } from "@/integrations/supabase/types/equipment";
 import { formatPrice } from "@/utils/priceFormatters";
 
@@ -12,17 +11,11 @@ interface EquipmentTableRowProps {
 export function EquipmentTableRow({ item, isSelected, onSelect }: EquipmentTableRowProps) {
   return (
     <TableRow 
-      className={`group hover:bg-zinc-800/50 ${
+      className={`group hover:bg-zinc-800/50 cursor-pointer ${
         isSelected ? 'bg-zinc-800/75' : ''
       }`}
+      onDoubleClick={onSelect}
     >
-      <TableCell className="w-[48px]">
-        <Checkbox 
-          checked={isSelected}
-          onCheckedChange={onSelect}
-          className="border-primary data-[state=checked]:bg-primary data-[state=checked]:border-primary"
-        />
-      </TableCell>
       <TableCell className="w-[300px]">
         <div className="text-sm font-medium truncate">
           {item.name}
