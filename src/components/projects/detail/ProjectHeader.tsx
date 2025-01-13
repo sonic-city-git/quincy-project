@@ -32,28 +32,28 @@ export function ProjectHeader({
         </div>
       </div>
 
-      <TabsList className="bg-zinc-800/45 p-1 rounded-lg">
+      <TabsList className="bg-zinc-800/45 p-1.5 rounded-lg">
         <TabsTrigger 
           value="general" 
-          className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
+          className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors px-6 py-2.5 text-base"
         >
           General
         </TabsTrigger>
         <TabsTrigger 
           value="equipment"
-          className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
+          className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors px-6 py-2.5 text-base"
         >
           Equipment
         </TabsTrigger>
         <TabsTrigger 
           value="crew"
-          className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
+          className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors px-6 py-2.5 text-base"
         >
           Crew
         </TabsTrigger>
         <TabsTrigger 
           value="financial"
-          className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
+          className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors px-6 py-2.5 text-base"
         >
           Financial
         </TabsTrigger>
