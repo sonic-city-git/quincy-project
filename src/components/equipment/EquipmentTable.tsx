@@ -12,7 +12,7 @@ export function EquipmentTable({ equipment, selectedItem, onItemSelect }: Equipm
   return (
     <div className="relative">
       <Table>
-        <TableBody>
+        <TableBody className="divide-y divide-zinc-800">
           {equipment.map((item) => (
             <EquipmentTableRow
               key={item.id}
