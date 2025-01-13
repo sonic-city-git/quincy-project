@@ -10,6 +10,7 @@ import { useCrewFilters } from "./crew/filters/useCrewFilters";
 import { useCrewSort } from "./crew/useCrewSort";
 import { Table } from "./ui/table";
 import { CrewTableHeader } from "./crew/CrewTableHeader";
+import { EditMemberDialog } from "./crew/EditMemberDialog";
 
 export function CrewList() {
   const { crew = [], loading, refetch } = useCrew();
@@ -28,6 +29,8 @@ export function CrewList() {
   useEffect(() => {
     refetch();
   }, [refetch]);
+
+  const selectedMember = crew.find(member => member.id === selectedItem);
 
   if (loading) {
     return (
@@ -74,6 +77,15 @@ export function CrewList() {
           </div>
         </CardContent>
       </Card>
+
+      {selectedMember && (
+        <EditMemberDialog
+          open={!!selectedItem}
+          onOpenChange={(open) => !open && setSelectedItem(null)}
+          member={selectedMember}
+          onCrewMemberDeleted={() => setSelectedItem(null)}
+        />
+      )}
     </div>
   );
 }
