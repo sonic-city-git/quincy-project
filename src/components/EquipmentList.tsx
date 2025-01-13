@@ -5,6 +5,7 @@ import { useEquipment } from "@/hooks/useEquipment";
 import { EquipmentTable } from "./equipment/EquipmentTable";
 import { EquipmentListHeader } from "./equipment/EquipmentListHeader";
 import { useEquipmentFilters } from "./equipment/filters/useEquipmentFilters";
+import { useState } from "react";
 
 export function EquipmentList() {
   const { equipment = [], loading } = useEquipment();
@@ -16,6 +17,7 @@ export function EquipmentList() {
     clearFilters,
     filterEquipment
   } = useEquipmentFilters();
+  const [selectedItem, setSelectedItem] = useState<string | null>(null);
 
   if (loading) {
     return (
@@ -41,7 +43,11 @@ export function EquipmentList() {
             />
             <Separator className="bg-zinc-800" />
             <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0">
-              <EquipmentTable equipment={filteredEquipment} />
+              <EquipmentTable 
+                equipment={filteredEquipment} 
+                selectedItem={selectedItem}
+                onItemSelect={setSelectedItem}
+              />
             </div>
           </div>
         </CardContent>
