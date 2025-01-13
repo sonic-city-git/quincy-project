@@ -1,7 +1,7 @@
 import { Package, Users } from "lucide-react";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
-import { CalendarEvent } from "@/types/events";
+import { CalendarEvent, EventType } from "@/types/events";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
