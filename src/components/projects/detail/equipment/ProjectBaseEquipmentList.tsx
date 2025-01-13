@@ -21,7 +21,7 @@ export function ProjectBaseEquipmentList({
   selectedGroupId,
   onGroupSelect 
 }: ProjectBaseEquipmentListProps) {
-  const { equipment = [], loading, addEquipment } = useProjectEquipment(projectId);
+  const { equipment = [], loading, addEquipment, removeEquipment } = useProjectEquipment(projectId);
   const [showGroupDialog, setShowGroupDialog] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [pendingEquipment, setPendingEquipment] = useState<Equipment | null>(null);
@@ -144,6 +144,7 @@ export function ProjectBaseEquipmentList({
                 <ProjectEquipmentItem
                   key={item.id}
                   item={item}
+                  onRemove={() => removeEquipment(item.id)}
                 />
               ))
             )}
