@@ -10,7 +10,7 @@ interface CrewTableProps {
 
 export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) {
   return (
-    <Table>
+    <Table className="min-w-0">
       <TableBody>
         {crew.map((member) => (
           <CrewTableRow
