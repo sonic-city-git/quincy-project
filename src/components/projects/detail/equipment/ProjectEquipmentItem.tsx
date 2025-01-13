@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Minus, Plus, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { X } from "lucide-react";
 import { ProjectEquipment } from "@/types/equipment";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -33,9 +33,9 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
     setIsDragging(false);
   };
 
-  const handleQuantityChange = async (delta: number) => {
-    const newQuantity = item.quantity + delta;
-    if (newQuantity < 1) return;
+  const handleQuantityChange = async (value: string) => {
+    const newQuantity = parseInt(value, 10);
+    if (isNaN(newQuantity) || newQuantity < 1) return;
     
     setIsUpdating(true);
 
@@ -91,39 +91,24 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
           {item.name}
         </h3>
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-zinc-900/50 rounded-md p-0.5">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-6 w-6 hover:bg-zinc-700/50" 
-              onClick={() => handleQuantityChange(-1)}
-              disabled={isUpdating || item.quantity <= 1}
-            >
-              <Minus className="h-3.5 w-3.5" />
-            </Button>
-            <span className="w-6 text-center text-sm font-medium text-primary">{item.quantity}</span>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-6 w-6 hover:bg-zinc-700/50"
-              onClick={() => handleQuantityChange(1)}
-              disabled={isUpdating}
-            >
-              <Plus className="h-3.5 w-3.5" />
-            </Button>
-          </div>
+          <Input
+            type="number"
+            value={item.quantity}
+            onChange={(e) => handleQuantityChange(e.target.value)}
+            className="w-16 h-7 bg-zinc-900/50 border-zinc-700"
+            min={1}
+            disabled={isUpdating}
+          />
           <div className="min-w-[100px] text-right text-sm text-muted-foreground">
             {formatPrice(totalPrice)}
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-6 w-6 text-red-400 hover:text-red-300 hover:bg-red-900/20" 
+          <button 
+            className="h-6 w-6 inline-flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-md"
             onClick={onRemove}
             disabled={isUpdating}
           >
             <X className="h-3.5 w-3.5" />
-          </Button>
+          </button>
         </div>
       </div>
     </Card>
