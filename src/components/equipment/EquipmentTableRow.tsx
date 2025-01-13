@@ -16,7 +16,7 @@ export function EquipmentTableRow({ item, isSelected, onSelect }: EquipmentTable
       }`}
       onDoubleClick={onSelect}
     >
-      <TableCell className="w-[200px] min-w-[200px] lg:w-[300px]">
+      <TableCell className="w-[200px] lg:w-[300px]">
         <div className="text-sm font-medium truncate">
           {item.name}
         </div>
