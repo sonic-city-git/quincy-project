@@ -58,7 +58,12 @@ export function EditEquipmentForm({
                       {...field} 
                       autoFocus={false}
                       autoComplete="off"
-                      onFocus={(e) => e.target.blur()} // Immediately blur when focused
+                      onFocus={(e) => e.target.blur()}
+                      onMouseUp={(e) => e.preventDefault()}
+                      onSelect={(e) => {
+                        const target = e.target as HTMLInputElement;
+                        target.selectionStart = target.selectionEnd;
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
