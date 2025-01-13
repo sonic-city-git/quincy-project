@@ -50,7 +50,7 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
       });
       
       toast.success('Quantity updated');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating quantity:', error);
       toast.error('Failed to update quantity');
       
