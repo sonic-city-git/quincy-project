@@ -21,7 +21,7 @@ export function ProjectBaseEquipmentList({
   selectedGroupId,
   onGroupSelect 
 }: ProjectBaseEquipmentListProps) {
-  const { equipment = [], loading, removeEquipment } = useProjectEquipment(projectId);
+  const { equipment = [], loading, addEquipment } = useProjectEquipment(projectId);
   const [showGroupDialog, setShowGroupDialog] = useState(false);
   const [newGroupName, setNewGroupName] = useState("");
   const [pendingEquipment, setPendingEquipment] = useState<Equipment | null>(null);
@@ -38,6 +38,14 @@ export function ProjectBaseEquipmentList({
       setPendingEquipment(item);
       setShowGroupDialog(true);
       return;
+    }
+
+    try {
+      await addEquipment(item, selectedGroupId);
+      toast.success('Equipment added to group');
+    } catch (error) {
+      console.error('Error adding equipment:', error);
+      toast.error('Failed to add equipment');
     }
   };
 
@@ -63,22 +71,27 @@ export function ProjectBaseEquipmentList({
 
       if (groupError) throw groupError;
 
+      if (!newGroup) {
+        throw new Error('No group was created');
+      }
+
       // Update the UI to show the new group
       await queryClient.invalidateQueries({ 
         queryKey: ['project-equipment-groups', projectId] 
       });
 
       // Set the new group as selected
-      if (newGroup) {
-        onGroupSelect(newGroup.id);
-      }
+      onGroupSelect(newGroup.id);
 
+      // Add the pending equipment to the new group
+      await addEquipment(pendingEquipment, newGroup.id);
+      
       // Reset the dialog state
       setShowGroupDialog(false);
       setNewGroupName("");
       setPendingEquipment(null);
       
-      toast.success('Group created successfully');
+      toast.success('Group created and equipment added successfully');
     } catch (error: any) {
       console.error('Error creating group:', error);
       toast.error('Failed to create group');
