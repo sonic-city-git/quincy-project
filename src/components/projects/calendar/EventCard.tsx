@@ -160,6 +160,27 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
 
   const viewOutOfSyncEquipment = async () => {
     try {
+      // Only fetch equipment that is out of sync
+      const { data: outOfSyncEquipment, error: eventError } = await supabase
+        .from('project_event_equipment')
+        .select(`
+          id,
+          quantity,
+          is_synced,
+          equipment:equipment_id (
+            name,
+            code
+          ),
+          group:group_id (
+            name
+          )
+        `)
+        .eq('event_id', event.id)
+        .eq('is_synced', false);
+
+      if (eventError) throw eventError;
+
+      // Get the current project equipment state for comparison
       const { data: projectEquipment, error: projectError } = await supabase
         .from('project_equipment')
         .select(`
@@ -177,36 +198,23 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
 
       if (projectError) throw projectError;
 
-      const { data: eventEquipment, error: eventError } = await supabase
-        .from('project_event_equipment')
-        .select(`
-          id,
-          quantity,
-          equipment:equipment_id (
-            name,
-            code
-          ),
-          group:group_id (
-            name
-          )
-        `)
-        .eq('event_id', event.id);
-
-      if (eventError) throw eventError;
-
       const added = [];
       const removed = [];
       const changed = [];
 
+      // Create maps for easier comparison
       const projectMap = new Map(projectEquipment?.map(item => [item.equipment.name, item]) || []);
-      const eventMap = new Map(eventEquipment?.map(item => [item.equipment.name, item]) || []);
+      const eventMap = new Map(outOfSyncEquipment?.map(item => [item.equipment.name, item]) || []);
 
-      projectEquipment?.forEach(projectItem => {
-        const eventItem = eventMap.get(projectItem.equipment.name);
+      // Only process equipment that is marked as out of sync
+      outOfSyncEquipment?.forEach(eventItem => {
+        const projectItem = projectMap.get(eventItem.equipment.name);
         
-        if (!eventItem) {
-          added.push(projectItem);
-        } else if (eventItem.quantity !== projectItem.quantity) {
+        if (!projectItem) {
+          // Item exists in event but not in project - it was removed
+          removed.push(eventItem);
+        } else if (projectItem.quantity !== eventItem.quantity) {
+          // Item exists in both but quantities differ
           changed.push({
             item: projectItem,
             oldQuantity: eventItem.quantity,
@@ -215,11 +223,10 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
         }
       });
 
-      eventEquipment?.forEach(eventItem => {
-        const projectItem = projectMap.get(eventItem.equipment.name);
-        
-        if (!projectItem) {
-          removed.push(eventItem);
+      // Check for new items in project that don't exist in event
+      projectEquipment?.forEach(projectItem => {
+        if (!eventMap.has(projectItem.equipment.name)) {
+          added.push(projectItem);
         }
       });
 
