@@ -5,6 +5,10 @@ import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useFolders } from "@/hooks/useFolders";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { ChevronDown } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 interface EquipmentSelectorProps {
   onSelect: (equipment: Equipment) => void;
@@ -16,14 +20,21 @@ interface EquipmentSelectorProps {
 export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProps) {
   const { equipment = [], loading } = useEquipment();
   const { folders = [] } = useFolders();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleDragStart = (e: React.DragEvent, item: Equipment) => {
     e.dataTransfer.setData('application/json', JSON.stringify(item));
     e.dataTransfer.effectAllowed = 'copy';
   };
 
-  // First, group equipment by parent folder
-  const groupedByParent = equipment.reduce((acc, item) => {
+  // Filter equipment based on search query
+  const filteredEquipment = equipment.filter(item => 
+    item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.code?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Group equipment by parent folder
+  const groupedByParent = filteredEquipment.reduce((acc, item) => {
     const folder = folders.find(f => f.id === item.folder_id);
     if (!folder) {
       if (!acc['uncategorized']) acc['uncategorized'] = { name: 'Uncategorized', items: [], subfolders: {} };
@@ -62,10 +73,6 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
     return acc;
   }, {} as Record<string, { name: string; items: Equipment[]; subfolders: Record<string, { name: string; items: Equipment[] }> }>);
 
-  if (loading) {
-    return <div className="text-sm text-muted-foreground">Loading equipment...</div>;
-  }
-
   const renderEquipmentCard = (item: Equipment) => (
     <Card
       key={item.id}
@@ -84,41 +91,58 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
     </Card>
   );
 
+  if (loading) {
+    return <div className="text-sm text-muted-foreground">Loading equipment...</div>;
+  }
+
   return (
-    <ScrollArea className={cn("h-full pr-4", className)}>
-      <Accordion type="multiple" className="space-y-4">
-        {Object.entries(groupedByParent).map(([folderId, folder]) => (
-          <AccordionItem key={folderId} value={folderId} className="border-none">
-            <AccordionTrigger className="py-2 hover:no-underline">
-              <span className="text-sm font-medium text-muted-foreground">
-                {folder.name}
-              </span>
-            </AccordionTrigger>
-            <AccordionContent className="pb-0">
-              <div className="space-y-4">
-                {/* Main folder items */}
-                {folder.items.length > 0 && (
-                  <div className="space-y-2">
-                    {folder.items.map(renderEquipmentCard)}
-                  </div>
-                )}
-                
-                {/* Subfolders */}
-                {Object.entries(folder.subfolders).map(([subfolderId, subfolder]) => (
-                  <div key={subfolderId} className="space-y-2">
-                    <div className="text-sm font-medium text-muted-foreground pl-2 border-l-2 border-muted">
-                      {subfolder.name}
+    <div className="flex flex-col h-full">
+      <div className="p-4">
+        <Input
+          placeholder="Search equipment..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full bg-zinc-900/50"
+        />
+      </div>
+      <ScrollArea className={cn("flex-1 pr-4", className)}>
+        <Accordion type="multiple" className="space-y-4">
+          {Object.entries(groupedByParent).map(([folderId, folder]) => (
+            <AccordionItem key={folderId} value={folderId} className="border-none">
+              <AccordionTrigger className="py-2 hover:no-underline">
+                <span className="text-sm font-medium text-muted-foreground">
+                  {folder.name}
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="pb-0">
+                <div className="space-y-4">
+                  {/* Main folder items */}
+                  {folder.items.length > 0 && (
+                    <div className="space-y-2">
+                      {folder.items.map(renderEquipmentCard)}
                     </div>
-                    <div className="space-y-2 pl-2">
-                      {subfolder.items.map(renderEquipmentCard)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
-    </ScrollArea>
+                  )}
+                  
+                  {/* Subfolders */}
+                  {Object.entries(folder.subfolders).map(([subfolderId, subfolder]) => (
+                    <Collapsible key={subfolderId}>
+                      <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground pl-2 border-l-2 border-muted w-full hover:text-foreground transition-colors">
+                        <ChevronDown className="h-4 w-4" />
+                        {subfolder.name}
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="space-y-2 pl-4 mt-2">
+                          {subfolder.items.map(renderEquipmentCard)}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      </ScrollArea>
+    </div>
   );
 }
