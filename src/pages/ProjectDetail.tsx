@@ -7,18 +7,20 @@ const ProjectDetail = () => {
   const { project, loading } = useProjectDetails(id);
 
   if (loading) {
-    return <div className="p-8">Loading...</div>;
+    return <div className="container max-w-[1400px] p-8">Loading...</div>;
   }
 
   if (!project) {
-    return <div className="p-8">Project not found</div>;
+    return <div className="container max-w-[1400px] p-8">Project not found</div>;
   }
 
   return (
-    <ProjectLayout 
-      project={project}
-      projectId={id || ''}
-    />
+    <div className="container max-w-[1400px] p-8">
+      <ProjectLayout 
+        project={project}
+        projectId={id || ''}
+      />
+    </div>
   );
 };
 
