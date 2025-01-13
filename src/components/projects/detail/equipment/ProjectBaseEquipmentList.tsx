@@ -101,13 +101,15 @@ export function ProjectBaseEquipmentList({
 
       if (error) throw error;
 
-      // Update other groups' sort orders
-      await supabase.rpc('update_group_sort_orders', {
+      // Update other groups' sort orders using the RPC function
+      const { error: rpcError } = await supabase.rpc('update_group_sort_orders', {
         p_project_id: projectId,
         p_source_group_id: sourceGroupId,
         p_target_sort_order: newSortOrder,
         p_direction: direction
       });
+
+      if (rpcError) throw rpcError;
 
       // Invalidate the groups query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['project-equipment-groups', projectId] });
@@ -143,7 +145,7 @@ export function ProjectBaseEquipmentList({
             <div 
               key={group.id} 
               className={cn(
-                "rounded-lg border-2 transition-all duration-200 relative overflow-hidden",
+                "rounded-lg border-2 transition-all duration-200 relative overflow-hidden cursor-move",
                 isSelected 
                   ? "border-primary/20" 
                   : "border-zinc-800/50"

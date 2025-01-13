@@ -863,6 +863,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      update_group_sort_orders: {
+        Args: {
+          p_project_id: string
+          p_source_group_id: string
+          p_target_sort_order: number
+          p_direction: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
