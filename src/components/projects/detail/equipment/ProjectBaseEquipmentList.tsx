@@ -1,10 +1,11 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProjectEquipmentItem } from "./ProjectEquipmentItem";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/utils/priceFormatters";
+import { toast } from "sonner";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
@@ -20,6 +21,7 @@ export function ProjectBaseEquipmentList({
   onDrop
 }: ProjectBaseEquipmentListProps) {
   const { equipment, loading, removeEquipment } = useProjectEquipment(projectId);
+  const queryClient = useQueryClient();
 
   const { data: groups = [] } = useQuery({
     queryKey: ['project-equipment-groups', projectId],
@@ -72,6 +74,50 @@ export function ProjectBaseEquipmentList({
     onDrop(e, groupId);
   };
 
+  const handleGroupDragStart = (e: React.DragEvent, groupId: string) => {
+    e.dataTransfer.setData('group-id', groupId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleGroupDrop = async (e: React.DragEvent, targetGroupId: string) => {
+    e.preventDefault();
+    const sourceGroupId = e.dataTransfer.getData('group-id');
+    if (!sourceGroupId || sourceGroupId === targetGroupId) return;
+
+    const sourceGroup = groups.find(g => g.id === sourceGroupId);
+    const targetGroup = groups.find(g => g.id === targetGroupId);
+    if (!sourceGroup || !targetGroup) return;
+
+    // Calculate new sort order
+    const newSortOrder = targetGroup.sort_order;
+    const direction = sourceGroup.sort_order > targetGroup.sort_order ? 1 : -1;
+
+    try {
+      // Update sort orders in the database
+      const { error } = await supabase
+        .from('project_equipment_groups')
+        .update({ sort_order: newSortOrder })
+        .eq('id', sourceGroupId);
+
+      if (error) throw error;
+
+      // Update other groups' sort orders
+      await supabase.rpc('update_group_sort_orders', {
+        p_project_id: projectId,
+        p_source_group_id: sourceGroupId,
+        p_target_sort_order: newSortOrder,
+        p_direction: direction
+      });
+
+      // Invalidate the groups query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['project-equipment-groups', projectId] });
+      toast.success('Group order updated');
+    } catch (error) {
+      console.error('Error reordering groups:', error);
+      toast.error('Failed to reorder groups');
+    }
+  };
+
   const sortEquipment = (items: any[]) => {
     return [...items].sort((a, b) => a.name.localeCompare(b.name));
   };
@@ -105,7 +151,16 @@ export function ProjectBaseEquipmentList({
               onDragOver={handleDragOver}
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
-              onDrop={(e) => handleDrop(e, group.id)}
+              onDrop={(e) => {
+                const isGroupDrag = e.dataTransfer.types.includes('group-id');
+                if (isGroupDrag) {
+                  handleGroupDrop(e, group.id);
+                } else {
+                  handleDrop(e, group.id);
+                }
+              }}
+              draggable
+              onDragStart={(e) => handleGroupDragStart(e, group.id)}
             >
               <div className={cn(
                 "absolute inset-0 transition-all duration-200",
