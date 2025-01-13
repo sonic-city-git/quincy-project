@@ -1,3 +1,4 @@
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProjectEquipmentItem } from "./ProjectEquipmentItem";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
@@ -42,6 +43,21 @@ export function ProjectBaseEquipmentList({
   const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+  // Fetch groups
+  const { data: groups = [] } = useQuery({
+    queryKey: ['project-equipment-groups', projectId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_equipment_groups')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('sort_order');
+
+      if (error) throw error;
+      return data;
+    }
+  });
+
   // Effect to scroll to newly added equipment
   useEffect(() => {
     if (lastAddedItemId && scrollAreaRef.current) {
@@ -52,6 +68,56 @@ export function ProjectBaseEquipmentList({
       }
     }
   }, [lastAddedItemId, equipment]);
+
+  const handleCreateGroup = async () => {
+    if (!newGroupName.trim()) {
+      toast.error('Please enter a group name');
+      return;
+    }
+
+    try {
+      const { data: newGroup, error } = await supabase
+        .from('project_equipment_groups')
+        .insert({
+          project_id: projectId,
+          name: newGroupName.trim(),
+          sort_order: groups.length
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (pendingEquipment) {
+        if (pendingEquipment.type === 'project-equipment') {
+          await supabase
+            .from('project_equipment')
+            .update({ group_id: newGroup.id })
+            .eq('id', pendingEquipment.id);
+        } else {
+          await supabase
+            .from('project_equipment')
+            .insert({
+              project_id: projectId,
+              equipment_id: pendingEquipment.id,
+              quantity: 1,
+              group_id: newGroup.id
+            });
+        }
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['project-equipment-groups', projectId] });
+      await queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] });
+      
+      setShowNewGroupDialog(false);
+      setNewGroupName("");
+      setPendingEquipment(null);
+      toast.success('Group created successfully');
+    } catch (error) {
+      console.error('Error creating group:', error);
+      toast.error('Failed to create group');
+    }
+  };
 
   const handleDeleteGroup = async (groupId: string) => {
     // Find equipment in the group before deletion
