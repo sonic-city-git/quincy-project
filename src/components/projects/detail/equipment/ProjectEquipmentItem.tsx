@@ -20,7 +20,8 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('application/json', JSON.stringify({
       id: item.id,
-      currentGroupId: item.group_id
+      currentGroupId: item.group_id,
+      type: 'project-equipment'
     }));
     e.dataTransfer.effectAllowed = 'move';
   };
@@ -68,7 +69,7 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
 
   return (
     <Card 
-      className="relative p-1.5 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/50 group"
+      className="relative p-1.5 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/50 group cursor-move"
       draggable
       onDragStart={handleDragStart}
     >

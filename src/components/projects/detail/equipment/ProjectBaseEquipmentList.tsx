@@ -55,7 +55,7 @@ export function ProjectBaseEquipmentList({
       const item = JSON.parse(data);
       
       // If it's equipment being moved between groups
-      if (item.currentGroupId !== undefined) {
+      if (item.type === 'project-equipment') {
         const equipmentId = item.id;
         const { error } = await supabase
           .from('project_equipment')
@@ -229,14 +229,12 @@ export function ProjectBaseEquipmentList({
                         <div className="text-sm text-muted-foreground">
                           {formatPrice(calculateGroupTotal(groupEquipment))}
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-950/50"
+                        <button
+                          className="h-8 w-8 inline-flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-md"
                           onClick={() => handleDeleteGroup(group.id)}
                         >
                           <X className="h-4 w-4" />
-                        </Button>
+                        </button>
                       </div>
                     </div>
                     <div className="p-4 space-y-2">
