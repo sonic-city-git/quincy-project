@@ -63,7 +63,7 @@ export function EventSectionHeader({
             .delete()
             .eq('event_id', event.id);
 
-          // Insert new equipment
+          // Insert new equipment with is_synced set to true
           const eventEquipment = Array.from(uniqueEquipment.values()).map(item => ({
             project_id: event.project_id,
             event_id: event.id,
