@@ -64,13 +64,11 @@ export function CrewList() {
                 </Table>
               </div>
               <div className="overflow-y-auto flex-1">
-                <div className="min-w-max">
-                  <CrewTable 
-                    crew={sortedCrew} 
-                    selectedItem={selectedItem}
-                    onItemSelect={setSelectedItem}
-                  />
-                </div>
+                <CrewTable 
+                  crew={sortedCrew} 
+                  selectedItem={selectedItem}
+                  onItemSelect={setSelectedItem}
+                />
               </div>
             </div>
           </div>
