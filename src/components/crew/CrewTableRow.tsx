@@ -31,11 +31,12 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
       </TableCell>
       <TableCell className="w-full md:w-[120px]">
         <span className="text-sm text-muted-foreground truncate block">
-          <div className="flex flex-wrap gap-1">
+          <div className="flex items-center gap-1 overflow-x-auto whitespace-nowrap">
             {memberRoles.map((role) => (
               <Badge
                 key={role.id}
-                className={`bg-${role.color}-500 bg-opacity-10 text-${role.color}-500 text-xs`}
+                style={{ backgroundColor: role.color }}
+                className="text-white text-xs"
               >
                 {role.name}
               </Badge>
