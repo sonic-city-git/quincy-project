@@ -127,7 +127,22 @@ export function ProjectBaseEquipmentList({
       setGroupToDelete(groupId);
     } else {
       // If no equipment, delete the group directly
-      await deleteGroup(groupId);
+      try {
+        await deleteGroup(groupId);
+        
+        if (selectedGroupId === groupId) {
+          onGroupSelect(null);
+        }
+        
+        await queryClient.invalidateQueries({ 
+          queryKey: ['project-equipment-groups', projectId] 
+        });
+        
+        toast.success('Group deleted successfully');
+      } catch (error) {
+        console.error('Error deleting empty group:', error);
+        toast.error('Failed to delete group');
+      }
     }
   };
 
