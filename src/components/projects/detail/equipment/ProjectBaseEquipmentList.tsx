@@ -54,8 +54,8 @@ export function ProjectBaseEquipmentList({
     try {
       const item = JSON.parse(data);
       
-      // If it's equipment being moved between groups
-      if (item.type === 'project-equipment') {
+      // If it's equipment being moved between groups (check both conditions to maintain compatibility)
+      if (item.type === 'project-equipment' || item.currentGroupId !== undefined) {
         const equipmentId = item.id;
         const { error } = await supabase
           .from('project_equipment')
