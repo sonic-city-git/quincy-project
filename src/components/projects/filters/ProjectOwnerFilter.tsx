@@ -8,7 +8,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCrew } from "@/hooks/useCrew";
-import { useCrewSort } from "@/components/crew/useCrewSort";
 
 interface ProjectOwnerFilterProps {
   value: string;
@@ -18,23 +17,15 @@ interface ProjectOwnerFilterProps {
 const SONIC_CITY_FOLDER_ID = "34f3469f-02bd-4ecf-82f9-11a4e88c2d77";
 
 export function ProjectOwnerFilter({ value, onChange }: ProjectOwnerFilterProps) {
-  const { crew, loading } = useCrew();
-  const { sortCrew } = useCrewSort();
-  
-  // Filter and sort crew members
-  const filteredCrew = sortCrew(
-    crew.filter(member => member.folder_id === SONIC_CITY_FOLDER_ID)
-  );
-
-  console.log('Filtered crew members:', filteredCrew);
+  const { crew, loading } = useCrew(SONIC_CITY_FOLDER_ID);
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button 
           variant="outline" 
-          size="sm" 
-          className="gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          size="default"
+          className="gap-2 bg-zinc-800/50 border-zinc-700 text-muted-foreground hover:text-foreground transition-colors"
         >
           <Filter className="h-4 w-4" />
           Filter
@@ -46,7 +37,7 @@ export function ProjectOwnerFilter({ value, onChange }: ProjectOwnerFilterProps)
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">
-        {filteredCrew.map((member) => (
+        {crew.map((member) => (
           <DropdownMenuCheckboxItem
             key={member.id}
             checked={value === member.id}

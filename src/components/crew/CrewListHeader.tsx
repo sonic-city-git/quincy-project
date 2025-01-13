@@ -30,19 +30,21 @@ export function CrewListHeader({
 
   return (
     <div className="flex items-center gap-4">
-      <div className="flex items-center gap-2 flex-1">
+      <div className="flex items-center gap-4 flex-1">
         <CrewSearchInput 
           value={searchQuery}
           onChange={onSearchChange}
         />
-        <CrewRoleFilter
-          roles={roles}
-          selectedRoles={selectedRoles}
-          onRoleToggle={onRoleToggle}
-        />
-        {hasActiveFilters && (
-          <CrewFilterClear onClear={onClearFilters} />
-        )}
+        <div className="flex items-center gap-2">
+          <CrewRoleFilter
+            roles={roles}
+            selectedRoles={selectedRoles}
+            onRoleToggle={onRoleToggle}
+          />
+          {hasActiveFilters && (
+            <CrewFilterClear onClear={onClearFilters} />
+          )}
+        </div>
       </div>
       <CrewActions 
         selectedItems={selectedItem ? [selectedItem] : []} 

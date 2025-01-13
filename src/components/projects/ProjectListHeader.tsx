@@ -20,32 +20,31 @@ export function ProjectListHeader({
   onOwnerFilterChange,
 }: ProjectListHeaderProps) {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
-
-  const handleClearFilters = () => {
-    onSearchChange('');
-    onOwnerFilterChange('');
-  };
-
-  const hasActiveFilters = searchQuery || ownerFilter;
+  const hasActiveFilters = ownerFilter || searchQuery;
 
   return (
-    <div className="flex items-center justify-between gap-4 h-10">
-      <div className="flex items-center gap-2">
+    <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-1">
         <ProjectSearchInput 
           value={searchQuery}
           onChange={onSearchChange}
         />
-        <ProjectOwnerFilter
-          value={ownerFilter}
-          onChange={onOwnerFilterChange}
-        />
-        {hasActiveFilters && (
-          <ProjectFilterClear onClear={handleClearFilters} />
-        )}
+        <div className="flex items-center gap-2">
+          <ProjectOwnerFilter
+            value={ownerFilter}
+            onChange={onOwnerFilterChange}
+          />
+          {hasActiveFilters && (
+            <ProjectFilterClear onClear={() => {
+              onSearchChange('');
+              onOwnerFilterChange('');
+            }} />
+          )}
+        </div>
       </div>
       <Button
         variant="default"
-        size="sm"
+        size="default"
         className="gap-2"
         onClick={() => setAddDialogOpen(true)}
       >
