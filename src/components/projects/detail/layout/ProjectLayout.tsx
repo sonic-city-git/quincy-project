@@ -20,7 +20,7 @@ export function ProjectLayout({
       <div className="bg-zinc-900 rounded-lg shadow-md">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="flex flex-col">
-            <div className="sticky top-0 z-10 bg-zinc-900 rounded-t-lg">
+            <div className="sticky top-0 z-50 bg-zinc-900 rounded-t-lg">
               <div className="p-4">
                 <ProjectHeader 
                   name={project.name}
