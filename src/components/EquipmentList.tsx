@@ -9,6 +9,7 @@ import { useEquipmentFilters } from "./equipment/filters/useEquipmentFilters";
 import { useFolders } from "@/hooks/useFolders";
 import { Table } from "./ui/table";
 import { EquipmentTableHeader } from "./equipment/EquipmentTableHeader";
+import { FOLDER_ORDER } from "@/utils/folderSort";
 
 export function EquipmentList() {
   const { equipment = [], loading } = useEquipment();
@@ -44,7 +45,7 @@ export function EquipmentList() {
     return acc;
   }, {} as Record<string, typeof filteredEquipment>);
 
-  // Sort folders according to the predefined order
+  // Sort folders according to the predefined order from folderSort.ts
   const sortedFolders = Object.keys(groupedEquipment).sort((a, b) => {
     const orderA = FOLDER_ORDER.indexOf(a);
     const orderB = FOLDER_ORDER.indexOf(b);
@@ -96,19 +97,3 @@ export function EquipmentList() {
     </div>
   );
 }
-
-// Predefined folder order
-const FOLDER_ORDER = [
-  "Mixers",
-  "Microphones",
-  "DI-boxes",
-  "Cables/Split",
-  "WL",
-  "Outboard",
-  "Stands/Clamps",
-  "Misc",
-  "Flightcases",
-  "Consumables",
-  "Kits",
-  "Mindnes"
-];
