@@ -50,29 +50,37 @@ export function EventSectionHeader({
           table: 'project_event_equipment',
           filter: `project_id=eq.${projectId}`
         },
-        async () => {
-          // Invalidate queries for all events in both Proposed and Confirmed sections
-          const { data: allEvents } = await supabase
-            .from('project_events')
-            .select('id')
-            .eq('project_id', projectId)
-            .in('status', ['proposed', 'confirmed']);
+        async (payload) => {
+          console.log('Received real-time update:', payload);
+          
+          // Add a delay before invalidating queries
+          setTimeout(async () => {
+            const { data: allEvents } = await supabase
+              .from('project_events')
+              .select('id')
+              .eq('project_id', projectId)
+              .in('status', ['proposed', 'confirmed']);
 
-          if (allEvents) {
-            await Promise.all([
-              ...allEvents.map(event => 
+            if (allEvents) {
+              console.log('Invalidating queries for events:', allEvents);
+              await Promise.all([
+                ...allEvents.map(event => 
+                  queryClient.invalidateQueries({ 
+                    queryKey: ['project-event-equipment', event.id],
+                    exact: true
+                  })
+                ),
                 queryClient.invalidateQueries({ 
-                  queryKey: ['project-event-equipment', event.id] 
+                  queryKey: ['events', projectId],
+                  exact: true
+                }),
+                queryClient.invalidateQueries({ 
+                  queryKey: ['calendar-events', projectId],
+                  exact: true
                 })
-              ),
-              queryClient.invalidateQueries({ 
-                queryKey: ['events', projectId] 
-              }),
-              queryClient.invalidateQueries({ 
-                queryKey: ['calendar-events', projectId] 
-              })
-            ]);
-          }
+              ]);
+            }
+          }, 1000); // Add a 1-second delay
         }
       )
       .subscribe();
@@ -130,37 +138,38 @@ export function EventSectionHeader({
         }
       }
 
-      // Get all events from both Proposed and Confirmed sections
-      const projectId = events[0]?.project_id;
-      if (projectId) {
-        const { data: allEvents } = await supabase
-          .from('project_events')
-          .select('id')
-          .eq('project_id', projectId)
-          .in('status', ['proposed', 'confirmed']);
+      // Add a delay before invalidating queries
+      setTimeout(async () => {
+        const projectId = events[0]?.project_id;
+        if (projectId) {
+          const { data: allEvents } = await supabase
+            .from('project_events')
+            .select('id')
+            .eq('project_id', projectId)
+            .in('status', ['proposed', 'confirmed']);
 
-        if (allEvents) {
-          // Force immediate invalidation for all events
-          await Promise.all([
-            ...allEvents.map(event => 
+          if (allEvents) {
+            console.log('Invalidating queries after sync:', allEvents);
+            await Promise.all([
+              ...allEvents.map(event => 
+                queryClient.invalidateQueries({ 
+                  queryKey: ['project-event-equipment', event.id],
+                  exact: true
+                })
+              ),
               queryClient.invalidateQueries({ 
-                queryKey: ['project-event-equipment', event.id],
+                queryKey: ['events', projectId],
+                exact: true
+              }),
+              queryClient.invalidateQueries({ 
+                queryKey: ['calendar-events', projectId],
                 exact: true
               })
-            ),
-            queryClient.invalidateQueries({ 
-              queryKey: ['events', projectId],
-              exact: true
-            }),
-            queryClient.invalidateQueries({ 
-              queryKey: ['calendar-events', projectId],
-              exact: true
-            })
-          ]);
+            ]);
+          }
         }
-      }
-
-      toast.success(`Equipment synchronized for all ${title} events`);
+        toast.success(`Equipment synchronized for all ${title} events`);
+      }, 1000); // Add a 1-second delay
     } catch (error) {
       console.error('Error syncing equipment:', error);
       toast.error('Failed to sync equipment');
