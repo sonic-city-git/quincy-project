@@ -118,7 +118,7 @@ export function EquipmentList() {
 
   const handleDialogClose = () => {
     setEditDialogOpen(false);
-    setSelectedItem(null); // Reset selected item when dialog closes
+    setSelectedItem(null);
   };
 
   return (
@@ -165,6 +165,7 @@ export function EquipmentList() {
 
       {selectedEquipment && (
         <EditEquipmentDialog
+          key={selectedEquipment.id}
           open={editDialogOpen}
           onOpenChange={handleDialogClose}
           equipment={selectedEquipment}
