@@ -15,6 +15,7 @@ interface ProjectEquipmentItemProps {
 
 export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
   const queryClient = useQueryClient();
 
   const handleDragStart = (e: React.DragEvent) => {
@@ -52,9 +53,17 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
     }
   };
 
+  const handleRemove = async () => {
+    setIsRemoving(true);
+    await onRemove();
+    setIsRemoving(false);
+  };
+
   return (
     <Card 
-      className="relative p-1.5 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/50 group"
+      className={`relative p-1.5 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/50 group ${
+        isRemoving ? 'opacity-50' : ''
+      }`}
       draggable
       onDragStart={handleDragStart}
     >
@@ -77,9 +86,9 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
             {item.rental_price ? formatPrice(item.rental_price * item.quantity) : '-'}
           </div>
           <button 
-            className="h-6 w-6 inline-flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-md"
-            onClick={onRemove}
-            disabled={isUpdating}
+            className="h-6 w-6 inline-flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-md disabled:opacity-50"
+            onClick={handleRemove}
+            disabled={isRemoving || isUpdating}
           >
             <X className="h-3.5 w-3.5" />
           </button>

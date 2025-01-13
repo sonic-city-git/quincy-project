@@ -96,7 +96,12 @@ export function useProjectEquipment(projectId: string) {
   };
 
   const removeEquipment = async (id: string) => {
-    setLoading(true);
+    // Optimistically update the UI
+    const previousEquipment = equipment;
+    queryClient.setQueryData(['project-equipment', projectId], 
+      equipment.filter(item => item.id !== id)
+    );
+
     try {
       const { error } = await supabase
         .from('project_equipment')
@@ -105,13 +110,12 @@ export function useProjectEquipment(projectId: string) {
 
       if (error) throw error;
 
-      queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] });
       toast.success('Equipment removed from project');
     } catch (error: any) {
+      // Revert to previous state if there's an error
       console.error('Error removing equipment:', error);
+      queryClient.setQueryData(['project-equipment', projectId], previousEquipment);
       toast.error(error.message || 'Failed to remove equipment');
-    } finally {
-      setLoading(false);
     }
   };
 
