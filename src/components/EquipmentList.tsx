@@ -9,7 +9,7 @@ import { useEquipmentFilters } from "./equipment/filters/useEquipmentFilters";
 import { useFolders } from "@/hooks/useFolders";
 import { Table } from "./ui/table";
 import { EquipmentTableHeader } from "./equipment/EquipmentTableHeader";
-import { FOLDER_ORDER } from "@/utils/folderSort";
+import { FOLDER_ORDER, SUBFOLDER_ORDER } from "@/utils/folderSort";
 
 export function EquipmentList() {
   const { equipment = [], loading } = useEquipment();
@@ -34,10 +34,24 @@ export function EquipmentList() {
 
   const filteredEquipment = filterEquipment(equipment);
 
-  // Group equipment by folder
+  // Group equipment by folder and subfolder
   const groupedEquipment = filteredEquipment.reduce((acc, item) => {
     const folder = folders.find(f => f.id === item.folder_id);
-    const folderName = folder ? folder.name : 'Uncategorized';
+    if (!folder) {
+      if (!acc['Uncategorized']) acc['Uncategorized'] = [];
+      acc['Uncategorized'].push(item);
+      return acc;
+    }
+
+    // Find parent folder if this is a subfolder
+    const parentFolder = folder.parent_id 
+      ? folders.find(f => f.id === folder.parent_id)
+      : null;
+
+    const folderName = parentFolder 
+      ? `${parentFolder.name}/${folder.name}`  // Include parent folder name for subfolders
+      : folder.name;
+
     if (!acc[folderName]) {
       acc[folderName] = [];
     }
@@ -47,12 +61,31 @@ export function EquipmentList() {
 
   // Sort folders according to the predefined order from folderSort.ts
   const sortedFolders = Object.keys(groupedEquipment).sort((a, b) => {
-    const orderA = FOLDER_ORDER.indexOf(a);
-    const orderB = FOLDER_ORDER.indexOf(b);
-    if (orderA === -1 && orderB === -1) return a.localeCompare(b);
-    if (orderA === -1) return 1;
-    if (orderB === -1) return -1;
-    return orderA - orderB;
+    // Split folder paths into parent and subfolder
+    const [parentA = a, subA = ''] = a.split('/');
+    const [parentB = b, subB = ''] = b.split('/');
+
+    // Get order indices for parent folders
+    const orderA = FOLDER_ORDER.indexOf(parentA);
+    const orderB = FOLDER_ORDER.indexOf(parentB);
+
+    // If parent folders are different, sort by parent folder order
+    if (orderA !== orderB) {
+      if (orderA === -1 && orderB === -1) return parentA.localeCompare(parentB);
+      if (orderA === -1) return 1;
+      if (orderB === -1) return -1;
+      return orderA - orderB;
+    }
+
+    // If parent folders are the same, sort by subfolder order
+    const subOrderArray = SUBFOLDER_ORDER[parentA] || [];
+    const subOrderA = subOrderArray.indexOf(subA);
+    const subOrderB = subOrderArray.indexOf(subB);
+
+    if (subOrderA === -1 && subOrderB === -1) return subA.localeCompare(subB);
+    if (subOrderA === -1) return 1;
+    if (subOrderB === -1) return -1;
+    return subOrderA - subOrderB;
   });
 
   return (
@@ -76,13 +109,13 @@ export function EquipmentList() {
               </div>
               <div className="overflow-y-auto flex-1">
                 <div className="divide-y divide-zinc-800">
-                  {sortedFolders.map((folderName) => (
-                    <div key={folderName}>
+                  {sortedFolders.map((folderPath) => (
+                    <div key={folderPath}>
                       <div className="bg-zinc-800/50 px-4 py-2 font-medium text-sm text-zinc-400">
-                        {folderName}
+                        {folderPath}
                       </div>
                       <EquipmentTable 
-                        equipment={groupedEquipment[folderName]}
+                        equipment={groupedEquipment[folderPath]}
                         selectedItem={selectedItem}
                         onItemSelect={setSelectedItem}
                       />
