@@ -162,58 +162,60 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
           className="w-full bg-zinc-900/50"
         />
       </div>
-      <ScrollArea className={cn("flex-1 pr-4", className)}>
-        <Accordion 
-          type="multiple" 
-          className="space-y-4"
-          defaultValue={expandedFolders}
-          value={searchQuery ? expandedFolders : undefined}
-        >
-          {sortedMainFolders.map(mainFolder => {
-            const folderContent = groupedByParent[mainFolder.id];
-            if (!folderContent) return null;
+      <ScrollArea className={cn("flex-1", className)}>
+        <div className="px-4 pb-4">
+          <Accordion 
+            type="multiple" 
+            className="space-y-2"
+            defaultValue={expandedFolders}
+            value={searchQuery ? expandedFolders : undefined}
+          >
+            {sortedMainFolders.map(mainFolder => {
+              const folderContent = groupedByParent[mainFolder.id];
+              if (!folderContent) return null;
 
-            return (
-              <AccordionItem key={mainFolder.id} value={mainFolder.id} className="border-none">
-                <AccordionTrigger className="py-2 hover:no-underline">
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {mainFolder.name}
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent className="pb-0">
-                  <div className="space-y-4">
-                    {/* Main folder items */}
-                    {folderContent.items.length > 0 && (
-                      <div className="space-y-2">
-                        {folderContent.items.map(renderEquipmentCard)}
-                      </div>
-                    )}
-                    
-                    {/* Subfolders */}
-                    {getSubfolders(mainFolder.id).map(subfolder => {
-                      const subfolderContent = folderContent.subfolders[subfolder.id];
-                      if (!subfolderContent?.items.length) return null;
+              return (
+                <AccordionItem key={mainFolder.id} value={mainFolder.id} className="border-none">
+                  <AccordionTrigger className="py-2 px-3 hover:no-underline rounded-md hover:bg-accent/5 data-[state=open]:bg-accent/5">
+                    <span className="text-sm font-medium text-muted-foreground">
+                      {mainFolder.name}
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-1 pt-1">
+                    <div className="space-y-2">
+                      {/* Main folder items */}
+                      {folderContent.items.length > 0 && (
+                        <div className="space-y-1 px-1">
+                          {folderContent.items.map(renderEquipmentCard)}
+                        </div>
+                      )}
+                      
+                      {/* Subfolders */}
+                      {getSubfolders(mainFolder.id).map(subfolder => {
+                        const subfolderContent = folderContent.subfolders[subfolder.id];
+                        if (!subfolderContent?.items.length) return null;
 
-                      return (
-                        <Collapsible key={subfolder.id} defaultOpen={searchQuery.length > 0}>
-                          <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground pl-2 border-l-2 border-muted w-full hover:text-foreground transition-colors">
-                            <ChevronDown className="h-4 w-4" />
-                            {subfolder.name}
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <div className="space-y-2 pl-4 mt-2">
-                              {subfolderContent.items.map(renderEquipmentCard)}
-                            </div>
-                          </CollapsibleContent>
-                        </Collapsible>
-                      );
-                    })}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            );
-          })}
-        </Accordion>
+                        return (
+                          <Collapsible key={subfolder.id} defaultOpen={searchQuery.length > 0}>
+                            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground w-full hover:bg-accent/5 px-3 py-1 rounded-md transition-colors">
+                              <ChevronDown className="h-4 w-4" />
+                              {subfolder.name}
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                              <div className="space-y-1 pl-7 pr-1 pt-1">
+                                {subfolderContent.items.map(renderEquipmentCard)}
+                              </div>
+                            </CollapsibleContent>
+                          </Collapsible>
+                        );
+                      })}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              );
+            })}
+          </Accordion>
+        </div>
       </ScrollArea>
     </div>
   );
