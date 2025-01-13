@@ -46,6 +46,9 @@ export function EditEquipmentDialog({
   const queryClient = useQueryClient();
   const { folders = [], loading: foldersLoading } = useFolders();
 
+  console.log("Equipment data:", equipment);
+  console.log("Serial numbers:", equipment.equipment_serial_numbers);
+
   // Initialize form with equipment data, including serial numbers
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
