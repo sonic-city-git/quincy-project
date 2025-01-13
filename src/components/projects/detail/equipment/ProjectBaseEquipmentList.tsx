@@ -1,10 +1,24 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProjectEquipmentItem } from "./ProjectEquipmentItem";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { formatPrice } from "@/utils/priceFormatters";
+import { X } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
@@ -18,6 +32,9 @@ export function ProjectBaseEquipmentList({
   onGroupSelect,
 }: ProjectBaseEquipmentListProps) {
   const { equipment, loading, removeEquipment } = useProjectEquipment(projectId);
+  const queryClient = useQueryClient();
+  const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
+  const [targetGroupId, setTargetGroupId] = useState<string>("");
 
   const { data: groups = [] } = useQuery({
     queryKey: ['project-equipment-groups', projectId],
@@ -32,6 +49,76 @@ export function ProjectBaseEquipmentList({
       return data || [];
     }
   });
+
+  const handleDeleteGroup = async (groupId: string) => {
+    const groupEquipment = equipment?.filter(item => item.group_id === groupId) || [];
+    
+    if (groupEquipment.length > 0) {
+      setGroupToDelete(groupId);
+    } else {
+      await deleteGroupOnly(groupId);
+    }
+  };
+
+  const deleteGroupOnly = async (groupId: string) => {
+    try {
+      const { error } = await supabase
+        .from('project_equipment_groups')
+        .delete()
+        .eq('id', groupId);
+
+      if (error) throw error;
+
+      if (selectedGroupId === groupId) {
+        onGroupSelect(null);
+      }
+
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment-groups', projectId] 
+      });
+
+      toast.success('Group deleted successfully');
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      toast.error('Failed to delete group');
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!groupToDelete) return;
+
+    try {
+      if (targetGroupId) {
+        // Move equipment to target group
+        const { error: updateError } = await supabase
+          .from('project_equipment')
+          .update({ group_id: targetGroupId })
+          .eq('group_id', groupToDelete);
+
+        if (updateError) throw updateError;
+      } else {
+        // Delete all equipment in the group
+        const { error: deleteError } = await supabase
+          .from('project_equipment')
+          .delete()
+          .eq('group_id', groupToDelete);
+
+        if (deleteError) throw deleteError;
+      }
+
+      await deleteGroupOnly(groupToDelete);
+      setGroupToDelete(null);
+      setTargetGroupId("");
+
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment', projectId] 
+      });
+
+    } catch (error) {
+      console.error('Error handling group deletion:', error);
+      toast.error('Failed to process group deletion');
+    }
+  };
 
   const calculateGroupTotal = (groupEquipment: any[]) => {
     return groupEquipment.reduce((total, item) => {
@@ -71,19 +158,29 @@ export function ProjectBaseEquipmentList({
               )} />
               <div className="relative z-20">
                 <div className="bg-zinc-900/90">
-                  <div 
-                    className={cn(
-                      "flex items-center justify-between px-4 py-2 cursor-pointer transition-colors text-white",
-                      isSelected 
-                        ? "bg-primary/20 hover:bg-primary/30" 
-                        : "bg-zinc-800/50 hover:bg-zinc-800/70"
-                    )}
-                    onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
-                  >
-                    <h3 className="text-sm font-medium">{group.name}</h3>
-                    <span className="text-sm text-muted-foreground">
-                      {formatPrice(groupTotal)}
-                    </span>
+                  <div className="flex items-center justify-between px-4 py-2">
+                    <div 
+                      className={cn(
+                        "flex-1 cursor-pointer transition-colors text-white",
+                        isSelected 
+                          ? "hover:text-primary/90" 
+                          : "hover:text-white/90"
+                      )}
+                      onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
+                    >
+                      <h3 className="text-sm font-medium">{group.name}</h3>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm text-muted-foreground">
+                        {formatPrice(groupTotal)}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteGroup(group.id)}
+                        className="text-red-500 hover:text-red-400 transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div className="p-3 space-y-2 relative z-30 bg-background/95">
@@ -105,6 +202,46 @@ export function ProjectBaseEquipmentList({
           );
         })}
       </div>
+
+      <AlertDialog 
+        open={!!groupToDelete} 
+        onOpenChange={() => {
+          setGroupToDelete(null);
+          setTargetGroupId("");
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Group</AlertDialogTitle>
+            <AlertDialogDescription>
+              This group contains equipment. Would you like to move the equipment to another group or delete it?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Select value={targetGroupId} onValueChange={setTargetGroupId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a target group (or leave empty to delete equipment)" />
+              </SelectTrigger>
+              <SelectContent>
+                {groups
+                  .filter(g => g.id !== groupToDelete)
+                  .map(group => (
+                    <SelectItem key={group.id} value={group.id}>
+                      {group.name}
+                    </SelectItem>
+                  ))
+                }
+              </SelectContent>
+            </Select>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmDelete}>
+              {targetGroupId ? 'Move & Delete Group' : 'Delete All'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </ScrollArea>
   );
 }
