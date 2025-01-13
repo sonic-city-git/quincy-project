@@ -24,7 +24,7 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
       }`}
       onDoubleClick={onSelect}
     >
-      <TableCell className="w-full md:w-[300px]">
+      <TableCell className="w-full md:w-[250px] max-w-[250px]">
         <div className="text-sm font-medium truncate">
           {member.name}
         </div>
