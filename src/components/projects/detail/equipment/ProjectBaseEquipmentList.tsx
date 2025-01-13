@@ -49,63 +49,33 @@ export function ProjectBaseEquipmentList({
     const data = e.dataTransfer.getData('application/json');
     if (!data) return;
 
-    const { id, currentGroupId } = JSON.parse(data) as { id: string; currentGroupId: string | null };
-    if (currentGroupId === newGroupId) return;
-
     try {
-      // First check if the equipment already exists in the target group
-      const { data: existingEquipment } = await supabase
+      const equipment = JSON.parse(data);
+      const { error } = await supabase
         .from('project_equipment')
-        .select('*')
-        .eq('project_id', projectId)
-        .eq('equipment_id', equipment?.find(item => item.id === id)?.equipment_id)
-        .eq('group_id', newGroupId)
-        .maybeSingle();
+        .insert({
+          project_id: projectId,
+          equipment_id: equipment.id,
+          quantity: 1,
+          group_id: newGroupId
+        });
 
-      if (existingEquipment) {
-        // If it exists, update its quantity and delete the old entry
-        const { error: updateError } = await supabase
-          .from('project_equipment')
-          .update({ 
-            quantity: existingEquipment.quantity + (equipment?.find(item => item.id === id)?.quantity || 0) 
-          })
-          .eq('id', existingEquipment.id);
-
-        if (updateError) throw updateError;
-
-        // Delete the old entry
-        const { error: deleteError } = await supabase
-          .from('project_equipment')
-          .delete()
-          .eq('id', id);
-
-        if (deleteError) throw deleteError;
-
-        toast.success('Equipment merged with existing item');
-      } else {
-        // If it doesn't exist, just update the group_id
-        const { error } = await supabase
-          .from('project_equipment')
-          .update({ group_id: newGroupId })
-          .eq('id', id);
-
-        if (error) throw error;
-        toast.success('Equipment moved successfully');
-      }
+      if (error) throw error;
       
       await queryClient.invalidateQueries({ 
         queryKey: ['project-equipment', projectId]
       });
+      toast.success('Equipment added to group');
     } catch (error) {
-      console.error('Error moving equipment:', error);
-      toast.error('Failed to move equipment');
+      console.error('Error adding equipment:', error);
+      toast.error('Failed to add equipment to group');
     }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    e.dataTransfer.dropEffect = 'move';
+    e.dataTransfer.dropEffect = 'copy';
   };
 
   const handleDragEnter = (e: React.DragEvent) => {
