@@ -30,6 +30,7 @@ export function EquipmentIcon({
   sectionTitle
 }: EquipmentIconProps) {
   const iconClasses = `h-6 w-6 ${isSynced ? 'text-green-500' : 'text-blue-500'}`;
+  const badgeClasses = "bg-blue-500/10 text-blue-500 whitespace-nowrap";
 
   if (isSynced || isEditingDisabled) {
     return (
@@ -39,7 +40,7 @@ export function EquipmentIcon({
             <div className="flex items-center gap-2">
               <Package className={iconClasses} />
               {!isSynced && !isEditingDisabled && (
-                <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+                <Badge variant="secondary" className={badgeClasses}>
                   Out of sync
                 </Badge>
               )}
@@ -82,7 +83,7 @@ export function EquipmentIcon({
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+            <Badge variant="secondary" className={badgeClasses}>
               Out of sync
             </Badge>
           </div>
