@@ -30,16 +30,18 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
         </div>
       </TableCell>
       <TableCell className="w-full md:w-[120px]">
-        <div className="flex flex-wrap gap-1">
-          {memberRoles.map((role) => (
-            <Badge
-              key={role.id}
-              className={`bg-${role.color}-500 bg-opacity-10 text-${role.color}-500 text-xs`}
-            >
-              {role.name}
-            </Badge>
-          ))}
-        </div>
+        <span className="text-sm text-muted-foreground truncate block">
+          <div className="flex flex-wrap gap-1">
+            {memberRoles.map((role) => (
+              <Badge
+                key={role.id}
+                className={`bg-${role.color}-500 bg-opacity-10 text-${role.color}-500 text-xs`}
+              >
+                {role.name}
+              </Badge>
+            ))}
+          </div>
+        </span>
       </TableCell>
       <TableCell className="w-[150px] hidden md:table-cell">
         <span className="text-sm text-muted-foreground truncate block">
