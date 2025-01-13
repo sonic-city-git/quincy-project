@@ -106,12 +106,11 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
             toast.error('Failed to add equipment to new group');
           }
         }
-      }
 
-      // Reset the dialog state
-      setShowGroupDialog(false);
-      setNewGroupName("");
-      
+        // Only reset dialog state after everything is done
+        setShowGroupDialog(false);
+        setNewGroupName("");
+      }
     } catch (error: any) {
       console.error('Error creating group:', error);
       toast.error('Failed to create group');
@@ -266,4 +265,4 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
       </Dialog>
     </div>
   );
-}
+};
