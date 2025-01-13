@@ -6,6 +6,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { formatPrice } from "@/utils/priceFormatters";
 
 interface ProjectEquipmentItemProps {
   item: ProjectEquipment;
@@ -87,7 +88,7 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
         </div>
         <div className="flex items-center gap-2">
           <div className="min-w-[100px] text-right text-sm text-muted-foreground">
-            {item.rental_price ? `${(item.rental_price * item.quantity).toFixed(2)} kr` : '-'}
+            {item.rental_price ? formatPrice(item.rental_price * item.quantity) : '-'}
           </div>
           <button 
             className="h-6 w-6 inline-flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-md"

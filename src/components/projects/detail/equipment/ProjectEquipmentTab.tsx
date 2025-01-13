@@ -26,24 +26,19 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
     }
   };
 
-  const handleDrop = async (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent, groupId: string | null) => {
     e.preventDefault();
     const data = e.dataTransfer.getData('application/json');
     if (!data) return;
 
     try {
       const equipment = JSON.parse(data) as Equipment;
-      await addEquipment(equipment, selectedGroupId);
+      await addEquipment(equipment, groupId);
       toast.success('Equipment added to project');
     } catch (error) {
       console.error('Error adding equipment:', error);
       toast.error('Failed to add equipment');
     }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
   };
 
   return (
@@ -71,11 +66,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
           </div>
           
           {/* Project Equipment Column - Spans 9 columns */}
-          <div 
-            className="md:col-span-9 bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-colors flex flex-col h-full overflow-hidden"
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-          >
+          <div className="md:col-span-9 bg-zinc-800/50 rounded-lg border border-zinc-700/50 transition-colors flex flex-col h-full overflow-hidden">
             <div className="flex-shrink-0 px-4 py-3 border-b border-zinc-700/50">
               <div className="flex items-center justify-between h-9">
                 <div className="flex items-center gap-2">
@@ -94,6 +85,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
                 projectId={projectId} 
                 selectedGroupId={selectedGroupId}
                 onGroupSelect={setSelectedGroupId}
+                onDrop={handleDrop}
               />
             </div>
           </div>

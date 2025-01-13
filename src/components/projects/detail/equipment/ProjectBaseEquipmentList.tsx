@@ -1,24 +1,25 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProjectEquipmentItem } from "./ProjectEquipmentItem";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
-import { toast } from "sonner";
+import { formatPrice } from "@/utils/priceFormatters";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
   selectedGroupId: string | null;
   onGroupSelect: (groupId: string | null) => void;
+  onDrop: (e: React.DragEvent, groupId: string | null) => void;
 }
 
 export function ProjectBaseEquipmentList({ 
   projectId, 
   selectedGroupId,
-  onGroupSelect 
+  onGroupSelect,
+  onDrop
 }: ProjectBaseEquipmentListProps) {
   const { equipment, loading, removeEquipment } = useProjectEquipment(projectId);
-  const queryClient = useQueryClient();
 
   const { data: groups = [] } = useQuery({
     queryKey: ['project-equipment-groups', projectId],
@@ -39,37 +40,6 @@ export function ProjectBaseEquipmentList({
     return groupEquipment.reduce((total, item) => {
       return total + (item.rental_price || 0) * item.quantity;
     }, 0);
-  };
-
-  const handleDrop = async (e: React.DragEvent, newGroupId: string | null) => {
-    e.preventDefault();
-    const target = e.currentTarget as HTMLElement;
-    target.classList.remove('bg-accent/20', 'border-accent');
-    
-    const data = e.dataTransfer.getData('application/json');
-    if (!data) return;
-
-    try {
-      const equipment = JSON.parse(data);
-      const { error } = await supabase
-        .from('project_equipment')
-        .insert({
-          project_id: projectId,
-          equipment_id: equipment.id,
-          quantity: 1,
-          group_id: newGroupId
-        });
-
-      if (error) throw error;
-      
-      await queryClient.invalidateQueries({ 
-        queryKey: ['project-equipment', projectId]
-      });
-      toast.success('Equipment added to group');
-    } catch (error) {
-      console.error('Error adding equipment:', error);
-      toast.error('Failed to add equipment to group');
-    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -94,6 +64,12 @@ export function ProjectBaseEquipmentList({
     if (!currentTarget.contains(relatedTarget)) {
       currentTarget.classList.remove('bg-accent/20', 'border-accent');
     }
+  };
+
+  const handleDrop = (e: React.DragEvent, groupId: string | null) => {
+    const target = e.currentTarget as HTMLElement;
+    target.classList.remove('bg-accent/20', 'border-accent');
+    onDrop(e, groupId);
   };
 
   const sortEquipment = (items: any[]) => {
@@ -150,7 +126,7 @@ export function ProjectBaseEquipmentList({
                   >
                     <h3 className="text-sm font-medium">{group.name}</h3>
                     <span className="text-sm text-muted-foreground">
-                      {groupTotal.toFixed(2)} kr
+                      {formatPrice(groupTotal)}
                     </span>
                   </div>
                 </div>
@@ -204,7 +180,7 @@ export function ProjectBaseEquipmentList({
               >
                 <h3 className="text-sm font-medium">Ungrouped Equipment</h3>
                 <span className="text-sm text-muted-foreground">
-                  {ungroupedTotal.toFixed(2)} kr
+                  {formatPrice(ungroupedTotal)}
                 </span>
               </div>
             </div>
