@@ -46,6 +46,7 @@ export function EditEquipmentDialog({
   const queryClient = useQueryClient();
   const { folders = [], loading: foldersLoading } = useFolders();
 
+  // Initialize form with equipment data, including serial numbers
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,7 +56,7 @@ export function EditEquipmentDialog({
       stock_calculation: equipment.stock_calculation as "manual" | "serial_numbers" | "consumable" || "manual",
       stock: equipment.stock?.toString() || "",
       internal_remark: equipment.internal_remark || "",
-      serial_numbers: [],
+      serial_numbers: equipment.equipment_serial_numbers?.map(sn => sn.serial_number) || [],
       folder_id: equipment.folder_id || null,
     },
   });
@@ -134,12 +135,16 @@ export function EditEquipmentDialog({
       if (equipmentError) throw equipmentError;
 
       if (data.stock_calculation === "serial_numbers" && data.serial_numbers?.length) {
-        await supabase
+        // Delete existing serial numbers
+        const { error: deleteError } = await supabase
           .from('equipment_serial_numbers')
           .delete()
           .eq('equipment_id', equipment.id);
 
-        await supabase
+        if (deleteError) throw deleteError;
+
+        // Insert new serial numbers
+        const { error: insertError } = await supabase
           .from('equipment_serial_numbers')
           .insert(
             data.serial_numbers.map(serial => ({
@@ -148,6 +153,8 @@ export function EditEquipmentDialog({
               status: 'Available'
             }))
           );
+
+        if (insertError) throw insertError;
       }
 
       queryClient.invalidateQueries({ queryKey: ['equipment'] });
