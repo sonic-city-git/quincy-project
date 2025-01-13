@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Equipment } from "@/integrations/supabase/types/equipment";
+import { Equipment } from "@/types/equipment";
 import { toast } from "sonner";
 
 export function useProjectEquipment(projectId: string) {
@@ -42,19 +42,26 @@ export function useProjectEquipment(projectId: string) {
   const addEquipment = async (item: Equipment, groupId: string | null = null) => {
     setLoading(true);
     try {
-      // Check if the equipment exists in the specified group
-      const { data: existingEquipment, error: queryError } = await supabase
+      // Check if the equipment exists in the project
+      let query = supabase
         .from('project_equipment')
         .select('*')
         .eq('project_id', projectId)
-        .eq('equipment_id', item.id)
-        .eq('group_id', groupId)
-        .maybeSingle();
+        .eq('equipment_id', item.id);
+      
+      // Only add group_id to query if it's not null
+      if (groupId !== null) {
+        query = query.eq('group_id', groupId);
+      } else {
+        query = query.is('group_id', null);
+      }
+
+      const { data: existingEquipment, error: queryError } = await query.maybeSingle();
 
       if (queryError) throw queryError;
 
       if (existingEquipment) {
-        // If it exists in the same group, update the quantity
+        // If it exists, update the quantity
         const { error: updateError } = await supabase
           .from('project_equipment')
           .update({
@@ -65,7 +72,7 @@ export function useProjectEquipment(projectId: string) {
         if (updateError) throw updateError;
         toast.success('Equipment quantity updated');
       } else {
-        // If it doesn't exist in this group, create a new entry
+        // If it doesn't exist, create a new entry
         const { error: insertError } = await supabase
           .from('project_equipment')
           .insert({

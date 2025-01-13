@@ -9,6 +9,7 @@ export interface Equipment {
   internal_remark: string | null;
   created_at: string;
   updated_at: string;
+  stock_calculation: string | null;
   equipment_serial_numbers?: EquipmentSerialNumber[];
 }
 
