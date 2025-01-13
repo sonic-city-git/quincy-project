@@ -11,7 +11,7 @@ interface EquipmentTableRowProps {
 export function EquipmentTableRow({ item, isSelected, onSelect }: EquipmentTableRowProps) {
   return (
     <TableRow 
-      className={`group hover:bg-zinc-800/50 cursor-pointer ${
+      className={`group hover:bg-zinc-800/50 cursor-pointer select-none ${
         isSelected ? 'bg-zinc-800/75' : ''
       }`}
       onDoubleClick={onSelect}
