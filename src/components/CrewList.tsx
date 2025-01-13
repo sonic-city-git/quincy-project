@@ -60,18 +60,22 @@ export function CrewList() {
             />
             <Separator className="bg-zinc-800" />
             
-            <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0 flex flex-col">
-              <div className="sticky top-0 z-20 bg-zinc-900/95 backdrop-blur border-b border-zinc-800 min-w-0">
-                <Table>
-                  <CrewTableHeader />
-                </Table>
+            <div className="rounded-lg border border-zinc-800 flex-1 min-h-0 flex flex-col">
+              <div className="sticky top-0 z-20 bg-zinc-900/95 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75">
+                <div className="min-w-[590px] md:min-w-[800px]">
+                  <Table>
+                    <CrewTableHeader />
+                  </Table>
+                </div>
               </div>
-              <div className="overflow-y-auto flex-1 min-w-0">
-                <CrewTable 
-                  crew={sortedCrew} 
-                  selectedItem={selectedItem}
-                  onItemSelect={setSelectedItem}
-                />
+              <div className="overflow-auto flex-1">
+                <div className="min-w-[590px] md:min-w-[800px]">
+                  <CrewTable 
+                    crew={sortedCrew} 
+                    selectedItem={selectedItem}
+                    onItemSelect={setSelectedItem}
+                  />
+                </div>
               </div>
             </div>
           </div>

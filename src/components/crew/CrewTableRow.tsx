@@ -18,35 +18,35 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
 
   return (
     <TableRow 
-      className={`group hover:bg-zinc-800/50 cursor-pointer select-none flex md:table-row ${
+      className={`hover:bg-zinc-800/50 cursor-pointer select-none ${
         isSelected ? 'bg-zinc-800/75' : ''
       }`}
       onDoubleClick={onSelect}
     >
-      <TableCell className="w-[200px] min-w-[200px]">
+      <TableCell className="w-[300px]">
         <div className="text-sm font-medium truncate">
           {member.name}
         </div>
       </TableCell>
-      <TableCell className="w-[120px] min-w-[120px]">
-        <div className="flex items-center gap-1 overflow-x-auto whitespace-nowrap">
+      <TableCell className="w-[200px]">
+        <div className="flex items-center gap-1 overflow-x-auto">
           {memberRoles.map((role) => (
             <Badge
               key={role.id}
               style={{ backgroundColor: role.color }}
-              className="text-white text-xs"
+              className="text-white text-xs whitespace-nowrap"
             >
               {role.name}
             </Badge>
           ))}
         </div>
       </TableCell>
-      <TableCell className="w-[150px] min-w-[150px] hidden md:table-cell">
+      <TableCell className="hidden md:table-cell w-[200px]">
         <span className="text-sm text-muted-foreground truncate block">
           {member.email || '-'}
         </span>
       </TableCell>
-      <TableCell className="w-[120px] min-w-[120px] hidden md:table-cell">
+      <TableCell className="hidden md:table-cell w-[100px]">
         <span className="text-sm text-muted-foreground truncate block">
           {member.phone || '-'}
         </span>
