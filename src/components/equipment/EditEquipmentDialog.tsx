@@ -11,7 +11,6 @@ import { useFolders } from "@/hooks/useFolders";
 import { DeleteEquipmentAlert } from "./edit/DeleteEquipmentAlert";
 import { RestockDialog } from "./edit/RestockDialog";
 import { EditEquipmentForm } from "./edit/EditEquipmentForm";
-import { EquipmentSuggestions } from "./suggestions/EquipmentSuggestions";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -165,7 +164,7 @@ export function EditEquipmentDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Edit Equipment</DialogTitle>
             <DialogDescription>
@@ -173,22 +172,15 @@ export function EditEquipmentDialog({
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <EditEquipmentForm
-                form={form}
-                folders={folders}
-                foldersLoading={foldersLoading}
-                isPending={isPending}
-                onShowDeleteAlert={() => setShowDeleteAlert(true)}
-                onShowRestockDialog={() => setShowRestockDialog(true)}
-                onSubmit={onSubmit}
-              />
-            </div>
-            <div>
-              <EquipmentSuggestions equipment={equipment} />
-            </div>
-          </div>
+          <EditEquipmentForm
+            form={form}
+            folders={folders}
+            foldersLoading={foldersLoading}
+            isPending={isPending}
+            onShowDeleteAlert={() => setShowDeleteAlert(true)}
+            onShowRestockDialog={() => setShowRestockDialog(true)}
+            onSubmit={onSubmit}
+          />
         </DialogContent>
       </Dialog>
 
