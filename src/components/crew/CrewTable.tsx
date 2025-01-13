@@ -1,7 +1,6 @@
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CrewTableRow } from "./CrewTableRow";
 import { CrewMember } from "@/types/crew";
-import { Separator } from "@/components/ui/separator";
 
 interface CrewTableProps {
   crew: CrewMember[];
@@ -10,16 +9,6 @@ interface CrewTableProps {
 }
 
 export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) {
-  // Group crew members by folder
-  const groupedCrew = crew.reduce((groups, member) => {
-    const folder = member.folderName || 'No Folder';
-    if (!groups[folder]) {
-      groups[folder] = [];
-    }
-    groups[folder].push(member);
-    return groups;
-  }, {} as Record<string, CrewMember[]>);
-
   return (
     <div className="relative">
       <Table>
@@ -34,22 +23,13 @@ export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) 
           </TableRow>
         </TableHeader>
         <TableBody>
-          {Object.entries(groupedCrew).map(([folder, members]) => (
-            <div key={folder}>
-              <TableRow className="bg-zinc-800/50">
-                <TableHead colSpan={6} className="h-8 text-sm font-medium text-muted-foreground">
-                  {folder}
-                </TableHead>
-              </TableRow>
-              {members.map((member) => (
-                <CrewTableRow
-                  key={member.id}
-                  member={member}
-                  isSelected={selectedItem === member.id}
-                  onSelect={() => onItemSelect(member.id)}
-                />
-              ))}
-            </div>
+          {crew.map((member) => (
+            <CrewTableRow
+              key={member.id}
+              member={member}
+              isSelected={selectedItem === member.id}
+              onSelect={() => onItemSelect(member.id)}
+            />
           ))}
         </TableBody>
       </Table>
