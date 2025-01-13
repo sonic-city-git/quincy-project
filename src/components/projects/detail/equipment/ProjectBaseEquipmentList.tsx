@@ -35,6 +35,12 @@ export function ProjectBaseEquipmentList({
     enabled: !!projectId
   });
 
+  const calculateGroupTotal = (groupEquipment: any[]) => {
+    return groupEquipment.reduce((total, item) => {
+      return total + (item.rental_price || 0) * item.quantity;
+    }, 0);
+  };
+
   const handleDrop = async (e: React.DragEvent, newGroupId: string | null) => {
     e.preventDefault();
     const target = e.currentTarget as HTMLElement;
@@ -125,6 +131,7 @@ export function ProjectBaseEquipmentList({
   };
 
   const ungroupedEquipment = sortEquipment(equipment?.filter(item => !item.group_id) || []);
+  const ungroupedTotal = calculateGroupTotal(ungroupedEquipment);
 
   if (loading) {
     return (
@@ -138,6 +145,7 @@ export function ProjectBaseEquipmentList({
         {groups.map(group => {
           const groupEquipment = sortEquipment(equipment?.filter(item => item.group_id === group.id) || []);
           const isSelected = selectedGroupId === group.id;
+          const groupTotal = calculateGroupTotal(groupEquipment);
           
           return (
             <div 
@@ -161,17 +169,20 @@ export function ProjectBaseEquipmentList({
               )} />
               <div className="relative z-20">
                 <div className="bg-zinc-900/90">
-                  <h3 
+                  <div 
                     className={cn(
-                      "text-sm font-medium px-4 py-2 cursor-pointer transition-colors text-white",
+                      "flex items-center justify-between px-4 py-2 cursor-pointer transition-colors text-white",
                       isSelected 
                         ? "bg-primary/20 hover:bg-primary/30" 
                         : "bg-zinc-800/50 hover:bg-zinc-800/70"
                     )}
                     onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
                   >
-                    {group.name}
-                  </h3>
+                    <h3 className="text-sm font-medium">{group.name}</h3>
+                    <span className="text-sm text-muted-foreground">
+                      {groupTotal.toFixed(2)} kr
+                    </span>
+                  </div>
                 </div>
                 <div className="p-3 space-y-2 relative z-30 bg-background/95">
                   {groupEquipment.map((item) => (
@@ -212,17 +223,20 @@ export function ProjectBaseEquipmentList({
           )} />
           <div className="relative z-20">
             <div className="bg-zinc-900/90">
-              <h3 
+              <div 
                 className={cn(
-                  "text-sm font-medium px-4 py-2 cursor-pointer transition-colors text-white",
+                  "flex items-center justify-between px-4 py-2 cursor-pointer transition-colors text-white",
                   selectedGroupId === null 
                     ? "bg-primary/20 hover:bg-primary/30" 
                     : "bg-zinc-800/50 hover:bg-zinc-800/70"
                 )}
                 onClick={() => onGroupSelect(null)}
               >
-                Ungrouped Equipment
-              </h3>
+                <h3 className="text-sm font-medium">Ungrouped Equipment</h3>
+                <span className="text-sm text-muted-foreground">
+                  {ungroupedTotal.toFixed(2)} kr
+                </span>
+              </div>
             </div>
             <div className="p-3 space-y-2 relative z-30 bg-background/95">
               {ungroupedEquipment.map((item) => (
@@ -232,6 +246,11 @@ export function ProjectBaseEquipmentList({
                   onRemove={() => removeEquipment(item.id)}
                 />
               ))}
+              {ungroupedEquipment.length === 0 && (
+                <div className="text-sm text-muted-foreground px-1">
+                  No ungrouped equipment
+                </div>
+              )}
             </div>
           </div>
         </div>
