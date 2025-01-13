@@ -26,7 +26,7 @@ export function ProjectList() {
 
   return (
     <div className="h-[calc(100vh-2rem)] py-6">
-      <Card className="border-0 shadow-md bg-zinc-900 h-full">
+      <Card className="border-0 shadow-md bg-zinc-900/50 h-full">
         <CardContent className="p-6 h-full flex flex-col">
           <div className="space-y-6 h-full flex flex-col">
             <ProjectListHeader
