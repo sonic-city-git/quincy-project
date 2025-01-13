@@ -1,6 +1,5 @@
 import { EquipmentSearchInput } from "./filters/EquipmentSearchInput";
 import { EquipmentFilterClear } from "./filters/EquipmentFilterClear";
-import { EquipmentActions } from "./EquipmentActions";
 import { AddEquipmentDialog } from "./AddEquipmentDialog";
 import { EquipmentFolderFilter } from "./filters/EquipmentFolderFilter";
 
@@ -23,7 +22,7 @@ export function EquipmentListHeader({
 
   return (
     <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex items-center gap-4 py-6">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-4 flex-1">
           <EquipmentSearchInput 
             value={searchQuery}
