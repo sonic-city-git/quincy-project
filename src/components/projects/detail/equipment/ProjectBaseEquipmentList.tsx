@@ -40,6 +40,102 @@ export function ProjectBaseEquipmentList({
   const [newGroupName, setNewGroupName] = useState("");
   const [pendingEquipment, setPendingEquipment] = useState<any>(null);
 
+  const handleDeleteGroup = async (groupId: string) => {
+    // Find equipment in the group before deletion
+    const groupEquipment = equipment?.filter(item => item.group_id === groupId) || [];
+    
+    if (groupEquipment.length > 0) {
+      setGroupToDelete(groupId);
+    } else {
+      // If no equipment, delete the group directly
+      await deleteGroup(groupId);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!groupToDelete) return;
+
+    try {
+      if (targetGroupId) {
+        // Move equipment to target group
+        for (const item of equipment?.filter(e => e.group_id === groupToDelete) || []) {
+          const { data: existingEquipment } = await supabase
+            .from('project_equipment')
+            .select('*')
+            .eq('project_id', projectId)
+            .eq('equipment_id', item.equipment_id)
+            .eq('group_id', targetGroupId)
+            .maybeSingle();
+
+          if (existingEquipment) {
+            // If equipment exists in target group, update quantity
+            await supabase
+              .from('project_equipment')
+              .update({ 
+                quantity: (existingEquipment.quantity || 0) + (item.quantity || 1)
+              })
+              .eq('id', existingEquipment.id);
+
+            // Delete the original equipment entry
+            await supabase
+              .from('project_equipment')
+              .delete()
+              .eq('id', item.id);
+          } else {
+            // If it doesn't exist, just update the group_id
+            await supabase
+              .from('project_equipment')
+              .update({ group_id: targetGroupId })
+              .eq('id', item.id);
+          }
+        }
+      } else {
+        // Delete all equipment in the group
+        await supabase
+          .from('project_equipment')
+          .delete()
+          .eq('group_id', groupToDelete);
+      }
+
+      // Delete the group
+      await deleteGroup(groupToDelete);
+      
+      // Reset state
+      setGroupToDelete(null);
+      setTargetGroupId("");
+      
+      if (selectedGroupId === groupToDelete) {
+        onGroupSelect(null);
+      }
+      
+      toast.success('Group deleted successfully');
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      toast.error('Failed to delete group');
+    }
+  };
+
+  const deleteGroup = async (groupId: string) => {
+    try {
+      const { error } = await supabase
+        .from('project_equipment_groups')
+        .delete()
+        .eq('id', groupId);
+
+      if (error) throw error;
+
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment-groups', projectId] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment', projectId] 
+      });
+    } catch (error) {
+      console.error('Error deleting group:', error);
+      throw error;
+    }
+  };
+
   const { data: groups = [] } = useQuery({
     queryKey: ['project-equipment-groups', projectId],
     queryFn: async () => {
