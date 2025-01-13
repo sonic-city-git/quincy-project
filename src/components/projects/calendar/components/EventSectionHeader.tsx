@@ -95,48 +95,13 @@ export function EventSectionHeader({
       const eventsWithEquipment = events.filter(event => event.type.needs_equipment);
       console.log(`Processing ${eventsWithEquipment.length} events for sync`);
       
-      for (const event of eventsWithEquipment) {
-        console.log(`Processing event ${event.id}`);
-        
-        const { data: projectEquipment } = await supabase
-          .from('project_equipment')
-          .select('*')
-          .eq('project_id', event.project_id);
-
-        if (projectEquipment && projectEquipment.length > 0) {
-          const uniqueEquipment = new Map();
-          
-          projectEquipment.forEach(item => {
-            if (uniqueEquipment.has(item.equipment_id)) {
-              const existing = uniqueEquipment.get(item.equipment_id);
-              existing.quantity += item.quantity;
-              uniqueEquipment.set(item.equipment_id, existing);
-            } else {
-              uniqueEquipment.set(item.equipment_id, item);
-            }
-          });
-
-          // Delete existing equipment
-          await supabase
-            .from('project_event_equipment')
-            .delete()
-            .eq('event_id', event.id);
-
-          // Insert new equipment with is_synced set to true
-          const eventEquipment = Array.from(uniqueEquipment.values()).map(item => ({
-            project_id: event.project_id,
-            event_id: event.id,
-            equipment_id: item.equipment_id,
-            quantity: item.quantity,
-            group_id: item.group_id,
-            is_synced: true
-          }));
-
-          await supabase
-            .from('project_event_equipment')
-            .insert(eventEquipment);
+      // Find all equipment icons in the section and click them
+      const equipmentIcons = document.querySelectorAll(`[data-section="${title}"] [data-sync-button]`);
+      equipmentIcons.forEach((icon: Element) => {
+        if (icon instanceof HTMLElement) {
+          icon.click();
         }
-      }
+      });
 
       // Add a delay before invalidating queries
       setTimeout(async () => {
@@ -169,7 +134,7 @@ export function EventSectionHeader({
           }
         }
         toast.success(`Equipment synchronized for all ${title} events`);
-      }, 1000); // Add a 1-second delay
+      }, 1000);
     } catch (error) {
       console.error('Error syncing equipment:', error);
       toast.error('Failed to sync equipment');
@@ -207,6 +172,7 @@ export function EventSectionHeader({
                     variant="ghost"
                     size="icon"
                     className="h-10 w-10 p-0"
+                    onClick={handleSyncAllEquipment}
                   >
                     <Package 
                       className={`h-6 w-6 ${

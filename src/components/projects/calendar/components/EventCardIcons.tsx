@@ -8,6 +8,7 @@ interface EventCardIconsProps {
   isEditingDisabled: boolean;
   onViewEquipment: () => void;
   onSyncEquipment: () => void;
+  sectionTitle?: string;
 }
 
 export function EventCardIcons({
@@ -15,7 +16,8 @@ export function EventCardIcons({
   isSynced,
   isEditingDisabled,
   onViewEquipment,
-  onSyncEquipment
+  onSyncEquipment,
+  sectionTitle
 }: EventCardIconsProps) {
   return (
     <>
@@ -32,6 +34,7 @@ export function EventCardIcons({
             isEditingDisabled={isEditingDisabled}
             onViewEquipment={onViewEquipment}
             onSyncEquipment={onSyncEquipment}
+            sectionTitle={sectionTitle}
           />
         )}
       </div>

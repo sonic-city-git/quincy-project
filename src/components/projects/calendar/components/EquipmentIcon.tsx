@@ -18,6 +18,7 @@ interface EquipmentIconProps {
   isEditingDisabled: boolean;
   onViewEquipment: () => void;
   onSyncEquipment: () => void;
+  sectionTitle?: string;
 }
 
 export function EquipmentIcon({
@@ -25,6 +26,7 @@ export function EquipmentIcon({
   isEditingDisabled,
   onViewEquipment,
   onSyncEquipment,
+  sectionTitle
 }: EquipmentIconProps) {
   const iconClasses = `h-6 w-6 ${isSynced ? 'text-green-500' : 'text-blue-500'}`;
 
@@ -56,6 +58,8 @@ export function EquipmentIcon({
                   variant="ghost"
                   size="icon"
                   className="h-10 w-10 p-0"
+                  data-sync-button
+                  data-section={sectionTitle}
                 >
                   <Package className={iconClasses} />
                 </Button>
