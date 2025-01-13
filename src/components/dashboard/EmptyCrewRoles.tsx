@@ -6,9 +6,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface EmptyRole {
   id: string;
-  role_name: string;
-  event_date: string;
-  project_name: string;
+  crew_roles: {
+    name: string;
+  } | null;
+  event: {
+    date: string;
+    project: {
+      name: string;
+    } | null;
+  } | null;
 }
 
 export function EmptyCrewRoles() {
@@ -19,17 +25,21 @@ export function EmptyCrewRoles() {
         .from('project_event_roles')
         .select(`
           id,
-          role:role_id(name),
-          event:event_id(
+          crew_roles (
+            name
+          ),
+          event:event_id (
             date,
-            project:project_id(name)
+            project:project_id (
+              name
+            )
           )
         `)
         .is('crew_member_id', null)
         .limit(5);
 
       if (error) throw error;
-      return data;
+      return data as EmptyRole[];
     }
   });
 
@@ -57,8 +67,8 @@ export function EmptyCrewRoles() {
         <Alert key={role.id} variant="warning">
           <UserX className="h-4 w-4" />
           <AlertDescription>
-            Empty {role.role?.name} role on{' '}
-            {new Date(role.event?.date).toLocaleDateString()} in project{' '}
+            Empty {role.crew_roles?.name} role on{' '}
+            {new Date(role.event?.date || '').toLocaleDateString()} in project{' '}
             {role.event?.project?.name}
           </AlertDescription>
         </Alert>
