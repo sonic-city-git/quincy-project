@@ -10,7 +10,6 @@ import { ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState, useMemo } from "react";
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from "@/utils/folderSort";
-import { formatPrice } from "@/utils/priceFormatters";
 
 interface EquipmentSelectorProps {
   onSelect: (equipment: Equipment) => void;
@@ -139,11 +138,6 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
             {item.name}
           </h3>
         </div>
-        {item.rental_price && (
-          <span className="text-sm text-muted-foreground">
-            {formatPrice(item.rental_price)}
-          </span>
-        )}
       </div>
     </Card>
   );
