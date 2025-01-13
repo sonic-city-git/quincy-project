@@ -35,12 +35,12 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
         }`}
         onDoubleClick={handleDoubleClick}
       >
-        <TableCell>
-          <div className="text-sm font-medium truncate max-w-[200px]">
+        <TableCell className="w-[300px]">
+          <div className="text-sm font-medium truncate">
             {member.name}
           </div>
         </TableCell>
-        <TableCell>
+        <TableCell className="w-[200px]">
           <div className="flex gap-1">
             {memberRoles.map((role) => (
               <div
@@ -53,18 +53,18 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
             ))}
           </div>
         </TableCell>
-        <TableCell className="text-sm text-muted-foreground">
-          <span className="truncate block max-w-[200px]">
+        <TableCell className="w-[100px] text-right">
+          <span className="text-sm text-muted-foreground truncate block">
             {member.email || '-'}
           </span>
         </TableCell>
-        <TableCell className="text-sm text-muted-foreground">
-          <span className="truncate block max-w-[150px]">
+        <TableCell className="w-[150px] text-right">
+          <span className="text-sm text-muted-foreground truncate block">
             {member.phone || '-'}
           </span>
         </TableCell>
-        <TableCell className="text-sm text-muted-foreground">
-          <span className="truncate block max-w-[150px]">
+        <TableCell>
+          <span className="text-sm text-muted-foreground truncate block">
             {member.folderName || '-'}
           </span>
         </TableCell>
