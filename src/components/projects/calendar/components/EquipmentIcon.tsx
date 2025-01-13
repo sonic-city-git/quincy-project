@@ -12,7 +12,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
 
 interface EquipmentIconProps {
   isSynced: boolean;
@@ -30,20 +29,14 @@ export function EquipmentIcon({
   sectionTitle
 }: EquipmentIconProps) {
   const iconClasses = `h-6 w-6 ${isSynced ? 'text-green-500' : 'text-blue-500'}`;
-  const badgeClasses = "bg-blue-500/10 text-blue-500 whitespace-nowrap";
 
   if (isSynced || isEditingDisabled) {
     return (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center">
               <Package className={iconClasses} />
-              {!isSynced && !isEditingDisabled && (
-                <Badge variant="secondary" className={badgeClasses}>
-                  Out of sync
-                </Badge>
-              )}
             </div>
           </TooltipTrigger>
           <TooltipContent>
@@ -58,7 +51,7 @@ export function EquipmentIcon({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -73,19 +66,13 @@ export function EquipmentIcon({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuItem onClick={onViewEquipment}>
-                  View equipment changes
+                  View equipment list
                 </DropdownMenuItem>
-                <DropdownMenuItem 
-                  onClick={onSyncEquipment}
-                  className="text-blue-500 font-medium"
-                >
+                <DropdownMenuItem onClick={onSyncEquipment}>
                   Sync from project equipment
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Badge variant="secondary" className={badgeClasses}>
-              Out of sync
-            </Badge>
           </div>
         </TooltipTrigger>
         <TooltipContent>
