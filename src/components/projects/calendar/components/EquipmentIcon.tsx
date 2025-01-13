@@ -12,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 interface EquipmentIconProps {
   isSynced: boolean;
@@ -35,8 +36,13 @@ export function EquipmentIcon({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <div className="flex items-center justify-center">
+            <div className="flex items-center gap-2">
               <Package className={iconClasses} />
+              {!isSynced && !isEditingDisabled && (
+                <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+                  Out of sync
+                </Badge>
+              )}
             </div>
           </TooltipTrigger>
           <TooltipContent>
@@ -51,7 +57,7 @@ export function EquipmentIcon({
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center justify-center">
+          <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -66,13 +72,19 @@ export function EquipmentIcon({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start">
                 <DropdownMenuItem onClick={onViewEquipment}>
-                  View equipment list
+                  View equipment changes
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={onSyncEquipment}>
+                <DropdownMenuItem 
+                  onClick={onSyncEquipment}
+                  className="text-blue-500 font-medium"
+                >
                   Sync from project equipment
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <Badge variant="secondary" className="bg-blue-500/10 text-blue-500">
+              Out of sync
+            </Badge>
           </div>
         </TooltipTrigger>
         <TooltipContent>
