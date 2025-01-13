@@ -11,8 +11,8 @@ interface ProjectTabsProps {
 
 export function ProjectTabs({ project, projectId }: ProjectTabsProps) {
   return (
-    <Tabs defaultValue="general" className="w-full">
-      <div className="flex items-center justify-between">
+    <Tabs defaultValue="general" className="h-full flex flex-col">
+      <div className="flex-shrink-0 flex items-center justify-between mb-4">
         <TabsList className="bg-zinc-800/45 p-1 rounded-lg">
           <TabsTrigger 
             value="general" 
@@ -41,28 +41,30 @@ export function ProjectTabs({ project, projectId }: ProjectTabsProps) {
         </TabsList>
       </div>
 
-      <TabsContent value="general">
-        <ProjectGeneralTab 
-          project={project}
-          projectId={projectId}
-        />
-      </TabsContent>
+      <div className="flex-1 overflow-auto">
+        <TabsContent value="general" className="h-full">
+          <ProjectGeneralTab 
+            project={project}
+            projectId={projectId}
+          />
+        </TabsContent>
 
-      <TabsContent value="equipment">
-        <ProjectEquipmentTab projectId={projectId} />
-      </TabsContent>
+        <TabsContent value="equipment" className="h-full">
+          <ProjectEquipmentTab projectId={projectId} />
+        </TabsContent>
 
-      <TabsContent value="crew">
-        <Card className="rounded-lg bg-zinc-800/45 p-6">
-          <h2 className="text-xl font-semibold">Crew</h2>
-        </Card>
-      </TabsContent>
+        <TabsContent value="crew" className="h-full">
+          <Card className="rounded-lg bg-zinc-800/45 p-6">
+            <h2 className="text-xl font-semibold">Crew</h2>
+          </Card>
+        </TabsContent>
 
-      <TabsContent value="financial">
-        <Card className="rounded-lg bg-zinc-800/45 p-6">
-          <h2 className="text-xl font-semibold">Financial</h2>
-        </Card>
-      </TabsContent>
+        <TabsContent value="financial" className="h-full">
+          <Card className="rounded-lg bg-zinc-800/45 p-6">
+            <h2 className="text-xl font-semibold">Financial</h2>
+          </Card>
+        </TabsContent>
+      </div>
     </Tabs>
   );
 }
