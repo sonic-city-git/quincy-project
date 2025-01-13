@@ -7,6 +7,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { formatPrice } from "@/utils/priceFormatters";
 
 interface ProjectEquipmentItemProps {
   item: ProjectEquipment;
@@ -73,6 +74,8 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
     }
   };
 
+  const totalPrice = (item.rental_price || 0) * item.quantity;
+
   return (
     <Card className={cn(
       "relative p-1.5 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/50 group",
@@ -87,7 +90,7 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
         >
           {item.name}
         </h3>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 bg-zinc-900/50 rounded-md p-0.5">
             <Button 
               variant="ghost" 
@@ -108,6 +111,9 @@ export function ProjectEquipmentItem({ item, onRemove, onGroupChange }: ProjectE
             >
               <Plus className="h-3.5 w-3.5" />
             </Button>
+          </div>
+          <div className="min-w-[100px] text-right text-sm text-muted-foreground">
+            {formatPrice(totalPrice)}
           </div>
           <Button 
             variant="ghost" 
