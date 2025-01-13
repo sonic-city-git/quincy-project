@@ -25,10 +25,10 @@ export function ProjectList() {
   }
 
   return (
-    <div className="space-y-8 px-6 py-6">
-      <Card className="border-0 shadow-md bg-zinc-900/50">
-        <CardContent className="p-6">
-          <div className="space-y-6">
+    <div className="h-[calc(100vh-2rem)] py-6">
+      <Card className="border-0 shadow-md bg-zinc-900/50 h-full">
+        <CardContent className="p-6 h-full flex flex-col">
+          <div className="space-y-6 h-full flex flex-col">
             <ProjectListHeader
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
@@ -36,7 +36,7 @@ export function ProjectList() {
               onOwnerFilterChange={setOwnerFilter}
             />
             <Separator className="bg-zinc-800" />
-            <div className="rounded-lg overflow-hidden border border-zinc-800">
+            <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0">
               <ProjectTable projects={filteredProjects} />
             </div>
           </div>
