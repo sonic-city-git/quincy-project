@@ -8,7 +8,7 @@ interface EventSectionContentProps {
   onEdit: (event: CalendarEvent) => void;
 }
 
-export function EventSectionContent({ children, events, onStatusChange, onEdit }: EventSectionContentProps) {
+export function EventSectionContent({ children }: EventSectionContentProps) {
   return (
     <div className="space-y-2">
       {children}

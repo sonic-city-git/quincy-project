@@ -1,5 +1,5 @@
 import { CalendarEvent } from "@/types/events";
-import { EventCard } from "../EventCard";
+import { EventCard } from "./EventCard";
 import { EventSectionHeader } from "./components/EventSectionHeader";
 import { EventSectionContent } from "./components/EventSectionContent";
 
@@ -8,20 +8,35 @@ interface EventSectionProps {
   events: CalendarEvent[];
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
   onEdit: (event: CalendarEvent) => void;
+  hideEdit?: boolean;
+  hideHeader?: boolean;
 }
 
-export function EventSection({ title, events, onStatusChange, onEdit }: EventSectionProps) {
+export function EventSection({ 
+  title, 
+  events, 
+  onStatusChange, 
+  onEdit,
+  hideEdit,
+  hideHeader 
+}: EventSectionProps) {
   const eventType = events[0]?.type;
 
   return (
     <div className="mb-8">
-      <EventSectionHeader 
-        title={title}
-        eventType={eventType}
+      {!hideHeader && (
+        <EventSectionHeader 
+          title={title}
+          eventType={eventType}
+          events={events}
+          onStatusChange={onStatusChange}
+        />
+      )}
+      <EventSectionContent
         events={events}
         onStatusChange={onStatusChange}
-      />
-      <EventSectionContent>
+        onEdit={onEdit}
+      >
         {events.map((event) => (
           <EventCard
             key={event.id}
