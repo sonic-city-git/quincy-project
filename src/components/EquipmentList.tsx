@@ -12,10 +12,13 @@ export function EquipmentList() {
   const {
     searchQuery,
     setSearchQuery,
-    folderFilter,
-    setFolderFilter,
-    filteredEquipment
-  } = useEquipmentFilters(equipment);
+    selectedFolders,
+    handleFolderToggle,
+    clearFilters,
+    filterEquipment
+  } = useEquipmentFilters();
+
+  const filteredEquipment = filterEquipment(equipment || []);
 
   return (
     <div className="h-[calc(100vh-2rem)] py-6">
@@ -25,8 +28,9 @@ export function EquipmentList() {
             <EquipmentListHeader
               searchQuery={searchQuery}
               onSearchChange={setSearchQuery}
-              folderFilter={folderFilter}
-              onFolderFilterChange={setFolderFilter}
+              onClearFilters={clearFilters}
+              selectedFolders={selectedFolders}
+              onFolderToggle={handleFolderToggle}
             />
             <Separator className="bg-zinc-800" />
             <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0 flex flex-col">

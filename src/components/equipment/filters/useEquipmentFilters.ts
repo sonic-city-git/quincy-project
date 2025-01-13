@@ -10,13 +10,11 @@ export function useEquipmentFilters() {
   const getChildFolderIds = (folderId: string): string[] => {
     const childFolders = folders.filter(folder => folder.parent_id === folderId);
     const childIds = childFolders.map(folder => folder.id);
-    // Include child folders of children (recursive)
     const grandchildIds = childFolders.flatMap(child => getChildFolderIds(child.id));
     return [folderId, ...childIds, ...grandchildIds];
   };
 
   const handleFolderToggle = (folderId: string) => {
-    console.log('Toggling folder:', folderId);
     setSelectedFolders(prev => {
       if (prev.includes(folderId)) {
         return prev.filter(id => id !== folderId);
@@ -26,19 +24,13 @@ export function useEquipmentFilters() {
   };
 
   const clearFilters = () => {
-    console.log('Clearing all filters');
     setSelectedFolders([]);
     setSearchQuery('');
   };
 
   const filterEquipment = (equipment: Equipment[]) => {
-    console.log('Filtering equipment with:', {
-      searchQuery,
-      selectedFolders,
-      totalEquipment: equipment.length
-    });
-
-    // Get all folder IDs including children of selected folders
+    if (!equipment) return [];
+    
     const expandedFolderIds = selectedFolders.flatMap(folderId => getChildFolderIds(folderId));
 
     return equipment.filter(item => {
@@ -47,14 +39,6 @@ export function useEquipmentFilters() {
 
       const matchesFolders = selectedFolders.length === 0 || 
         (item.folder_id && expandedFolderIds.includes(item.folder_id));
-
-      console.log('Item filtering result:', {
-        name: item.name,
-        code: item.code,
-        folder_id: item.folder_id,
-        matchesSearch,
-        matchesFolders
-      });
 
       return matchesSearch && matchesFolders;
     });
