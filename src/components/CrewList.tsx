@@ -60,8 +60,8 @@ export function CrewList() {
             />
             <Separator className="bg-zinc-800" />
             
-            <div className="rounded-lg border border-zinc-800 flex-1 min-h-0">
-              <div className="overflow-auto">
+            <div className="rounded-lg border border-zinc-800 flex-1 min-h-0 relative">
+              <div className="absolute inset-0 overflow-auto">
                 <div className="min-w-[590px] md:min-w-[800px]">
                   <Table>
                     <thead className="sticky top-0 z-20 bg-zinc-900 border-b border-zinc-800">
