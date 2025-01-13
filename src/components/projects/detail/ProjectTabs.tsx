@@ -12,7 +12,7 @@ interface ProjectTabsProps {
 
 export function ProjectTabs({ project, projectId, value }: ProjectTabsProps) {
   return (
-    <div className="flex-1 overflow-auto">
+    <div className="flex-1 overflow-hidden">
       <TabsContent value="general" className="h-full mt-0">
         <ProjectGeneralTab 
           project={project}
