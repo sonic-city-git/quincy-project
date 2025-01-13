@@ -96,64 +96,72 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
 
   const handleEquipmentOption = async () => {
     try {
+      const { data: outOfSyncEquipment, error: syncError } = await supabase
+        .from('project_event_equipment')
+        .select('equipment_id')
+        .eq('event_id', event.id)
+        .eq('is_synced', false);
+
+      if (syncError) throw syncError;
+
+      if (!outOfSyncEquipment || outOfSyncEquipment.length === 0) {
+        toast.info('Equipment is already in sync');
+        return;
+      }
+
+      // Get current project equipment state for out of sync items
       const { data: projectEquipment, error: fetchError } = await supabase
         .from('project_equipment')
         .select('*')
-        .eq('project_id', event.project_id);
+        .eq('project_id', event.project_id)
+        .in('equipment_id', outOfSyncEquipment.map(e => e.equipment_id));
 
       if (fetchError) throw fetchError;
 
-      if (projectEquipment && projectEquipment.length > 0) {
-        const uniqueEquipment = new Map();
-        
-        projectEquipment.forEach(item => {
-          if (uniqueEquipment.has(item.equipment_id)) {
-            const existing = uniqueEquipment.get(item.equipment_id);
-            existing.quantity += item.quantity;
-            uniqueEquipment.set(item.equipment_id, existing);
-          } else {
-            uniqueEquipment.set(item.equipment_id, item);
-          }
-        });
-
-        const eventEquipment = Array.from(uniqueEquipment.values()).map(item => ({
-          project_id: event.project_id,
-          event_id: event.id,
-          equipment_id: item.equipment_id,
-          quantity: item.quantity,
-          group_id: item.group_id,
-          is_synced: true
-        }));
-
-        const { error: deleteError } = await supabase
-          .from('project_event_equipment')
-          .delete()
-          .eq('event_id', event.id);
-
-        if (deleteError) throw deleteError;
-
-        const { error: insertError } = await supabase
-          .from('project_event_equipment')
-          .insert(eventEquipment);
-
-        if (insertError) throw insertError;
-
-        // Immediately update the UI
-        setIsSynced(true);
-        
-        // Invalidate queries to refresh data
-        await Promise.all([
-          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
-          queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
-          queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
-        ]);
-
-        toast.success('Equipment list synchronized successfully');
+      if (!projectEquipment) {
+        toast.error('Failed to fetch project equipment');
+        return;
       }
+
+      // Delete out of sync equipment
+      const { error: deleteError } = await supabase
+        .from('project_event_equipment')
+        .delete()
+        .eq('event_id', event.id)
+        .in('equipment_id', outOfSyncEquipment.map(e => e.equipment_id));
+
+      if (deleteError) throw deleteError;
+
+      // Insert updated equipment
+      const eventEquipment = projectEquipment.map(item => ({
+        project_id: event.project_id,
+        event_id: event.id,
+        equipment_id: item.equipment_id,
+        quantity: item.quantity,
+        group_id: item.group_id,
+        is_synced: true
+      }));
+
+      const { error: insertError } = await supabase
+        .from('project_event_equipment')
+        .insert(eventEquipment);
+
+      if (insertError) throw insertError;
+
+      // Immediately update the UI
+      setIsSynced(true);
+      
+      // Invalidate queries to refresh data
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
+        queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
+        queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
+      ]);
+
+      toast.success('Equipment list synchronized successfully');
     } catch (error) {
       console.error('Error syncing equipment:', error);
       toast.error('Failed to sync equipment list');
-      // Recheck status in case of error
       checkEquipmentStatus();
     }
   };
