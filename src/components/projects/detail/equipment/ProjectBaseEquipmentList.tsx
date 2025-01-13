@@ -89,7 +89,7 @@ export function ProjectBaseEquipmentList({
 
     try {
       if (targetGroupId) {
-        // Move equipment to target group
+        // Update existing equipment to new group instead of inserting
         const { error: updateError } = await supabase
           .from('project_equipment')
           .update({ group_id: targetGroupId })
@@ -113,6 +113,8 @@ export function ProjectBaseEquipmentList({
       await queryClient.invalidateQueries({ 
         queryKey: ['project-equipment', projectId] 
       });
+
+      toast.success(targetGroupId ? 'Equipment moved and group deleted' : 'Group and equipment deleted');
 
     } catch (error) {
       console.error('Error handling group deletion:', error);
