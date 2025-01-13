@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { formatPrice } from "@/utils/priceFormatters";
+import { Trash2 } from "lucide-react";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
@@ -42,26 +43,28 @@ export function ProjectBaseEquipmentList({
     }
   });
 
-  const handleDrop = async (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent, groupId?: string) => {
     e.preventDefault();
     const data = e.dataTransfer.getData('application/json');
     if (!data) return;
 
     const item = JSON.parse(data) as Equipment;
 
-    if (!selectedGroupId) {
-      setPendingEquipment(item);
-      setShowGroupDialog(true);
+    // If dropped on a specific group, add to that group
+    if (groupId) {
+      try {
+        await addEquipment(item, groupId);
+        toast.success('Equipment added to group');
+      } catch (error) {
+        console.error('Error adding equipment:', error);
+        toast.error('Failed to add equipment');
+      }
       return;
     }
 
-    try {
-      await addEquipment(item, selectedGroupId);
-      toast.success('Equipment added to group');
-    } catch (error) {
-      console.error('Error adding equipment:', error);
-      toast.error('Failed to add equipment');
-    }
+    // If dropped in empty space, show group creation dialog
+    setPendingEquipment(item);
+    setShowGroupDialog(true);
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -73,8 +76,6 @@ export function ProjectBaseEquipmentList({
     if (!newGroupName.trim() || !pendingEquipment) return;
 
     try {
-      console.log('Creating new group:', { projectId, name: newGroupName });
-      
       // Calculate the next sort order
       const maxSortOrder = groups.reduce((max, group) => 
         Math.max(max, group.sort_order || 0), -1);
@@ -96,8 +97,6 @@ export function ProjectBaseEquipmentList({
       if (!newGroup) {
         throw new Error('No group was created');
       }
-
-      console.log('New group created:', newGroup);
 
       // Update the UI to show the new group
       await queryClient.invalidateQueries({ 
@@ -122,6 +121,39 @@ export function ProjectBaseEquipmentList({
     }
   };
 
+  const handleDeleteGroup = async (groupId: string) => {
+    try {
+      // First, remove all equipment from the group
+      const { error: equipmentError } = await supabase
+        .from('project_equipment')
+        .delete()
+        .eq('group_id', groupId);
+
+      if (equipmentError) throw equipmentError;
+
+      // Then delete the group
+      const { error: groupError } = await supabase
+        .from('project_equipment_groups')
+        .delete()
+        .eq('id', groupId);
+
+      if (groupError) throw groupError;
+
+      // Update the UI
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment-groups', projectId] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment', projectId] 
+      });
+
+      toast.success('Group deleted successfully');
+    } catch (error: any) {
+      console.error('Error deleting group:', error);
+      toast.error('Failed to delete group');
+    }
+  };
+
   // Group equipment by their group_id
   const groupedEquipment = equipment.reduce((acc, item) => {
     const groupId = item.group_id || 'ungrouped';
@@ -143,7 +175,7 @@ export function ProjectBaseEquipmentList({
     <>
       <div 
         className="h-full"
-        onDrop={handleDrop}
+        onDrop={(e) => handleDrop(e)}
         onDragOver={handleDragOver}
       >
         <ScrollArea className="h-full">
@@ -160,14 +192,29 @@ export function ProjectBaseEquipmentList({
               groups.map((group) => {
                 const groupEquipment = groupedEquipment[group.id] || [];
                 
-                return groupEquipment.length > 0 ? (
-                  <div key={group.id} className="rounded-lg border border-zinc-800 bg-zinc-900/50 overflow-hidden">
+                return (
+                  <div 
+                    key={group.id} 
+                    className="rounded-lg border border-zinc-800 bg-zinc-900/50 overflow-hidden"
+                    onDrop={(e) => handleDrop(e, group.id)}
+                    onDragOver={handleDragOver}
+                  >
                     <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
                       <div className="font-medium">
                         {group.name}
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {formatPrice(calculateGroupTotal(groupEquipment))}
+                      <div className="flex items-center gap-4">
+                        <div className="text-sm text-muted-foreground">
+                          {formatPrice(calculateGroupTotal(groupEquipment))}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-400 hover:text-red-300 hover:bg-red-950/50"
+                          onClick={() => handleDeleteGroup(group.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                     <div className="p-4 space-y-2">
@@ -180,7 +227,7 @@ export function ProjectBaseEquipmentList({
                       ))}
                     </div>
                   </div>
-                ) : null;
+                );
               })
             )}
           </div>
