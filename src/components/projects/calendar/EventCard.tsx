@@ -136,18 +136,24 @@ export function EventCard({ event, onStatusChange, onEdit }: EventCardProps) {
           .insert(eventEquipment);
 
         if (insertError) throw insertError;
+
+        // Immediately update the UI
+        setIsSynced(true);
+        
+        // Invalidate queries to refresh data
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
+          queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
+          queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
+        ]);
+
+        toast.success('Equipment list synchronized successfully');
       }
-
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
-        queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
-        queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
-      ]);
-
-      toast.success('Equipment list synchronized successfully');
     } catch (error) {
       console.error('Error syncing equipment:', error);
       toast.error('Failed to sync equipment list');
+      // Recheck status in case of error
+      checkEquipmentStatus();
     }
   };
 

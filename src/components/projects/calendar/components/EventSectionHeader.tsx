@@ -1,4 +1,3 @@
-import { EventStatusManager } from "../EventStatusManager";
 import { CalendarEvent, EventType } from "@/types/events";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
@@ -77,6 +76,7 @@ export function EventSectionHeader({
         }
       }
 
+      // Immediately invalidate queries for all affected events
       await Promise.all([
         ...eventsWithEquipment.map(event => 
           queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] })
