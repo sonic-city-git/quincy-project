@@ -25,7 +25,7 @@ export function EmptyCrewRoles() {
         .from('project_event_roles')
         .select(`
           id,
-          crew_roles (
+          crew_roles!role_id (
             name
           ),
           event:event_id (
@@ -64,7 +64,7 @@ export function EmptyCrewRoles() {
   return (
     <div className="space-y-2">
       {emptyRoles.map((role) => (
-        <Alert key={role.id} variant="warning">
+        <Alert key={role.id} variant="default" className="border-yellow-500">
           <UserX className="h-4 w-4" />
           <AlertDescription>
             Empty {role.crew_roles?.name} role on{' '}

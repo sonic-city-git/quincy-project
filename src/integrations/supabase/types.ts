@@ -663,6 +663,13 @@ export type Database = {
             referencedRelation: "projects"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "project_event_roles_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "crew_roles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       project_events: {
