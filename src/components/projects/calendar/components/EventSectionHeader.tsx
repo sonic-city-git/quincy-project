@@ -39,6 +39,8 @@ export function EventSectionHeader({
       const eventsWithEquipment = events.filter(event => event.type.needs_equipment);
       
       for (const event of eventsWithEquipment) {
+        console.log(`Processing event ${event.id}`);
+        
         const { data: projectEquipment } = await supabase
           .from('project_equipment')
           .select('*')
@@ -57,7 +59,7 @@ export function EventSectionHeader({
             }
           });
 
-          // Delete existing equipment for this event
+          // Delete existing equipment
           await supabase
             .from('project_event_equipment')
             .delete()
@@ -77,10 +79,15 @@ export function EventSectionHeader({
             .from('project_event_equipment')
             .insert(eventEquipment);
 
-          // Immediately invalidate the query for this event
-          await queryClient.invalidateQueries({ 
-            queryKey: ['project-event-equipment', event.id] 
-          });
+          // Immediately invalidate queries for this specific event
+          await Promise.all([
+            queryClient.invalidateQueries({ 
+              queryKey: ['project-event-equipment', event.id] 
+            }),
+            queryClient.invalidateQueries({ 
+              queryKey: ['events', event.project_id, event.id] 
+            })
+          ]);
         }
       }
 
