@@ -1,5 +1,6 @@
 import { Table, TableBody } from "@/components/ui/table";
 import { EquipmentTableRow } from "./EquipmentTableRow";
+import { EquipmentTableHeader } from "./EquipmentTableHeader";
 import { Equipment } from "@/integrations/supabase/types/equipment";
 
 interface EquipmentTableProps {
@@ -12,6 +13,7 @@ export function EquipmentTable({ equipment, selectedItem, onItemSelect }: Equipm
   return (
     <div className="relative">
       <Table>
+        <EquipmentTableHeader />
         <TableBody>
           {equipment.map((item) => (
             <EquipmentTableRow
