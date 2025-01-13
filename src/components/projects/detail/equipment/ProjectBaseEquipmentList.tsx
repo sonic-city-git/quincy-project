@@ -137,7 +137,9 @@ export function ProjectBaseEquipmentList({
     try {
       if (targetGroupId) {
         // Move equipment to target group
-        for (const item of equipment?.filter(e => e.group_id === groupToDelete) || []) {
+        const equipmentToMove = equipment?.filter(e => e.group_id === groupToDelete) || [];
+        
+        for (const item of equipmentToMove) {
           const { data: existingEquipment } = await supabase
             .from('project_equipment')
             .select('*')
@@ -187,6 +189,14 @@ export function ProjectBaseEquipmentList({
         onGroupSelect(null);
       }
       
+      // Invalidate queries to refresh the data
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment', projectId] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment-groups', projectId] 
+      });
+      
       toast.success('Group deleted successfully');
     } catch (error) {
       console.error('Error deleting group:', error);
@@ -202,13 +212,6 @@ export function ProjectBaseEquipmentList({
         .eq('id', groupId);
 
       if (error) throw error;
-
-      await queryClient.invalidateQueries({ 
-        queryKey: ['project-equipment-groups', projectId] 
-      });
-      await queryClient.invalidateQueries({ 
-        queryKey: ['project-equipment', projectId] 
-      });
     } catch (error) {
       console.error('Error deleting group:', error);
       throw error;
