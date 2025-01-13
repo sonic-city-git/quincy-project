@@ -152,17 +152,40 @@ export function ProjectBaseEquipmentList({
 
         if (error) throw error;
       } else {
-        // Adding new equipment from equipment selector
-        const { error } = await supabase
+        // Check if the equipment already exists in the group
+        const { data: existingEquipment, error: queryError } = await supabase
           .from('project_equipment')
-          .insert({
-            project_id: projectId,
-            equipment_id: item.id,
-            quantity: 1,
-            group_id: groupId
-          });
+          .select('*')
+          .eq('project_id', projectId)
+          .eq('equipment_id', item.id)
+          .eq('group_id', groupId)
+          .single();
 
-        if (error) throw error;
+        if (queryError && queryError.code !== 'PGRST116') throw queryError; // PGRST116 is "no rows returned"
+
+        if (existingEquipment) {
+          // If it exists, increment the quantity
+          const { error: updateError } = await supabase
+            .from('project_equipment')
+            .update({ 
+              quantity: existingEquipment.quantity + 1 
+            })
+            .eq('id', existingEquipment.id);
+
+          if (updateError) throw updateError;
+        } else {
+          // If it doesn't exist, create new entry
+          const { error: insertError } = await supabase
+            .from('project_equipment')
+            .insert({
+              project_id: projectId,
+              equipment_id: item.id,
+              quantity: 1,
+              group_id: groupId
+            });
+
+          if (insertError) throw insertError;
+        }
       }
 
       await queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] });
