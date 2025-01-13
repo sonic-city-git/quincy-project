@@ -9,6 +9,7 @@ import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { formatPrice } from "@/utils/priceFormatters";
 import {
   Dialog,
   DialogContent,
@@ -30,7 +31,7 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
   const [showGroupSelectDialog, setShowGroupSelectDialog] = useState(false);
   const [pendingEquipment, setPendingEquipment] = useState<Equipment | null>(null);
   const [newGroupName, setNewGroupName] = useState("");
-  const { addEquipment } = useProjectEquipment(projectId);
+  const { equipment, addEquipment } = useProjectEquipment(projectId);
 
   const { data: groups = [] } = useQuery({
     queryKey: ['project-equipment-groups', projectId],
@@ -45,6 +46,11 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
       return data || [];
     }
   });
+
+  // Calculate total price across all equipment
+  const totalPrice = equipment?.reduce((total, item) => {
+    return total + (item.rental_price || 0) * item.quantity;
+  }, 0) || 0;
 
   const handleEquipmentSelect = async (equipment: Equipment) => {
     if (groups.length === 0) {
@@ -146,7 +152,12 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
               <div className="flex items-center justify-between h-9">
                 <div className="flex items-center gap-2">
                   <ListCheck className="h-5 w-5 text-primary" />
-                  <h2 className="text-lg font-semibold">Project Equipment</h2>
+                  <div className="flex items-center gap-4">
+                    <h2 className="text-lg font-semibold">Project Equipment</h2>
+                    <span className="text-sm text-muted-foreground">
+                      Total: {formatPrice(totalPrice)}
+                    </span>
+                  </div>
                 </div>
                 <GroupSelector 
                   projectId={projectId} 
