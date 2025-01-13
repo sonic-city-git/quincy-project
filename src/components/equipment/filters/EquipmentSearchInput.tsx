@@ -11,7 +11,7 @@ export function EquipmentSearchInput({ value, onChange }: EquipmentSearchInputPr
       placeholder="Search equipment..."
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-[200px] bg-zinc-800/50"
+      className="w-[200px] bg-zinc-900/50"
     />
   );
 }
