@@ -16,8 +16,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface ProjectBaseEquipmentListProps {
@@ -120,6 +120,56 @@ export function ProjectBaseEquipmentList({
     }
   };
 
+  const handleDragOver = (e: React.DragEvent, groupId: string) => {
+    e.preventDefault();
+    e.currentTarget.classList.add('bg-primary/5', 'border-primary/20');
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove('bg-primary/5', 'border-primary/20');
+  };
+
+  const handleDrop = async (e: React.DragEvent, groupId: string) => {
+    e.preventDefault();
+    e.currentTarget.classList.remove('bg-primary/5', 'border-primary/20');
+
+    const data = e.dataTransfer.getData('application/json');
+    if (!data) return;
+
+    const item = JSON.parse(data);
+
+    try {
+      if (item.currentGroupId !== undefined) {
+        // Moving existing project equipment
+        const { error } = await supabase
+          .from('project_equipment')
+          .update({ group_id: groupId })
+          .eq('id', item.id);
+
+        if (error) throw error;
+      } else {
+        // Adding new equipment
+        const { error } = await supabase
+          .from('project_equipment')
+          .insert({
+            project_id: projectId,
+            equipment_id: item.id,
+            quantity: 1,
+            group_id: groupId
+          });
+
+        if (error) throw error;
+      }
+
+      await queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] });
+      toast.success('Equipment moved successfully');
+    } catch (error) {
+      console.error('Error moving equipment:', error);
+      toast.error('Failed to move equipment');
+    }
+  };
+
   const calculateGroupTotal = (groupEquipment: any[]) => {
     return groupEquipment.reduce((total, item) => {
       return total + (item.rental_price || 0) * item.quantity;
@@ -149,6 +199,9 @@ export function ProjectBaseEquipmentList({
                   ? "border-primary/20" 
                   : "border-zinc-800/50"
               )}
+              onDragOver={(e) => handleDragOver(e, group.id)}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => handleDrop(e, group.id)}
             >
               <div className={cn(
                 "absolute inset-0 transition-all duration-200",
