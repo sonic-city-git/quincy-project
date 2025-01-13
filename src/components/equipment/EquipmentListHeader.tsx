@@ -22,23 +22,25 @@ export function EquipmentListHeader({
   const hasActiveFilters = searchQuery.length > 0 || selectedFolders.length > 0;
 
   return (
-    <div className="flex items-center gap-4">
-      <div className="flex items-center gap-4 flex-1">
-        <EquipmentSearchInput 
-          value={searchQuery}
-          onChange={onSearchChange}
-        />
-        <div className="flex items-center gap-2">
-          <EquipmentFolderFilter
-            selectedFolders={selectedFolders}
-            onFolderToggle={onFolderToggle}
+    <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="flex items-center gap-4 py-6">
+        <div className="flex items-center gap-4 flex-1">
+          <EquipmentSearchInput 
+            value={searchQuery}
+            onChange={onSearchChange}
           />
-          {hasActiveFilters && (
-            <EquipmentFilterClear onClear={onClearFilters} />
-          )}
+          <div className="flex items-center gap-2">
+            <EquipmentFolderFilter
+              selectedFolders={selectedFolders}
+              onFolderToggle={onFolderToggle}
+            />
+            {hasActiveFilters && (
+              <EquipmentFilterClear onClear={onClearFilters} />
+            )}
+          </div>
         </div>
+        <AddEquipmentDialog />
       </div>
-      <AddEquipmentDialog />
     </div>
   );
 }

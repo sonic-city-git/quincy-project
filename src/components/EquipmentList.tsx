@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { Loader2 } from "lucide-react";
@@ -5,7 +6,6 @@ import { useEquipment } from "@/hooks/useEquipment";
 import { EquipmentTable } from "./equipment/EquipmentTable";
 import { EquipmentListHeader } from "./equipment/EquipmentListHeader";
 import { useEquipmentFilters } from "./equipment/filters/useEquipmentFilters";
-import { useState } from "react";
 
 export function EquipmentList() {
   const { equipment = [], loading } = useEquipment();
