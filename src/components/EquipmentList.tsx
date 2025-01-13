@@ -110,7 +110,7 @@ export function EquipmentList() {
 
   return (
     <div className="h-[calc(100vh-2rem)] py-6">
-      <Card className="border-0 shadow-md bg-zinc-900 h-full">
+      <Card className="border-0 shadow-md h-full">
         <CardContent className="p-6 h-full flex flex-col">
           <div className="space-y-6 h-full flex flex-col">
             <EquipmentListHeader
@@ -122,7 +122,7 @@ export function EquipmentList() {
             />
             <Separator className="bg-zinc-800" />
             <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0 flex flex-col">
-              <div className="sticky top-0 z-20 bg-zinc-900 border-b border-zinc-800">
+              <div className="sticky top-0 z-20 bg-background border-b border-zinc-800">
                 <Table>
                   <EquipmentTableHeader />
                 </Table>
