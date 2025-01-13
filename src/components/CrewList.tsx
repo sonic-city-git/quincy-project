@@ -27,10 +27,6 @@ export function CrewList() {
     refetch();
   }, [refetch]);
 
-  const handleItemSelect = (id: string) => {
-    setSelectedItem(prev => prev === id ? null : id);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -64,7 +60,7 @@ export function CrewList() {
                 <CrewTable 
                   crew={sortedCrew} 
                   selectedItem={selectedItem}
-                  onItemSelect={handleItemSelect}
+                  onItemSelect={setSelectedItem}
                 />
               </div>
             </div>

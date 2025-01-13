@@ -1,6 +1,5 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { CrewMember } from "@/types/crew";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 import { sortRoles } from "@/utils/roleUtils";
 
@@ -19,16 +18,11 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
 
   return (
     <TableRow 
-      className={`group hover:bg-zinc-800/50 ${
+      className={`group hover:bg-zinc-800/50 cursor-pointer ${
         isSelected ? 'bg-zinc-800/75' : ''
       }`}
+      onDoubleClick={onSelect}
     >
-      <TableCell className="w-12">
-        <Checkbox 
-          checked={isSelected}
-          onCheckedChange={onSelect}
-        />
-      </TableCell>
       <TableCell>
         <div className="text-sm font-medium truncate max-w-[200px]">
           {member.name}
