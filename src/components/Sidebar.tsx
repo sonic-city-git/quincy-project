@@ -12,7 +12,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SchedulingSidebar } from "./scheduling/SchedulingSidebar";
 
 export function Sidebar() {
   const location = useLocation();
@@ -107,9 +106,7 @@ export function Sidebar() {
           ))}
         </div>
       </div>
-      <div className="flex-1 overflow-hidden">
-        <SchedulingSidebar />
-      </div>
+      <div className="flex-1" />
       <div className="p-2 border-t border-zinc-800">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
