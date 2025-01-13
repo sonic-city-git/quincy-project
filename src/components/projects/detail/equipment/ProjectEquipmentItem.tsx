@@ -19,8 +19,8 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
 
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('application/json', JSON.stringify({
-      id: item.id,
-      currentGroupId: item.group_id
+      ...item,
+      type: 'project-equipment'
     }));
     e.dataTransfer.effectAllowed = 'move';
   };
@@ -31,13 +31,6 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
     
     setIsUpdating(true);
 
-    queryClient.setQueryData(['project-equipment', item.id], (oldData: ProjectEquipment[] | undefined) => {
-      if (!oldData) return [{ ...item, quantity: newQuantity }];
-      return oldData.map(equipment => 
-        equipment.id === item.id ? { ...equipment, quantity: newQuantity } : equipment
-      );
-    });
-    
     try {
       const { error } = await supabase
         .from('project_equipment')
@@ -51,16 +44,9 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
       });
       
       toast.success('Quantity updated');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error updating quantity:', error);
       toast.error('Failed to update quantity');
-      
-      queryClient.setQueryData(['project-equipment', item.id], (oldData: ProjectEquipment[] | undefined) => {
-        if (!oldData) return [item];
-        return oldData.map(equipment => 
-          equipment.id === item.id ? item : equipment
-        );
-      });
     } finally {
       setIsUpdating(false);
     }

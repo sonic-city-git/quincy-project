@@ -120,28 +120,31 @@ export function ProjectBaseEquipmentList({
     }
   };
 
-  const handleDragOver = (e: React.DragEvent, groupId: string) => {
+  const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    e.currentTarget.classList.add('bg-primary/5', 'border-primary/20');
+    const target = e.currentTarget as HTMLElement;
+    target.classList.add('bg-primary/5', 'border-primary/20');
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
-    e.currentTarget.classList.remove('bg-primary/5', 'border-primary/20');
+    const target = e.currentTarget as HTMLElement;
+    target.classList.remove('bg-primary/5', 'border-primary/20');
   };
 
   const handleDrop = async (e: React.DragEvent, groupId: string) => {
     e.preventDefault();
-    e.currentTarget.classList.remove('bg-primary/5', 'border-primary/20');
-
-    const data = e.dataTransfer.getData('application/json');
-    if (!data) return;
-
-    const item = JSON.parse(data);
+    const target = e.currentTarget as HTMLElement;
+    target.classList.remove('bg-primary/5', 'border-primary/20');
 
     try {
-      if (item.currentGroupId !== undefined) {
-        // Moving existing project equipment
+      const data = e.dataTransfer.getData('application/json');
+      if (!data) return;
+
+      const item = JSON.parse(data);
+
+      if (item.type === 'project-equipment') {
+        // Moving existing project equipment between groups
         const { error } = await supabase
           .from('project_equipment')
           .update({ group_id: groupId })
@@ -149,7 +152,7 @@ export function ProjectBaseEquipmentList({
 
         if (error) throw error;
       } else {
-        // Adding new equipment
+        // Adding new equipment from equipment selector
         const { error } = await supabase
           .from('project_equipment')
           .insert({
@@ -199,7 +202,7 @@ export function ProjectBaseEquipmentList({
                   ? "border-primary/20" 
                   : "border-zinc-800/50"
               )}
-              onDragOver={(e) => handleDragOver(e, group.id)}
+              onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
               onDrop={(e) => handleDrop(e, group.id)}
             >
