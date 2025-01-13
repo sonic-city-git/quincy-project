@@ -7,6 +7,8 @@ import { EquipmentTable } from "./equipment/EquipmentTable";
 import { EquipmentListHeader } from "./equipment/EquipmentListHeader";
 import { useEquipmentFilters } from "./equipment/filters/useEquipmentFilters";
 import { useFolders } from "@/hooks/useFolders";
+import { Table } from "./ui/table";
+import { EquipmentTableHeader } from "./equipment/EquipmentTableHeader";
 
 export function EquipmentList() {
   const { equipment = [], loading } = useEquipment();
@@ -66,6 +68,9 @@ export function EquipmentList() {
             />
             <Separator className="bg-zinc-800" />
             <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0">
+              <Table>
+                <EquipmentTableHeader />
+              </Table>
               <div className="divide-y divide-zinc-800">
                 {sortedFolders.map((folderName) => (
                   <div key={folderName}>
