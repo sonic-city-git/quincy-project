@@ -122,6 +122,16 @@ export function ProjectBaseEquipmentList({
     }
   };
 
+  // Group equipment by their group_id
+  const groupedEquipment = equipment.reduce((acc, item) => {
+    const groupId = item.group_id || 'ungrouped';
+    if (!acc[groupId]) {
+      acc[groupId] = [];
+    }
+    acc[groupId].push(item);
+    return acc;
+  }, {} as Record<string, typeof equipment>);
+
   return (
     <>
       <div 
@@ -130,7 +140,7 @@ export function ProjectBaseEquipmentList({
         onDragOver={handleDragOver}
       >
         <ScrollArea className="h-full">
-          <div className="p-4 space-y-2">
+          <div className="p-4 space-y-4">
             {loading ? (
               <div className="text-sm text-muted-foreground">Loading equipment...</div>
             ) : equipment.length === 0 ? (
@@ -140,13 +150,27 @@ export function ProjectBaseEquipmentList({
                   : "Select or create a group to add equipment"}
               </div>
             ) : (
-              equipment.map((item) => (
-                <ProjectEquipmentItem
-                  key={item.id}
-                  item={item}
-                  onRemove={() => removeEquipment(item.id)}
-                />
-              ))
+              groups.map((group) => {
+                const groupEquipment = groupedEquipment[group.id] || [];
+                if (selectedGroupId && selectedGroupId !== group.id) return null;
+                
+                return groupEquipment.length > 0 ? (
+                  <div key={group.id} className="space-y-2">
+                    <div className="font-medium text-sm text-muted-foreground pb-2">
+                      {group.name}
+                    </div>
+                    <div className="space-y-2 pl-4">
+                      {groupEquipment.map((item) => (
+                        <ProjectEquipmentItem
+                          key={item.id}
+                          item={item}
+                          onRemove={() => removeEquipment(item.id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+              })
             )}
           </div>
         </ScrollArea>
