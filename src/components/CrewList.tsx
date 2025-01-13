@@ -48,19 +48,17 @@ export function CrewList() {
       <Card className="border-0 shadow-md bg-zinc-900/50 h-full">
         <CardContent className="p-6 h-full flex flex-col">
           <div className="space-y-6 h-full flex flex-col">
-            <div className="sticky top-0 z-30 bg-zinc-900/50 backdrop-blur-sm">
-              <CrewListHeader
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                roles={roles}
-                selectedRoles={selectedRoles}
-                onRoleToggle={handleRoleToggle}
-                onClearFilters={clearFilters}
-                selectedItem={selectedItem}
-                onCrewMemberDeleted={() => setSelectedItem(null)}
-              />
-              <Separator className="bg-zinc-800 mt-6" />
-            </div>
+            <CrewListHeader
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              roles={roles}
+              selectedRoles={selectedRoles}
+              onRoleToggle={handleRoleToggle}
+              onClearFilters={clearFilters}
+              selectedItem={selectedItem}
+              onCrewMemberDeleted={() => setSelectedItem(null)}
+            />
+            <Separator className="bg-zinc-800" />
             
             <div className="rounded-lg border border-zinc-800 flex-1 min-h-0 relative">
               <div className="absolute inset-0 overflow-auto">
