@@ -56,7 +56,9 @@ export function EditEquipmentForm({
                     <Input 
                       placeholder="Enter name" 
                       {...field} 
-                      autoFocus={false} // This prevents auto-focus
+                      autoFocus={false}
+                      autoComplete="off"
+                      onFocus={(e) => e.target.blur()} // Immediately blur when focused
                     />
                   </FormControl>
                   <FormMessage />
