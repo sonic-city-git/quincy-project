@@ -17,10 +17,10 @@ export function ProjectLayout({
 
   return (
     <div className="h-[calc(100vh-2rem)] py-6">
-      <div className="bg-zinc-900/50 rounded-lg shadow-md h-full">
+      <div className="bg-zinc-900 rounded-lg shadow-md h-full">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <div className="h-full flex flex-col">
-            <div className="sticky top-0 z-10">
+            <div className="sticky top-0 z-10 bg-zinc-900 rounded-t-lg">
               <div className="p-6 pb-4">
                 <ProjectHeader 
                   name={project.name}
