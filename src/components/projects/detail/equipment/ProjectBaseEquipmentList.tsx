@@ -362,8 +362,8 @@ export function ProjectBaseEquipmentList({
               className={cn(
                 "rounded-lg border-2 transition-all duration-200 relative overflow-hidden",
                 isSelected 
-                  ? "border-primary/20" 
-                  : "border-zinc-800/50"
+                  ? "border-primary bg-primary/5" 
+                  : "border-zinc-800/50 hover:border-primary/20 hover:bg-primary/5"
               )}
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -373,17 +373,20 @@ export function ProjectBaseEquipmentList({
                 "absolute inset-0 transition-all duration-200",
                 isSelected 
                   ? "bg-primary/5" 
-                  : "bg-zinc-900/50"
+                  : "bg-zinc-900/50 group-hover:bg-primary/5"
               )} />
               <div className="relative z-20">
-                <div className="bg-zinc-900/90">
+                <div className={cn(
+                  "transition-colors",
+                  isSelected ? "bg-primary/10" : "bg-zinc-900/90"
+                )}>
                   <div className="flex items-center justify-between px-4 py-2">
                     <div 
                       className={cn(
-                        "flex-1 cursor-pointer transition-colors text-white",
+                        "flex-1 cursor-pointer transition-colors",
                         isSelected 
-                          ? "hover:text-primary/90" 
-                          : "hover:text-white/90"
+                          ? "text-primary font-medium" 
+                          : "text-white hover:text-primary/90"
                       )}
                       onClick={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
                     >
