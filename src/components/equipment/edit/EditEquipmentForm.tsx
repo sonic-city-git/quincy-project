@@ -121,6 +121,19 @@ export function EditEquipmentForm({
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="internal_remark"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Internal Remark</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter internal remark" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
           <div className="space-y-4">
             <FormField
@@ -236,20 +249,6 @@ export function EditEquipmentForm({
                 </div>
               </div>
             )}
-
-            <FormField
-              control={form.control}
-              name="internal_remark"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Internal Remark</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter internal remark" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
           </div>
         </div>
         <div className="flex justify-between pt-4">
