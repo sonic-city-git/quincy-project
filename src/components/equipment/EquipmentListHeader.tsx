@@ -8,8 +8,6 @@ interface EquipmentListHeaderProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   onClearFilters: () => void;
-  selectedItem: string | null;
-  onEquipmentDeleted: () => void;
   selectedFolders: string[];
   onFolderToggle: (folderId: string) => void;
 }
@@ -18,8 +16,6 @@ export function EquipmentListHeader({
   searchQuery,
   onSearchChange,
   onClearFilters,
-  selectedItem,
-  onEquipmentDeleted,
   selectedFolders,
   onFolderToggle,
 }: EquipmentListHeaderProps) {
@@ -28,12 +24,10 @@ export function EquipmentListHeader({
   return (
     <div className="flex items-center gap-4">
       <div className="flex items-center gap-4 flex-1">
-        <div className="w-[200px]">
-          <EquipmentSearchInput 
-            value={searchQuery}
-            onChange={onSearchChange}
-          />
-        </div>
+        <EquipmentSearchInput 
+          value={searchQuery}
+          onChange={onSearchChange}
+        />
         <div className="flex items-center gap-2">
           <EquipmentFolderFilter
             selectedFolders={selectedFolders}
@@ -44,10 +38,6 @@ export function EquipmentListHeader({
           )}
         </div>
       </div>
-      <EquipmentActions 
-        selectedItems={selectedItem ? [selectedItem] : []} 
-        onEquipmentDeleted={onEquipmentDeleted}
-      />
       <AddEquipmentDialog />
     </div>
   );
