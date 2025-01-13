@@ -8,6 +8,7 @@ export function useCrewSort() {
       const folderA = a.folderName?.toLowerCase() || '';
       const folderB = b.folderName?.toLowerCase() || '';
 
+      // First sort by folder order
       const indexA = folderOrder.findIndex(f => f.toLowerCase() === folderA);
       const indexB = folderOrder.findIndex(f => f.toLowerCase() === folderB);
 
@@ -18,11 +19,13 @@ export function useCrewSort() {
       if (indexA !== -1) return -1;
       if (indexB !== -1) return 1;
 
+      // If folders are different but not in the predefined order
       if (folderA !== folderB) {
         return folderA.localeCompare(folderB);
       }
 
-      return a.name.localeCompare(b.name);
+      // Then sort alphabetically by name
+      return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
     });
   };
 

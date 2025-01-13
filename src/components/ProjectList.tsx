@@ -5,6 +5,7 @@ import { useProjects } from "@/hooks/useProjects";
 import { ProjectTable } from "./projects/ProjectTable";
 import { ProjectListHeader } from "./projects/ProjectListHeader";
 import { useProjectFilters } from "@/hooks/useProjectFilters";
+import { useProjectSort } from "@/hooks/useProjectSort";
 
 export function ProjectList() {
   const { projects, loading } = useProjects();
@@ -15,6 +16,7 @@ export function ProjectList() {
     setOwnerFilter,
     filteredProjects
   } = useProjectFilters(projects);
+  const { sortProjects } = useProjectSort();
 
   if (loading) {
     return (
@@ -24,9 +26,11 @@ export function ProjectList() {
     );
   }
 
+  const sortedProjects = sortProjects(filteredProjects);
+
   return (
     <div className="h-[calc(100vh-2rem)] py-6">
-      <Card className="border-0 shadow-md bg-zinc-900/50 h-full">
+      <Card className="border-0 shadow-md bg-zinc-900 h-full">
         <CardContent className="p-6 h-full flex flex-col">
           <div className="space-y-6 h-full flex flex-col">
             <ProjectListHeader
@@ -37,7 +41,7 @@ export function ProjectList() {
             />
             <Separator className="bg-zinc-800" />
             <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0">
-              <ProjectTable projects={filteredProjects} />
+              <ProjectTable projects={sortedProjects} />
             </div>
           </div>
         </CardContent>
