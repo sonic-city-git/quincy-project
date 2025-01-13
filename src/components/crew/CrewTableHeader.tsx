@@ -4,11 +4,11 @@ export function CrewTableHeader() {
   return (
     <TableHeader>
       <TableRow>
-        <TableHead className="w-[300px]">Name</TableHead>
-        <TableHead className="w-[200px]">Roles</TableHead>
-        <TableHead className="w-[200px]">Email</TableHead>
-        <TableHead className="w-[150px]">Phone</TableHead>
-        <TableHead className="w-[150px]">Folder</TableHead>
+        <TableHead className="w-[25%] min-w-[200px]">Name</TableHead>
+        <TableHead className="w-[25%] min-w-[150px]">Roles</TableHead>
+        <TableHead className="w-[20%] min-w-[150px]">Email</TableHead>
+        <TableHead className="w-[15%] min-w-[120px]">Phone</TableHead>
+        <TableHead className="w-[15%] min-w-[120px]">Folder</TableHead>
       </TableRow>
     </TableHeader>
   );
