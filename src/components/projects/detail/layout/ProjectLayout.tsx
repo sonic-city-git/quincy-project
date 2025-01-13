@@ -19,17 +19,19 @@ export function ProjectLayout({
     <div className="h-[calc(100vh-2rem)] py-6">
       <div className="bg-zinc-900/50 rounded-lg shadow-md h-full">
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="p-6 h-full flex flex-col">
-            <div className="flex-shrink-0 mb-4">
-              <ProjectHeader 
-                name={project.name}
-                color={project.color}
-                projectNumber={project.project_number}
-                defaultValue={activeTab}
-              />
+          <div className="h-full flex flex-col">
+            <div className="sticky top-0 z-10">
+              <div className="p-6 pb-4">
+                <ProjectHeader 
+                  name={project.name}
+                  color={project.color}
+                  projectNumber={project.project_number}
+                  defaultValue={activeTab}
+                />
+              </div>
             </div>
             
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-auto px-6 pb-6">
               <ProjectTabs 
                 project={project} 
                 projectId={projectId}
