@@ -5,16 +5,10 @@ import { Package, Users } from "lucide-react";
 import { useSectionSyncStatus } from "../hooks/useSectionSyncStatus";
 import { Button } from "@/components/ui/button";
 import { EventStatusManager } from "../EventStatusManager";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { toast } from "sonner";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { toast } from "sonner";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -80,7 +74,7 @@ export function EventSectionHeader({
                 })
               ]);
             }
-          }, 1000); // Add a 1-second delay
+          }, 1000);
         }
       )
       .subscribe();
@@ -90,18 +84,25 @@ export function EventSectionHeader({
     };
   }, [events, queryClient]);
 
-  const handleSyncAllEquipment = async () => {
+  const handleSyncAllEquipment = () => {
     try {
       const eventsWithEquipment = events.filter(event => event.type.needs_equipment);
       console.log(`Processing ${eventsWithEquipment.length} events for sync`);
       
-      // Find all equipment icons in the section and click them
-      const equipmentIcons = document.querySelectorAll(`[data-section="${title}"] [data-sync-button]`);
-      console.log(`Found ${equipmentIcons.length} equipment icons to sync`);
+      // Find all sync buttons in the section
+      const syncButtons = document.querySelectorAll(`[data-sync-button][data-section="${title}"]`);
+      console.log(`Found ${syncButtons.length} sync buttons`);
       
-      equipmentIcons.forEach((icon: Element) => {
-        if (icon instanceof HTMLElement) {
-          icon.click();
+      if (syncButtons.length === 0) {
+        console.log('No sync buttons found');
+        return;
+      }
+
+      // Click each sync button
+      syncButtons.forEach((button: Element) => {
+        if (button instanceof HTMLElement) {
+          console.log('Clicking sync button');
+          button.click();
         }
       });
 
