@@ -1,20 +1,20 @@
-import { CalendarEvent, EventType } from "@/types/events";
+import { Package, Users } from "lucide-react";
 import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
-import { Package, Users } from "lucide-react";
-import { useSectionSyncStatus } from "../hooks/useSectionSyncStatus";
+import { CalendarEvent } from "@/types/events";
 import { Button } from "@/components/ui/button";
-import { EventStatusManager } from "../EventStatusManager";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { EventStatusManager } from "../EventStatusManager";
+import { useSectionSyncStatus } from "../hooks/useSectionSyncStatus";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -32,7 +32,6 @@ export function EventSectionHeader({
   const isCancelled = title.toLowerCase() === 'cancelled';
   const isInvoiceReady = title.toLowerCase() === 'invoice ready';
   const isDoneAndDusted = title.toLowerCase() === 'done and dusted';
-  const [syncStatus, setSyncStatus] = useState<Record<string, boolean>>({});
   const sectionSyncStatus = useSectionSyncStatus(events);
   const queryClient = useQueryClient();
 
@@ -140,11 +139,10 @@ export function EventSectionHeader({
 
             if (insertError) throw insertError;
 
-            // Update local sync status immediately
-            setSyncStatus(prev => ({
-              ...prev,
-              [event.id]: true
-            }));
+            // Invalidate queries for this specific event
+            await queryClient.invalidateQueries({ 
+              queryKey: ['project-event-equipment', event.id] 
+            });
 
             console.log(`Successfully synced equipment for event ${event.id}`);
           }
@@ -154,14 +152,10 @@ export function EventSectionHeader({
         }
       }
 
+      // After all events are processed, invalidate the main queries
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['events', events[0]?.project_id] }),
-        queryClient.invalidateQueries({ queryKey: ['calendar-events', events[0]?.project_id] }),
-        ...events.map(event => 
-          queryClient.invalidateQueries({ 
-            queryKey: ['project-event-equipment', event.id] 
-          })
-        )
+        queryClient.invalidateQueries({ queryKey: ['calendar-events', events[0]?.project_id] })
       ]);
 
       toast.success(`Equipment synchronized for all ${title} events`);
@@ -201,7 +195,7 @@ export function EventSectionHeader({
                   >
                     <Package 
                       className={`h-6 w-6 ${
-                        sectionSyncStatus === 'synced' || Object.values(syncStatus).every(Boolean)
+                        sectionSyncStatus === 'synced'
                           ? 'text-green-500' 
                           : 'text-blue-500'
                       }`} 
