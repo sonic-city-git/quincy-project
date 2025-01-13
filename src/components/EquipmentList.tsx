@@ -116,6 +116,11 @@ export function EquipmentList() {
     setEditDialogOpen(true);
   };
 
+  const handleDialogClose = () => {
+    setEditDialogOpen(false);
+    setSelectedItem(null); // Reset selected item when dialog closes
+  };
+
   return (
     <div className="h-[calc(100vh-2rem)] py-6">
       <Card className="border-0 shadow-md bg-zinc-900/50 h-full">
@@ -161,7 +166,7 @@ export function EquipmentList() {
       {selectedEquipment && (
         <EditEquipmentDialog
           open={editDialogOpen}
-          onOpenChange={setEditDialogOpen}
+          onOpenChange={handleDialogClose}
           equipment={selectedEquipment}
         />
       )}
