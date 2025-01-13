@@ -128,7 +128,7 @@ export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) 
   }
 
   return (
-    <div className="flex justify-end mb-4">
+    <div>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
