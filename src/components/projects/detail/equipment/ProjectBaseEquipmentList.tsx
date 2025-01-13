@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
@@ -26,6 +26,21 @@ export function ProjectBaseEquipmentList({
   const [newGroupName, setNewGroupName] = useState("");
   const [pendingEquipment, setPendingEquipment] = useState<Equipment | null>(null);
   const queryClient = useQueryClient();
+
+  // Add this query to fetch groups
+  const { data: groups = [] } = useQuery({
+    queryKey: ['project-equipment-groups', projectId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_equipment_groups')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('sort_order');
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
 
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
@@ -58,13 +73,20 @@ export function ProjectBaseEquipmentList({
     if (!newGroupName.trim() || !pendingEquipment) return;
 
     try {
+      console.log('Creating new group:', { projectId, name: newGroupName });
+      
+      // Calculate the next sort order
+      const maxSortOrder = groups.reduce((max, group) => 
+        Math.max(max, group.sort_order || 0), -1);
+      const nextSortOrder = maxSortOrder + 1;
+
       // First create the group
       const { data: newGroup, error: groupError } = await supabase
         .from('project_equipment_groups')
         .insert({
           project_id: projectId,
           name: newGroupName,
-          sort_order: 0
+          sort_order: nextSortOrder
         })
         .select()
         .single();
@@ -74,6 +96,8 @@ export function ProjectBaseEquipmentList({
       if (!newGroup) {
         throw new Error('No group was created');
       }
+
+      console.log('New group created:', newGroup);
 
       // Update the UI to show the new group
       await queryClient.invalidateQueries({ 
@@ -120,7 +144,6 @@ export function ProjectBaseEquipmentList({
                 <ProjectEquipmentItem
                   key={item.id}
                   item={item}
-                  onRemove={() => removeEquipment(item.id)}
                 />
               ))
             )}
