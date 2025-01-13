@@ -12,7 +12,7 @@ export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) 
   return (
     <div className="relative">
       <Table>
-        <TableHeader className="sticky top-0 bg-zinc-900/95 border-b border-zinc-800 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75 z-10">
+        <TableHeader className="sticky top-0 bg-zinc-900/95 border-b border-zinc-800 backdrop-blur supports-[backdrop-filter]:bg-zinc-900/75 z-20">
           <TableRow>
             <TableHead className="min-w-[200px]">Name</TableHead>
             <TableHead className="min-w-[200px]">Roles</TableHead>
