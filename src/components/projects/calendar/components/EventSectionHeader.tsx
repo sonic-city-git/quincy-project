@@ -35,7 +35,6 @@ export function EventSectionHeader({
   const sectionSyncStatus = useSectionSyncStatus(events);
   const queryClient = useQueryClient();
 
-  // Subscribe to real-time updates for all project_event_equipment changes
   useEffect(() => {
     if (!events.length) return;
 
@@ -90,27 +89,77 @@ export function EventSectionHeader({
     };
   }, [events, queryClient]);
 
-  const handleSyncAllEquipment = () => {
+  const handleSyncAllEquipment = async () => {
     try {
       const eventsWithEquipment = events.filter(event => event.type.needs_equipment);
       console.log(`Processing ${eventsWithEquipment.length} events for sync`);
       
-      // Find all sync buttons in the section
-      const syncButtons = document.querySelectorAll(`[data-sync-button][data-section="${title}"]`);
-      console.log(`Found ${syncButtons.length} sync buttons`);
-      
-      if (syncButtons.length === 0) {
-        console.log('No sync buttons found');
-        return;
+      // For each event that needs equipment
+      for (const event of eventsWithEquipment) {
+        try {
+          // Get project equipment
+          const { data: projectEquipment } = await supabase
+            .from('project_equipment')
+            .select('*')
+            .eq('project_id', event.project_id);
+
+          if (projectEquipment && projectEquipment.length > 0) {
+            // Create a map for unique equipment
+            const uniqueEquipment = new Map();
+            
+            projectEquipment.forEach(item => {
+              if (uniqueEquipment.has(item.equipment_id)) {
+                const existing = uniqueEquipment.get(item.equipment_id);
+                existing.quantity += item.quantity;
+                uniqueEquipment.set(item.equipment_id, existing);
+              } else {
+                uniqueEquipment.set(item.equipment_id, item);
+              }
+            });
+
+            // Prepare event equipment data
+            const eventEquipment = Array.from(uniqueEquipment.values()).map(item => ({
+              project_id: event.project_id,
+              event_id: event.id,
+              equipment_id: item.equipment_id,
+              quantity: item.quantity,
+              group_id: item.group_id,
+              is_synced: true
+            }));
+
+            // Delete existing equipment for this event
+            const { error: deleteError } = await supabase
+              .from('project_event_equipment')
+              .delete()
+              .eq('event_id', event.id);
+
+            if (deleteError) throw deleteError;
+
+            // Insert new equipment
+            const { error: insertError } = await supabase
+              .from('project_event_equipment')
+              .insert(eventEquipment);
+
+            if (insertError) throw insertError;
+
+            console.log(`Successfully synced equipment for event ${event.id}`);
+          }
+        } catch (eventError) {
+          console.error(`Error syncing event ${event.id}:`, eventError);
+          throw eventError;
+        }
       }
 
-      // Click each sync button
-      syncButtons.forEach((button: Element) => {
-        if (button instanceof HTMLElement) {
-          console.log('Clicking sync button');
-          button.click();
-        }
-      });
+      // Invalidate queries to refresh data
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['events', events[0]?.project_id] }),
+        queryClient.invalidateQueries({ queryKey: ['calendar-events', events[0]?.project_id] }),
+        ...events.map(event => 
+          queryClient.invalidateQueries({ 
+            queryKey: ['project-event-equipment', event.id] 
+          })
+        )
+      ]);
 
       toast.success(`Equipment synchronized for all ${title} events`);
     } catch (error) {
