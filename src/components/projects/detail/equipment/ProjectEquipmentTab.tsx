@@ -94,23 +94,24 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
       // Set the new group as selected
       if (newGroup) {
         setSelectedGroupId(newGroup.id);
+
+        // If there was pending equipment, add it to the new group
+        if (pendingEquipment) {
+          try {
+            await addEquipment(pendingEquipment, newGroup.id);
+            setPendingEquipment(null);
+            toast.success('Equipment added to new group');
+          } catch (error: any) {
+            console.error('Error adding equipment to new group:', error);
+            toast.error('Failed to add equipment to new group');
+          }
+        }
       }
 
       // Reset the dialog state
       setShowGroupDialog(false);
       setNewGroupName("");
-
-      // If there was pending equipment, add it to the new group
-      if (pendingEquipment && newGroup) {
-        try {
-          await addEquipment(pendingEquipment, newGroup.id);
-          setPendingEquipment(null);
-          toast.success('Equipment added to new group');
-        } catch (error: any) {
-          console.error('Error adding equipment to new group:', error);
-          toast.error('Failed to add equipment to new group');
-        }
-      }
+      
     } catch (error: any) {
       console.error('Error creating group:', error);
       toast.error('Failed to create group');
