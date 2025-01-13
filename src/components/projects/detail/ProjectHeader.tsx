@@ -1,13 +1,21 @@
 import { getColorStyles } from "@/utils/styleUtils";
-import { TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ProjectHeaderProps {
   name: string;
   color: string;
   projectNumber: number;
+  defaultValue?: string;
+  onValueChange?: (value: string) => void;
 }
 
-export function ProjectHeader({ name, color, projectNumber }: ProjectHeaderProps) {
+export function ProjectHeader({ 
+  name, 
+  color, 
+  projectNumber,
+  defaultValue = "general",
+  onValueChange 
+}: ProjectHeaderProps) {
   const formattedProjectNumber = String(projectNumber).padStart(4, '0');
   
   return (
@@ -26,32 +34,34 @@ export function ProjectHeader({ name, color, projectNumber }: ProjectHeaderProps
         </div>
       </div>
 
-      <TabsList className="bg-zinc-800/45 p-1 rounded-lg">
-        <TabsTrigger 
-          value="general" 
-          className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
-        >
-          General
-        </TabsTrigger>
-        <TabsTrigger 
-          value="equipment"
-          className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
-        >
-          Equipment
-        </TabsTrigger>
-        <TabsTrigger 
-          value="crew"
-          className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
-        >
-          Crew
-        </TabsTrigger>
-        <TabsTrigger 
-          value="financial"
-          className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
-        >
-          Financial
-        </TabsTrigger>
-      </TabsList>
+      <Tabs defaultValue={defaultValue} onValueChange={onValueChange}>
+        <TabsList className="bg-zinc-800/45 p-1 rounded-lg">
+          <TabsTrigger 
+            value="general" 
+            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
+          >
+            General
+          </TabsTrigger>
+          <TabsTrigger 
+            value="equipment"
+            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
+          >
+            Equipment
+          </TabsTrigger>
+          <TabsTrigger 
+            value="crew"
+            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
+          >
+            Crew
+          </TabsTrigger>
+          <TabsTrigger 
+            value="financial"
+            className="data-[state=active]:bg-zinc-900/90 data-[state=active]:text-accent transition-colors"
+          >
+            Financial
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
     </div>
   );
 }
