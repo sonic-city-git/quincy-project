@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CalendarDays, Users, Package, LogOut, Clock } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Users, Package, LogOut } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -68,25 +68,17 @@ export function Sidebar() {
       isActive: isActive("/equipment"),
       bgColor: "hover:bg-[#22c55e]/10",
       onClick: () => {}
-    },
-    { 
-      href: "/scheduling", 
-      label: "Scheduling", 
-      icon: Clock,
-      isActive: isActive("/scheduling"),
-      bgColor: "hover:bg-[#0ea5e9]/10",
-      onClick: () => {}
     }
   ];
 
   return (
-    <div className="flex flex-col h-screen w-[400px] bg-zinc-900">
+    <div className="flex flex-col h-screen w-56 bg-zinc-900">
       <div className="px-2 py-3 border-b border-zinc-800">
         <h1 className="text-[45px] font-bold text-accent px-2">
           QUINCY
         </h1>
       </div>
-      <div className="px-2 py-1.5">
+      <div className="px-2 py-1.5 flex-1">
         <div className="space-y-0.5">
           {links.map((link) => (
             <Link
@@ -106,7 +98,6 @@ export function Sidebar() {
           ))}
         </div>
       </div>
-      <div className="flex-1" />
       <div className="p-2 border-t border-zinc-800">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
