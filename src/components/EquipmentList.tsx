@@ -67,23 +67,27 @@ export function EquipmentList() {
               onFolderToggle={handleFolderToggle}
             />
             <Separator className="bg-zinc-800" />
-            <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0">
-              <Table>
-                <EquipmentTableHeader />
-              </Table>
-              <div className="divide-y divide-zinc-800">
-                {sortedFolders.map((folderName) => (
-                  <div key={folderName}>
-                    <div className="bg-zinc-800/50 px-4 py-2 font-medium text-sm text-zinc-400">
-                      {folderName}
+            <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0 flex flex-col">
+              <div className="sticky top-0 z-20 bg-zinc-900 border-b border-zinc-800">
+                <Table>
+                  <EquipmentTableHeader />
+                </Table>
+              </div>
+              <div className="overflow-y-auto flex-1">
+                <div className="divide-y divide-zinc-800">
+                  {sortedFolders.map((folderName) => (
+                    <div key={folderName}>
+                      <div className="bg-zinc-800/50 px-4 py-2 font-medium text-sm text-zinc-400">
+                        {folderName}
+                      </div>
+                      <EquipmentTable 
+                        equipment={groupedEquipment[folderName]}
+                        selectedItem={selectedItem}
+                        onItemSelect={setSelectedItem}
+                      />
                     </div>
-                    <EquipmentTable 
-                      equipment={groupedEquipment[folderName]}
-                      selectedItem={selectedItem}
-                      onItemSelect={setSelectedItem}
-                    />
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
           </div>
