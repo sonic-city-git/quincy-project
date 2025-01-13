@@ -84,56 +84,6 @@ export function ProjectBaseEquipmentList({
     }
   };
 
-  const handleConfirmDelete = async () => {
-    if (!groupToDelete) return;
-
-    try {
-      if (targetGroupId) {
-        // Move equipment to target group
-        const { error: updateError } = await supabase
-          .from('project_equipment')
-          .update({ group_id: targetGroupId })
-          .eq('group_id', groupToDelete);
-
-        if (updateError) throw updateError;
-      } else {
-        // Delete all equipment in the group
-        const { error: deleteError } = await supabase
-          .from('project_equipment')
-          .delete()
-          .eq('group_id', groupToDelete);
-
-        if (deleteError) throw deleteError;
-      }
-
-      await deleteGroupOnly(groupToDelete);
-      setGroupToDelete(null);
-      setTargetGroupId("");
-
-      await queryClient.invalidateQueries({ 
-        queryKey: ['project-equipment', projectId] 
-      });
-
-    } catch (error) {
-      console.error('Error handling group deletion:', error);
-      toast.error('Failed to process group deletion');
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const target = e.currentTarget as HTMLElement;
-    target.classList.add('bg-primary/5', 'border-primary/20');
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const target = e.currentTarget as HTMLElement;
-    target.classList.remove('bg-primary/5', 'border-primary/20');
-  };
-
   const handleDrop = async (e: React.DragEvent, groupId: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -155,23 +105,23 @@ export function ProjectBaseEquipmentList({
 
         if (error) throw error;
       } else {
-        // Check if the equipment already exists in the group
+        // Check if the equipment already exists in any group for this project
         const { data: existingEquipment, error: queryError } = await supabase
           .from('project_equipment')
           .select('*')
           .eq('project_id', projectId)
           .eq('equipment_id', item.id)
           .eq('group_id', groupId)
-          .single();
+          .maybeSingle();
 
-        if (queryError && queryError.code !== 'PGRST116') throw queryError; // PGRST116 is "no rows returned"
+        if (queryError) throw queryError;
 
         if (existingEquipment) {
           // If it exists, increment the quantity
           const { error: updateError } = await supabase
             .from('project_equipment')
             .update({ 
-              quantity: existingEquipment.quantity + 1 
+              quantity: (existingEquipment.quantity || 0) + 1 
             })
             .eq('id', existingEquipment.id);
 
@@ -197,6 +147,99 @@ export function ProjectBaseEquipmentList({
       console.error('Error moving equipment:', error);
       toast.error('Failed to move equipment');
     }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!groupToDelete) return;
+
+    try {
+      if (targetGroupId) {
+        // Get all equipment from the group to be deleted
+        const { data: equipmentToMove, error: fetchError } = await supabase
+          .from('project_equipment')
+          .select('*')
+          .eq('group_id', groupToDelete);
+
+        if (fetchError) throw fetchError;
+
+        // Process each piece of equipment
+        for (const equipment of equipmentToMove || []) {
+          // Check if equipment already exists in target group
+          const { data: existingEquipment, error: queryError } = await supabase
+            .from('project_equipment')
+            .select('*')
+            .eq('project_id', projectId)
+            .eq('equipment_id', equipment.equipment_id)
+            .eq('group_id', targetGroupId)
+            .maybeSingle();
+
+          if (queryError) throw queryError;
+
+          if (existingEquipment) {
+            // If exists, add quantities
+            const { error: updateError } = await supabase
+              .from('project_equipment')
+              .update({ 
+                quantity: (existingEquipment.quantity || 0) + (equipment.quantity || 0)
+              })
+              .eq('id', existingEquipment.id);
+
+            if (updateError) throw updateError;
+
+            // Delete the original equipment
+            const { error: deleteError } = await supabase
+              .from('project_equipment')
+              .delete()
+              .eq('id', equipment.id);
+
+            if (deleteError) throw deleteError;
+          } else {
+            // If doesn't exist, just update the group_id
+            const { error: updateError } = await supabase
+              .from('project_equipment')
+              .update({ group_id: targetGroupId })
+              .eq('id', equipment.id);
+
+            if (updateError) throw updateError;
+          }
+        }
+      } else {
+        // Delete all equipment in the group
+        const { error: deleteError } = await supabase
+          .from('project_equipment')
+          .delete()
+          .eq('group_id', groupToDelete);
+
+        if (deleteError) throw deleteError;
+      }
+
+      await deleteGroupOnly(groupToDelete);
+      setGroupToDelete(null);
+      setTargetGroupId("");
+
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment', projectId] 
+      });
+
+      toast.success('Group deleted successfully');
+    } catch (error) {
+      console.error('Error handling group deletion:', error);
+      toast.error('Failed to process group deletion');
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = e.currentTarget as HTMLElement;
+    target.classList.add('bg-primary/5', 'border-primary/20');
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = e.currentTarget as HTMLElement;
+    target.classList.remove('bg-primary/5', 'border-primary/20');
   };
 
   const calculateGroupTotal = (groupEquipment: any[]) => {
