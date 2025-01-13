@@ -117,7 +117,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
     }
   };
 
-  return (
+return (
     <>
       <Card 
         key={`${event.date}-${event.name}`} 
@@ -144,7 +144,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
           </div>
 
           <div className="flex items-center justify-end text-sm">
-            {formatPrice(event.revenue)}
+            {formatPrice(event.total_price)}
           </div>
 
           <EventActions

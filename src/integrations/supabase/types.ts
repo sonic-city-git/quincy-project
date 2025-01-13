@@ -512,6 +512,7 @@ export type Database = {
           name: string
           project_id: string | null
           sort_order: number | null
+          total_price: number | null
           updated_at: string
         }
         Insert: {
@@ -520,6 +521,7 @@ export type Database = {
           name: string
           project_id?: string | null
           sort_order?: number | null
+          total_price?: number | null
           updated_at?: string
         }
         Update: {
@@ -528,6 +530,7 @@ export type Database = {
           name?: string
           project_id?: string | null
           sort_order?: number | null
+          total_price?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -666,6 +669,7 @@ export type Database = {
         Row: {
           created_at: string
           date: string
+          equipment_price: number | null
           event_type_id: string | null
           id: string
           location: string | null
@@ -673,11 +677,13 @@ export type Database = {
           project_id: string | null
           revenue: number | null
           status: string
+          total_price: number | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           date: string
+          equipment_price?: number | null
           event_type_id?: string | null
           id?: string
           location?: string | null
@@ -685,11 +691,13 @@ export type Database = {
           project_id?: string | null
           revenue?: number | null
           status?: string
+          total_price?: number | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           date?: string
+          equipment_price?: number | null
           event_type_id?: string | null
           id?: string
           location?: string | null
@@ -697,6 +705,7 @@ export type Database = {
           project_id?: string | null
           revenue?: number | null
           status?: string
+          total_price?: number | null
           updated_at?: string
         }
         Relationships: [

@@ -111,7 +111,6 @@ export function ProjectBaseEquipmentList({
       
       setShowNewGroupDialog(false);
       setNewGroupName("");
-      setPendingEquipment(null);
       toast.success('Group created successfully');
     } catch (error) {
       console.error('Error creating group:', error);
@@ -352,24 +351,6 @@ export function ProjectBaseEquipmentList({
     target.classList.remove('bg-primary/5', 'border-primary/20');
   };
 
-  const calculateGroupTotal = (groupEquipment: any[]) => {
-    return groupEquipment.reduce((total, item) => {
-      return total + (item.rental_price || 0) * item.quantity;
-    }, 0);
-  };
-
-  if (loading) {
-    return (
-      <div className="text-sm text-muted-foreground">Loading equipment...</div>
-    );
-  }
-
-  // Sort equipment alphabetically within each group
-  const sortedEquipment = (groupId: string) => {
-    return (equipment?.filter(item => item.group_id === groupId) || [])
-      .sort((a, b) => a.name.localeCompare(b.name));
-  };
-
   return (
     <ScrollArea 
       ref={scrollAreaRef}
@@ -379,9 +360,8 @@ export function ProjectBaseEquipmentList({
     >
       <div className="space-y-6 pr-4">
         {groups.map(group => {
-          const groupEquipment = sortedEquipment(group.id);
+          const groupEquipment = equipment?.filter(item => item.group_id === group.id) || [];
           const isSelected = selectedGroupId === group.id;
-          const groupTotal = calculateGroupTotal(groupEquipment);
           
           return (
             <div 
@@ -421,7 +401,7 @@ export function ProjectBaseEquipmentList({
                     </div>
                     <div className="flex items-center gap-4">
                       <span className="text-sm text-muted-foreground">
-                        {formatPrice(groupTotal)}
+                        {formatPrice(group.total_price)}
                       </span>
                       <button
                         onClick={() => handleDeleteGroup(group.id)}
