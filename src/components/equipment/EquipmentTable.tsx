@@ -8,12 +8,12 @@ interface EquipmentTableProps {
   onItemSelect: (id: string) => void;
 }
 
-export function EquipmentTable({ equipment = [], selectedItem, onItemSelect }: EquipmentTableProps) {
+export function EquipmentTable({ equipment, selectedItem, onItemSelect }: EquipmentTableProps) {
   return (
     <div className="relative">
       <Table>
         <TableBody>
-          {equipment?.map((item) => (
+          {equipment.map((item) => (
             <EquipmentTableRow
               key={item.id}
               item={item}
