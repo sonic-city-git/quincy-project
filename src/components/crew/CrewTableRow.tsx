@@ -19,17 +19,17 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
 
   return (
     <TableRow 
-      className={`group hover:bg-zinc-800/50 cursor-pointer select-none ${
+      className={`group hover:bg-zinc-800/50 cursor-pointer select-none flex flex-col md:table-row ${
         isSelected ? 'bg-zinc-800/75' : ''
       }`}
       onDoubleClick={onSelect}
     >
-      <TableCell className="w-[25%] min-w-[200px]">
+      <TableCell className="w-full md:w-[300px]">
         <div className="text-sm font-medium truncate">
           {member.name}
         </div>
       </TableCell>
-      <TableCell className="w-[25%] min-w-[150px]">
+      <TableCell className="w-full md:w-[120px]">
         <div className="flex flex-wrap gap-1">
           {memberRoles.map((role) => (
             <Badge
@@ -41,17 +41,17 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
           ))}
         </div>
       </TableCell>
-      <TableCell className="w-[20%] min-w-[150px]">
+      <TableCell className="w-[150px] hidden md:table-cell">
         <span className="text-sm text-muted-foreground truncate block">
           {member.email || '-'}
         </span>
       </TableCell>
-      <TableCell className="w-[15%] min-w-[120px]">
+      <TableCell className="w-[120px] hidden md:table-cell">
         <span className="text-sm text-muted-foreground truncate block">
           {member.phone || '-'}
         </span>
       </TableCell>
-      <TableCell className="w-[15%] min-w-[120px]">
+      <TableCell className="w-[120px] hidden md:table-cell">
         <span className="text-sm text-muted-foreground truncate block">
           {member.folderName || '-'}
         </span>
