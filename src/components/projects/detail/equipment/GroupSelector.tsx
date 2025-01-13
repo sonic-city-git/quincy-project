@@ -128,7 +128,7 @@ export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) 
   }
 
   return (
-    <div>
+    <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm">
@@ -191,6 +191,6 @@ export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) 
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }
