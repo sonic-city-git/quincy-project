@@ -3,7 +3,6 @@ import { Edit } from "lucide-react";
 import { useState } from "react";
 import { EditEquipmentDialog } from "./EditEquipmentDialog";
 import { useEquipment } from "@/hooks/useEquipment";
-import { Equipment } from "@/integrations/supabase/types/equipment";
 
 interface EquipmentActionsProps {
   selectedItems: string[];
