@@ -15,7 +15,7 @@ export function ProjectLayout({
     <div className="h-[calc(100vh-2rem)] py-6">
       <div className="bg-zinc-900/50 rounded-lg shadow-md h-full">
         <div className="p-6 h-full flex flex-col">
-          <div className="flex-shrink-0 flex items-center justify-between mb-4">
+          <div className="flex-shrink-0 mb-4">
             <ProjectHeader 
               name={project.name}
               color={project.color}
