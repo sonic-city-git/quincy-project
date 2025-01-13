@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ProjectEquipmentItem } from "./ProjectEquipmentItem";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
@@ -122,13 +122,6 @@ export function ProjectBaseEquipmentList({
     }
   };
 
-  // Calculate total price for a group
-  const calculateGroupTotal = (groupEquipment: typeof equipment) => {
-    return groupEquipment.reduce((total, item) => {
-      return total + (item.rental_price || 0) * item.quantity;
-    }, 0);
-  };
-
   // Group equipment by their group_id
   const groupedEquipment = equipment.reduce((acc, item) => {
     const groupId = item.group_id || 'ungrouped';
@@ -138,6 +131,13 @@ export function ProjectBaseEquipmentList({
     acc[groupId].push(item);
     return acc;
   }, {} as Record<string, typeof equipment>);
+
+  // Calculate total price for a group
+  const calculateGroupTotal = (groupEquipment: typeof equipment) => {
+    return groupEquipment.reduce((total, item) => {
+      return total + (item.rental_price || 0) * item.quantity;
+    }, 0);
+  };
 
   return (
     <>
