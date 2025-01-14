@@ -97,6 +97,9 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="decimal"
+                      pattern="[0-9]*"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       placeholder="Enter daily rate"
                       {...field}
                     />
@@ -114,6 +117,9 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
                   <FormControl>
                     <Input
                       type="number"
+                      inputMode="decimal"
+                      pattern="[0-9]*"
+                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                       placeholder="Enter hourly rate"
                       {...field}
                     />
@@ -138,7 +144,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
                         <SelectValue placeholder="Select crew member" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="max-h-[200px] overflow-y-auto">
                       {crew.map((member) => (
                         <SelectItem
                           key={member.id}
