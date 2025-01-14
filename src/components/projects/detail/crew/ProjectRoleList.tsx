@@ -82,7 +82,15 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
         <Card key={role.id} className="p-4 bg-zinc-900/50">
           <div className="flex items-center gap-4">
             <div className="flex-shrink-0">
-              <h3 className="font-medium truncate">{role.role.name}</h3>
+              <span 
+                className="inline-block px-3 py-1 rounded-md text-sm font-medium"
+                style={{ 
+                  backgroundColor: `${role.role.color}1A`, // 1A = 10% opacity in hex
+                  color: role.role.color 
+                }}
+              >
+                {role.role.name}
+              </span>
             </div>
             
             <div className="flex items-center gap-4 flex-1 min-w-0">
