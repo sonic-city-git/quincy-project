@@ -7,6 +7,7 @@ import { useCrew } from "@/hooks/useCrew";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useCrewSort } from "@/components/crew/useCrewSort";
 
 interface ProjectRoleListProps {
   projectId: string;
@@ -15,6 +16,7 @@ interface ProjectRoleListProps {
 export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
   const { roles, loading, refetch } = useProjectRoles(projectId);
   const { crew } = useCrew();
+  const { sortCrew } = useCrewSort();
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleRateChange = async (roleId: string, field: 'daily_rate' | 'hourly_rate', value: string) => {
@@ -71,6 +73,9 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     );
   }
 
+  // Sort the crew members using the useCrewSort hook
+  const sortedCrew = sortCrew(crew || []);
+
   return (
     <div className="space-y-4">
       {roles.map((role) => (
@@ -109,7 +114,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
                   <SelectValue placeholder="Select preferred" />
                 </SelectTrigger>
                 <SelectContent className="max-h-[200px] overflow-y-auto">
-                  {crew?.map((member) => (
+                  {sortedCrew.map((member) => (
                     <SelectItem key={member.id} value={member.id}>
                       {member.name}
                     </SelectItem>
