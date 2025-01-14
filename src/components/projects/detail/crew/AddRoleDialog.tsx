@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { useCrew } from "@/hooks/useCrew";
 import { useProjectRoles } from "@/hooks/useProjectRoles";
 import { useCrewSort } from "@/components/crew/useCrewSort";
 import { Loader2 } from "lucide-react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 
 interface AddRoleDialogProps {
   projectId: string;
@@ -16,12 +18,14 @@ interface AddRoleDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface FormData {
-  role_id: string;
-  daily_rate: string;
-  hourly_rate: string;
-  preferred_id: string;
-}
+const formSchema = z.object({
+  role_id: z.string({ required_error: "Please select a role" }),
+  daily_rate: z.string().min(1, "Daily rate is required"),
+  hourly_rate: z.string().min(1, "Hourly rate is required"),
+  preferred_id: z.string({ required_error: "Please select a crew member" }),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogProps) {
   const { roles, isLoading: rolesLoading } = useCrewRoles();
@@ -30,6 +34,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
   const { sortCrew } = useCrewSort();
 
   const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       role_id: '',
       daily_rate: '',
@@ -43,7 +48,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
       role_id: data.role_id,
       daily_rate: parseFloat(data.daily_rate),
       hourly_rate: parseFloat(data.hourly_rate),
-      preferred_id: data.preferred_id || null
+      preferred_id: data.preferred_id
     });
     form.reset();
     onOpenChange(false);
@@ -66,7 +71,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
               name="role_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Role</FormLabel>
+                  <FormLabel>Role *</FormLabel>
                   <Select
                     value={field.value}
                     onValueChange={field.onChange}
@@ -89,6 +94,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -98,7 +104,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
               name="daily_rate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Daily Rate</FormLabel>
+                  <FormLabel>Daily Rate *</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -109,6 +115,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -118,7 +125,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
               name="hourly_rate"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Hourly Rate</FormLabel>
+                  <FormLabel>Hourly Rate *</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -129,6 +136,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -138,7 +146,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
               name="preferred_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Preferred Crew Member</FormLabel>
+                  <FormLabel>Preferred Crew Member *</FormLabel>
                   <Select
                     value={field.value}
                     onValueChange={field.onChange}
@@ -161,6 +169,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
                 </FormItem>
               )}
             />
