@@ -83,17 +83,21 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
             <div className="flex items-center gap-4 flex-1 min-w-0">
               <Input
                 type="number"
+                inputMode="decimal"
+                pattern="[0-9]*"
+                className="w-32 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 defaultValue={role.daily_rate?.toString()}
                 placeholder="Daily rate"
-                className="w-32"
                 onBlur={(e) => handleRateChange(role.id, 'daily_rate', e.target.value)}
               />
               
               <Input
                 type="number"
+                inputMode="decimal"
+                pattern="[0-9]*"
+                className="w-32 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 defaultValue={role.hourly_rate?.toString()}
                 placeholder="Hourly rate"
-                className="w-32"
                 onBlur={(e) => handleRateChange(role.id, 'hourly_rate', e.target.value)}
               />
               
@@ -104,7 +108,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
                 <SelectTrigger className="w-[200px]">
                   <SelectValue placeholder="Select preferred" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="max-h-[200px] overflow-y-auto">
                   {crew?.map((member) => (
                     <SelectItem key={member.id} value={member.id}>
                       {member.name}
