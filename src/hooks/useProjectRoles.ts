@@ -5,7 +5,7 @@ import { toast } from "sonner";
 export function useProjectRoles(projectId: string) {
   const queryClient = useQueryClient();
 
-  const { data: roles = [], isLoading: loading } = useQuery({
+  const { data: roles = [], isLoading: loading, refetch } = useQuery({
     queryKey: ['project_roles', projectId],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -88,6 +88,7 @@ export function useProjectRoles(projectId: string) {
     loading,
     deleteRole,
     updateRole,
-    addRole
+    addRole,
+    refetch
   };
 }
