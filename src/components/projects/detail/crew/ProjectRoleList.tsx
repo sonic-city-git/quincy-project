@@ -57,6 +57,25 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     }
   };
 
+  const handleCategoryChange = async (roleId: string, category: string) => {
+    setIsUpdating(true);
+    try {
+      const { error } = await supabase
+        .from('project_roles')
+        .update({ hourly_category: category })
+        .eq('id', roleId);
+
+      if (error) throw error;
+      await refetch();
+      toast.success('Rate category updated');
+    } catch (error) {
+      console.error('Error updating rate category:', error);
+      toast.error('Failed to update rate category');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   if (loading || isUpdating) {
     return (
       <div className="flex justify-center py-8">
@@ -80,9 +99,10 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     <div className="space-y-4">
       <div className="grid grid-cols-[200px_1fr] gap-4 px-4 mb-2">
         <div>Role</div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-4 gap-4">
           <div>Daily rate</div>
           <div>Hourly rate</div>
+          <div>Rate Category</div>
           <div>Preferred crew</div>
         </div>
       </div>
@@ -100,7 +120,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
               </span>
             </div>
             
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-4">
               <Input
                 type="number"
                 inputMode="decimal"
@@ -122,6 +142,20 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
                 placeholder="Hourly rate"
                 onBlur={(e) => handleRateChange(role.id, 'hourly_rate', e.target.value)}
               />
+
+              <Select
+                defaultValue={role.hourly_category || 'flat'}
+                onValueChange={(value) => handleCategoryChange(role.id, value)}
+              >
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Select category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="flat">Flat Rate</SelectItem>
+                  <SelectItem value="corporate">Corporate Rate</SelectItem>
+                  <SelectItem value="broadcast">Broadcast Rate</SelectItem>
+                </SelectContent>
+              </Select>
               
               <Select
                 defaultValue={role.preferred?.id}

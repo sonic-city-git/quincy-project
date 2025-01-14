@@ -418,6 +418,39 @@ export type Database = {
         }
         Relationships: []
       }
+      hourly_rate_settings: {
+        Row: {
+          category: Database["public"]["Enums"]["hourly_rate_category"]
+          created_at: string
+          double_time_multiplier: number | null
+          double_time_threshold: number | null
+          id: string
+          overtime_multiplier: number | null
+          overtime_threshold: number | null
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["hourly_rate_category"]
+          created_at?: string
+          double_time_multiplier?: number | null
+          double_time_threshold?: number | null
+          id?: string
+          overtime_multiplier?: number | null
+          overtime_threshold?: number | null
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["hourly_rate_category"]
+          created_at?: string
+          double_time_multiplier?: number | null
+          double_time_threshold?: number | null
+          id?: string
+          overtime_multiplier?: number | null
+          overtime_threshold?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       project_crew: {
         Row: {
           created_at: string
@@ -623,6 +656,9 @@ export type Database = {
           crew_member_id: string | null
           daily_rate: number | null
           event_id: string | null
+          hourly_category:
+            | Database["public"]["Enums"]["hourly_rate_category"]
+            | null
           hourly_rate: number | null
           hours_worked: number | null
           id: string
@@ -635,6 +671,9 @@ export type Database = {
           crew_member_id?: string | null
           daily_rate?: number | null
           event_id?: string | null
+          hourly_category?:
+            | Database["public"]["Enums"]["hourly_rate_category"]
+            | null
           hourly_rate?: number | null
           hours_worked?: number | null
           id?: string
@@ -647,6 +686,9 @@ export type Database = {
           crew_member_id?: string | null
           daily_rate?: number | null
           event_id?: string | null
+          hourly_category?:
+            | Database["public"]["Enums"]["hourly_rate_category"]
+            | null
           hourly_rate?: number | null
           hours_worked?: number | null
           id?: string
@@ -903,7 +945,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      hourly_rate_category: "flat" | "corporate" | "broadcast"
     }
     CompositeTypes: {
       [_ in never]: never

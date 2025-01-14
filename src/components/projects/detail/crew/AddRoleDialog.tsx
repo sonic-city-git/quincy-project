@@ -23,6 +23,7 @@ const formSchema = z.object({
   daily_rate: z.string().min(1, "Daily rate is required"),
   hourly_rate: z.string().min(1, "Hourly rate is required"),
   preferred_id: z.string({ required_error: "Please select a crew member" }),
+  hourly_category: z.enum(['flat', 'corporate', 'broadcast'])
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -39,7 +40,8 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
       role_id: '',
       daily_rate: '',
       hourly_rate: '',
-      preferred_id: ''
+      preferred_id: '',
+      hourly_category: 'flat'
     }
   });
 
@@ -48,7 +50,8 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
       role_id: data.role_id,
       daily_rate: parseFloat(data.daily_rate),
       hourly_rate: parseFloat(data.hourly_rate),
-      preferred_id: data.preferred_id
+      preferred_id: data.preferred_id,
+      hourly_category: data.hourly_category
     });
     form.reset();
     onOpenChange(false);
@@ -136,6 +139,32 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="hourly_category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Hourly Rate Category *</FormLabel>
+                  <Select
+                    value={field.value}
+                    onValueChange={field.onChange}
+                  >
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select category" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="flat">Flat Rate</SelectItem>
+                      <SelectItem value="corporate">Corporate Rate</SelectItem>
+                      <SelectItem value="broadcast">Broadcast Rate</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
