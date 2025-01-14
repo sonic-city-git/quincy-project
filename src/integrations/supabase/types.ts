@@ -771,6 +771,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "project_roles_preferred_id_fkey"
+            columns: ["preferred_id"]
+            isOneToOne: false
+            referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "project_roles_project_id_fkey"
             columns: ["project_id"]
             isOneToOne: false

@@ -17,14 +17,18 @@ export function useProjectRoles(projectId: string) {
             name,
             color
           ),
-          preferred:crew_members (
+          preferred:crew_members!project_roles_preferred_id_fkey (
             id,
             name
           )
         `)
         .eq('project_id', projectId);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching project roles:', error);
+        toast.error('Failed to fetch project roles');
+        throw error;
+      }
       return data;
     }
   });
