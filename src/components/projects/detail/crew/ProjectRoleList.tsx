@@ -106,7 +106,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
                 inputMode="decimal"
                 pattern="[0-9]*"
                 max={99999}
-                className="w-32 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-24 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 defaultValue={role.daily_rate?.toString()}
                 placeholder="Daily rate"
                 onBlur={(e) => handleRateChange(role.id, 'daily_rate', e.target.value)}
@@ -117,7 +117,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
                 inputMode="decimal"
                 pattern="[0-9]*"
                 max={99999}
-                className="w-32 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-24 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 defaultValue={role.hourly_rate?.toString()}
                 placeholder="Hourly rate"
                 onBlur={(e) => handleRateChange(role.id, 'hourly_rate', e.target.value)}
