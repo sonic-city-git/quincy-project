@@ -378,36 +378,39 @@ export type Database = {
           allows_discount: boolean | null
           color: string
           created_at: string
-          crew_rate_multiplier: number | null
           equipment_rate_multiplier: number | null
           id: string
           name: string
           needs_crew: boolean | null
           needs_equipment: boolean | null
+          rate_multiplier: number | null
+          rate_type: string | null
           updated_at: string
         }
         Insert: {
           allows_discount?: boolean | null
           color: string
           created_at?: string
-          crew_rate_multiplier?: number | null
           equipment_rate_multiplier?: number | null
           id?: string
           name: string
           needs_crew?: boolean | null
           needs_equipment?: boolean | null
+          rate_multiplier?: number | null
+          rate_type?: string | null
           updated_at?: string
         }
         Update: {
           allows_discount?: boolean | null
           color?: string
           created_at?: string
-          crew_rate_multiplier?: number | null
           equipment_rate_multiplier?: number | null
           id?: string
           name?: string
           needs_crew?: boolean | null
           needs_equipment?: boolean | null
+          rate_multiplier?: number | null
+          rate_type?: string | null
           updated_at?: string
         }
         Relationships: []
