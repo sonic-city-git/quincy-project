@@ -1,16 +1,36 @@
+import { useQuery } from "@tanstack/react-query";
 import { CrewMember } from "@/types/crew";
+import { supabase } from "@/integrations/supabase/client";
 
-const folderOrder = ["Sonic City", "Associate", "Freelance"];
+// Define the folder order by ID instead of name to ensure exact matches
+const FOLDER_ORDER = ["Sonic City", "Associate", "Freelance"];
 
 export function useCrewSort() {
+  const { data: folders } = useQuery({
+    queryKey: ['crew-folders'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('crew_folders')
+        .select('*')
+        .order('name');
+      
+      if (error) {
+        console.error('Error fetching crew folders:', error);
+        return [];
+      }
+      
+      return data;
+    }
+  });
+
   const sortCrew = (crew: CrewMember[]) => {
     return [...crew].sort((a, b) => {
       const folderA = a.folderName || '';
       const folderB = b.folderName || '';
 
       // Get the index of each folder in the folderOrder array
-      const indexA = folderOrder.indexOf(folderA);
-      const indexB = folderOrder.indexOf(folderB);
+      const indexA = FOLDER_ORDER.indexOf(folderA);
+      const indexB = FOLDER_ORDER.indexOf(folderB);
 
       // If both folders are in the order array, sort by their position
       if (indexA !== -1 && indexB !== -1) {
