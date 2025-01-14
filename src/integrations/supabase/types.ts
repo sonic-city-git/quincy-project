@@ -378,6 +378,7 @@ export type Database = {
           allows_discount: boolean | null
           color: string
           created_at: string
+          crew_rate_multiplier: number | null
           equipment_rate_multiplier: number | null
           id: string
           name: string
@@ -391,6 +392,7 @@ export type Database = {
           allows_discount?: boolean | null
           color: string
           created_at?: string
+          crew_rate_multiplier?: number | null
           equipment_rate_multiplier?: number | null
           id?: string
           name: string
@@ -404,6 +406,7 @@ export type Database = {
           allows_discount?: boolean | null
           color?: string
           created_at?: string
+          crew_rate_multiplier?: number | null
           equipment_rate_multiplier?: number | null
           id?: string
           name?: string
