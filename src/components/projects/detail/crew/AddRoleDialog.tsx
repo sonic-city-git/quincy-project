@@ -50,7 +50,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
   };
 
   // Sort the crew members using our useCrewSort hook
-  const sortedCrew = sortCrew(crew);
+  const sortedCrew = crew ? sortCrew(crew) : [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
