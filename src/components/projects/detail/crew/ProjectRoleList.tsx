@@ -83,10 +83,9 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
           <div className="flex items-center gap-4">
             <div className="flex-shrink-0">
               <span 
-                className="inline-block px-3 py-1 rounded-md text-sm font-medium"
+                className="inline-block px-3 py-1 rounded-md text-sm font-medium text-white"
                 style={{ 
-                  backgroundColor: `${role.role.color}1A`, // 1A = 10% opacity in hex
-                  color: role.role.color 
+                  backgroundColor: role.role.color
                 }}
               >
                 {role.role.name}
