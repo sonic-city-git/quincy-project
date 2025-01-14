@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 import { useCrew } from "@/hooks/useCrew";
 import { useProjectRoles } from "@/hooks/useProjectRoles";
+import { useCrewSort } from "@/components/crew/useCrewSort";
 import { Loader2 } from "lucide-react";
 
 interface AddRoleDialogProps {
@@ -26,6 +27,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
   const { roles, isLoading: rolesLoading } = useCrewRoles();
   const { crew, loading: crewLoading } = useCrew();
   const { addRole, loading } = useProjectRoles(projectId);
+  const { sortCrew } = useCrewSort();
 
   const form = useForm<FormData>({
     defaultValues: {
@@ -46,6 +48,9 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
     form.reset();
     onOpenChange(false);
   };
+
+  // Sort the crew members using our useCrewSort hook
+  const sortedCrew = sortCrew(crew);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -145,7 +150,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent className="max-h-[200px] overflow-y-auto">
-                      {crew.map((member) => (
+                      {sortedCrew.map((member) => (
                         <SelectItem
                           key={member.id}
                           value={member.id}
