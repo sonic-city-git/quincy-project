@@ -787,6 +787,9 @@ export type Database = {
         Row: {
           created_at: string
           daily_rate: number | null
+          hourly_category:
+            | Database["public"]["Enums"]["hourly_rate_category"]
+            | null
           hourly_rate: number | null
           id: string
           preferred_id: string | null
@@ -797,6 +800,9 @@ export type Database = {
         Insert: {
           created_at?: string
           daily_rate?: number | null
+          hourly_category?:
+            | Database["public"]["Enums"]["hourly_rate_category"]
+            | null
           hourly_rate?: number | null
           id?: string
           preferred_id?: string | null
@@ -807,6 +813,9 @@ export type Database = {
         Update: {
           created_at?: string
           daily_rate?: number | null
+          hourly_category?:
+            | Database["public"]["Enums"]["hourly_rate_category"]
+            | null
           hourly_rate?: number | null
           id?: string
           preferred_id?: string | null
