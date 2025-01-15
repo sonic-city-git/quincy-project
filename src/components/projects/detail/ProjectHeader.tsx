@@ -12,6 +12,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useState } from "react";
 
 interface ProjectHeaderProps {
   project: Project;
@@ -21,6 +32,7 @@ interface ProjectHeaderProps {
 
 export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderProps) {
   const navigate = useNavigate();
+  const [showArchiveDialog, setShowArchiveDialog] = useState(false);
 
   const { data: canArchive } = useQuery({
     queryKey: ['project-archive-status', project.id],
@@ -41,11 +53,6 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
   });
 
   const handleArchive = async () => {
-    if (!canArchive) {
-      toast.error("Cannot archive project with open events");
-      return;
-    }
-
     try {
       const { error } = await supabase
         .from('projects')
@@ -109,7 +116,13 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
-              onClick={handleArchive}
+              onClick={() => {
+                if (!canArchive) {
+                  toast.error("Cannot archive project with open events");
+                  return;
+                }
+                setShowArchiveDialog(true);
+              }}
               disabled={!canArchive}
               className="gap-2"
             >
@@ -118,6 +131,22 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        <AlertDialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure you want to archive this project?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action will archive project #{String(project.project_number).padStart(4, '0')} - {project.name}.
+                Archived projects will no longer appear in the main project list.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={handleArchive}>Archive Project</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
