@@ -113,10 +113,10 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
               <span 
                 className="inline-block px-3 py-1 rounded-md text-sm font-medium text-white"
                 style={{ 
-                  backgroundColor: role.role.color
+                  backgroundColor: role.role?.color
                 }}
               >
-                {role.role.name}
+                {role.role?.name}
               </span>
             </div>
             

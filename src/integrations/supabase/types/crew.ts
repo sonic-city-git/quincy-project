@@ -25,4 +25,13 @@ export type ProjectRole = {
   preferred_id: string | null;
   created_at: string;
   updated_at: string;
+  role?: {
+    id: string;
+    name: string;
+    color: string;
+  };
+  preferred?: {
+    id: string;
+    name: string;
+  };
 };
