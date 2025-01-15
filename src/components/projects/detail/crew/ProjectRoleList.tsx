@@ -128,7 +128,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
               </span>
             </div>
             
-            <div className="grid grid-cols-4 gap-4 items-center">
+            <div className="grid grid-cols-[1fr_1fr_1fr_2fr] gap-4 items-center">
               <Input
                 type="number"
                 inputMode="decimal"
