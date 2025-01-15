@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import { BarChart as LucideBarChart } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useQuery } from "@tanstack/react-query";
@@ -93,7 +92,7 @@ export function RevenueChart() {
           <YAxis 
             stroke="#9CA3AF"
             fontSize={12}
-            tickFormatter={(value) => `$${value}`}
+            tickFormatter={(value) => formatPrice(value)}
           />
           <Tooltip 
             contentStyle={{ 
@@ -103,6 +102,7 @@ export function RevenueChart() {
             }}
             labelStyle={{ color: '#9CA3AF' }}
             itemStyle={{ color: '#E5E7EB' }}
+            formatter={(value: number) => formatPrice(value)}
           />
           <Legend />
           <Bar 
