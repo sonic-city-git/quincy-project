@@ -8,12 +8,11 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCrewSort } from "@/components/crew/useCrewSort";
+import { HourlyCategory } from "@/integrations/supabase/types";
 
 interface ProjectRoleListProps {
   projectId: string;
 }
-
-type HourlyCategory = 'flat' | 'corporate' | 'broadcast';
 
 export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
   const { roles, loading, refetch } = useProjectRoles(projectId);
