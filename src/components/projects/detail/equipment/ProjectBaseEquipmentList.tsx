@@ -64,6 +64,17 @@ export function ProjectBaseEquipmentList({
     return acc;
   }, {} as Record<string, typeof equipment>);
 
+  const handleGroupDelete = async (groupId: string) => {
+    const groupEquipment = groupedEquipment[groupId] || [];
+    if (groupEquipment.length === 0) {
+      // If group is empty, delete it directly without showing dialog
+      await handleDeleteGroup(groupId);
+    } else {
+      // If group has equipment, show dialog
+      setGroupToDelete(groupId);
+    }
+  };
+
   return (
     <ScrollArea 
       ref={scrollAreaRef}
@@ -84,7 +95,7 @@ export function ProjectBaseEquipmentList({
             isSelected={selectedGroupId === group.id}
             totalPrice={group.total_price || 0}
             onSelect={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
-            onDelete={() => setGroupToDelete(group.id)}
+            onDelete={() => handleGroupDelete(group.id)}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, group.id)}
