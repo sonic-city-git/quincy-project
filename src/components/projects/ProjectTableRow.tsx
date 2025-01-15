@@ -32,7 +32,9 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
 
   const colorStyles = getColorStyles(project.color);
 
-  console.log('Owner avatar URL:', project.owner?.avatar_url); // Debug log
+  // Debug logs to track avatar URL
+  console.log('Project owner:', project.owner);
+  console.log('Owner avatar URL:', project.owner?.avatar_url);
 
   return (
     <TableRow className="group hover:bg-zinc-800/50">
@@ -57,8 +59,12 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
               {project.owner.avatar_url ? (
                 <AvatarImage 
                   src={project.owner.avatar_url} 
-                  alt={project.owner.name} 
-                  className="object-cover"
+                  alt={project.owner.name}
+                  onError={(e) => {
+                    console.error('Avatar image failed to load:', e);
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
                 />
               ) : (
                 <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
