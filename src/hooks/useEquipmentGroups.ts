@@ -44,12 +44,37 @@ export function useEquipmentGroups(projectId: string) {
 
   const handleDeleteGroup = async (groupId: string) => {
     try {
-      const { error } = await supabase
+      // First, check if the group has any equipment
+      const { data: equipment, error: equipmentError } = await supabase
+        .from('project_equipment')
+        .select('id')
+        .eq('group_id', groupId);
+
+      if (equipmentError) throw equipmentError;
+
+      // If the group has equipment and no target group is selected, show error
+      if (equipment && equipment.length > 0 && !targetGroupId) {
+        toast.error('Please select a target group for the equipment');
+        return;
+      }
+
+      // If there's equipment and a target group, move the equipment first
+      if (equipment && equipment.length > 0 && targetGroupId) {
+        const { error: moveError } = await supabase
+          .from('project_equipment')
+          .update({ group_id: targetGroupId })
+          .eq('group_id', groupId);
+
+        if (moveError) throw moveError;
+      }
+
+      // Now delete the group
+      const { error: deleteError } = await supabase
         .from('project_equipment_groups')
         .delete()
         .eq('id', groupId);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
 
       await queryClient.invalidateQueries({ queryKey: ['project-equipment-groups', projectId] });
       toast.success('Group deleted successfully');
