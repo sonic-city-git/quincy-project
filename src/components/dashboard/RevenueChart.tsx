@@ -11,6 +11,25 @@ const STATUS_COLORS = {
   proposed: "#60A5FA", // blue-400
   confirmed: "#34D399", // emerald-400
   cancelled: "#F87171", // red-400
+} as const;
+
+type EventData = {
+  date: string;
+  total_price: number;
+  status: 'proposed' | 'confirmed' | 'cancelled';
+};
+
+type ChartDataItem = {
+  month: string;
+  proposed: number;
+  confirmed: number;
+  cancelled: number;
+};
+
+type SummaryData = {
+  proposed: number;
+  confirmed: number;
+  cancelled: number;
 };
 
 export function RevenueChart() {
@@ -23,12 +42,18 @@ export function RevenueChart() {
         .order('date');
       
       if (error) throw error;
-      return data;
+      return data as EventData[];
     }
   });
 
-  const { chartData, summaryData } = useMemo(() => {
-    if (!events) return { chartData: [], summaryData: [] };
+  const { chartData, summaryData } = useMemo<{
+    chartData: ChartDataItem[];
+    summaryData: SummaryData;
+  }>(() => {
+    if (!events) return { 
+      chartData: [], 
+      summaryData: { proposed: 0, confirmed: 0, cancelled: 0 } 
+    };
     
     // Group events by month and status
     const monthlyData = events.reduce((acc: Record<string, Record<string, number>>, event) => {
