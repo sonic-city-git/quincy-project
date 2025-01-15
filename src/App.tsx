@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster";
 import { Sidebar } from "@/components/Sidebar";
 import { AuthProvider } from "@/components/AuthProvider";
@@ -28,8 +28,8 @@ function App() {
                     <Route path="/projects/:id" element={<ProjectDetail />} />
                     <Route path="/crew" element={<CrewList />} />
                     <Route path="/equipment" element={<EquipmentList />} />
-                    {/* Catch-all route to handle page refreshes */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                    {/* Preserve URL parameters when handling refresh */}
+                    <Route path="*" element={<Navigate to={window.location.pathname} replace state={{ from: window.location }} />} />
                   </Routes>
                 </main>
                 <Toaster />
