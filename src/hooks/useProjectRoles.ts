@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { HourlyCategory, ProjectRole } from "@/integrations/supabase/types/crew";
 
 export function useProjectRoles(projectId: string) {
   const queryClient = useQueryClient();
@@ -33,7 +34,13 @@ export function useProjectRoles(projectId: string) {
     }
   });
 
-  const addRole = async (roleData: any) => {
+  const addRole = async (roleData: {
+    role_id: string;
+    daily_rate: number;
+    hourly_rate: number;
+    preferred_id: string;
+    hourly_category: HourlyCategory;
+  }) => {
     try {
       const { error } = await supabase
         .from('project_roles')

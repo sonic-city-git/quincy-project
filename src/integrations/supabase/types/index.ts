@@ -56,6 +56,21 @@ export interface Database {
         Insert: ProjectInsert;
         Update: ProjectUpdate;
       };
+      project_roles: {
+        Row: {
+          id: string;
+          project_id: string;
+          role_id: string;
+          daily_rate: number;
+          hourly_rate: number;
+          preferred_id: string;
+          created_at: string;
+          updated_at: string;
+          hourly_category: 'flat' | 'corporate' | 'broadcast';
+        };
+        Insert: Partial<Tables<'project_roles'>>;
+        Update: Partial<Tables<'project_roles'>>;
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

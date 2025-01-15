@@ -664,6 +664,7 @@ export type Database = {
           id: string
           project_id: string | null
           role_id: string | null
+          total_cost: number | null
           updated_at: string
         }
         Insert: {
@@ -679,6 +680,7 @@ export type Database = {
           id?: string
           project_id?: string | null
           role_id?: string | null
+          total_cost?: number | null
           updated_at?: string
         }
         Update: {
@@ -694,6 +696,7 @@ export type Database = {
           id?: string
           project_id?: string | null
           role_id?: string | null
+          total_cost?: number | null
           updated_at?: string
         }
         Relationships: [
@@ -784,6 +787,9 @@ export type Database = {
         Row: {
           created_at: string
           daily_rate: number | null
+          hourly_category:
+            | Database["public"]["Enums"]["hourly_rate_category"]
+            | null
           hourly_rate: number | null
           id: string
           preferred_id: string | null
@@ -794,6 +800,9 @@ export type Database = {
         Insert: {
           created_at?: string
           daily_rate?: number | null
+          hourly_category?:
+            | Database["public"]["Enums"]["hourly_rate_category"]
+            | null
           hourly_rate?: number | null
           id?: string
           preferred_id?: string | null
@@ -804,6 +813,9 @@ export type Database = {
         Update: {
           created_at?: string
           daily_rate?: number | null
+          hourly_category?:
+            | Database["public"]["Enums"]["hourly_rate_category"]
+            | null
           hourly_rate?: number | null
           id?: string
           preferred_id?: string | null
@@ -886,6 +898,33 @@ export type Database = {
           },
         ]
       }
+      revenue_events: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          status: Database["public"]["Enums"]["event_status"]
+          total_price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          status?: Database["public"]["Enums"]["event_status"]
+          total_price?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          status?: Database["public"]["Enums"]["event_status"]
+          total_price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       temp_equipment: {
         Row: {
           code: string | null
@@ -930,6 +969,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_hourly_cost: {
+        Args: {
+          p_hours: number
+          p_hourly_rate: number
+          p_category: Database["public"]["Enums"]["hourly_rate_category"]
+        }
+        Returns: number
+      }
       sync_all_avatars: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -945,6 +992,7 @@ export type Database = {
       }
     }
     Enums: {
+      event_status: "proposed" | "confirmed" | "cancelled"
       hourly_rate_category: "flat" | "corporate" | "broadcast"
     }
     CompositeTypes: {

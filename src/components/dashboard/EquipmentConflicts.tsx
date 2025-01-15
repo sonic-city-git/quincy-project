@@ -6,16 +6,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface Conflict {
   id: string;
-  equipment_name: string;
-  event_date: string;
-  project_name: string;
+  equipment: {
+    name: string;
+  } | null;
+  event: {
+    date: string;
+    project: {
+      name: string;
+    } | null;
+  } | null;
 }
 
 export function EquipmentConflicts() {
   const { data: conflicts, isLoading } = useQuery({
     queryKey: ['equipment-conflicts'],
     queryFn: async () => {
-      // This is a placeholder query - implement actual conflict detection logic
       const { data, error } = await supabase
         .from('project_event_equipment')
         .select(`
@@ -29,7 +34,7 @@ export function EquipmentConflicts() {
         .limit(5);
 
       if (error) throw error;
-      return data;
+      return data as Conflict[];
     }
   });
 
@@ -58,7 +63,7 @@ export function EquipmentConflicts() {
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
             Equipment conflict for {conflict.equipment?.name} on{' '}
-            {new Date(conflict.event?.date).toLocaleDateString()} in project{' '}
+            {new Date(conflict.event?.date || '').toLocaleDateString()} in project{' '}
             {conflict.event?.project?.name}
           </AlertDescription>
         </Alert>

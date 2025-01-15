@@ -3,11 +3,12 @@ import { Card } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCrew } from "@/hooks/useCrew";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useCrew } from "@/hooks/useCrew";
 import { useCrewSort } from "@/components/crew/useCrewSort";
+import { HourlyCategory } from "@/integrations/supabase/types/crew";
 
 interface ProjectRoleListProps {
   projectId: string;
@@ -57,7 +58,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     }
   };
 
-  const handleCategoryChange = async (roleId: string, category: string) => {
+  const handleCategoryChange = async (roleId: string, category: HourlyCategory) => {
     setIsUpdating(true);
     try {
       const { error } = await supabase
@@ -92,7 +93,6 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     );
   }
 
-  // Sort the crew members using the useCrewSort hook
   const sortedCrew = sortCrew(crew || []);
 
   return (
@@ -113,10 +113,10 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
               <span 
                 className="inline-block px-3 py-1 rounded-md text-sm font-medium text-white"
                 style={{ 
-                  backgroundColor: role.role.color
+                  backgroundColor: role.role?.color
                 }}
               >
-                {role.role.name}
+                {role.role?.name}
               </span>
             </div>
             
@@ -145,7 +145,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
 
               <Select
                 defaultValue={role.hourly_category || 'flat'}
-                onValueChange={(value) => handleCategoryChange(role.id, value)}
+                onValueChange={(value) => handleCategoryChange(role.id, value as HourlyCategory)}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Select category" />
