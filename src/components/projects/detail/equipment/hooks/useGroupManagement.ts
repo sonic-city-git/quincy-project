@@ -43,11 +43,12 @@ export function useGroupManagement(projectId: string) {
   const handleDeleteGroup = async (groupId: string) => {
     try {
       if (targetGroupId) {
-        // Move equipment to target group
+        // Move equipment to target group first
         const { error: updateError } = await supabase
           .from('project_equipment')
           .update({ group_id: targetGroupId })
-          .eq('group_id', groupId);
+          .eq('group_id', groupId)
+          .eq('project_id', projectId);
 
         if (updateError) throw updateError;
       } else {
@@ -55,16 +56,18 @@ export function useGroupManagement(projectId: string) {
         const { error: updateError } = await supabase
           .from('project_equipment')
           .update({ group_id: null })
-          .eq('group_id', groupId);
+          .eq('group_id', groupId)
+          .eq('project_id', projectId);
 
         if (updateError) throw updateError;
       }
 
-      // Delete the group
+      // Delete the group after handling equipment
       const { error: deleteError } = await supabase
         .from('project_equipment_groups')
         .delete()
-        .eq('id', groupId);
+        .eq('id', groupId)
+        .eq('project_id', projectId);
 
       if (deleteError) throw deleteError;
 
@@ -74,9 +77,9 @@ export function useGroupManagement(projectId: string) {
       toast.success('Group deleted successfully');
       setGroupToDelete(null);
       setTargetGroupId("");
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting group:', error);
-      toast.error('Failed to delete group');
+      toast.error(error.message || 'Failed to delete group');
     }
   };
 
