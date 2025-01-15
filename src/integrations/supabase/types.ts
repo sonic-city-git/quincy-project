@@ -860,6 +860,7 @@ export type Database = {
           created_at: string
           customer_id: string | null
           id: string
+          is_archived: boolean | null
           name: string
           owner_id: string | null
           project_number: number
@@ -871,6 +872,7 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           id?: string
+          is_archived?: boolean | null
           name: string
           owner_id?: string | null
           project_number?: number
@@ -882,6 +884,7 @@ export type Database = {
           created_at?: string
           customer_id?: string | null
           id?: string
+          is_archived?: boolean | null
           name?: string
           owner_id?: string | null
           project_number?: number

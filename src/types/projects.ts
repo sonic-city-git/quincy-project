@@ -8,6 +8,7 @@ export interface Project {
   created_at: string;
   updated_at: string;
   to_be_invoiced: number | null;
+  is_archived: boolean;
   customer?: {
     id: string;
     name: string;
