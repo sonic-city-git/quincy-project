@@ -51,7 +51,10 @@ export function useGroupManagement(projectId: string) {
           .eq('group_id', groupId)
           .eq('project_id', projectId);
 
-        if (eventUpdateError) throw eventUpdateError;
+        if (eventUpdateError) {
+          console.error('Error updating event equipment:', eventUpdateError);
+          throw eventUpdateError;
+        }
 
         // Move project equipment to target group
         const { error: updateError } = await supabase
@@ -60,7 +63,10 @@ export function useGroupManagement(projectId: string) {
           .eq('group_id', groupId)
           .eq('project_id', projectId);
 
-        if (updateError) throw updateError;
+        if (updateError) {
+          console.error('Error updating project equipment:', updateError);
+          throw updateError;
+        }
       } else {
         // Remove group_id from event equipment
         const { error: eventNullError } = await supabase
@@ -69,7 +75,10 @@ export function useGroupManagement(projectId: string) {
           .eq('group_id', groupId)
           .eq('project_id', projectId);
 
-        if (eventNullError) throw eventNullError;
+        if (eventNullError) {
+          console.error('Error nullifying event equipment:', eventNullError);
+          throw eventNullError;
+        }
 
         // Remove group_id from project equipment
         const { error: nullError } = await supabase
@@ -78,17 +87,18 @@ export function useGroupManagement(projectId: string) {
           .eq('group_id', groupId)
           .eq('project_id', projectId);
 
-        if (nullError) throw nullError;
+        if (nullError) {
+          console.error('Error nullifying project equipment:', nullError);
+          throw nullError;
+        }
       }
 
       // Finally delete the group itself
       const { error: deleteError } = await supabase
         .from('project_equipment_groups')
         .delete()
-        .match({ 
-          id: groupId,
-          project_id: projectId 
-        });
+        .eq('id', groupId)
+        .eq('project_id', projectId);
 
       if (deleteError) {
         console.error('Delete error:', deleteError);
