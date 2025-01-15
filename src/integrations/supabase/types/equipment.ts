@@ -10,6 +10,7 @@ export type Equipment = {
   updated_at: string;
   weight: number | null;
   stock_calculation: string | null;
+  equipment_serial_numbers?: EquipmentSerialNumber[];
 };
 
 export type EquipmentSerialNumber = {
@@ -24,3 +25,5 @@ export type EquipmentSerialNumber = {
 
 export type EquipmentInsert = Omit<Equipment, 'id' | 'created_at' | 'updated_at'>;
 export type EquipmentUpdate = Partial<EquipmentInsert>;
+
+export type HourlyCategory = 'flat' | 'corporate' | 'broadcast';
