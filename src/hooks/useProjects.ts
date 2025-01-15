@@ -24,8 +24,10 @@ export function useProjects() {
       throw error;
     }
 
-    console.log('Projects data:', projectsData);
-    return projectsData.map(transformProjectData);
+    console.log('Raw projects data:', projectsData);
+    const transformedProjects = projectsData.map(transformProjectData);
+    console.log('Transformed projects:', transformedProjects);
+    return transformedProjects;
   };
 
   const { data: projects = [], isLoading: loading } = useQuery({

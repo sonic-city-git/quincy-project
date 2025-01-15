@@ -1,6 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
-import { Project, ProjectData } from "@/types/projects";
-
 export const projectBaseQuery = `
   *,
   customers (
