@@ -16,7 +16,6 @@ interface ProjectHeaderProps {
 export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderProps) {
   const navigate = useNavigate();
 
-  // Query to check if project can be archived
   const { data: canArchive } = useQuery({
     queryKey: ['project-archive-status', project.id],
     queryFn: async () => {
@@ -31,7 +30,6 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
         return false;
       }
 
-      // Can archive if there are no open events (all events are either invoiced or cancelled)
       return data.length === 0;
     }
   });

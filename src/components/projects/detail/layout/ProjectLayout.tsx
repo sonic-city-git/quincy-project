@@ -19,7 +19,6 @@ export function ProjectLayout({ project, projectId }: ProjectLayoutProps) {
     navigate(`${location.pathname}#${value}`, { replace: true });
   };
 
-  // Ensure hash is set on initial load
   useEffect(() => {
     if (!location.hash) {
       navigate(`${location.pathname}#general`, { replace: true });
