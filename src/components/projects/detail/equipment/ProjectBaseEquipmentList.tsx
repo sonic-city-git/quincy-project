@@ -6,7 +6,7 @@ import { EquipmentGroup } from "./components/EquipmentGroup";
 import { GroupDialogs } from "./components/GroupDialogs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
@@ -21,6 +21,7 @@ export function ProjectBaseEquipmentList({
 }: ProjectBaseEquipmentListProps) {
   const { equipment = [], removeEquipment } = useProjectEquipment(projectId);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [pendingDropData, setPendingDropData] = useState<string | null>(null);
   
   const {
     groupToDelete,
@@ -75,6 +76,24 @@ export function ProjectBaseEquipmentList({
     }
   };
 
+  const handleCreateGroupWithEquipment = async () => {
+    if (!pendingDropData) return;
+    
+    const newGroupId = await handleCreateGroup();
+    if (newGroupId) {
+      const dropData = JSON.parse(pendingDropData);
+      await handleDrop({ 
+        preventDefault: () => {},
+        stopPropagation: () => {},
+        currentTarget: null,
+        dataTransfer: {
+          getData: () => pendingDropData
+        }
+      } as unknown as React.DragEvent, newGroupId);
+    }
+    setPendingDropData(null);
+  };
+
   return (
     <ScrollArea 
       ref={scrollAreaRef}
@@ -82,7 +101,11 @@ export function ProjectBaseEquipmentList({
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
         e.preventDefault();
-        setShowNewGroupDialog(true);
+        const data = e.dataTransfer.getData('application/json');
+        if (data) {
+          setPendingDropData(data);
+          setShowNewGroupDialog(true);
+        }
       }}
     >
       <div className="space-y-6 pr-4">
@@ -118,6 +141,7 @@ export function ProjectBaseEquipmentList({
         onNewGroupDialogClose={() => {
           setShowNewGroupDialog(false);
           setNewGroupName("");
+          setPendingDropData(null);
         }}
         onTargetGroupSelect={setTargetGroupId}
         onNewGroupNameChange={setNewGroupName}
@@ -128,7 +152,7 @@ export function ProjectBaseEquipmentList({
             setTargetGroupId("");
           }
         }}
-        onConfirmCreate={handleCreateGroup}
+        onConfirmCreate={handleCreateGroupWithEquipment}
       />
     </ScrollArea>
   );
