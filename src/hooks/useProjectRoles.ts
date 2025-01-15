@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { HourlyCategory } from "@/integrations/supabase/types/equipment";
+import { HourlyCategory, ProjectRole } from "@/integrations/supabase/types/crew";
 
 export function useProjectRoles(projectId: string) {
   const queryClient = useQueryClient();

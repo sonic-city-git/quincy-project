@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCrew } from "@/hooks/useCrew";
 import { useCrewSort } from "@/components/crew/useCrewSort";
-import { HourlyCategory } from "@/integrations/supabase/types/equipment";
+import { HourlyCategory } from "@/integrations/supabase/types/crew";
 
 interface ProjectRoleListProps {
   projectId: string;
