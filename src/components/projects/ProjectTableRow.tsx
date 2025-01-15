@@ -32,6 +32,8 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
 
   const colorStyles = getColorStyles(project.color);
 
+  console.log('Owner avatar URL:', project.owner?.avatar_url); // Debug log
+
   return (
     <TableRow className="group hover:bg-zinc-800/50">
       <TableCell className="w-[100px] text-sm text-muted-foreground">

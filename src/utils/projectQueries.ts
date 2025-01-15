@@ -9,7 +9,8 @@ export const projectBaseQuery = `
   ),
   owner:crew_members!projects_owner_id_fkey (
     id,
-    name
+    name,
+    avatar_url
   )
 `;
 
