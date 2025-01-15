@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCrew } from "@/hooks/useCrew";
@@ -20,6 +21,14 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
   // Filter out the dev@soniccity.no email
   const filteredCrew = crew?.filter(member => member.email !== 'dev@soniccity.no') || [];
 
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase();
+  };
+
   return (
     <div className="space-y-2">
       <Select
@@ -35,17 +44,27 @@ export function OwnerSelect({ value, onChange, error, required, className }: Own
             className
           )}
         >
+          {value && filteredCrew.find(member => member.id === value) && (
+            <Avatar className="h-6 w-6">
+              {filteredCrew.find(member => member.id === value)?.avatar_url ? (
+                <AvatarImage 
+                  src={filteredCrew.find(member => member.id === value)?.avatar_url} 
+                  alt={filteredCrew.find(member => member.id === value)?.name || ''} 
+                />
+              ) : (
+                <AvatarFallback>
+                  {getInitials(filteredCrew.find(member => member.id === value)?.name || '')}
+                </AvatarFallback>
+              )}
+            </Avatar>
+          )}
           <SelectValue placeholder="Select owner" />
         </SelectTrigger>
         <SelectContent>
           <ScrollArea className="h-[200px] w-full">
             <div className="p-1">
               {filteredCrew.map(member => {
-                const initials = member.name
-                  .split(' ')
-                  .map(n => n[0])
-                  .join('')
-                  .toUpperCase();
+                const initials = getInitials(member.name);
 
                 return (
                   <SelectItem 
