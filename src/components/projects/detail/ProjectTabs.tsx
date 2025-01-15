@@ -14,22 +14,22 @@ interface ProjectTabsProps {
 export function ProjectTabs({ project, projectId, value }: ProjectTabsProps) {
   return (
     <div className="flex-1 overflow-hidden">
-      <TabsContent value="general" className="h-full mt-0">
+      <TabsContent value="general" className="h-full mt-0" forceMount hidden={value !== 'general'}>
         <ProjectGeneralTab 
           project={project}
           projectId={projectId}
         />
       </TabsContent>
 
-      <TabsContent value="equipment" className="h-full mt-0">
+      <TabsContent value="equipment" className="h-full mt-0" forceMount hidden={value !== 'equipment'}>
         <ProjectEquipmentTab projectId={projectId} />
       </TabsContent>
 
-      <TabsContent value="crew" className="h-full mt-0">
+      <TabsContent value="crew" className="h-full mt-0" forceMount hidden={value !== 'crew'}>
         <ProjectCrewTab projectId={projectId} />
       </TabsContent>
 
-      <TabsContent value="financial" className="h-full mt-0">
+      <TabsContent value="financial" className="h-full mt-0" forceMount hidden={value !== 'financial'}>
         <Card className="rounded-lg bg-zinc-800/45 p-6">
           <h2 className="text-xl font-semibold">Financial</h2>
         </Card>
