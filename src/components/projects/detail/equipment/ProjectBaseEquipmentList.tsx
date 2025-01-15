@@ -1,12 +1,12 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
-import { useEquipmentGroups } from "@/hooks/useEquipmentGroups";
 import { useEquipmentDragDrop } from "@/hooks/useEquipmentDragDrop";
-import { EquipmentGroup } from "./components/EquipmentGroup";
-import { GroupDialogs } from "./components/GroupDialogs";
+import { useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useRef, useState } from "react";
+import { GroupDialogs } from "./components/GroupDialogs";
+import { EmptyDropZone } from "./components/EmptyDropZone";
+import { GroupList } from "./components/GroupList";
+import { useGroupManagement } from "./hooks/useGroupManagement";
 
 interface ProjectBaseEquipmentListProps {
   projectId: string;
@@ -20,7 +20,6 @@ export function ProjectBaseEquipmentList({
   onGroupSelect,
 }: ProjectBaseEquipmentListProps) {
   const { equipment = [], removeEquipment } = useProjectEquipment(projectId);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [pendingDropData, setPendingDropData] = useState<string | null>(null);
   
   const {
@@ -34,7 +33,7 @@ export function ProjectBaseEquipmentList({
     setNewGroupName,
     handleCreateGroup,
     handleDeleteGroup
-  } = useEquipmentGroups(projectId);
+  } = useGroupManagement(projectId);
 
   const {
     lastAddedItemId,
@@ -94,12 +93,9 @@ export function ProjectBaseEquipmentList({
   };
 
   return (
-    <ScrollArea 
-      ref={scrollAreaRef}
-      className="h-full"
+    <EmptyDropZone
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => {
-        e.preventDefault();
         const data = e.dataTransfer.getData('application/json');
         if (data) {
           setPendingDropData(data);
@@ -107,24 +103,17 @@ export function ProjectBaseEquipmentList({
         }
       }}
     >
-      <div className="space-y-6 pr-4">
-        {groups.map(group => (
-          <EquipmentGroup
-            key={group.id}
-            id={group.id}
-            name={group.name}
-            equipment={groupedEquipment[group.id] || []}
-            isSelected={selectedGroupId === group.id}
-            totalPrice={group.total_price || 0}
-            onSelect={() => onGroupSelect(group.id === selectedGroupId ? null : group.id)}
-            onDelete={() => handleGroupDelete(group.id)}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, group.id)}
-            onRemoveEquipment={removeEquipment}
-          />
-        ))}
-      </div>
+      <GroupList
+        groups={groups}
+        groupedEquipment={groupedEquipment}
+        selectedGroupId={selectedGroupId}
+        onGroupSelect={onGroupSelect}
+        onGroupDelete={handleGroupDelete}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onRemoveEquipment={removeEquipment}
+      />
 
       <GroupDialogs
         groups={groups}
@@ -153,6 +142,6 @@ export function ProjectBaseEquipmentList({
         }}
         onConfirmCreate={handleCreateGroupWithEquipment}
       />
-    </ScrollArea>
+    </EmptyDropZone>
   );
 }
