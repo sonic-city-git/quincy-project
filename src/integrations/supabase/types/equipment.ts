@@ -1,6 +1,6 @@
 export type Equipment = {
   id: string;
-  name: string;
+  name: string | null;
   code: string | null;
   rental_price: number | null;
   stock: number | null;
@@ -23,7 +23,24 @@ export type EquipmentSerialNumber = {
   updated_at: string;
 };
 
-export type EquipmentInsert = Omit<Equipment, 'id' | 'created_at' | 'updated_at'>;
-export type EquipmentUpdate = Partial<EquipmentInsert>;
+export type EquipmentInsert = {
+  name: string;
+  code?: string | null;
+  rental_price?: number | null;
+  stock?: number | null;
+  internal_remark?: string | null;
+  folder_id?: string | null;
+  weight?: number | null;
+  stock_calculation?: string | null;
+};
 
-export type HourlyCategory = 'flat' | 'corporate' | 'broadcast';
+export type EquipmentUpdate = {
+  name?: string;
+  code?: string | null;
+  rental_price?: number | null;
+  stock?: number | null;
+  internal_remark?: string | null;
+  folder_id?: string | null;
+  weight?: number | null;
+  stock_calculation?: string | null;
+};

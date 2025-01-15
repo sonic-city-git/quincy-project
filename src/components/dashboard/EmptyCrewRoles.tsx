@@ -25,7 +25,7 @@ export function EmptyCrewRoles() {
         .from('project_event_roles')
         .select(`
           id,
-          crew_roles:role_id (
+          crew_roles!role_id (
             name
           ),
           event:event_id (

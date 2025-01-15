@@ -1,14 +1,35 @@
 export type Project = {
   id: string;
   name: string;
-  project_number: number;
-  customer_id: string | null;
-  owner_id: string | null;
+  last_invoiced: string | null;
+  owner_id: string;
+  customer: string | null;
   color: string;
-  to_be_invoiced: number;
+  gig_price: string | null;
+  yearly_revenue: string | null;
   created_at: string;
-  updated_at: string;
 };
 
-export type ProjectInsert = Omit<Project, 'id' | 'created_at' | 'updated_at'>;
-export type ProjectUpdate = Partial<ProjectInsert>;
+export type ProjectInsert = {
+  color: string;
+  created_at?: string;
+  customer?: string | null;
+  gig_price?: string | null;
+  id?: string;
+  last_invoiced?: string | null;
+  name: string;
+  owner_id: string;
+  yearly_revenue?: string | null;
+};
+
+export type ProjectUpdate = {
+  color?: string;
+  created_at?: string;
+  customer?: string | null;
+  gig_price?: string | null;
+  id?: string;
+  last_invoiced?: string | null;
+  name?: string;
+  owner_id?: string;
+  yearly_revenue?: string | null;
+};
