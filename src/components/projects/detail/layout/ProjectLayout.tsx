@@ -3,6 +3,7 @@ import { ProjectHeader } from "../ProjectHeader";
 import { ProjectTabs } from "../ProjectTabs";
 import { Project } from "@/types/projects";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
 
 interface ProjectLayoutProps {
   project: Project;
@@ -15,12 +16,19 @@ export function ProjectLayout({ project, projectId }: ProjectLayoutProps) {
   const tab = location.hash.replace('#', '') || 'general';
 
   const handleTabChange = (value: string) => {
-    navigate(`#${value}`, { replace: true });
+    navigate(`${location.pathname}#${value}`, { replace: true });
   };
+
+  // Ensure hash is set on initial load
+  useEffect(() => {
+    if (!location.hash) {
+      navigate(`${location.pathname}#general`, { replace: true });
+    }
+  }, [location.pathname, location.hash, navigate]);
 
   return (
     <Tabs 
-      defaultValue={tab} 
+      value={tab}
       className="h-full flex flex-col" 
       onValueChange={handleTabChange}
     >
