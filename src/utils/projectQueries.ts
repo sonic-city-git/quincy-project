@@ -23,6 +23,7 @@ export const transformProjectData = (project: any): Project => ({
   created_at: project.created_at,
   updated_at: project.updated_at,
   to_be_invoiced: project.to_be_invoiced,
+  is_archived: project.is_archived || false,
   customer: project.customers,
   owner: project.owner
 });

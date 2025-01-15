@@ -33,10 +33,9 @@ export function ProjectLayout({ project, projectId }: ProjectLayoutProps) {
       onValueChange={handleTabChange}
     >
       <ProjectHeader 
-        name={project.name}
-        color={project.color}
-        projectNumber={project.project_number}
-        defaultValue={tab}
+        project={project}
+        value={tab}
+        onValueChange={handleTabChange}
       />
       <ProjectTabs 
         project={project}
