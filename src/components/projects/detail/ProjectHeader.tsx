@@ -93,6 +93,14 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
     }
   };
 
+  const handleArchiveClick = () => {
+    if (!canArchive) {
+      toast.warning("Cannot archive project with open events. All events must be cancelled or invoiced first.");
+      return;
+    }
+    setShowArchiveDialog(true);
+  };
+
   return (
     <div className="flex items-center justify-between py-6">
       <div className="space-y-1">
@@ -140,13 +148,7 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem
-              onClick={() => {
-                if (!canArchive) {
-                  toast.error("Cannot archive project with open events");
-                  return;
-                }
-                setShowArchiveDialog(true);
-              }}
+              onClick={handleArchiveClick}
               disabled={!canArchive}
               className="gap-2"
             >
