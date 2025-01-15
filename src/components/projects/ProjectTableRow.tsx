@@ -3,6 +3,7 @@ import { Project } from "@/types/projects";
 import { formatDisplayDate } from "@/utils/dateFormatters";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { getInitials } from "@/utils/stringUtils";
 
 interface ProjectTableRowProps {
   project: Project;
@@ -27,14 +28,6 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
       backgroundColor: `${color}80`,  // 80 in hex is 50% opacity
       color: '#FFFFFF'  // White text, fully opaque
     };
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase();
   };
 
   const colorStyles = getColorStyles(project.color);
