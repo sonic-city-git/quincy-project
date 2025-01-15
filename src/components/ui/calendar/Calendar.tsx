@@ -42,8 +42,8 @@ export function Calendar({
   console.log('Calendar render', { events });
 
   const weeks = useMemo(() => {
-    const start = startOfWeek(startOfMonth(month), { weekStartsOn: 1 }); // 1 = Monday
-    const end = endOfWeek(endOfMonth(month), { weekStartsOn: 1 }); // 1 = Monday
+    const start = startOfWeek(startOfMonth(month));
+    const end = endOfWeek(endOfMonth(month));
     const days = eachDayOfInterval({ start, end });
 
     const weeks = [];
@@ -73,7 +73,7 @@ export function Calendar({
       <CalendarHeader month={month} onMonthChange={onMonthChange || (() => {})} />
       
       <div className="grid grid-cols-7 mt-4">
-        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
           <div
             key={day}
             className="text-muted-foreground rounded-md font-normal text-[0.8rem] flex h-10 w-full items-center justify-center"
