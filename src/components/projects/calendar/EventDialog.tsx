@@ -10,6 +10,7 @@ import { CalendarEvent, EventType } from "@/types/events";
 import { useState, useEffect } from "react";
 import { Trash2 } from "lucide-react";
 import { EventForm } from "./EventForm";
+import { toast } from "sonner";
 
 interface EventDialogProps {
   isOpen: boolean;
@@ -35,17 +36,24 @@ export function EventDialog({
   addEventCallback
 }: EventDialogProps) {
   const [name, setName] = useState(event?.name || "");
-  const [selectedType, setSelectedType] = useState<string>(
-    event?.type.id || eventTypes[0]?.id || ""
-  );
+  const [selectedType, setSelectedType] = useState<string>("");
   const [status, setStatus] = useState<CalendarEvent['status']>(
     event?.status || 'proposed'
   );
   const [location, setLocation] = useState(event?.location || "");
 
-  const selectedEventType = eventTypes.find(type => type.id === selectedType);
-  const isNameRequired = selectedEventType?.name === 'Show' || selectedEventType?.name === 'Double Show';
+  // Initialize selectedType when eventTypes are available
+  useEffect(() => {
+    if (eventTypes.length > 0) {
+      if (event) {
+        setSelectedType(event.type.id);
+      } else {
+        setSelectedType(eventTypes[0].id);
+      }
+    }
+  }, [event, eventTypes]);
 
+  // Reset form when dialog opens/closes
   useEffect(() => {
     if (event) {
       setName(event.name);
@@ -55,45 +63,69 @@ export function EventDialog({
     } else {
       setName("");
       setStatus('proposed');
-      setSelectedType(eventTypes[0]?.id || '');
       setLocation("");
+      // Only reset selectedType if we have eventTypes
+      if (eventTypes.length > 0) {
+        setSelectedType(eventTypes[0].id);
+      }
     }
-  }, [event, eventTypes]);
+  }, [event, eventTypes, isOpen]);
+
+  const selectedEventType = eventTypes.find(type => type.id === selectedType);
+  const isNameRequired = selectedEventType?.name === 'Show' || selectedEventType?.name === 'Double Show';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (isNameRequired && !name.trim()) {
+      toast.error("Event name is required for this event type");
       return;
     }
 
     const eventType = eventTypes.find((type) => type.id === selectedType);
-    if (!eventType) return;
-
-    if (event && onUpdateEvent) {
-      await onUpdateEvent({
-        ...event,
-        name,
-        type: eventType,
-        status,
-        location,
-      });
-    } else if (date) {
-      if (addEventCallback) {
-        await addEventCallback(date, name, eventType);
-      } else if (onAddEvent) {
-        await onAddEvent(date, name, eventType, status);
-      }
+    if (!eventType) {
+      toast.error("Please select an event type");
+      return;
     }
 
-    setName("");
-    onClose();
+    try {
+      if (event && onUpdateEvent) {
+        await onUpdateEvent({
+          ...event,
+          name: name.trim() || eventType.name,
+          type: eventType,
+          status,
+          location,
+        });
+        toast.success("Event updated successfully");
+      } else if (date) {
+        if (addEventCallback) {
+          await addEventCallback(date, name.trim() || eventType.name, eventType);
+          toast.success("Event added successfully");
+        } else if (onAddEvent) {
+          await onAddEvent(date, name.trim() || eventType.name, eventType, status);
+          toast.success("Event added successfully");
+        }
+      }
+
+      setName("");
+      onClose();
+    } catch (error) {
+      console.error('Error in handleSubmit:', error);
+      toast.error("Failed to save event");
+    }
   };
 
   const handleDelete = async () => {
     if (event && onDeleteEvent) {
-      await onDeleteEvent(event);
-      onClose();
+      try {
+        await onDeleteEvent(event);
+        toast.success("Event deleted successfully");
+        onClose();
+      } catch (error) {
+        console.error('Error deleting event:', error);
+        toast.error("Failed to delete event");
+      }
     }
   };
 
