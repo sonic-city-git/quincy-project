@@ -898,6 +898,33 @@ export type Database = {
           },
         ]
       }
+      revenue_events: {
+        Row: {
+          created_at: string
+          date: string
+          id: string
+          status: Database["public"]["Enums"]["event_status"]
+          total_price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          date: string
+          id?: string
+          status?: Database["public"]["Enums"]["event_status"]
+          total_price?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          id?: string
+          status?: Database["public"]["Enums"]["event_status"]
+          total_price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       temp_equipment: {
         Row: {
           code: string | null
@@ -965,6 +992,7 @@ export type Database = {
       }
     }
     Enums: {
+      event_status: "proposed" | "confirmed" | "cancelled"
       hourly_rate_category: "flat" | "corporate" | "broadcast"
     }
     CompositeTypes: {

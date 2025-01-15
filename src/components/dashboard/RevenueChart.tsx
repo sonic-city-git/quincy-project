@@ -14,12 +14,6 @@ const STATUS_COLORS = {
 } as const;
 
 type EventData = {
-  date: string;
-  total_price: number;
-  status: 'proposed' | 'confirmed' | 'cancelled';
-};
-
-type ChartDataItem = {
   month: string;
   proposed: number;
   confirmed: number;
@@ -33,64 +27,58 @@ type SummaryData = {
 };
 
 export function RevenueChart() {
-  const { data: events, isLoading } = useQuery({
+  const { data: revenueData, isLoading } = useQuery({
     queryKey: ['revenue-events'],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('project_events')
+        .from('revenue_events')
         .select('date, total_price, status')
         .order('date');
       
       if (error) throw error;
-      return data as EventData[];
+      
+      // Group data by month and status
+      const monthlyData = (data || []).reduce((acc: Record<string, Record<string, number>>, event) => {
+        const month = new Date(event.date).toLocaleString('default', { month: 'short' });
+        if (!acc[month]) {
+          acc[month] = {
+            proposed: 0,
+            confirmed: 0,
+            cancelled: 0,
+          };
+        }
+        acc[month][event.status] = (acc[month][event.status] || 0) + (event.total_price || 0);
+        return acc;
+      }, {});
+
+      // Convert to chart format
+      const chartData = Object.entries(monthlyData).map(([month, amounts]) => ({
+        month,
+        ...amounts
+      }));
+
+      // Calculate summary totals
+      const summaryData = {
+        proposed: (data || []).reduce((sum, event) => 
+          event.status === 'proposed' ? sum + (event.total_price || 0) : sum, 0),
+        confirmed: (data || []).reduce((sum, event) => 
+          event.status === 'confirmed' ? sum + (event.total_price || 0) : sum, 0),
+        cancelled: (data || []).reduce((sum, event) => 
+          event.status === 'cancelled' ? sum + (event.total_price || 0) : sum, 0),
+      };
+
+      return { chartData, summaryData };
     }
   });
-
-  const { chartData, summaryData } = useMemo<{
-    chartData: ChartDataItem[];
-    summaryData: SummaryData;
-  }>(() => {
-    if (!events) return { 
-      chartData: [], 
-      summaryData: { proposed: 0, confirmed: 0, cancelled: 0 } 
-    };
-    
-    // Group events by month and status
-    const monthlyData = events.reduce((acc: Record<string, Record<string, number>>, event) => {
-      const month = new Date(event.date).toLocaleString('default', { month: 'short' });
-      if (!acc[month]) {
-        acc[month] = {
-          proposed: 0,
-          confirmed: 0,
-          cancelled: 0,
-        };
-      }
-      acc[month][event.status] = (acc[month][event.status] || 0) + (event.total_price || 0);
-      return acc;
-    }, {});
-
-    // Convert to chart format
-    const chartData = Object.entries(monthlyData).map(([month, amounts]) => ({
-      month,
-      ...amounts
-    }));
-
-    // Calculate summary totals
-    const summaryData = {
-      proposed: events.reduce((sum, event) => 
-        event.status === 'proposed' ? sum + (event.total_price || 0) : sum, 0),
-      confirmed: events.reduce((sum, event) => 
-        event.status === 'confirmed' ? sum + (event.total_price || 0) : sum, 0),
-      cancelled: events.reduce((sum, event) => 
-        event.status === 'cancelled' ? sum + (event.total_price || 0) : sum, 0),
-    };
-
-    return { chartData, summaryData };
-  }, [events]);
 
   if (isLoading) {
     return <Skeleton className="h-[400px] w-full" />;
   }
+
+  const { chartData, summaryData } = revenueData || { 
+    chartData: [], 
+    summaryData: { proposed: 0, confirmed: 0, cancelled: 0 } 
+  };
 
   return (
     <div className="space-y-6">
