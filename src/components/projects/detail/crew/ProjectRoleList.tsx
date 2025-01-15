@@ -110,7 +110,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
         <div className="grid grid-cols-[1fr_1fr_1fr_2fr] gap-4">
           <div className="text-sm font-medium">Daily rate</div>
           <div className="text-sm font-medium">Hourly rate</div>
-          <div className="text-sm font-medium">Rate Category</div>
+          <div className="text-sm font-medium">Category</div>
           <div className="text-sm font-medium">Preferred crew</div>
         </div>
       </div>
@@ -159,9 +159,9 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-900 border border-zinc-800">
-                  <SelectItem value="flat">Flat Rate</SelectItem>
-                  <SelectItem value="corporate">Corporate Rate</SelectItem>
-                  <SelectItem value="broadcast">Broadcast Rate</SelectItem>
+                  <SelectItem value="flat">Flat</SelectItem>
+                  <SelectItem value="corporate">Corporate</SelectItem>
+                  <SelectItem value="broadcast">Broadcast</SelectItem>
                 </SelectContent>
               </Select>
               

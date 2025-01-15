@@ -57,7 +57,6 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
     onOpenChange(false);
   };
 
-  // Sort the crew members using our useCrewSort hook
   const sortedCrew = crew ? sortCrew(crew) : [];
 
   return (
@@ -149,7 +148,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
               name="hourly_category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Hourly Rate Category *</FormLabel>
+                  <FormLabel>Category *</FormLabel>
                   <Select
                     value={field.value}
                     onValueChange={field.onChange}
@@ -160,9 +159,9 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="flat">Flat Rate</SelectItem>
-                      <SelectItem value="corporate">Corporate Rate</SelectItem>
-                      <SelectItem value="broadcast">Broadcast Rate</SelectItem>
+                      <SelectItem value="flat">Flat</SelectItem>
+                      <SelectItem value="corporate">Corporate</SelectItem>
+                      <SelectItem value="broadcast">Broadcast</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
