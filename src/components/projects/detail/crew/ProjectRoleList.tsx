@@ -155,7 +155,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
                 defaultValue={role.hourly_category || 'flat'}
                 onValueChange={(value) => handleCategoryChange(role.id, value as HourlyCategory)}
               >
-                <SelectTrigger className="min-w-[140px] w-[220px]">
+                <SelectTrigger className="min-w-[140px] w-[130px]">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-900 border border-zinc-800">
