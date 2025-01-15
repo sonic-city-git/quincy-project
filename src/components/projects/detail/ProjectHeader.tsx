@@ -6,6 +6,12 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface ProjectHeaderProps {
   project: Project;
@@ -57,7 +63,7 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
   };
 
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between py-6">
       <div className="space-y-1">
         <h2 className="text-2xl font-semibold tracking-tight">
           {project.name}
@@ -67,27 +73,51 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
         </p>
       </div>
       <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleArchive}
-          disabled={!canArchive}
-          className="gap-2"
-        >
-          <Archive className="h-4 w-4" />
-          Archive Project
-        </Button>
         <Tabs value={value} onValueChange={onValueChange} className="w-[400px]">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="equipment">Equipment</TabsTrigger>
-            <TabsTrigger value="crew">Crew</TabsTrigger>
-            <TabsTrigger value="financial">Financial</TabsTrigger>
+            <TabsTrigger 
+              value="general"
+              className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+            >
+              General
+            </TabsTrigger>
+            <TabsTrigger 
+              value="equipment"
+              className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+            >
+              Equipment
+            </TabsTrigger>
+            <TabsTrigger 
+              value="crew"
+              className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+            >
+              Crew
+            </TabsTrigger>
+            <TabsTrigger 
+              value="financial"
+              className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
+            >
+              Financial
+            </TabsTrigger>
           </TabsList>
         </Tabs>
-        <Button variant="ghost" size="icon">
-          <MoreVertical className="h-4 w-4" />
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon">
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem
+              onClick={handleArchive}
+              disabled={!canArchive}
+              className="gap-2"
+            >
+              <Archive className="h-4 w-4" />
+              Archive Project
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
