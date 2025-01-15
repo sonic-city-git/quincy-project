@@ -1,41 +1,25 @@
-import { useState, useMemo } from "react";
 import { Project } from "@/types/projects";
+import { useState, useMemo } from "react";
 
-interface FilterConfig {
-  searchFields?: (keyof Project)[];
-  defaultOwnerFilter?: string;
-}
-
-export function useProjectFilters(
-  projects: Project[],
-  config: FilterConfig = {
-    searchFields: ['name', 'owner'],
-    defaultOwnerFilter: ''
-  }
-) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [ownerFilter, setOwnerFilter] = useState(config.defaultOwnerFilter || '');
+export function useProjectFilters(projects: Project[]) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [ownerFilter, setOwnerFilter] = useState("");
 
   const filteredProjects = useMemo(() => {
-    return projects.filter(project => {
-      // Search filter
-      const matchesSearch = config.searchFields?.some(field => {
-        const value = project[field];
-        return value?.toString().toLowerCase().includes(searchQuery.toLowerCase());
-      }) ?? true;
-      
-      // Owner filter
-      const matchesOwner = !ownerFilter || project.owner_id === ownerFilter;
-      
-      return matchesSearch && matchesOwner;
-    });
-  }, [projects, searchQuery, ownerFilter, config.searchFields]);
+    return projects
+      .filter(project => !project.is_archived) // Filter out archived projects
+      .filter(project => {
+        const matchesSearch = project.name.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesOwner = !ownerFilter || project.owner?.name === ownerFilter;
+        return matchesSearch && matchesOwner;
+      });
+  }, [projects, searchQuery, ownerFilter]);
 
   return {
     searchQuery,
     setSearchQuery,
     ownerFilter,
     setOwnerFilter,
-    filteredProjects
+    filteredProjects,
   };
 }
