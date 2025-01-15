@@ -68,10 +68,8 @@ export function ProjectBaseEquipmentList({
   const handleGroupDelete = async (groupId: string) => {
     const groupEquipment = groupedEquipment[groupId] || [];
     if (groupEquipment.length === 0) {
-      // If group is empty, delete it directly without showing dialog
       await handleDeleteGroup(groupId);
     } else {
-      // If group has equipment, show dialog
       setGroupToDelete(groupId);
     }
   };
@@ -81,14 +79,16 @@ export function ProjectBaseEquipmentList({
     
     const newGroupId = await handleCreateGroup();
     if (newGroupId) {
-      await handleDrop({ 
+      const dropEvent = {
         preventDefault: () => {},
         stopPropagation: () => {},
         currentTarget: null,
         dataTransfer: {
           getData: () => pendingDropData
         }
-      } as unknown as React.DragEvent, newGroupId);
+      } as unknown as React.DragEvent;
+      
+      await handleDrop(dropEvent, newGroupId.id);
     }
     setPendingDropData(null);
   };
