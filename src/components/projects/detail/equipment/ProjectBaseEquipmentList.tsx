@@ -81,7 +81,6 @@ export function ProjectBaseEquipmentList({
     
     const newGroupId = await handleCreateGroup();
     if (newGroupId) {
-      const dropData = JSON.parse(pendingDropData);
       await handleDrop({ 
         preventDefault: () => {},
         stopPropagation: () => {},
