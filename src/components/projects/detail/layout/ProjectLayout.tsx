@@ -32,7 +32,7 @@ export function ProjectLayout({ project, projectId }: ProjectLayoutProps) {
       onValueChange={handleTabChange}
     >
       <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-        <div className="container max-w-[1400px]">
+        <div className="container max-w-[1400px] px-8">
           <ProjectHeader 
             project={project}
             value={tab}
@@ -40,7 +40,7 @@ export function ProjectLayout({ project, projectId }: ProjectLayoutProps) {
           />
         </div>
       </div>
-      <div className="flex-1 overflow-auto pt-[92px] container max-w-[1400px]">
+      <div className="flex-1 overflow-auto pt-[92px] container max-w-[1400px] px-8">
         <ProjectTabs 
           project={project}
           projectId={projectId}
