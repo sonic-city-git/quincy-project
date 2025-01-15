@@ -1,3 +1,5 @@
+import { Project } from "@/types/projects";
+
 export const projectBaseQuery = `
   *,
   customers (
