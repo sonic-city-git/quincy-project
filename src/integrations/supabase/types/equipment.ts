@@ -1,6 +1,6 @@
 export type Equipment = {
   id: string;
-  name: string | null;
+  name: string;
   code: string | null;
   rental_price: number | null;
   stock: number | null;
@@ -10,7 +10,6 @@ export type Equipment = {
   updated_at: string;
   weight: number | null;
   stock_calculation: string | null;
-  equipment_serial_numbers?: EquipmentSerialNumber[];
 };
 
 export type EquipmentSerialNumber = {
@@ -23,24 +22,5 @@ export type EquipmentSerialNumber = {
   updated_at: string;
 };
 
-export type EquipmentInsert = {
-  name: string;
-  code?: string | null;
-  rental_price?: number | null;
-  stock?: number | null;
-  internal_remark?: string | null;
-  folder_id?: string | null;
-  weight?: number | null;
-  stock_calculation?: string | null;
-};
-
-export type EquipmentUpdate = {
-  name?: string;
-  code?: string | null;
-  rental_price?: number | null;
-  stock?: number | null;
-  internal_remark?: string | null;
-  folder_id?: string | null;
-  weight?: number | null;
-  stock_calculation?: string | null;
-};
+export type EquipmentInsert = Omit<Equipment, 'id' | 'created_at' | 'updated_at'>;
+export type EquipmentUpdate = Partial<EquipmentInsert>;
