@@ -158,7 +158,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-zinc-900 border border-zinc-800">
                   <SelectItem value="flat">Flat Rate</SelectItem>
                   <SelectItem value="corporate">Corporate Rate</SelectItem>
                   <SelectItem value="broadcast">Broadcast Rate</SelectItem>
@@ -169,10 +169,10 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
                 defaultValue={role.preferred?.id}
                 onValueChange={(value) => handlePreferredChange(role.id, value)}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="max-w-[300px]">
                   <SelectValue placeholder="Select preferred" />
                 </SelectTrigger>
-                <SelectContent className="max-h-[200px] overflow-y-auto">
+                <SelectContent className="max-h-[200px] overflow-y-auto bg-zinc-900 border border-zinc-800">
                   {sortedCrew.map((member) => (
                     <SelectItem key={member.id} value={member.id}>
                       {member.name}
