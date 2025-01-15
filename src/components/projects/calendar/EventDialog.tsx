@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogDescription,
@@ -37,7 +36,7 @@ export function EventDialog({
 }: EventDialogProps) {
   const [name, setName] = useState(event?.name || "");
   const [selectedType, setSelectedType] = useState<string>(
-    event?.type.id || eventTypes[0]?.id
+    event?.type.id || eventTypes[0]?.id || ""
   );
   const [status, setStatus] = useState<CalendarEvent['status']>(
     event?.status || 'proposed'
@@ -79,10 +78,10 @@ export function EventDialog({
         status,
         location,
       });
-    } else if (date && onAddEvent) {
+    } else if (date) {
       if (addEventCallback) {
         await addEventCallback(date, name, eventType);
-      } else {
+      } else if (onAddEvent) {
         await onAddEvent(date, name, eventType, status);
       }
     }
