@@ -100,16 +100,20 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
       <div className="grid grid-cols-[250px_1fr] gap-4 px-4 mb-2">
         <div className="text-lg font-medium">Role</div>
         <div className="grid grid-cols-[2fr_1fr] gap-4">
-          <div>Rate settings</div>
-          <div>Preferred crew</div>
+          <div className="grid grid-cols-[1fr_1fr_1fr] gap-4">
+            <div className="text-sm font-medium text-center">Daily rate</div>
+            <div className="text-sm font-medium text-center">Hourly rate</div>
+            <div className="text-sm font-medium text-center">Category</div>
+          </div>
+          <div className="text-sm font-medium">Preferred crew</div>
         </div>
       </div>
       {roles.map((role) => (
         <Card key={role.id} className="p-4 bg-zinc-900/50">
-          <div className="grid grid-cols-[250px_1fr] gap-4">
+          <div className="grid grid-cols-[250px_1fr] gap-4 items-center">
             <div className="flex-shrink-0">
               <span 
-                className="inline-block px-6 py-3 rounded-md text-lg font-medium text-white w-full text-center"
+                className="inline-block px-6 py-3 rounded-md text-lg font-medium text-white w-32 text-center"
                 style={{ 
                   backgroundColor: role.role?.color
                 }}
@@ -119,44 +123,42 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
             </div>
             
             <div className="grid grid-cols-[2fr_1fr] gap-4">
-              <div className="flex gap-4 items-center">
-                <div className="flex gap-4 items-center flex-1">
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    pattern="[0-9]*"
-                    max={99999}
-                    className="w-32 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    defaultValue={role.daily_rate?.toString()}
-                    placeholder="Daily rate"
-                    onBlur={(e) => handleRateChange(role.id, 'daily_rate', e.target.value)}
-                  />
+              <div className="grid grid-cols-[1fr_1fr_1fr] gap-4 items-center">
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  pattern="[0-9]*"
+                  max={99999}
+                  className="w-32 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  defaultValue={role.daily_rate?.toString()}
+                  placeholder="Daily rate"
+                  onBlur={(e) => handleRateChange(role.id, 'daily_rate', e.target.value)}
+                />
 
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    pattern="[0-9]*"
-                    max={99999}
-                    className="w-32 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    defaultValue={role.hourly_rate?.toString()}
-                    placeholder="Hourly rate"
-                    onBlur={(e) => handleRateChange(role.id, 'hourly_rate', e.target.value)}
-                  />
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  pattern="[0-9]*"
+                  max={99999}
+                  className="w-32 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  defaultValue={role.hourly_rate?.toString()}
+                  placeholder="Hourly rate"
+                  onBlur={(e) => handleRateChange(role.id, 'hourly_rate', e.target.value)}
+                />
 
-                  <Select
-                    defaultValue={role.hourly_category || 'flat'}
-                    onValueChange={(value) => handleCategoryChange(role.id, value as HourlyCategory)}
-                  >
-                    <SelectTrigger className="w-40">
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="flat">Flat Rate</SelectItem>
-                      <SelectItem value="corporate">Corporate Rate</SelectItem>
-                      <SelectItem value="broadcast">Broadcast Rate</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <Select
+                  defaultValue={role.hourly_category || 'flat'}
+                  onValueChange={(value) => handleCategoryChange(role.id, value as HourlyCategory)}
+                >
+                  <SelectTrigger className="w-32">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="flat">Flat Rate</SelectItem>
+                    <SelectItem value="corporate">Corporate Rate</SelectItem>
+                    <SelectItem value="broadcast">Broadcast Rate</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <Select
