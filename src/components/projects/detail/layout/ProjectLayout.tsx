@@ -31,7 +31,7 @@ export function ProjectLayout({ project, projectId }: ProjectLayoutProps) {
       className="h-full flex flex-col" 
       onValueChange={handleTabChange}
     >
-      <div className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
+      <div className="fixed top-0 left-56 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
         <div className="container max-w-[1400px] px-8">
           <ProjectHeader 
             project={project}
