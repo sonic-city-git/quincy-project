@@ -1,7 +1,7 @@
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { useEquipmentDragDrop } from "@/hooks/useEquipmentDragDrop";
-import { useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { GroupDialogs } from "./components/GroupDialogs";
 import { EmptyDropZone } from "./components/EmptyDropZone";
@@ -21,6 +21,7 @@ export function ProjectBaseEquipmentList({
 }: ProjectBaseEquipmentListProps) {
   const { equipment = [], removeEquipment } = useProjectEquipment(projectId);
   const [pendingDropData, setPendingDropData] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   
   const {
     groupToDelete,
@@ -36,7 +37,6 @@ export function ProjectBaseEquipmentList({
   } = useGroupManagement(projectId);
 
   const {
-    lastAddedItemId,
     handleDrop,
     handleDragOver,
     handleDragLeave
@@ -53,7 +53,8 @@ export function ProjectBaseEquipmentList({
 
       if (error) throw error;
       return data;
-    }
+    },
+    enabled: !!projectId
   });
 
   // Group equipment by group_id
@@ -88,6 +89,7 @@ export function ProjectBaseEquipmentList({
       } as unknown as React.DragEvent;
       
       await handleDrop(dropEvent, newGroupId.id);
+      await queryClient.invalidateQueries({ queryKey: ['project-equipment-groups', projectId] });
     }
     setPendingDropData(null);
   };

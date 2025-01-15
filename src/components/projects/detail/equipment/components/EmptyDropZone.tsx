@@ -1,23 +1,17 @@
-import { ScrollArea } from "@/components/ui/scroll-area";
-import React from "react";
-
 interface EmptyDropZoneProps {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
+  children: React.ReactNode;
 }
 
-export function EmptyDropZone({ onDragOver, onDrop }: EmptyDropZoneProps) {
+export function EmptyDropZone({ onDragOver, onDrop, children }: EmptyDropZoneProps) {
   return (
-    <ScrollArea 
-      className="h-full"
-      onDragOver={(e) => {
-        e.preventDefault();
-        onDragOver(e);
-      }}
-      onDrop={(e) => {
-        e.preventDefault();
-        onDrop(e);
-      }}
-    />
+    <div 
+      className="h-full overflow-y-auto space-y-6 pr-4"
+      onDragOver={onDragOver}
+      onDrop={onDrop}
+    >
+      {children}
+    </div>
   );
 }
