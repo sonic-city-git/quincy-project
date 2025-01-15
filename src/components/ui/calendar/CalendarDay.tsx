@@ -1,20 +1,23 @@
-import React, { memo } from 'react';
+import React from 'react';
+import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { CalendarEvent } from '@/types/events';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
+import { getStatusIcon } from '@/utils/eventFormatters';
 
 interface CalendarDayProps {
   date: Date;
   isCurrentMonth: boolean;
   isToday: boolean;
   event?: CalendarEvent;
-  isSelected?: boolean;
-  onClick?: () => void;
+  isSelected: boolean;
+  onClick: () => void;
   onMouseDown?: () => void;
   onMouseEnter?: () => void;
   onMouseUp?: () => void;
 }
 
-export const CalendarDay = memo(function CalendarDay({
+export function CalendarDay({
   date,
   isCurrentMonth,
   isToday,
@@ -23,48 +26,65 @@ export const CalendarDay = memo(function CalendarDay({
   onClick,
   onMouseDown,
   onMouseEnter,
-  onMouseUp,
+  onMouseUp
 }: CalendarDayProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      onMouseDown={onMouseDown}
-      onMouseEnter={onMouseEnter}
-      onMouseUp={onMouseUp}
-      className={cn(
-        "w-full aspect-square p-2 flex flex-col items-center justify-start relative",
-        "hover:bg-zinc-800/50 rounded-md transition-colors",
-        !isCurrentMonth && "opacity-50",
-        isSelected && "bg-zinc-800/50",
-        event && "cursor-pointer"
-      )}
-    >
-      <span
+  const baseButtonClasses = cn(
+    "h-10 w-full p-0 font-normal relative",
+    !isCurrentMonth && "text-muted-foreground opacity-50",
+    isToday && "border border-blue-500",
+    "hover:bg-zinc-800 rounded-md transition-colors",
+    !event && isSelected && "bg-blue-500/30"
+  );
+
+  const getEventOpacity = (event: CalendarEvent) => {
+    return event.status === 'cancelled' || event.status === 'invoiced' ? '80' : 'D9';
+  };
+
+  const renderDayContent = () => {
+    return (
+      <button
+        onClick={onClick}
+        onMouseDown={onMouseDown}
+        onMouseEnter={onMouseEnter}
+        onMouseUp={onMouseUp}
         className={cn(
-          "text-sm font-normal",
-          isToday && "bg-white text-black rounded-full w-6 h-6 flex items-center justify-center"
+          baseButtonClasses,
+          isSelected && !event && "bg-blue-500/30 text-white",
+          event && !isSelected && `bg-opacity-85 text-white`,
+          isSelected && event && "text-white"
         )}
+        style={event ? {
+          backgroundColor: `${event.type.color}${getEventOpacity(event)}`
+        } : undefined}
       >
-        {date.getDate()}
-      </span>
-      {event && (
-        <div
-          className="mt-1 w-full px-1 py-0.5 text-[0.65rem] rounded-sm truncate text-center"
-          style={{ backgroundColor: event.type.color }}
-        >
-          {event.name}
-        </div>
-      )}
-    </button>
-  );
-}, (prevProps, nextProps) => {
-  // Custom comparison function for memo
+        <span className="relative z-10">{format(date, 'd')}</span>
+      </button>
+    );
+  };
+
+  if (!event) {
+    return renderDayContent();
+  }
+
   return (
-    prevProps.date.getTime() === nextProps.date.getTime() &&
-    prevProps.isCurrentMonth === nextProps.isCurrentMonth &&
-    prevProps.isToday === nextProps.isToday &&
-    prevProps.isSelected === nextProps.isSelected &&
-    JSON.stringify(prevProps.event) === JSON.stringify(nextProps.event)
+    <HoverCard openDelay={200} closeDelay={100}>
+      <HoverCardTrigger asChild>
+        {renderDayContent()}
+      </HoverCardTrigger>
+      <HoverCardContent 
+        align="center"
+        side="top"
+        sideOffset={5}
+        className="z-[100] bg-zinc-950 border border-zinc-800 text-white p-3 rounded-md shadow-xl w-auto"
+      >
+        <div className="space-y-1.5 text-center">
+          <div className="flex items-center justify-center gap-2">
+            <p className="font-semibold text-white">{event.name}</p>
+            {getStatusIcon(event.status)}
+          </div>
+          <p className="text-sm text-zinc-300">{event.type.name}</p>
+        </div>
+      </HoverCardContent>
+    </HoverCard>
   );
-});
+}

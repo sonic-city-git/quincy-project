@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { 
   startOfMonth, 
@@ -8,8 +8,7 @@ import {
   isToday,
   startOfWeek,
   endOfWeek,
-  isSameDay,
-  differenceInDays
+  isSameDay
 } from 'date-fns';
 import { CalendarEvent } from '@/types/events';
 import { CalendarHeader } from './CalendarHeader';
@@ -45,31 +44,29 @@ export function Calendar({
   const weeks = useMemo(() => {
     const start = startOfWeek(startOfMonth(month), { weekStartsOn: 1 }); // 1 = Monday
     const end = endOfWeek(endOfMonth(month), { weekStartsOn: 1 }); // 1 = Monday
-    
-    // Pre-calculate the number of days and weeks
-    const totalDays = differenceInDays(end, start) + 1;
-    const numberOfWeeks = Math.ceil(totalDays / 7);
-    
-    // Pre-allocate the weeks array
-    const weeks: Date[][] = Array(numberOfWeeks).fill(null).map(() => []);
     const days = eachDayOfInterval({ start, end });
 
-    // Fill the weeks array
-    days.forEach((day, index) => {
-      const weekIndex = Math.floor(index / 7);
-      weeks[weekIndex].push(day);
+    const weeks = [];
+    let currentWeek = [];
+
+    days.forEach(day => {
+      currentWeek.push(day);
+      if (currentWeek.length === 7) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
     });
 
     return weeks;
   }, [month]);
 
-  const getEventForDate = useCallback((date: Date): CalendarEvent | undefined => {
+  const getEventForDate = (date: Date): CalendarEvent | undefined => {
     return events.find(event => isSameDay(new Date(event.date), date));
-  }, [events]);
+  };
 
-  const isDateSelected = useCallback((date: Date): boolean => {
+  const isDateSelected = (date: Date): boolean => {
     return selectedDates.some(selectedDate => isSameDay(selectedDate, date));
-  }, [selectedDates]);
+  };
 
   return (
     <div className={cn("p-3", className)}>
