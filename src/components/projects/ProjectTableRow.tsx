@@ -32,9 +32,15 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
 
   const colorStyles = getColorStyles(project.color);
 
-  // Debug logs to track avatar URL
-  console.log('Project owner:', project.owner);
-  console.log('Owner avatar URL:', project.owner?.avatar_url);
+  const isValidUrl = (url: string | null | undefined): boolean => {
+    if (!url) return false;
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
 
   return (
     <TableRow className="group hover:bg-zinc-800/50">
@@ -56,9 +62,9 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
         <div className="flex items-center gap-2">
           {project.owner && (
             <Avatar className="h-6 w-6">
-              {project.owner.avatar_url ? (
+              {isValidUrl(project.owner.avatar_url) ? (
                 <AvatarImage 
-                  src={project.owner.avatar_url} 
+                  src={project.owner.avatar_url}
                   alt={project.owner.name}
                   onError={(e) => {
                     console.error('Avatar image failed to load:', e);
