@@ -31,16 +31,20 @@ export function ProjectLayout({ project, projectId }: ProjectLayoutProps) {
       className="h-full flex flex-col" 
       onValueChange={handleTabChange}
     >
-      <ProjectHeader 
-        project={project}
-        value={tab}
-        onValueChange={handleTabChange}
-      />
-      <ProjectTabs 
-        project={project}
-        projectId={projectId}
-        value={tab}
-      />
+      <div className="sticky top-0 z-10 bg-zinc-950 border-b border-zinc-800 px-8 py-6">
+        <ProjectHeader 
+          project={project}
+          value={tab}
+          onValueChange={handleTabChange}
+        />
+      </div>
+      <div className="flex-1 overflow-auto">
+        <ProjectTabs 
+          project={project}
+          projectId={projectId}
+          value={tab}
+        />
+      </div>
     </Tabs>
   );
 }
