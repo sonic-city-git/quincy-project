@@ -33,7 +33,13 @@ export function useProjectRoles(projectId: string) {
     }
   });
 
-  const addRole = async (roleData: any) => {
+  const addRole = async (roleData: {
+    role_id: string;
+    daily_rate: number;
+    hourly_rate: number;
+    preferred_id: string;
+    hourly_category: 'flat' | 'corporate' | 'broadcast';
+  }) => {
     try {
       const { error } = await supabase
         .from('project_roles')

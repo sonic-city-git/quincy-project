@@ -13,6 +13,8 @@ interface ProjectRoleListProps {
   projectId: string;
 }
 
+type HourlyCategory = 'flat' | 'corporate' | 'broadcast';
+
 export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
   const { roles, loading, refetch } = useProjectRoles(projectId);
   const { crew } = useCrew();
@@ -57,7 +59,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     }
   };
 
-  const handleCategoryChange = async (roleId: string, category: string) => {
+  const handleCategoryChange = async (roleId: string, category: HourlyCategory) => {
     setIsUpdating(true);
     try {
       const { error } = await supabase
@@ -92,7 +94,6 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     );
   }
 
-  // Sort the crew members using the useCrewSort hook
   const sortedCrew = sortCrew(crew || []);
 
   return (
@@ -145,7 +146,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
 
               <Select
                 defaultValue={role.hourly_category || 'flat'}
-                onValueChange={(value) => handleCategoryChange(role.id, value)}
+                onValueChange={(value) => handleCategoryChange(role.id, value as HourlyCategory)}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder="Select category" />
