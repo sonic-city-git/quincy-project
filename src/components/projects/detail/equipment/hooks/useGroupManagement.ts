@@ -42,8 +42,9 @@ export function useGroupManagement(projectId: string) {
 
   const handleDeleteGroup = async (groupId: string) => {
     try {
+      // First, handle the equipment
       if (targetGroupId) {
-        // Move equipment to target group first
+        // Move equipment to target group
         const { error: updateError } = await supabase
           .from('project_equipment')
           .update({ group_id: targetGroupId })
@@ -62,17 +63,27 @@ export function useGroupManagement(projectId: string) {
         if (updateError) throw updateError;
       }
 
-      // Delete the group after handling equipment
+      // Then delete the group itself
       const { error: deleteError } = await supabase
         .from('project_equipment_groups')
         .delete()
-        .eq('id', groupId)
-        .eq('project_id', projectId);
+        .match({ 
+          id: groupId,
+          project_id: projectId 
+        });
 
-      if (deleteError) throw deleteError;
+      if (deleteError) {
+        console.error('Delete error:', deleteError);
+        throw deleteError;
+      }
 
-      await queryClient.invalidateQueries({ queryKey: ['project-equipment-groups', projectId] });
-      await queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] });
+      // Invalidate queries to refresh the UI
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment-groups', projectId] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment', projectId] 
+      });
       
       toast.success('Group deleted successfully');
       setGroupToDelete(null);
