@@ -50,8 +50,17 @@ export function useGroupManagement(projectId: string) {
           .eq('group_id', groupId);
 
         if (updateError) throw updateError;
+      } else {
+        // If no target group, remove group_id from equipment
+        const { error: updateError } = await supabase
+          .from('project_equipment')
+          .update({ group_id: null })
+          .eq('group_id', groupId);
+
+        if (updateError) throw updateError;
       }
 
+      // Delete the group
       const { error: deleteError } = await supabase
         .from('project_equipment_groups')
         .delete()
@@ -59,8 +68,12 @@ export function useGroupManagement(projectId: string) {
 
       if (deleteError) throw deleteError;
 
-      queryClient.invalidateQueries({ queryKey: ['project-equipment-groups'] });
+      await queryClient.invalidateQueries({ queryKey: ['project-equipment-groups', projectId] });
+      await queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] });
+      
       toast.success('Group deleted successfully');
+      setGroupToDelete(null);
+      setTargetGroupId("");
     } catch (error) {
       console.error('Error deleting group:', error);
       toast.error('Failed to delete group');
