@@ -95,23 +95,31 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
 
   const sortedCrew = sortCrew(crew || []);
 
+  // Sort roles based on predefined order
+  const roleOrder = ['FOH', 'MON', 'PLB', 'BCK', 'PM', 'TM'];
+  const sortedRoles = [...roles].sort((a, b) => {
+    const aIndex = roleOrder.indexOf(a.role?.name || '');
+    const bIndex = roleOrder.indexOf(b.role?.name || '');
+    return aIndex - bIndex;
+  });
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-[200px_1fr] gap-4 px-4 mb-2">
-        <div>Role</div>
+        <div className="text-sm font-medium">Role</div>
         <div className="grid grid-cols-4 gap-4">
-          <div>Daily rate</div>
-          <div>Hourly rate</div>
-          <div>Rate Category</div>
-          <div>Preferred crew</div>
+          <div className="text-sm font-medium">Daily rate</div>
+          <div className="text-sm font-medium">Hourly rate</div>
+          <div className="text-sm font-medium">Rate Category</div>
+          <div className="text-sm font-medium">Preferred crew</div>
         </div>
       </div>
-      {roles.map((role) => (
+      {sortedRoles.map((role) => (
         <Card key={role.id} className="p-4 bg-zinc-900/50">
-          <div className="grid grid-cols-[200px_1fr] gap-4">
+          <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
             <div className="flex-shrink-0">
               <span 
-                className="inline-block px-3 py-1 rounded-md text-sm font-medium text-white"
+                className="inline-flex items-center justify-center w-32 px-3 py-1.5 rounded-md text-sm font-medium text-white"
                 style={{ 
                   backgroundColor: role.role?.color
                 }}
@@ -120,13 +128,13 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
               </span>
             </div>
             
-            <div className="grid grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 gap-4 items-center">
               <Input
                 type="number"
                 inputMode="decimal"
                 pattern="[0-9]*"
                 max={99999}
-                className="w-24 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-32 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 defaultValue={role.daily_rate?.toString()}
                 placeholder="Daily rate"
                 onBlur={(e) => handleRateChange(role.id, 'daily_rate', e.target.value)}
@@ -137,7 +145,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
                 inputMode="decimal"
                 pattern="[0-9]*"
                 max={99999}
-                className="w-24 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-32 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 defaultValue={role.hourly_rate?.toString()}
                 placeholder="Hourly rate"
                 onBlur={(e) => handleRateChange(role.id, 'hourly_rate', e.target.value)}
