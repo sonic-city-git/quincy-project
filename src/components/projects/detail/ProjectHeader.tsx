@@ -3,7 +3,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Project } from "@/types/projects";
 import { Archive, MoreVertical } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
@@ -22,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ProjectHeaderProps {
   project: Project;
@@ -33,8 +33,9 @@ interface ProjectHeaderProps {
 export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderProps) {
   const navigate = useNavigate();
   const [showArchiveDialog, setShowArchiveDialog] = useState(false);
+  const queryClient = useQueryClient();
 
-  const { data: canArchive } = useQuery({
+  const { data: canArchive, refetch: refetchArchiveStatus } = useQuery({
     queryKey: ['project-archive-status', project.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -51,6 +52,29 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
       return data.length === 0;
     }
   });
+
+  // Refetch archive status when events are updated
+  useEffect(() => {
+    const channel = supabase
+      .channel('project_events_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'project_events',
+          filter: `project_id=eq.${project.id}`,
+        },
+        () => {
+          refetchArchiveStatus();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [project.id, refetchArchiveStatus]);
 
   const handleArchive = async () => {
     try {
