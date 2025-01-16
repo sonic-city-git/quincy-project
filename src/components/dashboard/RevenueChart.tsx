@@ -33,12 +33,30 @@ export function RevenueChart({ ownerId }: RevenueChartProps) {
   const { data: revenueData, isLoading } = useQuery({
     queryKey: ['revenue-events', ownerId],
     queryFn: async () => {
+      // First get project IDs for the owner if ownerId is provided
+      let projectIds: string[] = [];
+      if (ownerId) {
+        const { data: projects } = await supabase
+          .from('projects')
+          .select('id')
+          .eq('owner_id', ownerId);
+        projectIds = (projects || []).map(p => p.id);
+        
+        if (projectIds.length === 0) {
+          return { 
+            chartData: [], 
+            summaryData: { proposed: 0, confirmed: 0, cancelled: 0 } 
+          };
+        }
+      }
+
+      // Then get events filtered by those project IDs if needed
       let query = supabase
-        .from('revenue_events')
+        .from('project_events')
         .select('date, total_price, status');
 
-      if (ownerId) {
-        query = query.eq('owner_id', ownerId);
+      if (ownerId && projectIds.length > 0) {
+        query = query.in('project_id', projectIds);
       }
       
       const { data, error } = await query.order('date');
