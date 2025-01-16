@@ -2,6 +2,25 @@ import { useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+import { Database } from '@/integrations/supabase/types';
+
+type SyncOperationPayload = RealtimePostgresChangesPayload<{
+  [key: string]: any;
+  status: string;
+  event_id: string;
+  error_message?: string;
+}>;
+
+type ProjectEquipmentPayload = RealtimePostgresChangesPayload<{
+  [key: string]: any;
+  project_id: string;
+}>;
+
+type EventEquipmentPayload = RealtimePostgresChangesPayload<{
+  [key: string]: any;
+  event_id: string;
+}>;
 
 export function useSyncSubscriptions(projectId: string) {
   const queryClient = useQueryClient();
@@ -22,7 +41,7 @@ export function useSyncSubscriptions(projectId: string) {
           table: 'sync_operations',
           filter: `project_id=eq.${projectId}`
         },
-        async (payload) => {
+        async (payload: SyncOperationPayload) => {
           console.log('Sync operation update:', payload);
           
           if (payload.new.status === 'completed') {
@@ -31,7 +50,7 @@ export function useSyncSubscriptions(projectId: string) {
               queryKey: ['project-event-equipment', payload.new.event_id] 
             });
           } else if (payload.new.status === 'failed') {
-            toast.error(`Sync failed: ${payload.new.error_message}`);
+            toast.error(`Sync failed: ${payload.new.error_message || 'Unknown error'}`);
           }
         }
       )
@@ -48,7 +67,7 @@ export function useSyncSubscriptions(projectId: string) {
           table: 'project_equipment',
           filter: `project_id=eq.${projectId}`
         },
-        async () => {
+        async (payload: ProjectEquipmentPayload) => {
           console.log('Project equipment changed, invalidating queries');
           await Promise.all([
             queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] }),
@@ -69,11 +88,14 @@ export function useSyncSubscriptions(projectId: string) {
           table: 'project_event_equipment',
           filter: `project_id=eq.${projectId}`
         },
-        async (payload) => {
+        async (payload: EventEquipmentPayload) => {
           console.log('Event equipment changed:', payload);
-          await queryClient.invalidateQueries({ 
-            queryKey: ['project-event-equipment', payload.new?.event_id || payload.old?.event_id] 
-          });
+          const eventId = payload.new?.event_id || payload.old?.event_id;
+          if (eventId) {
+            await queryClient.invalidateQueries({ 
+              queryKey: ['project-event-equipment', eventId] 
+            });
+          }
         }
       )
       .subscribe();

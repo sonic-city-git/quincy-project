@@ -111,10 +111,12 @@ export function EventSectionHeader({
               if (insertError) throw insertError;
 
               // Update sync operation status
-              await supabase
+              const { error: updateError } = await supabase
                 .from('sync_operations')
                 .update({ status: 'completed' })
                 .eq('event_id', event.id);
+
+              if (updateError) throw updateError;
 
               console.log(`Successfully synced equipment for event ${event.id}`);
             }
@@ -122,14 +124,18 @@ export function EventSectionHeader({
             console.error(`Error syncing event ${event.id}:`, eventError);
             
             // Update sync operation status with error
-            await supabase
+            const { error: updateError } = await supabase
               .from('sync_operations')
               .update({ 
                 status: 'failed',
                 error_message: eventError.message,
-                attempts: supabase.sql`attempts + 1`
+                attempts: 1
               })
               .eq('event_id', event.id);
+
+            if (updateError) {
+              console.error('Error updating sync operation:', updateError);
+            }
             
             throw eventError;
           }
