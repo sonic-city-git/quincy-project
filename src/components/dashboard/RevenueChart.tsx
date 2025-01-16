@@ -51,13 +51,13 @@ export function RevenueChart() {
       }, {});
 
       // Convert to chart format
-      const chartData = Object.entries(monthlyData).map(([month, amounts]) => ({
+      const chartData: EventData[] = Object.entries(monthlyData).map(([month, amounts]) => ({
         month,
         ...amounts
       }));
 
       // Calculate summary totals
-      const summaryData = {
+      const summaryData: SummaryData = {
         proposed: (data || []).reduce((sum, event) => 
           event.status === 'proposed' ? sum + (event.total_price || 0) : sum, 0),
         confirmed: (data || []).reduce((sum, event) => 
@@ -91,7 +91,7 @@ export function RevenueChart() {
 
   return (
     <div className="space-y-6">
-      <div className="h-[300px] pt-6"> {/* Added padding top */}
+      <div className="h-[300px] pt-6">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" />

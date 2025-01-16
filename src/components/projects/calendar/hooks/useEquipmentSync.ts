@@ -229,8 +229,8 @@ export function useEquipmentSync(event: CalendarEvent) {
             table: 'sync_operations',
             filter: `event_id=eq.${event.id}`
           },
-          async (payload) => {
-            if (mountedRef.current && payload.new.status === 'completed') {
+          async (payload: { new: { status?: string } }) => {
+            if (mountedRef.current && payload.new?.status === 'completed') {
               console.log('Sync operation completed, checking sync status');
               await checkEquipmentStatus();
               await queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
