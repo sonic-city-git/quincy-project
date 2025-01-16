@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -6,17 +6,16 @@ import { CalendarEvent } from "@/types/events";
 
 export function useEquipmentSync(event: CalendarEvent) {
   const [isSynced, setIsSynced] = useState(true);
-  const [isChecking, setIsChecking] = useState(false);
+  const isCheckingRef = useRef(false);
   const queryClient = useQueryClient();
+  const mountedRef = useRef(true);
 
   const checkEquipmentStatus = async () => {
-    if (!event.type.needs_equipment) {
-      setIsSynced(true);
+    if (!event.type.needs_equipment || isCheckingRef.current) {
       return;
     }
-    
-    if (isChecking) return;
-    setIsChecking(true);
+
+    isCheckingRef.current = true;
     
     try {
       console.log('Checking equipment status for event:', event.id);
@@ -46,7 +45,6 @@ export function useEquipmentSync(event: CalendarEvent) {
 
       if (projectError) throw projectError;
 
-      // Create maps for faster lookup
       const projectMap = new Map(projectEquipment?.map(item => [item.equipment_id, item]));
       const eventMap = new Map(eventEquipment?.map(item => [item.equipment_id, item]));
 
@@ -68,12 +66,16 @@ export function useEquipmentSync(event: CalendarEvent) {
         projectEquipment 
       });
 
-      setIsSynced(!isOutOfSync);
+      if (mountedRef.current) {
+        setIsSynced(!isOutOfSync);
+      }
     } catch (error) {
       console.error('Error checking equipment status:', error);
-      setIsSynced(false);
+      if (mountedRef.current) {
+        setIsSynced(false);
+      }
     } finally {
-      setIsChecking(false);
+      isCheckingRef.current = false;
     }
   };
 
@@ -129,13 +131,14 @@ export function useEquipmentSync(event: CalendarEvent) {
 
       if (updateError) throw updateError;
 
-      await checkEquipmentStatus();
-      
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
-        queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
-        queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
-      ]);
+      if (mountedRef.current) {
+        await checkEquipmentStatus();
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
+          queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
+          queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
+        ]);
+      }
 
       toast.success('Equipment list synchronized successfully');
     } catch (error) {
@@ -155,11 +158,14 @@ export function useEquipmentSync(event: CalendarEvent) {
         console.error('Error updating sync operation:', updateError);
       }
       
-      await checkEquipmentStatus();
+      if (mountedRef.current) {
+        await checkEquipmentStatus();
+      }
     }
   };
 
   useEffect(() => {
+    mountedRef.current = true;
     let channel: ReturnType<typeof supabase.channel>;
     let projectEquipmentChannel: ReturnType<typeof supabase.channel>;
 
@@ -179,8 +185,10 @@ export function useEquipmentSync(event: CalendarEvent) {
             filter: `project_id=eq.${event.project_id}`
           },
           async () => {
-            console.log('Project equipment changed, checking sync status');
-            await checkEquipmentStatus();
+            if (mountedRef.current) {
+              console.log('Project equipment changed, checking sync status');
+              await checkEquipmentStatus();
+            }
           }
         )
         .subscribe();
@@ -196,9 +204,11 @@ export function useEquipmentSync(event: CalendarEvent) {
             filter: `event_id=eq.${event.id}`
           },
           async () => {
-            console.log('Event equipment changed, checking sync status');
-            await checkEquipmentStatus();
-            await queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
+            if (mountedRef.current) {
+              console.log('Event equipment changed, checking sync status');
+              await checkEquipmentStatus();
+              await queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
+            }
           }
         )
         .subscribe();
@@ -207,6 +217,7 @@ export function useEquipmentSync(event: CalendarEvent) {
     setupSubscriptions();
 
     return () => {
+      mountedRef.current = false;
       if (channel) {
         console.log(`Unsubscribing from event ${event.id}`);
         channel.unsubscribe();
