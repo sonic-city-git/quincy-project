@@ -17,21 +17,34 @@ interface Conflict {
   } | null;
 }
 
-export function EquipmentConflicts() {
+interface EquipmentConflictsProps {
+  ownerId?: string;
+}
+
+export function EquipmentConflicts({ ownerId }: EquipmentConflictsProps) {
   const { data: conflicts, isLoading } = useQuery({
-    queryKey: ['equipment-conflicts'],
+    queryKey: ['equipment-conflicts', ownerId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('project_event_equipment')
         .select(`
           id,
           equipment:equipment_id(name),
           event:event_id(
             date,
-            project:project_id(name)
+            project:project_id(
+              name,
+              owner_id
+            )
           )
         `)
         .limit(5);
+
+      if (ownerId) {
+        query = query.eq('event.project.owner_id', ownerId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as Conflict[];

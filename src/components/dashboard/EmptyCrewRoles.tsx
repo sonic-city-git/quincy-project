@@ -17,11 +17,15 @@ interface EmptyRole {
   } | null;
 }
 
-export function EmptyCrewRoles() {
+interface EmptyCrewRolesProps {
+  ownerId?: string;
+}
+
+export function EmptyCrewRoles({ ownerId }: EmptyCrewRolesProps) {
   const { data: emptyRoles, isLoading } = useQuery({
-    queryKey: ['empty-crew-roles'],
+    queryKey: ['empty-crew-roles', ownerId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('project_event_roles')
         .select(`
           id,
@@ -31,12 +35,19 @@ export function EmptyCrewRoles() {
           event:event_id (
             date,
             project:project_id (
-              name
+              name,
+              owner_id
             )
           )
         `)
         .is('crew_member_id', null)
         .limit(5);
+
+      if (ownerId) {
+        query = query.eq('event.project.owner_id', ownerId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data as EmptyRole[];

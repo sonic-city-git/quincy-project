@@ -25,14 +25,23 @@ type SummaryData = {
   cancelled: number;
 };
 
-export function RevenueChart() {
+interface RevenueChartProps {
+  ownerId?: string;
+}
+
+export function RevenueChart({ ownerId }: RevenueChartProps) {
   const { data: revenueData, isLoading } = useQuery({
-    queryKey: ['revenue-events'],
+    queryKey: ['revenue-events', ownerId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('revenue_events')
-        .select('date, total_price, status')
-        .order('date');
+        .select('date, total_price, status');
+
+      if (ownerId) {
+        query = query.eq('owner_id', ownerId);
+      }
+      
+      const { data, error } = await query.order('date');
       
       if (error) throw error;
       
