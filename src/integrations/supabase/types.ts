@@ -935,6 +935,54 @@ export type Database = {
         }
         Relationships: []
       }
+      sync_operations: {
+        Row: {
+          attempts: number | null
+          created_at: string | null
+          error_message: string | null
+          event_id: string | null
+          id: string
+          project_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          attempts?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          event_id?: string | null
+          id?: string
+          project_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          attempts?: number | null
+          created_at?: string | null
+          error_message?: string | null
+          event_id?: string | null
+          id?: string
+          project_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_operations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "project_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sync_operations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       temp_equipment: {
         Row: {
           code: string | null
