@@ -68,6 +68,7 @@ export function useEquipmentDragDrop(projectId: string) {
       if (!isValid) return;
 
       let newItemId: string | null = null;
+      let eventId: string | null = null;
 
       if (item.type === 'project-equipment') {
         const { data: existingEquipment } = await supabase
@@ -88,7 +89,10 @@ export function useEquipmentDragDrop(projectId: string) {
             .select()
             .single();
           
-          if (data) newItemId = data.id;
+          if (data) {
+            newItemId = data.id;
+            eventId = item.event_id;
+          }
         } else {
           const { data } = await supabase
             .from('project_equipment')
@@ -97,7 +101,10 @@ export function useEquipmentDragDrop(projectId: string) {
             .select()
             .single();
           
-          if (data) newItemId = data.id;
+          if (data) {
+            newItemId = data.id;
+            eventId = item.event_id;
+          }
         }
       } else {
         const { data: existingEquipment } = await supabase
@@ -135,7 +142,17 @@ export function useEquipmentDragDrop(projectId: string) {
         }
       }
 
-      await queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] });
+      // Invalidate all relevant queries to update UI
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] }),
+        queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
+        queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] }),
+        // If this was moved from an event, invalidate that event's equipment
+        ...(eventId ? [
+          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', eventId] })
+        ] : [])
+      ]);
+
       if (newItemId) setLastAddedItemId(newItemId);
       toast.success('Equipment moved successfully');
     } catch (error) {
