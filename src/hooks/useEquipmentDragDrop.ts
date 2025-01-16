@@ -7,6 +7,48 @@ export function useEquipmentDragDrop(projectId: string) {
   const queryClient = useQueryClient();
   const [lastAddedItemId, setLastAddedItemId] = useState<string | null>(null);
 
+  const validateDrop = async (item: any, groupId: string): Promise<boolean> => {
+    // Validate that the target group belongs to the current project
+    const { data: group, error: groupError } = await supabase
+      .from('project_equipment_groups')
+      .select('project_id')
+      .eq('id', groupId)
+      .single();
+
+    if (groupError || !group) {
+      toast.error('Invalid target group');
+      return false;
+    }
+
+    // Validate that the group belongs to the current project
+    if (group.project_id !== projectId) {
+      toast.error('Cannot move equipment to a different project');
+      return false;
+    }
+
+    // If moving existing project equipment
+    if (item.type === 'project-equipment') {
+      const { data: sourceEquipment, error: sourceError } = await supabase
+        .from('project_equipment')
+        .select('project_id')
+        .eq('id', item.id)
+        .single();
+
+      if (sourceError || !sourceEquipment) {
+        toast.error('Invalid equipment');
+        return false;
+      }
+
+      // Validate that the equipment belongs to the current project
+      if (sourceEquipment.project_id !== projectId) {
+        toast.error('Cannot move equipment from a different project');
+        return false;
+      }
+    }
+
+    return true;
+  };
+
   const handleDrop = async (e: React.DragEvent, groupId: string) => {
     e.preventDefault();
     e.stopPropagation();
@@ -20,6 +62,11 @@ export function useEquipmentDragDrop(projectId: string) {
       if (!data) return;
 
       const item = JSON.parse(data);
+      
+      // Validate the drop operation
+      const isValid = await validateDrop(item, groupId);
+      if (!isValid) return;
+
       let newItemId: string | null = null;
 
       if (item.type === 'project-equipment') {
