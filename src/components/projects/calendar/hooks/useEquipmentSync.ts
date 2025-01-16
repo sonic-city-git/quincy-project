@@ -11,7 +11,6 @@ export function useEquipmentSync(event: CalendarEvent) {
   const mountedRef = useRef(true);
 
   const checkEquipmentStatus = async () => {
-    // Move the condition check after hook declarations
     if (isCheckingRef.current) {
       return;
     }
@@ -138,8 +137,8 @@ export function useEquipmentSync(event: CalendarEvent) {
       if (updateError) throw updateError;
 
       if (mountedRef.current) {
-        await checkEquipmentStatus();
         await Promise.all([
+          checkEquipmentStatus(),
           queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
           queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
           queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
@@ -218,6 +217,31 @@ export function useEquipmentSync(event: CalendarEvent) {
           }
         )
         .subscribe();
+
+      // Also subscribe to sync_operations to update status when sync is completed
+      const syncChannel = supabase
+        .channel(`sync-operations-${event.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'sync_operations',
+            filter: `event_id=eq.${event.id}`
+          },
+          async (payload) => {
+            if (mountedRef.current && payload.new.status === 'completed') {
+              console.log('Sync operation completed, checking sync status');
+              await checkEquipmentStatus();
+              await queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(syncChannel);
+      };
     };
 
     setupSubscriptions();

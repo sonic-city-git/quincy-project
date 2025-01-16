@@ -115,7 +115,8 @@ export function EventSectionHeader({
               // Invalidate queries for immediate UI update
               await Promise.all([
                 queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
-                queryClient.invalidateQueries({ queryKey: ['events', event.project_id] })
+                queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
+                queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
               ]);
 
               console.log(`Successfully synced equipment for event ${event.id}`);
@@ -145,7 +146,7 @@ export function EventSectionHeader({
       // Invalidate queries one final time to ensure UI is up to date
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['events', events[0].project_id] }),
-        queryClient.invalidateQueries({ queryKey: ['project-events', events[0].project_id] }),
+        queryClient.invalidateQueries({ queryKey: ['calendar-events', events[0].project_id] }),
         ...events.map(event => 
           queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] })
         )
