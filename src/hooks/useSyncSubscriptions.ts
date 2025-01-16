@@ -3,24 +3,45 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
-import { Database } from '@/integrations/supabase/types';
 
-type SyncOperationPayload = RealtimePostgresChangesPayload<{
-  [key: string]: any;
-  status: string;
-  event_id: string;
-  error_message?: string;
-}>;
-
-type ProjectEquipmentPayload = RealtimePostgresChangesPayload<{
-  [key: string]: any;
+interface SyncOperation {
+  id: string;
   project_id: string;
-}>;
-
-type EventEquipmentPayload = RealtimePostgresChangesPayload<{
-  [key: string]: any;
   event_id: string;
-}>;
+  status: string;
+  attempts: number;
+  error_message?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface ProjectEquipment {
+  id: string;
+  project_id: string;
+  equipment_id: string;
+  quantity: number;
+  group_id?: string;
+  notes?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface EventEquipment {
+  id: string;
+  project_id: string;
+  event_id: string;
+  equipment_id: string;
+  quantity: number;
+  group_id?: string;
+  notes?: string;
+  is_synced: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+type SyncOperationPayload = RealtimePostgresChangesPayload<SyncOperation>;
+type ProjectEquipmentPayload = RealtimePostgresChangesPayload<ProjectEquipment>;
+type EventEquipmentPayload = RealtimePostgresChangesPayload<EventEquipment>;
 
 export function useSyncSubscriptions(projectId: string) {
   const queryClient = useQueryClient();
@@ -44,12 +65,12 @@ export function useSyncSubscriptions(projectId: string) {
         async (payload: SyncOperationPayload) => {
           console.log('Sync operation update:', payload);
           
-          if (payload.new.status === 'completed') {
+          if (payload.new && payload.new.status === 'completed') {
             toast.success('Equipment sync completed');
             await queryClient.invalidateQueries({ 
               queryKey: ['project-event-equipment', payload.new.event_id] 
             });
-          } else if (payload.new.status === 'failed') {
+          } else if (payload.new && payload.new.status === 'failed') {
             toast.error(`Sync failed: ${payload.new.error_message || 'Unknown error'}`);
           }
         }
@@ -68,7 +89,7 @@ export function useSyncSubscriptions(projectId: string) {
           filter: `project_id=eq.${projectId}`
         },
         async (payload: ProjectEquipmentPayload) => {
-          console.log('Project equipment changed, invalidating queries');
+          console.log('Project equipment changed:', payload);
           await Promise.all([
             queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] }),
             queryClient.invalidateQueries({ queryKey: ['events', projectId] })
@@ -90,8 +111,8 @@ export function useSyncSubscriptions(projectId: string) {
         },
         async (payload: EventEquipmentPayload) => {
           console.log('Event equipment changed:', payload);
-          const eventId = payload.new?.event_id || payload.old?.event_id;
-          if (eventId) {
+          if (payload.new?.event_id || payload.old?.event_id) {
+            const eventId = payload.new?.event_id || payload.old?.event_id;
             await queryClient.invalidateQueries({ 
               queryKey: ['project-event-equipment', eventId] 
             });
