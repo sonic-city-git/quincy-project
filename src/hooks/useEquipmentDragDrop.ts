@@ -142,15 +142,38 @@ export function useEquipmentDragDrop(projectId: string) {
         }
       }
 
+      // Trigger sync operations for all events in the project
+      const { data: events } = await supabase
+        .from('project_events')
+        .select('id')
+        .eq('project_id', projectId)
+        .neq('status', 'cancelled')
+        .neq('status', 'invoice ready');
+
+      if (events) {
+        await Promise.all(events.map(async (event) => {
+          await supabase
+            .from('sync_operations')
+            .insert({
+              project_id: projectId,
+              event_id: event.id,
+              status: 'pending'
+            });
+        }));
+      }
+
       // Invalidate all relevant queries to update UI
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] }),
         queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
         queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] }),
-        // If this was moved from an event, invalidate that event's equipment
+        queryClient.invalidateQueries({ queryKey: ['project-events', projectId] }),
         ...(eventId ? [
           queryClient.invalidateQueries({ queryKey: ['project-event-equipment', eventId] })
-        ] : [])
+        ] : []),
+        ...(events?.map(event => 
+          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] })
+        ) || [])
       ]);
 
       if (newItemId) setLastAddedItemId(newItemId);
