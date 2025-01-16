@@ -112,6 +112,12 @@ export function EventSectionHeader({
 
               if (updateError) throw updateError;
 
+              // Invalidate queries for immediate UI update
+              await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
+                queryClient.invalidateQueries({ queryKey: ['events', event.project_id] })
+              ]);
+
               console.log(`Successfully synced equipment for event ${event.id}`);
             }
           } catch (eventError) {
@@ -135,6 +141,15 @@ export function EventSectionHeader({
           }
         }));
       }
+
+      // Invalidate queries one final time to ensure UI is up to date
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['events', events[0].project_id] }),
+        queryClient.invalidateQueries({ queryKey: ['project-events', events[0].project_id] }),
+        ...events.map(event => 
+          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] })
+        )
+      ]);
 
       toast.success(`Equipment synchronized for all ${title} events`);
     } catch (error) {
