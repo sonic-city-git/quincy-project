@@ -11,7 +11,9 @@ export function useEquipmentDragDrop(projectId: string) {
     e.preventDefault();
     e.stopPropagation();
     const target = e.currentTarget as HTMLElement;
-    target.classList.remove('bg-primary/5', 'border-primary/20');
+    if (target?.classList) {
+      target.classList.remove('bg-primary/5', 'border-primary/20');
+    }
 
     try {
       const data = e.dataTransfer.getData('application/json');
@@ -99,14 +101,18 @@ export function useEquipmentDragDrop(projectId: string) {
     e.preventDefault();
     e.stopPropagation();
     const target = e.currentTarget as HTMLElement;
-    target.classList.add('bg-primary/5', 'border-primary/20');
+    if (target?.classList) {
+      target.classList.add('bg-primary/5', 'border-primary/20');
+    }
   }, []);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     const target = e.currentTarget as HTMLElement;
-    target.classList.remove('bg-primary/5', 'border-primary/20');
+    if (target?.classList) {
+      target.classList.remove('bg-primary/5', 'border-primary/20');
+    }
   }, []);
 
   return {
