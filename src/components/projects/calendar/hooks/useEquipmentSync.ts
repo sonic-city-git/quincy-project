@@ -11,13 +11,19 @@ export function useEquipmentSync(event: CalendarEvent) {
   const mountedRef = useRef(true);
 
   const checkEquipmentStatus = async () => {
-    if (!event.type.needs_equipment || isCheckingRef.current) {
+    // Move the condition check after hook declarations
+    if (isCheckingRef.current) {
       return;
     }
 
     isCheckingRef.current = true;
     
     try {
+      if (!event.type.needs_equipment) {
+        setIsSynced(true);
+        return;
+      }
+
       console.log('Checking equipment status for event:', event.id);
       
       const { data: eventEquipment, error: eventError } = await supabase
