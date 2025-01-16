@@ -1,20 +1,14 @@
-import { Package, Users } from "lucide-react";
-import { getStatusIcon } from "@/utils/eventFormatters";
 import { EventSectionHeaderGrid } from "./EventSectionHeaderGrid";
 import { CalendarEvent, EventType } from "@/types/events";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { EventStatusManager } from "../EventStatusManager";
 import { useSectionSyncStatus } from "../hooks/useSectionSyncStatus";
 import { useSyncSubscriptions } from "@/hooks/useSyncSubscriptions";
+import { StatusIcon } from "./header/StatusIcon";
+import { HeaderEquipmentIcon } from "./header/HeaderEquipmentIcon";
+import { HeaderCrewIcon } from "./header/HeaderCrewIcon";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -157,9 +151,7 @@ export function EventSectionHeader({
     <div className="p-3 mb-4">
       <EventSectionHeaderGrid>
         <div className="col-span-2 flex items-center gap-2 justify-start">
-          <div className="h-6 w-6 flex items-center justify-center">
-            {getStatusIcon(title.toLowerCase() as CalendarEvent['status'])}
-          </div>
+          <StatusIcon status={title.toLowerCase() as CalendarEvent['status']} />
           <h3 className="text-lg font-semibold">{title}</h3>
         </div>
         
@@ -169,38 +161,16 @@ export function EventSectionHeader({
         
         <div className="flex items-center justify-center">
           {!isCancelled && !isInvoiceReady && eventType?.needs_equipment && (
-            sectionSyncStatus !== 'no-equipment' ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10 p-0"
-                  >
-                    <Package 
-                      className={`h-6 w-6 ${
-                        sectionSyncStatus === 'synced'
-                          ? 'text-green-500' 
-                          : 'text-blue-500'
-                      }`} 
-                    />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start">
-                  <DropdownMenuItem onClick={handleSyncAllEquipment}>
-                    Sync all equipment
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Package className="h-6 w-6 text-muted-foreground" />
-            )
+            <HeaderEquipmentIcon 
+              sectionSyncStatus={sectionSyncStatus} 
+              onSyncAllEquipment={handleSyncAllEquipment}
+            />
           )}
         </div>
         
         <div className="flex items-center justify-center">
-          {!isCancelled && !isInvoiceReady && eventType?.needs_crew && (
-            <Users className="h-6 w-6 text-muted-foreground" />
+          {!isCancelled && !isInvoiceReady && (
+            <HeaderCrewIcon needsCrew={eventType?.needs_crew ?? false} />
           )}
         </div>
 

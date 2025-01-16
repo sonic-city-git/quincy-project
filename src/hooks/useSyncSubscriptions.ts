@@ -65,13 +65,14 @@ export function useSyncSubscriptions(projectId: string) {
         async (payload: SyncOperationPayload) => {
           console.log('Sync operation update:', payload);
           
-          if (payload.new && payload.new.status === 'completed') {
+          const newData = payload.new as SyncOperation;
+          if (newData?.status === 'completed') {
             toast.success('Equipment sync completed');
             await queryClient.invalidateQueries({ 
-              queryKey: ['project-event-equipment', payload.new.event_id] 
+              queryKey: ['project-event-equipment', newData.event_id] 
             });
-          } else if (payload.new && payload.new.status === 'failed') {
-            toast.error(`Sync failed: ${payload.new.error_message || 'Unknown error'}`);
+          } else if (newData?.status === 'failed') {
+            toast.error(`Sync failed: ${newData.error_message || 'Unknown error'}`);
           }
         }
       )
@@ -111,8 +112,11 @@ export function useSyncSubscriptions(projectId: string) {
         },
         async (payload: EventEquipmentPayload) => {
           console.log('Event equipment changed:', payload);
-          if (payload.new?.event_id || payload.old?.event_id) {
-            const eventId = payload.new?.event_id || payload.old?.event_id;
+          const newData = payload.new as EventEquipment;
+          const oldData = payload.old as EventEquipment;
+          const eventId = newData?.event_id || oldData?.event_id;
+          
+          if (eventId) {
             await queryClient.invalidateQueries({ 
               queryKey: ['project-event-equipment', eventId] 
             });
