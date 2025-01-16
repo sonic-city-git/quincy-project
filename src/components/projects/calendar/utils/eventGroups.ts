@@ -9,8 +9,16 @@ interface GroupedEvents {
   doneAndDusted: CalendarEvent[];
 }
 
+const sortEventsByDate = (events: CalendarEvent[]) => {
+  return [...events].sort((a, b) => {
+    const dateA = new Date(a.date);
+    const dateB = new Date(b.date);
+    return dateA.getTime() - dateB.getTime();
+  });
+};
+
 export function groupEventsByStatus(events: CalendarEvent[]): GroupedEvents {
-  return events.reduce(
+  const groups = events.reduce(
     (groups, event) => {
       // Check if event should go to "Done and Dusted"
       const isInPast = isPast(new Date(event.date));
@@ -47,4 +55,13 @@ export function groupEventsByStatus(events: CalendarEvent[]): GroupedEvents {
       doneAndDusted: []
     } as GroupedEvents
   );
+
+  // Sort each group by date
+  return {
+    proposed: sortEventsByDate(groups.proposed),
+    confirmed: sortEventsByDate(groups.confirmed),
+    ready: sortEventsByDate(groups.ready),
+    cancelled: sortEventsByDate(groups.cancelled),
+    doneAndDusted: sortEventsByDate(groups.doneAndDusted)
+  };
 }
