@@ -6,6 +6,7 @@ import { CalendarEvent } from "@/types/events";
 
 export function useEquipmentSync(event: CalendarEvent) {
   const [isSynced, setIsSynced] = useState(true);
+  const [isChecking, setIsChecking] = useState(false);
   const queryClient = useQueryClient();
 
   const checkEquipmentStatus = async () => {
@@ -14,71 +15,70 @@ export function useEquipmentSync(event: CalendarEvent) {
       return;
     }
     
+    if (isChecking) return;
+    setIsChecking(true);
+    
     try {
       console.log('Checking equipment status for event:', event.id);
       
-      // Get event equipment
       const { data: eventEquipment, error: eventError } = await supabase
         .from('project_event_equipment')
         .select(`
           id,
           equipment_id,
           quantity,
-          is_synced
+          is_synced,
+          group_id
         `)
         .eq('event_id', event.id);
 
       if (eventError) throw eventError;
 
-      // Get project equipment for comparison
       const { data: projectEquipment, error: projectError } = await supabase
         .from('project_equipment')
         .select(`
           id,
           equipment_id,
-          quantity
+          quantity,
+          group_id
         `)
         .eq('project_id', event.project_id);
 
       if (projectError) throw projectError;
 
-      // Check if any equipment is out of sync
-      const isOutOfSync = eventEquipment?.some(eventItem => {
-        // Check if item exists in project equipment
-        const projectItem = projectEquipment?.find(p => p.equipment_id === eventItem.equipment_id);
-        
-        // Item is out of sync if:
-        // 1. It doesn't exist in project equipment
-        // 2. Quantities don't match
-        // 3. is_synced flag is false
-        return !projectItem || 
-               projectItem.quantity !== eventItem.quantity || 
-               !eventItem.is_synced;
-      });
+      // Create maps for faster lookup
+      const projectMap = new Map(projectEquipment?.map(item => [item.equipment_id, item]));
+      const eventMap = new Map(eventEquipment?.map(item => [item.equipment_id, item]));
 
-      // Also check if project has new equipment not in event
-      const hasNewEquipment = projectEquipment?.some(projectItem => 
-        !eventEquipment?.some(e => e.equipment_id === projectItem.equipment_id)
+      const isOutOfSync = Boolean(
+        projectEquipment?.some(projectItem => {
+          const eventItem = eventMap.get(projectItem.equipment_id);
+          return !eventItem || 
+                 eventItem.quantity !== projectItem.quantity ||
+                 eventItem.group_id !== projectItem.group_id ||
+                 !eventItem.is_synced;
+        }) ||
+        eventEquipment?.some(eventItem => !projectMap.has(eventItem.equipment_id))
       );
 
       console.log('Equipment sync status:', { 
         eventId: event.id, 
-        isOutOfSync, 
-        hasNewEquipment,
+        isOutOfSync,
         eventEquipment,
         projectEquipment 
       });
 
-      setIsSynced(!isOutOfSync && !hasNewEquipment);
+      setIsSynced(!isOutOfSync);
     } catch (error) {
       console.error('Error checking equipment status:', error);
       setIsSynced(false);
+    } finally {
+      setIsChecking(false);
     }
   };
 
   const handleEquipmentSync = async () => {
     try {
-      // Create sync operation
       const { error: syncError } = await supabase
         .from('sync_operations')
         .insert({
@@ -89,7 +89,6 @@ export function useEquipmentSync(event: CalendarEvent) {
 
       if (syncError) throw syncError;
 
-      // Get project equipment
       const { data: projectEquipment, error: fetchError } = await supabase
         .from('project_equipment')
         .select('*')
@@ -101,7 +100,6 @@ export function useEquipmentSync(event: CalendarEvent) {
         throw new Error('No project equipment found');
       }
 
-      // Delete existing event equipment
       const { error: deleteError } = await supabase
         .from('project_event_equipment')
         .delete()
@@ -109,7 +107,6 @@ export function useEquipmentSync(event: CalendarEvent) {
 
       if (deleteError) throw deleteError;
 
-      // Create new event equipment from project equipment
       const eventEquipment = projectEquipment.map(item => ({
         project_id: event.project_id,
         event_id: event.id,
@@ -125,7 +122,6 @@ export function useEquipmentSync(event: CalendarEvent) {
 
       if (insertError) throw insertError;
 
-      // Update sync operation status
       const { error: updateError } = await supabase
         .from('sync_operations')
         .update({ status: 'completed' })
@@ -146,7 +142,6 @@ export function useEquipmentSync(event: CalendarEvent) {
       console.error('Error syncing equipment:', error);
       toast.error('Failed to sync equipment list');
       
-      // Update sync operation status with error
       const { error: updateError } = await supabase
         .from('sync_operations')
         .update({ 
@@ -183,8 +178,8 @@ export function useEquipmentSync(event: CalendarEvent) {
             table: 'project_equipment',
             filter: `project_id=eq.${event.project_id}`
           },
-          async (payload) => {
-            console.log('Project equipment changed:', payload);
+          async () => {
+            console.log('Project equipment changed, checking sync status');
             await checkEquipmentStatus();
           }
         )
@@ -200,8 +195,8 @@ export function useEquipmentSync(event: CalendarEvent) {
             table: 'project_event_equipment',
             filter: `event_id=eq.${event.id}`
           },
-          async (payload) => {
-            console.log('Event equipment changed:', payload);
+          async () => {
+            console.log('Event equipment changed, checking sync status');
             await checkEquipmentStatus();
             await queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
           }
