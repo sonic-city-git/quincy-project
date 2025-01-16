@@ -1,6 +1,7 @@
 import { Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCrew } from "@/hooks/useCrew";
+import { getInitials } from "@/utils/stringUtils";
 
 interface ProjectOwnerFilterProps {
   value: string;
@@ -42,8 +44,22 @@ export function ProjectOwnerFilter({ value, onChange }: ProjectOwnerFilterProps)
             key={member.id}
             checked={value === member.id}
             onCheckedChange={() => onChange(value === member.id ? '' : member.id)}
+            className="flex items-center gap-2"
           >
-            {member.name}
+            <Avatar className="h-6 w-6 flex-shrink-0">
+              {member.avatar_url ? (
+                <AvatarImage 
+                  src={member.avatar_url} 
+                  alt={member.name} 
+                  className="object-cover"
+                />
+              ) : (
+                <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
+                  {getInitials(member.name)}
+                </AvatarFallback>
+              )}
+            </Avatar>
+            <span className="truncate">{member.name}</span>
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>
