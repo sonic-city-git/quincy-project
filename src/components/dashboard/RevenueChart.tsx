@@ -50,10 +50,12 @@ export function RevenueChart() {
         return acc;
       }, {});
 
-      // Convert to chart format
+      // Convert to chart format with explicit typing
       const chartData: EventData[] = Object.entries(monthlyData).map(([month, amounts]) => ({
         month,
-        ...amounts
+        proposed: amounts.proposed || 0,
+        confirmed: amounts.confirmed || 0,
+        cancelled: amounts.cancelled || 0
       }));
 
       // Calculate summary totals
