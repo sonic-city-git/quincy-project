@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CalendarEvent } from "@/types/events";
 
 export function useSectionSyncStatus(events: CalendarEvent[]) {
-  const [sectionSyncStatus, setSectionSyncStatus] = useState<'synced' | 'out-of-sync' | 'no-equipment'>('no-equipment');
+  const [sectionSyncStatus, setSectionSyncStatus] = useState<'synced' | 'not-synced' | 'no-equipment'>('no-equipment');
 
   useEffect(() => {
     const checkSectionSyncStatus = async () => {
@@ -31,7 +31,7 @@ export function useSectionSyncStatus(events: CalendarEvent[]) {
         const hasAnyEquipment = results.some(r => r.hasEquipment);
         const allSynced = results.every(r => r.isSynced);
 
-        setSectionSyncStatus(hasAnyEquipment ? (allSynced ? 'synced' : 'out-of-sync') : 'no-equipment');
+        setSectionSyncStatus(hasAnyEquipment ? (allSynced ? 'synced' : 'not-synced') : 'no-equipment');
       } catch (error) {
         console.error('Error checking section sync status:', error);
         setSectionSyncStatus('no-equipment');
