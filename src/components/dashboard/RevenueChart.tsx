@@ -79,52 +79,65 @@ export function RevenueChart() {
     summaryData: { proposed: 0, confirmed: 0, cancelled: 0 } 
   };
 
+  // Calculate the maximum value for the chart
+  const maxValue = Math.max(
+    ...chartData.map(data => 
+      Math.max(data.proposed || 0, data.confirmed || 0, data.cancelled || 0)
+    )
+  );
+
+  // Add 20% padding to the top
+  const yAxisDomain = [0, maxValue * 1.2];
+
   return (
     <div className="space-y-6">
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-          <XAxis 
-            dataKey="month" 
-            stroke="#9CA3AF"
-            fontSize={12}
-          />
-          <YAxis 
-            stroke="#9CA3AF"
-            fontSize={12}
-            tickFormatter={(value) => formatPrice(value)}
-          />
-          <Tooltip 
-            contentStyle={{ 
-              backgroundColor: '#1F2937',
-              border: '1px solid #374151',
-              borderRadius: '0.375rem'
-            }}
-            labelStyle={{ color: '#9CA3AF' }}
-            itemStyle={{ color: '#E5E7EB' }}
-            formatter={(value: number) => formatPrice(value)}
-          />
-          <Legend />
-          <Bar 
-            dataKey="proposed" 
-            name="Proposed"
-            fill={STATUS_COLORS.proposed}
-            radius={[4, 4, 0, 0]}
-          />
-          <Bar 
-            dataKey="confirmed" 
-            name="Confirmed"
-            fill={STATUS_COLORS.confirmed}
-            radius={[4, 4, 0, 0]}
-          />
-          <Bar 
-            dataKey="cancelled" 
-            name="Cancelled"
-            fill={STATUS_COLORS.cancelled}
-            radius={[4, 4, 0, 0]}
-          />
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="h-[300px] pt-6"> {/* Added padding top */}
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+            <XAxis 
+              dataKey="month" 
+              stroke="#9CA3AF"
+              fontSize={12}
+            />
+            <YAxis 
+              stroke="#9CA3AF"
+              fontSize={12}
+              tickFormatter={(value) => formatPrice(value)}
+              domain={yAxisDomain}
+            />
+            <Tooltip 
+              contentStyle={{ 
+                backgroundColor: '#1F2937',
+                border: '1px solid #374151',
+                borderRadius: '0.375rem'
+              }}
+              labelStyle={{ color: '#9CA3AF' }}
+              itemStyle={{ color: '#E5E7EB' }}
+              formatter={(value: number) => formatPrice(value)}
+            />
+            <Legend />
+            <Bar 
+              dataKey="proposed" 
+              name="Proposed"
+              fill={STATUS_COLORS.proposed}
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar 
+              dataKey="confirmed" 
+              name="Confirmed"
+              fill={STATUS_COLORS.confirmed}
+              radius={[4, 4, 0, 0]}
+            />
+            <Bar 
+              dataKey="cancelled" 
+              name="Cancelled"
+              fill={STATUS_COLORS.cancelled}
+              radius={[4, 4, 0, 0]}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
       <div className="rounded-md border">
         <Table>
