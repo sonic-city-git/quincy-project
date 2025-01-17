@@ -134,7 +134,6 @@ export function useEquipmentSync(event: CalendarEvent) {
       if (updateError) throw updateError;
 
       if (mountedRef.current) {
-        setIsSynced(true);
         await Promise.all([
           checkEquipmentStatus(),
           queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
@@ -170,16 +169,15 @@ export function useEquipmentSync(event: CalendarEvent) {
 
   useEffect(() => {
     mountedRef.current = true;
-    let channel: ReturnType<typeof supabase.channel>;
-    let projectEquipmentChannel: ReturnType<typeof supabase.channel>;
-    let syncOperationsChannel: ReturnType<typeof supabase.channel>;
+    let channels: ReturnType<typeof supabase.channel>[] = [];
 
     const setupSubscriptions = async () => {
       if (!event.type.needs_equipment) return;
 
       await checkEquipmentStatus();
 
-      projectEquipmentChannel = supabase
+      // Listen for project equipment changes
+      const projectEquipmentChannel = supabase
         .channel(`project-equipment-${event.project_id}`)
         .on(
           'postgres_changes',
@@ -198,8 +196,10 @@ export function useEquipmentSync(event: CalendarEvent) {
           }
         )
         .subscribe();
+      channels.push(projectEquipmentChannel);
 
-      channel = supabase
+      // Listen for event equipment changes
+      const eventEquipmentChannel = supabase
         .channel(`event-equipment-${event.id}`)
         .on(
           'postgres_changes',
@@ -218,8 +218,10 @@ export function useEquipmentSync(event: CalendarEvent) {
           }
         )
         .subscribe();
+      channels.push(eventEquipmentChannel);
 
-      syncOperationsChannel = supabase
+      // Listen for sync operations
+      const syncOperationsChannel = supabase
         .channel(`sync-operations-${event.id}`)
         .on(
           'postgres_changes',
@@ -232,7 +234,9 @@ export function useEquipmentSync(event: CalendarEvent) {
           async (payload: { new: { status?: string; event_id?: string } }) => {
             if (mountedRef.current) {
               console.log('Sync operation status changed:', payload.new);
-              if (payload.new?.status === 'completed') {
+              // Check if this sync operation affects this event
+              if (payload.new?.status === 'completed' && 
+                  (!payload.new.event_id || payload.new.event_id === event.id)) {
                 await checkEquipmentStatus();
                 await queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
               }
@@ -240,24 +244,17 @@ export function useEquipmentSync(event: CalendarEvent) {
           }
         )
         .subscribe();
+      channels.push(syncOperationsChannel);
     };
 
     setupSubscriptions();
 
     return () => {
       mountedRef.current = false;
-      if (channel) {
-        console.log(`Unsubscribing from event ${event.id}`);
-        channel.unsubscribe();
-      }
-      if (projectEquipmentChannel) {
-        console.log(`Unsubscribing from project equipment ${event.project_id}`);
-        projectEquipmentChannel.unsubscribe();
-      }
-      if (syncOperationsChannel) {
-        console.log(`Unsubscribing from sync operations ${event.id}`);
-        syncOperationsChannel.unsubscribe();
-      }
+      channels.forEach(channel => {
+        console.log('Unsubscribing from channel');
+        supabase.removeChannel(channel);
+      });
     };
   }, [event.id, event.project_id, event.type.needs_equipment, queryClient]);
 
