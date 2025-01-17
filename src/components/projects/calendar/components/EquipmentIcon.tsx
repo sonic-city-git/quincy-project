@@ -29,8 +29,11 @@ export function EquipmentIcon({
   sectionTitle
 }: EquipmentIconProps) {
   const iconClasses = `h-6 w-6 ${isSynced ? 'text-green-500' : 'text-blue-500'}`;
+  const tooltipText = isSynced 
+    ? "Equipment list matches project equipment" 
+    : "Equipment list needs to be synced with project";
 
-  if (isSynced || isEditingDisabled) {
+  if (isEditingDisabled) {
     return (
       <TooltipProvider>
         <Tooltip>
@@ -40,7 +43,7 @@ export function EquipmentIcon({
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            {isSynced ? "Equipment list is synced" : "Equipment list out of sync"}
+            {tooltipText}
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -68,15 +71,17 @@ export function EquipmentIcon({
                 <DropdownMenuItem onClick={onViewEquipment}>
                   View equipment list
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={onSyncEquipment}>
-                  Sync from project equipment
-                </DropdownMenuItem>
+                {!isSynced && (
+                  <DropdownMenuItem onClick={onSyncEquipment}>
+                    Sync from project equipment
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </TooltipTrigger>
         <TooltipContent>
-          Equipment list out of sync
+          {tooltipText}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
