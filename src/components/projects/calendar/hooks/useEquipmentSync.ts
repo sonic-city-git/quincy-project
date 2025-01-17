@@ -22,6 +22,7 @@ export function useEquipmentSync(event: CalendarEvent) {
 
       console.log('Checking equipment status for event:', event.id);
       
+      // Get event equipment
       const { data: eventEquipment, error: eventError } = await supabase
         .from('project_event_equipment')
         .select(`
@@ -35,6 +36,15 @@ export function useEquipmentSync(event: CalendarEvent) {
 
       if (eventError) throw eventError;
 
+      // If there's no equipment at all, consider it synced
+      if (!eventEquipment || eventEquipment.length === 0) {
+        if (mountedRef.current) {
+          setIsSynced(true);
+        }
+        return;
+      }
+
+      // Get project equipment to compare with
       const { data: projectEquipment, error: projectError } = await supabase
         .from('project_equipment')
         .select(`
@@ -47,18 +57,20 @@ export function useEquipmentSync(event: CalendarEvent) {
 
       if (projectError) throw projectError;
 
+      // Create maps for easy comparison
       const projectMap = new Map(projectEquipment?.map(item => [item.equipment_id, item]));
       const eventMap = new Map(eventEquipment?.map(item => [item.equipment_id, item]));
 
+      // Check if any equipment is out of sync
       const isOutOfSync = Boolean(
-        projectEquipment?.some(projectItem => {
-          const eventItem = eventMap.get(projectItem.equipment_id);
-          return !eventItem || 
+        eventEquipment?.some(eventItem => {
+          // Check if item exists in project equipment
+          const projectItem = projectMap.get(eventItem.equipment_id);
+          return !projectItem || 
+                 !eventItem.is_synced ||
                  eventItem.quantity !== projectItem.quantity ||
-                 eventItem.group_id !== projectItem.group_id ||
-                 !eventItem.is_synced;
-        }) ||
-        eventEquipment?.some(eventItem => !projectMap.has(eventItem.equipment_id))
+                 eventItem.group_id !== projectItem.group_id;
+        })
       );
 
       console.log('Equipment sync status:', { 
