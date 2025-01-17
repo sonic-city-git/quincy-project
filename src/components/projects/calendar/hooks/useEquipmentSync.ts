@@ -192,7 +192,7 @@ export function useEquipmentSync(event: CalendarEvent) {
           async () => {
             if (mountedRef.current) {
               console.log('Project equipment changed, checking sync status');
-              setIsSynced(false); // Immediately mark as out of sync
+              setIsSynced(false);
               await checkEquipmentStatus();
             }
           }
@@ -227,13 +227,12 @@ export function useEquipmentSync(event: CalendarEvent) {
             event: '*',
             schema: 'public',
             table: 'sync_operations',
-            filter: `event_id=eq.${event.id}`
+            filter: `project_id=eq.${event.project_id}`
           },
-          async (payload: { new: { status?: string } }) => {
+          async (payload: { new: { status?: string; event_id?: string } }) => {
             if (mountedRef.current) {
-              console.log('Sync operation status changed:', payload.new.status);
+              console.log('Sync operation status changed:', payload.new);
               if (payload.new?.status === 'completed') {
-                setIsSynced(true);
                 await checkEquipmentStatus();
                 await queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] });
               }
