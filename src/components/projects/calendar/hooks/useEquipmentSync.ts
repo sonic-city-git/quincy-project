@@ -134,7 +134,7 @@ export function useEquipmentSync(event: CalendarEvent) {
       if (updateError) throw updateError;
 
       if (mountedRef.current) {
-        setIsSynced(true); // Immediately update UI
+        setIsSynced(true);
         await Promise.all([
           checkEquipmentStatus(),
           queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
@@ -192,6 +192,7 @@ export function useEquipmentSync(event: CalendarEvent) {
           async () => {
             if (mountedRef.current) {
               console.log('Project equipment changed, checking sync status');
+              setIsSynced(false); // Immediately mark as out of sync
               await checkEquipmentStatus();
             }
           }
