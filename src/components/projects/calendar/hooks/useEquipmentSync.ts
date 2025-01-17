@@ -8,7 +8,6 @@ export function useEquipmentSync(event: CalendarEvent) {
 
   return {
     isSynced,
-    checkSyncStatus,
     handleEquipmentSync
   };
 }

@@ -9,6 +9,8 @@ export function useSyncOperations(event: CalendarEvent) {
 
   const handleEquipmentSync = useCallback(async () => {
     try {
+      console.log('Starting equipment sync for event:', event.id);
+      
       // Create sync operation record
       const { error: syncError } = await supabase
         .from('sync_operations')
@@ -62,18 +64,19 @@ export function useSyncOperations(event: CalendarEvent) {
 
       if (updateError) throw updateError;
 
-      // Invalidate queries
+      // Invalidate queries to refresh UI
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
         queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
         queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
       ]);
 
-      toast.success('Equipment list synchronized successfully');
+      toast.success('Equipment synchronized successfully');
     } catch (error) {
       console.error('Error syncing equipment:', error);
-      toast.error('Failed to sync equipment list');
+      toast.error('Failed to sync equipment');
       
+      // Update sync operation status with error
       const { error: updateError } = await supabase
         .from('sync_operations')
         .update({ 
