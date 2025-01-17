@@ -33,14 +33,23 @@ export function RevenueChart({ ownerId }: RevenueChartProps) {
   const { data: revenueData, isLoading } = useQuery({
     queryKey: ['revenue-events', ownerId],
     queryFn: async () => {
+      console.log('Fetching revenue data for owner:', ownerId);
+      
       // First get project IDs for the owner if ownerId is provided
       let projectIds: string[] = [];
       if (ownerId) {
-        const { data: projects } = await supabase
+        const { data: projects, error: projectError } = await supabase
           .from('projects')
           .select('id')
           .eq('owner_id', ownerId);
+
+        if (projectError) {
+          console.error('Error fetching projects:', projectError);
+          throw projectError;
+        }
+
         projectIds = (projects || []).map(p => p.id);
+        console.log('Found project IDs:', projectIds);
         
         if (projectIds.length === 0) {
           return { 
@@ -53,7 +62,11 @@ export function RevenueChart({ ownerId }: RevenueChartProps) {
       // Then get events filtered by those project IDs if needed
       let query = supabase
         .from('project_events')
-        .select('date, total_price, status');
+        .select(`
+          date,
+          total_price,
+          status
+        `);
 
       if (ownerId && projectIds.length > 0) {
         query = query.in('project_id', projectIds);
@@ -61,7 +74,12 @@ export function RevenueChart({ ownerId }: RevenueChartProps) {
       
       const { data, error } = await query.order('date');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching events:', error);
+        throw error;
+      }
+
+      console.log('Fetched events:', data);
       
       // Group data by month and status
       const monthlyData = (data || []).reduce((acc: Record<string, Record<string, number>>, event) => {
