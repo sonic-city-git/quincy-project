@@ -1,7 +1,7 @@
 import { useState, useCallback } from 'react';
 import { CalendarEvent, EventType } from '@/types/events';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { fetchEvents, createEvent, updateEvent, deleteEvent } from '@/utils/eventQueries';
+import { fetchEvents, createEvent, updateEvent as updateEventQuery, deleteEvent as deleteEventQuery } from '@/utils/eventQueries';
 import { toast } from 'sonner';
 import { useEventManagement } from './useEventManagement';
 import { compareDates } from '@/utils/dateFormatters';
@@ -64,25 +64,33 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     return newEvent;
   };
 
-  const handleEventUpdate = async (updatedEvent: CalendarEvent) => {
+  const updateEvent = async (updatedEvent: CalendarEvent) => {
     if (!projectId) return;
     
-    await updateEvent(projectId, updatedEvent);
-    
-    queryClient.setQueryData(['events', projectId], (old: CalendarEvent[] | undefined) => 
-      old?.map(event => 
-        event.id === updatedEvent.id
-          ? updatedEvent
-          : event
-      ) || []
-    );
+    try {
+      await updateEventQuery(projectId, updatedEvent);
+      
+      queryClient.setQueryData(['events', projectId], (old: CalendarEvent[] | undefined) => 
+        old?.map(event => 
+          event.id === updatedEvent.id
+            ? updatedEvent
+            : event
+        ) || []
+      );
+
+      toast.success("Event updated successfully");
+    } catch (error) {
+      console.error('Error updating event:', error);
+      toast.error("Failed to update event");
+      throw error;
+    }
   };
 
-  const handleEventDelete = async (event: CalendarEvent) => {
+  const deleteEvent = async (event: CalendarEvent) => {
     if (!projectId) return;
 
     try {
-      await deleteEvent(event.id, projectId);
+      await deleteEventQuery(event.id, projectId);
 
       // Invalidate queries
       await Promise.all([
@@ -92,18 +100,12 @@ export const useCalendarEvents = (projectId: string | undefined) => {
         queryClient.invalidateQueries({ queryKey: ['project-event-roles', event.id] })
       ]);
 
-      toast("Event Deleted", {
-        description: "The event has been successfully deleted"
-      });
-
+      toast.success("Event deleted successfully");
       return true;
     } catch (error) {
       console.error('Error in deleteEvent:', error);
-      toast("Error", {
-        description: error instanceof Error ? error.message : "Failed to delete event",
-        style: { background: 'red', color: 'white' }
-      });
-      return false;
+      toast.error("Failed to delete event");
+      throw error;
     }
   };
 
@@ -121,7 +123,7 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     resetSelection,
     findEventOnDate,
     addEvent,
-    updateEvent: handleEventUpdate,
-    deleteEvent: handleEventDelete
+    updateEvent,
+    deleteEvent
   };
 };
