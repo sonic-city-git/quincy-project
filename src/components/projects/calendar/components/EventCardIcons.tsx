@@ -4,19 +4,13 @@ import { CalendarEvent } from "@/types/events";
 
 interface EventCardIconsProps {
   event: CalendarEvent;
-  isSynced: boolean;
   isEditingDisabled: boolean;
-  onViewEquipment: () => void;
-  onSyncEquipment: () => void;
   sectionTitle?: string;
 }
 
 export function EventCardIcons({
   event,
-  isSynced,
   isEditingDisabled,
-  onViewEquipment,
-  onSyncEquipment,
   sectionTitle
 }: EventCardIconsProps) {
   return (
@@ -30,10 +24,7 @@ export function EventCardIcons({
       <div className="flex justify-center items-center">
         {event.type.needs_equipment && (
           <EquipmentIcon
-            isSynced={isSynced}
             isEditingDisabled={isEditingDisabled}
-            onViewEquipment={onViewEquipment}
-            onSyncEquipment={onSyncEquipment}
             sectionTitle={sectionTitle}
           />
         )}

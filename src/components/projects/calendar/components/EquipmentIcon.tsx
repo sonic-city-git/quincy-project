@@ -1,12 +1,6 @@
 import { Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -14,74 +8,35 @@ import {
 } from "@/components/ui/tooltip";
 
 interface EquipmentIconProps {
-  isSynced: boolean;
   isEditingDisabled: boolean;
-  onViewEquipment: () => void;
-  onSyncEquipment: () => void;
   sectionTitle?: string;
 }
 
 export function EquipmentIcon({
-  isSynced,
   isEditingDisabled,
-  onViewEquipment,
-  onSyncEquipment,
   sectionTitle
 }: EquipmentIconProps) {
-  const iconClasses = `h-6 w-6 ${isSynced ? 'text-green-500' : 'text-blue-500'}`;
-  const tooltipText = isSynced 
-    ? "Equipment list matches project equipment" 
-    : "Equipment list needs to be synced with project";
-
-  if (isEditingDisabled) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="flex items-center justify-center">
-              <Package className={iconClasses} />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            {tooltipText}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
+  const iconClasses = "h-6 w-6 text-muted-foreground";
 
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center justify-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-10 w-10 p-0"
-                  data-sync-button
-                  data-section={sectionTitle}
-                >
-                  <Package className={iconClasses} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                <DropdownMenuItem onClick={onViewEquipment}>
-                  View equipment list
-                </DropdownMenuItem>
-                {!isSynced && (
-                  <DropdownMenuItem onClick={onSyncEquipment}>
-                    Sync from project equipment
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-10 w-10 p-0"
+              data-sync-button
+              data-section={sectionTitle}
+              disabled={isEditingDisabled}
+            >
+              <Package className={iconClasses} />
+            </Button>
           </div>
         </TooltipTrigger>
         <TooltipContent>
-          {tooltipText}
+          Equipment list
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
