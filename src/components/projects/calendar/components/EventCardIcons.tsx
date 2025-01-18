@@ -1,6 +1,7 @@
 import { MapPin, Users } from "lucide-react";
 import { EquipmentIcon } from "./EquipmentIcon";
 import { CalendarEvent } from "@/types/events";
+import { useSyncStatus } from "@/hooks/useSyncStatus";
 
 interface EventCardIconsProps {
   event: CalendarEvent;
@@ -22,6 +23,7 @@ export function EventCardIcons({
   sectionTitle
 }: EventCardIconsProps) {
   const showEquipmentIcon = EQUIPMENT_EVENT_TYPES.includes(event.type.name);
+  const { isSynced, isChecking } = useSyncStatus(event);
 
   return (
     <>
@@ -36,6 +38,10 @@ export function EventCardIcons({
           <EquipmentIcon
             isEditingDisabled={isEditingDisabled}
             sectionTitle={sectionTitle}
+            isSynced={isSynced}
+            isChecking={isChecking}
+            eventId={event.id}
+            projectId={event.project_id}
           />
         )}
       </div>
