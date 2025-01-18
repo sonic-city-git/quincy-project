@@ -85,6 +85,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onEditEvent={handleEditEvent}
       />
 
+      {/* Add Dialog */}
       <EventDialog
         isOpen={isAddDialogOpen}
         onClose={closeAddDialog}
@@ -93,6 +94,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         onAddEvent={addEvent}
       />
 
+      {/* Edit Dialog */}
       <EventDialog
         isOpen={isEditDialogOpen}
         onClose={closeEditDialog}
