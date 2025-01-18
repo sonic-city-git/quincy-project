@@ -8,11 +8,21 @@ interface EventCardIconsProps {
   sectionTitle?: string;
 }
 
+const EQUIPMENT_EVENT_TYPES = [
+  'Show',
+  'Double Show',
+  'Travel',
+  'INT Storage',
+  'EXT Storage'
+];
+
 export function EventCardIcons({
   event,
   isEditingDisabled,
   sectionTitle
 }: EventCardIconsProps) {
+  const showEquipmentIcon = EQUIPMENT_EVENT_TYPES.includes(event.type.name);
+
   return (
     <>
       <div className="flex justify-center items-center">
@@ -22,7 +32,7 @@ export function EventCardIcons({
       </div>
 
       <div className="flex justify-center items-center">
-        {event.type.needs_equipment && (
+        {showEquipmentIcon && (
           <EquipmentIcon
             isEditingDisabled={isEditingDisabled}
             sectionTitle={sectionTitle}
