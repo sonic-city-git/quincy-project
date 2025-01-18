@@ -50,9 +50,19 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
           />
         </div>
 
-        <div className="flex items-center justify-end text-sm">
+        <div className="flex items-center justify-end text-sm text-muted-foreground">
+          {formatPrice(event.equipment_price)}
+        </div>
+
+        <div className="flex items-center justify-end text-sm text-muted-foreground">
+          {formatPrice(0)} {/* Crew price - will be implemented later */}
+        </div>
+
+        <div className="flex items-center justify-end text-sm font-medium">
           {formatPrice(event.total_price)}
         </div>
+
+        <div /> {/* Empty column for alignment */}
       </EventCardGrid>
     </Card>
   );

@@ -195,18 +195,19 @@ export function EventSectionHeader({
 
         <div />
 
-        <div className="flex justify-center">
-          {onStatusChange && (
-            <EventStatusManager
-              status={title.toLowerCase()}
-              events={events}
-              onStatusChange={onStatusChange}
-              isCancelled={isCancelled}
-            />
-          )}
+        <div className="flex justify-end text-sm text-muted-foreground">
+          Equipment
         </div>
 
-        <div />
+        <div className="flex justify-end text-sm text-muted-foreground">
+          Crew
+        </div>
+
+        <div className="flex justify-end text-sm font-medium">
+          Total
+        </div>
+
+        <div /> {/* Empty column for alignment */}
       </EventSectionHeaderGrid>
     </div>
   );
