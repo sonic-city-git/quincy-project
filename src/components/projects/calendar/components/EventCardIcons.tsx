@@ -22,7 +22,7 @@ export function EventCardIcons({
   isEditingDisabled,
   sectionTitle
 }: EventCardIconsProps) {
-  const showEquipmentIcon = EQUIPMENT_EVENT_TYPES.includes(event.type.name);
+  const showEquipmentIcon = event.type.needs_equipment;
   const { isSynced, isChecking } = useSyncStatus(event);
 
   return (
