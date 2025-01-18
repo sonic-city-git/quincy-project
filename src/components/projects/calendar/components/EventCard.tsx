@@ -19,7 +19,7 @@ export function EventCard({ event, onEdit }: EventCardProps) {
   return (
     <>
       <div 
-        className="flex items-center gap-2 cursor-pointer" 
+        className="flex items-center gap-2 cursor-pointer select-none" 
         onDoubleClick={handleDoubleClick}
       >
         <Calendar className={`${iconClasses} text-muted-foreground`} />
@@ -29,7 +29,7 @@ export function EventCard({ event, onEdit }: EventCardProps) {
       </div>
       
       <div 
-        className="flex flex-col justify-center cursor-pointer" 
+        className="flex flex-col justify-center cursor-pointer select-none" 
         onDoubleClick={handleDoubleClick}
       >
         <div className="flex items-center">
