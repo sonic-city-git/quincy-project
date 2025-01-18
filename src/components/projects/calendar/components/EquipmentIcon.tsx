@@ -208,7 +208,7 @@ export function EquipmentIcon({
                 className="h-10 w-10 p-0"
                 disabled={true}
               >
-                <Package className={`h-6 w-6 ${getIconColor()}`} />
+                <Package className={getIconColor()} />
               </Button>
             </div>
           </TooltipTrigger>
@@ -233,7 +233,7 @@ export function EquipmentIcon({
                   className="h-10 w-10 p-0"
                   disabled={isEditingDisabled || isChecking}
                 >
-                  <Package className={`h-6 w-6 ${getIconColor()}`} />
+                  <Package className={getIconColor()} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
