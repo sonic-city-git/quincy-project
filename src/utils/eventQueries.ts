@@ -117,6 +117,17 @@ export const updateEvent = async (
   projectId: string,
   updatedEvent: CalendarEvent
 ) => {
+  // First delete any sync operations for this event
+  const { error: syncDeleteError } = await supabase
+    .from('sync_operations')
+    .delete()
+    .match({ event_id: updatedEvent.id });
+
+  if (syncDeleteError) {
+    console.error('Error deleting sync operations:', syncDeleteError);
+    throw syncDeleteError;
+  }
+
   const { error } = await supabase
     .from('project_events')
     .update({
@@ -137,7 +148,18 @@ export const deleteEvent = async (eventId: string, projectId: string) => {
   try {
     console.log('Starting deletion process for event:', eventId);
     
-    // First delete equipment records
+    // First delete sync operations
+    const { error: syncDeleteError } = await supabase
+      .from('sync_operations')
+      .delete()
+      .match({ event_id: eventId });
+      
+    if (syncDeleteError) {
+      console.error('Error deleting sync operations:', syncDeleteError);
+      throw new Error(`Failed to delete sync operations: ${syncDeleteError.message}`);
+    }
+
+    // Delete equipment records
     const { error: equipmentError } = await supabase
       .from('project_event_equipment')
       .delete()
