@@ -27,8 +27,6 @@ export function EquipmentIcon({
               variant="ghost"
               size="icon"
               className="h-10 w-10 p-0"
-              data-sync-button
-              data-section={sectionTitle}
               disabled={isEditingDisabled}
             >
               <Package className={iconClasses} />
