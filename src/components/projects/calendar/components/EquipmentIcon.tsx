@@ -170,7 +170,7 @@ export function EquipmentIcon({
                 className="h-10 w-10 p-0"
                 disabled={true}
               >
-                <Package className="h-6 w-6 text-green-500" />
+                <Package className="text-green-500" />
               </Button>
             </div>
           </TooltipTrigger>
