@@ -66,7 +66,6 @@ export function EventDialog({
       setName("");
       setStatus('proposed');
       setLocation("");
-      // Only reset selectedType if we have eventTypes
       if (eventTypes.length > 0) {
         setSelectedType(eventTypes[0].id);
       }
@@ -99,17 +98,17 @@ export function EventDialog({
           status,
           location,
         });
-        toast.success("Event updated successfully");
       } else if (date) {
         if (addEventCallback) {
           await addEventCallback(date, name.trim() || eventType.name, eventType);
-          toast.success("Event added successfully");
         } else if (onAddEvent) {
           await onAddEvent(date, name.trim() || eventType.name, eventType, status);
-          toast.success("Event added successfully");
         }
-        // Invalidate the events query to refresh the data
-        await queryClient.invalidateQueries({ queryKey: ['events'] });
+        // Invalidate queries to refresh data including prices
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['events'] }),
+          queryClient.invalidateQueries({ queryKey: ['calendar-events'] })
+        ]);
       }
 
       setName("");
@@ -124,11 +123,9 @@ export function EventDialog({
     if (event && onDeleteEvent) {
       try {
         await onDeleteEvent(event);
-        toast.success("Event deleted successfully");
         onClose();
       } catch (error) {
         console.error('Error deleting event:', error);
-        toast.error("Failed to delete event");
       }
     }
   };
