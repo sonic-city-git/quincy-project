@@ -10,6 +10,8 @@ import { useState } from "react";
 import { EquipmentDifferenceDialog } from "./equipment/EquipmentDifferenceDialog";
 import { EquipmentSyncMenu } from "./equipment/EquipmentSyncMenu";
 import { useSyncEquipment } from "./equipment/useSyncEquipment";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface EquipmentIconProps {
   isEditingDisabled: boolean;
@@ -20,6 +22,34 @@ interface EquipmentIconProps {
   projectId: string;
 }
 
+interface Equipment {
+  name: string;
+  code: string;
+}
+
+interface EquipmentGroup {
+  name: string;
+}
+
+interface EquipmentItem {
+  id: string;
+  equipment: Equipment;
+  quantity: number;
+  group: EquipmentGroup;
+}
+
+interface EquipmentChange {
+  item: EquipmentItem;
+  oldQuantity: number;
+  newQuantity: number;
+}
+
+interface EquipmentDifference {
+  added: EquipmentItem[];
+  removed: EquipmentItem[];
+  changed: EquipmentChange[];
+}
+
 export function EquipmentIcon({
   isEditingDisabled,
   isSynced,
@@ -28,7 +58,7 @@ export function EquipmentIcon({
   projectId
 }: EquipmentIconProps) {
   const [showDifferences, setShowDifferences] = useState(false);
-  const [differences, setDifferences] = useState({
+  const [differences, setDifferences] = useState<EquipmentDifference>({
     added: [],
     removed: [],
     changed: []
@@ -75,9 +105,9 @@ export function EquipmentIcon({
       const projectMap = new Map(projectEquipment?.map(item => [item.equipment_id, item]) || []);
       const eventMap = new Map(eventEquipment?.map(item => [item.equipment_id, item]) || []);
 
-      const added = [];
-      const removed = [];
-      const changed = [];
+      const added: EquipmentItem[] = [];
+      const removed: EquipmentItem[] = [];
+      const changed: EquipmentChange[] = [];
 
       // Find added and changed items
       projectMap.forEach((projectItem, equipId) => {
