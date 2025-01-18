@@ -18,14 +18,29 @@ export function useSyncEquipment(projectId: string, eventId: string) {
         return;
       }
 
-      // First delete existing event equipment that's no longer in the project
-      const { error: deleteError } = await supabase
+      // Get current event equipment to find what needs to be deleted
+      const { data: currentEventEquipment } = await supabase
         .from('project_event_equipment')
-        .delete()
-        .eq('event_id', eventId)
-        .not('equipment_id', 'in', projectEquipment.map(e => e.equipment_id));
+        .select('equipment_id')
+        .eq('event_id', eventId);
 
-      if (deleteError) throw deleteError;
+      if (currentEventEquipment) {
+        const projectEquipmentIds = projectEquipment.map(e => e.equipment_id);
+        const toDelete = currentEventEquipment
+          .filter(e => !projectEquipmentIds.includes(e.equipment_id))
+          .map(e => e.equipment_id);
+
+        // Delete equipment that's no longer in the project
+        if (toDelete.length > 0) {
+          const { error: deleteError } = await supabase
+            .from('project_event_equipment')
+            .delete()
+            .eq('event_id', eventId)
+            .in('equipment_id', toDelete);
+
+          if (deleteError) throw deleteError;
+        }
+      }
 
       // Then upsert the current project equipment
       const { error: upsertError } = await supabase
