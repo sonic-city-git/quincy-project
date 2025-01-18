@@ -18,16 +18,19 @@ export function useSyncEquipment(projectId: string, eventId: string) {
         return;
       }
 
-      // Delete existing event equipment
-      await supabase
+      // First delete existing event equipment that's no longer in the project
+      const { error: deleteError } = await supabase
         .from('project_event_equipment')
         .delete()
-        .eq('event_id', eventId);
+        .eq('event_id', eventId)
+        .not('equipment_id', 'in', projectEquipment.map(e => e.equipment_id));
 
-      // Insert new event equipment
-      const { error: insertError } = await supabase
+      if (deleteError) throw deleteError;
+
+      // Then upsert the current project equipment
+      const { error: upsertError } = await supabase
         .from('project_event_equipment')
-        .insert(
+        .upsert(
           projectEquipment.map(item => ({
             project_id: projectId,
             event_id: eventId,
@@ -35,10 +38,14 @@ export function useSyncEquipment(projectId: string, eventId: string) {
             quantity: item.quantity,
             group_id: item.group_id,
             is_synced: true
-          }))
+          })),
+          {
+            onConflict: 'event_id,equipment_id',
+            ignoreDuplicates: false // We want to update existing entries
+          }
         );
 
-      if (insertError) throw insertError;
+      if (upsertError) throw upsertError;
 
       toast.success("Equipment synced successfully");
       
