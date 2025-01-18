@@ -145,8 +145,8 @@ export function useSyncStatus(event: CalendarEvent) {
         },
         (payload: RealtimePostgresChangesPayload<SyncOperation>) => {
           console.log('Sync operation updated:', payload);
-          const newData = payload.new as SyncOperation;
-          if (newData && newData.status === 'completed') {
+          const newData = payload.new;
+          if (newData && 'status' in newData && newData.status === 'completed') {
             console.log('Successfully synced equipment for event', event.id);
             checkSyncStatus();
           }
