@@ -42,16 +42,16 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
           </span>
         </div>
 
-        <div className="flex items-center justify-end text-sm">
-          {formatPrice(event.total_price)}
-        </div>
-
         <div className="flex items-center justify-center">
           <EventActions
             event={event}
             onStatusChange={onStatusChange}
             isEditingDisabled={isEditingDisabled(event.status)}
           />
+        </div>
+
+        <div className="flex items-center justify-end text-sm">
+          {formatPrice(event.total_price)}
         </div>
       </EventCardGrid>
     </Card>
