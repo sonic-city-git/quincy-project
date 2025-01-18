@@ -2,6 +2,18 @@ import { useState, useEffect, useRef } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarEvent } from "@/types/events";
 import { useQueryClient } from "@tanstack/react-query";
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
+
+interface SyncOperation {
+  id: string;
+  project_id: string;
+  event_id: string;
+  status: string;
+  attempts: number;
+  error_message?: string;
+  created_at?: string;
+  updated_at?: string;
+}
 
 export function useSyncStatus(event: CalendarEvent) {
   const [isSynced, setIsSynced] = useState(true);
@@ -131,7 +143,7 @@ export function useSyncStatus(event: CalendarEvent) {
           table: 'sync_operations',
           filter: `event_id=eq.${event.id}`
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<SyncOperation>) => {
           console.log('Sync operation updated:', payload);
           if (payload.new && payload.new.status === 'completed') {
             console.log('Successfully synced equipment for event', event.id);
