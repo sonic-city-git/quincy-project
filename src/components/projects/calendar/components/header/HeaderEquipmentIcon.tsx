@@ -1,11 +1,4 @@
-import { Package } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { BaseEquipmentIcon } from "../equipment/BaseEquipmentIcon";
 
 interface HeaderEquipmentIconProps {
   sectionSyncStatus: 'synced' | 'not-synced' | 'no-equipment';
@@ -21,27 +14,10 @@ export function HeaderEquipmentIcon({
   }
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-10 w-10 p-0"
-        >
-          <Package 
-            className={`h-6 w-6 ${
-              sectionSyncStatus === 'synced'
-                ? 'text-green-500' 
-                : 'text-blue-500'
-            }`} 
-          />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start">
-        <DropdownMenuItem onClick={onSyncAllEquipment}>
-          Sync all equipment
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <BaseEquipmentIcon
+      isSynced={sectionSyncStatus === 'synced'}
+      onSync={onSyncAllEquipment}
+      syncLabel="Sync all equipment"
+    />
   );
 }

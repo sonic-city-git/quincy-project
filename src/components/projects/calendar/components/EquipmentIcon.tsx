@@ -1,26 +1,9 @@
-import { Package } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useState } from "react";
-import { EquipmentDifferenceDialog } from "./equipment/EquipmentDifferenceDialog";
-import { EquipmentSyncMenu } from "./equipment/EquipmentSyncMenu";
-import { useSyncEquipment } from "./equipment/useSyncEquipment";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-
-interface EquipmentIconProps {
-  isEditingDisabled: boolean;
-  sectionTitle?: string;
-  isSynced: boolean;
-  isChecking: boolean;
-  eventId: string;
-  projectId: string;
-}
+import { useState } from "react";
+import { BaseEquipmentIcon } from "./equipment/BaseEquipmentIcon";
+import { EquipmentDifferenceDialog } from "./equipment/EquipmentDifferenceDialog";
+import { useSyncEquipment } from "./equipment/useSyncEquipment";
 
 interface Equipment {
   name: string;
@@ -50,6 +33,15 @@ interface EquipmentDifference {
   changed: EquipmentChange[];
 }
 
+interface EquipmentIconProps {
+  isEditingDisabled: boolean;
+  sectionTitle?: string;
+  isSynced: boolean;
+  isChecking: boolean;
+  eventId: string;
+  projectId: string;
+}
+
 export function EquipmentIcon({
   isEditingDisabled,
   isSynced,
@@ -68,7 +60,6 @@ export function EquipmentIcon({
 
   const fetchDifferences = async () => {
     try {
-      // Get project equipment
       const { data: projectEquipment } = await supabase
         .from('project_equipment')
         .select(`
@@ -85,7 +76,6 @@ export function EquipmentIcon({
         `)
         .eq('project_id', projectId);
 
-      // Get event equipment
       const { data: eventEquipment } = await supabase
         .from('project_event_equipment')
         .select(`
@@ -109,7 +99,6 @@ export function EquipmentIcon({
       const removed: EquipmentItem[] = [];
       const changed: EquipmentChange[] = [];
 
-      // Find added and changed items
       projectMap.forEach((projectItem, equipId) => {
         const eventItem = eventMap.get(equipId);
         
@@ -134,7 +123,6 @@ export function EquipmentIcon({
         }
       });
 
-      // Find removed items
       eventMap.forEach((eventItem, equipId) => {
         if (!projectMap.has(equipId)) {
           removed.push({
@@ -158,36 +146,11 @@ export function EquipmentIcon({
     fetchDifferences();
   };
 
-  if (isSynced) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="flex items-center justify-center">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10 p-0"
-                disabled={true}
-              >
-                <Package className="text-green-500" />
-              </Button>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            Equipment is NSYNC
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-
   return (
     <>
-      <EquipmentSyncMenu
-        isEditingDisabled={isEditingDisabled}
-        isChecking={isChecking}
+      <BaseEquipmentIcon
         isSynced={isSynced}
+        isDisabled={isEditingDisabled || isChecking}
         onViewDifferences={handleViewDifferences}
         onSync={handleSync}
       />
