@@ -24,48 +24,56 @@ export function useSyncEquipment(projectId: string, eventId: string) {
         .select('equipment_id, group_id')
         .eq('event_id', eventId);
 
-      if (currentEventEquipment) {
-        // Create a set of equipment+group combinations from project
-        const projectEquipmentSet = new Set(
-          projectEquipment.map(e => `${e.equipment_id}-${e.group_id || 'null'}`)
+      // Delete equipment that's no longer in the project
+      if (currentEventEquipment && currentEventEquipment.length > 0) {
+        // Create a unique identifier for each equipment-group combination in the project
+        const projectEquipmentKeys = new Set(
+          projectEquipment.map(item => `${item.equipment_id}-${item.group_id || 'null'}`)
         );
 
-        // Find equipment+group combinations to delete
-        const toDelete = currentEventEquipment.filter(e => 
-          !projectEquipmentSet.has(`${e.equipment_id}-${e.group_id || 'null'}`)
+        // Find equipment to delete (in event but not in project)
+        const toDelete = currentEventEquipment.filter(item => 
+          !projectEquipmentKeys.has(`${item.equipment_id}-${item.group_id || 'null'}`)
         );
 
-        // Delete equipment that's no longer in the project
-        if (toDelete.length > 0) {
-          for (const item of toDelete) {
-            const { error: deleteError } = await supabase
-              .from('project_event_equipment')
-              .delete()
-              .eq('event_id', eventId)
-              .eq('equipment_id', item.equipment_id)
-              .eq('group_id', item.group_id);
+        // Delete equipment items one by one
+        for (const item of toDelete) {
+          const { error: deleteError } = await supabase
+            .from('project_event_equipment')
+            .delete()
+            .eq('event_id', eventId)
+            .eq('equipment_id', item.equipment_id)
+            .eq('group_id', item.group_id);
 
-            if (deleteError) throw deleteError;
+          if (deleteError) {
+            console.error('Error deleting equipment:', deleteError);
+            throw deleteError;
           }
         }
       }
 
-      // Process each equipment item individually to avoid conflicts
+      // Insert or update project equipment one by one
       for (const item of projectEquipment) {
         const { error: upsertError } = await supabase
           .from('project_event_equipment')
-          .upsert({
-            project_id: projectId,
-            event_id: eventId,
-            equipment_id: item.equipment_id,
-            quantity: item.quantity,
-            group_id: item.group_id,
-            is_synced: true
-          }, {
-            onConflict: 'event_id,equipment_id,group_id'
-          });
+          .upsert(
+            {
+              project_id: projectId,
+              event_id: eventId,
+              equipment_id: item.equipment_id,
+              quantity: item.quantity,
+              group_id: item.group_id,
+              is_synced: true
+            },
+            {
+              onConflict: 'event_id,equipment_id,group_id'
+            }
+          );
 
-        if (upsertError) throw upsertError;
+        if (upsertError) {
+          console.error('Error upserting equipment:', upsertError);
+          throw upsertError;
+        }
       }
 
       toast.success("Equipment synced successfully");
