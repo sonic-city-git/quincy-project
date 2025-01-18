@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { Trash2 } from "lucide-react";
 import { EventForm } from "./EventForm";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EventDialogProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ export function EventDialog({
   onDeleteEvent,
   addEventCallback
 }: EventDialogProps) {
+  const queryClient = useQueryClient();
   const [name, setName] = useState(event?.name || "");
   const [selectedType, setSelectedType] = useState<string>("");
   const [status, setStatus] = useState<CalendarEvent['status']>(
@@ -106,6 +108,8 @@ export function EventDialog({
           await onAddEvent(date, name.trim() || eventType.name, eventType, status);
           toast.success("Event added successfully");
         }
+        // Invalidate the events query to refresh the data
+        await queryClient.invalidateQueries({ queryKey: ['events'] });
       }
 
       setName("");
