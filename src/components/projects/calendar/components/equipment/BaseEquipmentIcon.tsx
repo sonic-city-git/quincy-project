@@ -33,14 +33,9 @@ export function BaseEquipmentIcon({
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 p-0"
-              disabled={true}
-            >
+            <div className="h-10 w-10 flex items-center justify-center">
               <Package className="text-green-500" />
-            </Button>
+            </div>
           </TooltipTrigger>
           <TooltipContent>
             <p>Equipment is NSYNC</p>
