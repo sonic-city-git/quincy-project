@@ -193,7 +193,16 @@ export function EventSectionHeader({
 
         <div />
 
-        <div />
+        <div className="flex items-center justify-center">
+          {onStatusChange && (
+            <EventStatusManager
+              status={title.toLowerCase()}
+              events={events}
+              onStatusChange={onStatusChange}
+              isCancelled={isCancelled}
+            />
+          )}
+        </div>
 
         <div className="flex justify-end text-sm text-muted-foreground">
           Equipment
