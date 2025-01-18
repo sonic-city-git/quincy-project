@@ -11,19 +11,13 @@ import { EventActions } from "./components/EventActions";
 interface EventCardProps {
   event: CalendarEvent;
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
-  onEdit: (event: CalendarEvent) => void;
+  onEdit: ((event: CalendarEvent) => void) | undefined;
   sectionTitle?: string;
 }
 
 export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: EventCardProps) {
   const isEditingDisabled = (status: string) => {
     return ['cancelled', 'invoice ready'].includes(status);
-  };
-
-  const handleEditClick = () => {
-    if (!isEditingDisabled(event.status)) {
-      onEdit(event);
-    }
   };
 
   return (
@@ -55,7 +49,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
         <EventActions
           event={event}
           onStatusChange={onStatusChange}
-          onEdit={handleEditClick}
+          onEdit={onEdit}
           isEditingDisabled={isEditingDisabled(event.status)}
         />
       </EventCardGrid>
