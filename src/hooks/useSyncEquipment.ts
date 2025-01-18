@@ -7,7 +7,7 @@ export function useSyncEquipment(projectId: string, eventId: string) {
 
   const handleSync = async () => {
     try {
-      // Get project equipment
+      // First, get all project equipment with their groups
       const { data: projectEquipment } = await supabase
         .from('project_equipment')
         .select('equipment_id, quantity, group_id')
@@ -18,58 +18,79 @@ export function useSyncEquipment(projectId: string, eventId: string) {
         return;
       }
 
-      // Get current event equipment to find what needs to be deleted
+      // Get current event equipment with their groups
       const { data: currentEventEquipment } = await supabase
         .from('project_event_equipment')
-        .select('equipment_id, group_id')
+        .select('equipment_id, quantity, group_id')
         .eq('event_id', eventId);
 
       if (currentEventEquipment) {
-        // Create a set of equipment+group combinations from project
-        const projectEquipmentSet = new Set(
-          projectEquipment.map(e => `${e.equipment_id}-${e.group_id || 'null'}`)
+        // Create a map of current event equipment for easy lookup
+        const currentEquipmentMap = new Map(
+          currentEventEquipment.map(item => [
+            `${item.equipment_id}-${item.group_id || 'null'}`,
+            item
+          ])
         );
 
-        // Find equipment+group combinations to delete
-        const toDelete = currentEventEquipment.filter(e => 
-          !projectEquipmentSet.has(`${e.equipment_id}-${e.group_id || 'null'}`)
+        // Create a map of project equipment for easy lookup
+        const projectEquipmentMap = new Map(
+          projectEquipment.map(item => [
+            `${item.equipment_id}-${item.group_id || 'null'}`,
+            item
+          ])
         );
 
-        // Delete equipment that's no longer in the project
-        if (toDelete.length > 0) {
-          for (const item of toDelete) {
+        // Find equipment to delete (in event but not in project)
+        for (const [key, eventItem] of currentEquipmentMap.entries()) {
+          if (!projectEquipmentMap.has(key)) {
             const { error: deleteError } = await supabase
               .from('project_event_equipment')
               .delete()
               .eq('event_id', eventId)
-              .eq('equipment_id', item.equipment_id)
-              .eq('group_id', item.group_id);
+              .eq('equipment_id', eventItem.equipment_id)
+              .eq('group_id', eventItem.group_id);
 
             if (deleteError) throw deleteError;
           }
         }
-      }
 
-      // Prepare equipment entries for upsert, maintaining group-specific quantities
-      const equipmentToUpsert = projectEquipment.map(item => ({
-        project_id: projectId,
-        event_id: eventId,
-        equipment_id: item.equipment_id,
-        quantity: item.quantity,
-        group_id: item.group_id,
-        is_synced: true
-      }));
+        // Update or insert equipment
+        for (const [key, projectItem] of projectEquipmentMap.entries()) {
+          const eventItem = currentEquipmentMap.get(key);
+          
+          // If quantities are different or item doesn't exist in event, upsert
+          if (!eventItem || eventItem.quantity !== projectItem.quantity) {
+            const { error: upsertError } = await supabase
+              .from('project_event_equipment')
+              .upsert({
+                project_id: projectId,
+                event_id: eventId,
+                equipment_id: projectItem.equipment_id,
+                quantity: projectItem.quantity,
+                group_id: projectItem.group_id,
+                is_synced: true
+              });
 
-      // Then upsert the current project equipment
-      for (const item of equipmentToUpsert) {
-        const { error: upsertError } = await supabase
-          .from('project_event_equipment')
-          .upsert(item, {
-            onConflict: 'event_id,equipment_id,group_id',
-            ignoreDuplicates: false
-          });
+            if (upsertError) throw upsertError;
+          }
+        }
+      } else {
+        // If no current event equipment exists, insert all project equipment
+        for (const item of projectEquipment) {
+          const { error: insertError } = await supabase
+            .from('project_event_equipment')
+            .insert({
+              project_id: projectId,
+              event_id: eventId,
+              equipment_id: item.equipment_id,
+              quantity: item.quantity,
+              group_id: item.group_id,
+              is_synced: true
+            });
 
-        if (upsertError) throw upsertError;
+          if (insertError) throw insertError;
+        }
       }
 
       toast.success("Equipment synced successfully");
