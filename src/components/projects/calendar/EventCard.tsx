@@ -61,8 +61,6 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
         <div className="flex items-center justify-end text-sm font-medium">
           {formatPrice(event.total_price)}
         </div>
-
-        <div /> {/* Empty column for alignment */}
       </EventCardGrid>
     </Card>
   );

@@ -215,8 +215,6 @@ export function EventSectionHeader({
         <div className="flex justify-end text-sm font-medium">
           Total
         </div>
-
-        <div /> {/* Empty column for alignment */}
       </EventSectionHeaderGrid>
     </div>
   );
