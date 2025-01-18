@@ -185,7 +185,6 @@ export function EquipmentIcon({
   };
 
   const getIconColor = () => {
-    if (isChecking) return "text-muted-foreground";
     if (isSynced) return "text-green-500";
     return "text-blue-500";
   };
