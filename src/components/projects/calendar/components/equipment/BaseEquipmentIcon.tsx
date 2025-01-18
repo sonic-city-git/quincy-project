@@ -22,19 +22,6 @@ export function BaseEquipmentIcon({
   onSync,
   syncLabel = "Sync equipment"
 }: BaseEquipmentIconProps) {
-  if (isSynced) {
-    return (
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-10 w-10 p-0"
-        disabled={true}
-      >
-        <Package className="text-green-500" />
-      </Button>
-    );
-  }
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -44,7 +31,7 @@ export function BaseEquipmentIcon({
           className="h-10 w-10 p-0"
           disabled={isDisabled}
         >
-          <Package className="text-blue-500" />
+          <Package className={isSynced ? "text-green-500" : "text-blue-500"} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start">

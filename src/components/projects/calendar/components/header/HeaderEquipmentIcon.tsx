@@ -1,3 +1,4 @@
+import { Package } from "lucide-react";
 import { BaseEquipmentIcon } from "../equipment/BaseEquipmentIcon";
 
 interface HeaderEquipmentIconProps {
