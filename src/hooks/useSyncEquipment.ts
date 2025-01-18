@@ -21,24 +21,32 @@ export function useSyncEquipment(projectId: string, eventId: string) {
       // Get current event equipment to find what needs to be deleted
       const { data: currentEventEquipment } = await supabase
         .from('project_event_equipment')
-        .select('equipment_id')
+        .select('equipment_id, group_id')
         .eq('event_id', eventId);
 
       if (currentEventEquipment) {
-        const projectEquipmentIds = projectEquipment.map(e => e.equipment_id);
-        const toDelete = currentEventEquipment
-          .filter(e => !projectEquipmentIds.includes(e.equipment_id))
-          .map(e => e.equipment_id);
+        // Create a set of equipment+group combinations from project
+        const projectEquipmentSet = new Set(
+          projectEquipment.map(e => `${e.equipment_id}-${e.group_id || 'null'}`)
+        );
+
+        // Find equipment+group combinations to delete
+        const toDelete = currentEventEquipment.filter(e => 
+          !projectEquipmentSet.has(`${e.equipment_id}-${e.group_id || 'null'}`)
+        );
 
         // Delete equipment that's no longer in the project
         if (toDelete.length > 0) {
-          const { error: deleteError } = await supabase
-            .from('project_event_equipment')
-            .delete()
-            .eq('event_id', eventId)
-            .in('equipment_id', toDelete);
+          for (const item of toDelete) {
+            const { error: deleteError } = await supabase
+              .from('project_event_equipment')
+              .delete()
+              .eq('event_id', eventId)
+              .eq('equipment_id', item.equipment_id)
+              .eq('group_id', item.group_id);
 
-          if (deleteError) throw deleteError;
+            if (deleteError) throw deleteError;
+          }
         }
       }
 
@@ -53,14 +61,16 @@ export function useSyncEquipment(projectId: string, eventId: string) {
       }));
 
       // Then upsert the current project equipment
-      const { error: upsertError } = await supabase
-        .from('project_event_equipment')
-        .upsert(equipmentToUpsert, {
-          onConflict: 'event_id,equipment_id,group_id', // Include group_id in conflict resolution
-          ignoreDuplicates: false // We want to update existing entries
-        });
+      for (const item of equipmentToUpsert) {
+        const { error: upsertError } = await supabase
+          .from('project_event_equipment')
+          .upsert(item, {
+            onConflict: 'event_id,equipment_id,group_id',
+            ignoreDuplicates: false
+          });
 
-      if (upsertError) throw upsertError;
+        if (upsertError) throw upsertError;
+      }
 
       toast.success("Equipment synced successfully");
       
