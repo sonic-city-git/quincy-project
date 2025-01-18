@@ -29,6 +29,16 @@ export function EventSection({
   const totalCrewPrice = 0; // TODO: Implement crew price calculation
   const totalPrice = events.reduce((sum, event) => sum + (event.total_price || 0), 0);
 
+  // Get the appropriate total label based on the section title
+  const getTotalLabel = () => {
+    const status = title.toLowerCase();
+    if (status === 'confirmed') return 'Confirmed Total';
+    if (status === 'proposed') return 'Proposed Total';
+    if (status === 'invoice ready') return 'Ready Total';
+    if (status === 'cancelled') return 'Cancelled Total';
+    return 'Section Total';
+  };
+
   return (
     <div className="mb-8">
       {!hideHeader && (
@@ -65,8 +75,11 @@ export function EventSection({
               <div className="flex justify-end text-sm text-muted-foreground">
                 {formatPrice(totalCrewPrice)}
               </div>
-              <div className="flex justify-end text-sm font-medium text-foreground">
-                {formatPrice(totalPrice)}
+              <div className="flex flex-col items-end">
+                <span className="text-xs text-muted-foreground mb-1">{getTotalLabel()}</span>
+                <span className="text-sm font-medium text-foreground">
+                  {formatPrice(totalPrice)}
+                </span>
               </div>
             </EventCardGrid>
           </div>
