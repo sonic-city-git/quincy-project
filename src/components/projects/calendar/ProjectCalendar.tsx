@@ -19,8 +19,6 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     isLoading,
     findEventOnDate,
     addEvent,
-    updateEvent,
-    deleteEvent
   } = useCalendarEvents(projectId);
 
   const {
@@ -52,6 +50,13 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     openEditDialog(event);
   };
 
+  const handleAddMultipleEvents = async (dates: Date[], name: string, eventType: any, status: CalendarEvent['status']) => {
+    console.log('Adding multiple events:', { dates, name, eventType, status });
+    for (const date of dates) {
+      await addEvent(date, name, eventType, status);
+    }
+  };
+
   if (isLoading) {
     return (
       <Card className="w-full p-6">
@@ -74,7 +79,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         events={events || []}
         onDayClick={handleDayClick}
         eventTypes={eventTypes}
-        onAddMultipleEvents={addEvent}
+        onAddMultipleEvents={handleAddMultipleEvents}
         onEditEvent={handleEditEvent}
       />
 
