@@ -6,9 +6,17 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { EquipmentDialog } from "./EquipmentDialog";
 
 interface EquipmentIconProps {
   isEditingDisabled: boolean;
@@ -28,6 +36,7 @@ export function EquipmentIcon({
   projectId
 }: EquipmentIconProps) {
   const queryClient = useQueryClient();
+  const [showDifferences, setShowDifferences] = useState(false);
 
   const handleSync = async () => {
     try {
@@ -85,30 +94,75 @@ export function EquipmentIcon({
 
   const getTooltipText = () => {
     if (isChecking) return "Checking sync status...";
-    if (isSynced) return "Equipment is synced";
-    return "Click to sync equipment";
+    if (isSynced) return "Equipment is NSYNC";
+    return "Equipment out of sync";
   };
 
+  if (isSynced) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex items-center justify-center">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 p-0 cursor-default"
+                disabled={true}
+              >
+                <Package className={`h-6 w-6 ${getIconColor()}`} />
+              </Button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            {getTooltipText()}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="flex items-center justify-center">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-10 w-10 p-0"
-              disabled={isEditingDisabled || isChecking}
-              onClick={!isSynced ? handleSync : undefined}
-            >
-              <Package className={`h-6 w-6 ${getIconColor()}`} />
-            </Button>
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>
-          {getTooltipText()}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 p-0"
+                  disabled={isEditingDisabled || isChecking}
+                >
+                  <Package className={`h-6 w-6 ${getIconColor()}`} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onSelect={() => setShowDifferences(true)}>
+                  View differences
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={handleSync}>
+                  Sync equipment
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </TooltipTrigger>
+          <TooltipContent>
+            {getTooltipText()}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+
+      <EquipmentDialog
+        isOpen={showDifferences}
+        onOpenChange={setShowDifferences}
+        equipmentDifference={{
+          added: [],
+          removed: [],
+          changed: []
+        }}
+      />
+    </>
   );
 }
