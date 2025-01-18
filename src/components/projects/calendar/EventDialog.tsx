@@ -57,17 +57,19 @@ export function EventDialog({
 
   // Reset form when dialog opens/closes
   useEffect(() => {
-    if (event) {
-      setName(event.name);
-      setSelectedType(event.type.id);
-      setStatus(event.status);
-      setLocation(event.location || "");
-    } else {
-      setName("");
-      setStatus('proposed');
-      setLocation("");
-      if (eventTypes.length > 0) {
-        setSelectedType(eventTypes[0].id);
+    if (isOpen) {
+      if (event) {
+        setName(event.name);
+        setSelectedType(event.type.id);
+        setStatus(event.status);
+        setLocation(event.location || "");
+      } else {
+        setName("");
+        setStatus('proposed');
+        setLocation("");
+        if (eventTypes.length > 0) {
+          setSelectedType(eventTypes[0].id);
+        }
       }
     }
   }, [event, eventTypes, isOpen]);
@@ -98,6 +100,7 @@ export function EventDialog({
           status,
           location,
         });
+        toast.success("Event updated successfully");
       } else if (date) {
         if (addEventCallback) {
           await addEventCallback(date, name.trim() || eventType.name, eventType);
@@ -109,6 +112,7 @@ export function EventDialog({
           queryClient.invalidateQueries({ queryKey: ['events'] }),
           queryClient.invalidateQueries({ queryKey: ['calendar-events'] })
         ]);
+        toast.success("Event added successfully");
       }
 
       setName("");
@@ -123,9 +127,11 @@ export function EventDialog({
     if (event && onDeleteEvent) {
       try {
         await onDeleteEvent(event);
+        toast.success("Event deleted successfully");
         onClose();
       } catch (error) {
         console.error('Error deleting event:', error);
+        toast.error("Failed to delete event");
       }
     }
   };
