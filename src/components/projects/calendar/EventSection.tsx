@@ -68,18 +68,19 @@ export function EventSection({
         {events.length > 1 && (
           <div className="mt-4 p-3 bg-zinc-800/50 rounded-md">
             <EventCardGrid>
-              <div className="col-span-8" /> {/* Span the first 8 columns */}
+              <div /> {/* Date column */}
+              <div className="text-sm text-muted-foreground">
+                {getTotalLabel()}
+              </div>
+              <div className="col-span-6" /> {/* Icons and other columns */}
               <div className="flex justify-end text-sm text-muted-foreground">
                 {formatPrice(totalEquipmentPrice)}
               </div>
               <div className="flex justify-end text-sm text-muted-foreground">
                 {formatPrice(totalCrewPrice)}
               </div>
-              <div className="flex flex-col items-end">
-                <span className="text-xs text-muted-foreground mb-1">{getTotalLabel()}</span>
-                <span className="text-sm font-medium text-foreground">
-                  {formatPrice(totalPrice)}
-                </span>
+              <div className="flex justify-end text-sm font-medium text-foreground">
+                {formatPrice(totalPrice)}
               </div>
             </EventCardGrid>
           </div>
