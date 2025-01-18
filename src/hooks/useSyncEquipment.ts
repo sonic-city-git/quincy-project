@@ -42,27 +42,21 @@ export function useSyncEquipment(projectId: string, eventId: string) {
         }
       }
 
-      // Create a Map to deduplicate equipment entries
-      const uniqueEquipment = new Map();
-      projectEquipment.forEach(item => {
-        uniqueEquipment.set(item.equipment_id, {
-          project_id: projectId,
-          event_id: eventId,
-          equipment_id: item.equipment_id,
-          quantity: item.quantity,
-          group_id: item.group_id,
-          is_synced: true
-        });
-      });
-
-      // Convert Map back to array for upsert
-      const equipmentToUpsert = Array.from(uniqueEquipment.values());
+      // Prepare equipment entries for upsert, maintaining group-specific quantities
+      const equipmentToUpsert = projectEquipment.map(item => ({
+        project_id: projectId,
+        event_id: eventId,
+        equipment_id: item.equipment_id,
+        quantity: item.quantity,
+        group_id: item.group_id,
+        is_synced: true
+      }));
 
       // Then upsert the current project equipment
       const { error: upsertError } = await supabase
         .from('project_event_equipment')
         .upsert(equipmentToUpsert, {
-          onConflict: 'event_id,equipment_id',
+          onConflict: 'event_id,equipment_id,group_id', // Include group_id in conflict resolution
           ignoreDuplicates: false // We want to update existing entries
         });
 
