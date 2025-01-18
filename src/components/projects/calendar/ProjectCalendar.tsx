@@ -3,7 +3,6 @@ import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import { EventDialog } from "./EventDialog";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
-import { useCallback } from "react";
 import { CalendarView } from "./CalendarView";
 import { Card } from "@/components/ui/card";
 import { CalendarEvent } from "@/types/events";
@@ -35,7 +34,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     openEditDialog,
   } = useEventDialog();
 
-  const handleDayClick = useCallback((date: Date) => {
+  const handleDayClick = (date: Date) => {
     const existingEvent = findEventOnDate(date);
     console.log('Calendar day clicked', { date, existingEvent });
 
@@ -46,17 +45,11 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
       console.log('Opening add dialog for date:', date);
       openAddDialog(date);
     }
-  }, [findEventOnDate, openEditDialog, openAddDialog]);
+  };
 
-  const handleEditEvent = useCallback((event: CalendarEvent) => {
+  const handleEditEvent = (event: CalendarEvent) => {
     console.log('Opening edit dialog for event:', event);
     openEditDialog(event);
-  }, [openEditDialog]);
-
-  const handleAddMultipleEvents = async (dates: Date[], name: string, eventType: any, status: CalendarEvent['status']) => {
-    for (const date of dates) {
-      await addEvent(date, name, eventType, status);
-    }
   };
 
   if (isLoading) {
@@ -81,7 +74,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         events={events || []}
         onDayClick={handleDayClick}
         eventTypes={eventTypes}
-        onAddMultipleEvents={handleAddMultipleEvents}
+        onAddMultipleEvents={addEvent}
         onEditEvent={handleEditEvent}
       />
 
