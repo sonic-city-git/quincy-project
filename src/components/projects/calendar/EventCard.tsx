@@ -26,7 +26,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
       className={`p-2 transition-colors mb-1.5 ${EventCardStatus({ status: event.status })}`}
     >
       <EventCardGrid>
-        <EventCardContent event={event} />
+        <EventCardContent event={event} onEdit={onEdit} />
         
         <EventCardIcons
           event={event}
@@ -46,12 +46,13 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
           {formatPrice(event.total_price)}
         </div>
 
-        <EventActions
-          event={event}
-          onStatusChange={onStatusChange}
-          onEdit={onEdit}
-          isEditingDisabled={isEditingDisabled(event.status)}
-        />
+        <div className="flex items-center justify-center">
+          <EventActions
+            event={event}
+            onStatusChange={onStatusChange}
+            isEditingDisabled={isEditingDisabled(event.status)}
+          />
+        </div>
       </EventCardGrid>
     </Card>
   );
