@@ -84,7 +84,7 @@ export function useSyncStatus(event: CalendarEvent) {
     // Initial check
     checkSyncStatus();
 
-    // Subscribe to changes
+    // Subscribe to project equipment changes
     const projectEquipmentChannel = supabase
       .channel(`project-equipment-${event.project_id}`)
       .on(
@@ -102,6 +102,7 @@ export function useSyncStatus(event: CalendarEvent) {
       )
       .subscribe();
 
+    // Subscribe to event equipment changes
     const eventEquipmentChannel = supabase
       .channel(`event-equipment-${event.id}`)
       .on(
@@ -119,10 +120,32 @@ export function useSyncStatus(event: CalendarEvent) {
       )
       .subscribe();
 
+    // Subscribe to sync operations
+    const syncOperationsChannel = supabase
+      .channel(`sync-operations-${event.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'sync_operations',
+          filter: `event_id=eq.${event.id}`
+        },
+        (payload) => {
+          console.log('Sync operation updated:', payload);
+          if (payload.new && payload.new.status === 'completed') {
+            console.log('Successfully synced equipment for event', event.id);
+            checkSyncStatus();
+          }
+        }
+      )
+      .subscribe();
+
     return () => {
       mountedRef.current = false;
       supabase.removeChannel(projectEquipmentChannel);
       supabase.removeChannel(eventEquipmentChannel);
+      supabase.removeChannel(syncOperationsChannel);
     };
   }, [event.id, event.project_id]);
 
