@@ -3,6 +3,7 @@ import { EventCard } from "./EventCard";
 import { EventSectionHeader } from "./components/EventSectionHeader";
 import { EventSectionContent } from "./components/EventSectionContent";
 import { formatPrice } from "@/utils/priceFormatters";
+import { EventCardGrid } from "./components/EventCardGrid";
 
 interface EventSectionProps {
   title: string;
@@ -25,7 +26,7 @@ export function EventSection({
   
   // Calculate total prices for the section
   const totalEquipmentPrice = events.reduce((sum, event) => sum + (event.equipment_price || 0), 0);
-  const totalRevenue = events.reduce((sum, event) => sum + (event.revenue || 0), 0);
+  const totalCrewPrice = 0; // TODO: Implement crew price calculation
   const totalPrice = events.reduce((sum, event) => sum + (event.total_price || 0), 0);
 
   return (
@@ -56,20 +57,18 @@ export function EventSection({
         {/* Price Summary */}
         {events.length > 1 && (
           <div className="mt-4 p-3 bg-zinc-800/50 rounded-md">
-            <div className="text-sm text-muted-foreground">
-              <div className="flex justify-between items-center">
-                <span>Equipment Total:</span>
-                <span>{formatPrice(totalEquipmentPrice)}</span>
+            <EventCardGrid>
+              <div className="col-span-8" /> {/* Span the first 8 columns */}
+              <div className="flex justify-end text-sm text-muted-foreground">
+                {formatPrice(totalEquipmentPrice)}
               </div>
-              <div className="flex justify-between items-center mt-1">
-                <span>Revenue Total:</span>
-                <span>{formatPrice(totalRevenue)}</span>
+              <div className="flex justify-end text-sm text-muted-foreground">
+                {formatPrice(totalCrewPrice)}
               </div>
-              <div className="flex justify-between items-center mt-2 pt-2 border-t border-zinc-700 font-medium text-foreground">
-                <span>Section Total:</span>
-                <span>{formatPrice(totalPrice)}</span>
+              <div className="flex justify-end text-sm font-medium text-foreground">
+                {formatPrice(totalPrice)}
               </div>
-            </div>
+            </EventCardGrid>
           </div>
         )}
       </EventSectionContent>
