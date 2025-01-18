@@ -180,6 +180,7 @@ export function EventSectionHeader({
             <HeaderEquipmentIcon 
               sectionSyncStatus={sectionSyncStatus} 
               onSyncAllEquipment={handleSyncAllEquipment}
+              sectionTitle={title}
             />
           )}
         </div>
