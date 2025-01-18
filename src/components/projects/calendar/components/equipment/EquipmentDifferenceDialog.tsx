@@ -119,8 +119,12 @@ export function EquipmentDifferenceDialog({
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md" onPointerDownOutside={(e) => e.preventDefault()}>
+    <Dialog open={isOpen} onOpenChange={onOpenChange} modal={false}>
+      <DialogContent 
+        className="max-w-md" 
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle>Equipment List Differences</DialogTitle>
         </DialogHeader>
