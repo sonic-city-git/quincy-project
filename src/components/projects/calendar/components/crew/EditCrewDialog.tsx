@@ -130,8 +130,8 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
                   {role.name}
                 </div>
                 <Select
-                  value={assignments[role.id] || ""}
-                  onValueChange={(value) => handleAssignCrew(role.id, value || null)}
+                  value={assignments[role.id] || "_none"}
+                  onValueChange={(value) => handleAssignCrew(role.id, value === "_none" ? null : value)}
                   disabled={isPending}
                 >
                   <SelectTrigger className="flex-1">

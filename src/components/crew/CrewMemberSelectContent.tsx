@@ -20,7 +20,7 @@ export function CrewMemberSelectContent({ crew = [], onSelect, showNoneOption = 
         <div className="p-1">
           {showNoneOption && (
             <SelectItem 
-              value=""
+              value="_none"
               className="flex items-center gap-3 py-2 px-3 cursor-pointer rounded-sm hover:bg-accent"
               onClick={() => onSelect?.("")}
             >
