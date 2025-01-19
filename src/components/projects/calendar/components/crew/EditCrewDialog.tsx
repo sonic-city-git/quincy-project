@@ -25,9 +25,19 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
   const { crew = [] } = useCrew();
   const { sortCrew } = useCrewSort();
   const [isPending, setIsPending] = useState(false);
+  const [assignments, setAssignments] = useState<Record<string, string | null>>({});
   const queryClient = useQueryClient();
 
   const sortedCrew = sortCrew(crew);
+
+  // Initialize assignments when roles change
+  useEffect(() => {
+    const initialAssignments = roles.reduce((acc, role) => {
+      acc[role.id] = role.assigned?.id || "_none";
+      return acc;
+    }, {} as Record<string, string>);
+    setAssignments(initialAssignments);
+  }, [roles]);
 
   // Effect to auto-assign preferred crew members on first open
   useEffect(() => {
@@ -47,13 +57,22 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
           if (!projectRoles?.length) return;
 
           // For each unassigned role that has a preferred member, assign them
+          const newAssignments = { ...assignments };
+          let hasChanges = false;
+
           for (const role of roles) {
-            if (!role.assigned) {
+            if (assignments[role.id] === "_none") {
               const projectRole = projectRoles.find(pr => pr.role_id === role.id);
               if (projectRole?.preferred_id) {
+                newAssignments[role.id] = projectRole.preferred_id;
                 await handleAssignCrew(role.id, projectRole.preferred_id);
+                hasChanges = true;
               }
             }
+          }
+
+          if (hasChanges) {
+            setAssignments(newAssignments);
           }
         } catch (error) {
           console.error("Error auto-assigning preferred members:", error);
@@ -62,7 +81,7 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
 
       autoAssignPreferredMembers();
     }
-  }, [open, event.project_id, roles]);
+  }, [open, event.project_id, roles, assignments]);
 
   const handleAssignCrew = async (roleId: string, crewMemberId: string | null) => {
     setIsPending(true);
@@ -79,10 +98,21 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
         queryKey: ['events', event.project_id]
       });
 
+      // Update local state
+      setAssignments(prev => ({
+        ...prev,
+        [roleId]: crewMemberId || "_none"
+      }));
+
       toast.success("Crew member assigned successfully");
     } catch (error: any) {
       console.error("Error assigning crew member:", error);
       toast.error(error.message || "Failed to assign crew member");
+      // Revert assignment on error
+      setAssignments(prev => ({
+        ...prev,
+        [roleId]: roles.find(r => r.id === roleId)?.assigned?.id || "_none"
+      }));
     } finally {
       setIsPending(false);
     }
@@ -111,8 +141,7 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
                   {role.name}
                 </div>
                 <Select
-                  key={`${role.id}-${role.assigned?.id || '_none'}`}
-                  defaultValue={role.assigned?.id || "_none"}
+                  value={assignments[role.id] || "_none"}
                   onValueChange={(value) => handleAssignCrew(role.id, value === "_none" ? null : value)}
                   disabled={isPending}
                 >
