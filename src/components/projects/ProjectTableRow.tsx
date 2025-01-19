@@ -4,6 +4,7 @@ import { formatDisplayDate } from "@/utils/dateFormatters";
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getInitials } from "@/utils/stringUtils";
+import { Badge } from "@/components/ui/badge";
 
 interface ProjectTableRowProps {
   project: Project;
@@ -42,6 +43,27 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
     }
   };
 
+  const getProjectTypeBadgeVariant = (type: string) => {
+    switch (type) {
+      case 'artist':
+        return 'default';
+      case 'corporate':
+        return 'secondary';
+      case 'broadcast':
+        return 'destructive';
+      case 'dry_hire':
+        return 'outline';
+      default:
+        return 'default';
+    }
+  };
+
+  const formatProjectType = (type: string) => {
+    return type.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+
   return (
     <TableRow className="group hover:bg-zinc-800/50">
       <TableCell className="w-[100px] text-sm text-muted-foreground">
@@ -49,12 +71,20 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
       </TableCell>
       <TableCell className="w-[345px]">
         <div className="max-w-[345px]">
-          <div 
-            className="px-3.5 py-2 rounded-md text-[15px] font-medium truncate cursor-pointer"
-            style={colorStyles}
-            onClick={() => navigate(`/projects/${project.id}`)}
-          >
-            {project.name}
+          <div className="flex items-center gap-2">
+            <div 
+              className="px-3.5 py-2 rounded-md text-[15px] font-medium truncate cursor-pointer flex-1"
+              style={colorStyles}
+              onClick={() => navigate(`/projects/${project.id}`)}
+            >
+              {project.name}
+            </div>
+            <Badge 
+              variant={getProjectTypeBadgeVariant(project.project_type)}
+              className="whitespace-nowrap"
+            >
+              {formatProjectType(project.project_type)}
+            </Badge>
           </div>
         </div>
       </TableCell>

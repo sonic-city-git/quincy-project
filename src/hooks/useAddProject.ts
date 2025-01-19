@@ -19,6 +19,7 @@ interface AddProjectData {
   name: string;
   customer_id?: string;
   crew_member_id?: string;
+  project_type: 'artist' | 'corporate' | 'broadcast' | 'dry_hire';
 }
 
 export function useAddProject() {
@@ -34,7 +35,8 @@ export function useAddProject() {
           name: data.name,
           customer_id: data.customer_id || null,
           owner_id: data.crew_member_id || null,
-          color: getRandomColor(), // Add random color when creating project
+          color: getRandomColor(),
+          project_type: data.project_type,
         }])
         .select()
         .single();
@@ -47,9 +49,7 @@ export function useAddProject() {
       return project;
     },
     onSuccess: () => {
-      // Invalidate both projects and project_equipment queries
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      queryClient.invalidateQueries({ queryKey: ['project_equipment'] });
       toast.success("Project added successfully");
     },
     onError: (error) => {

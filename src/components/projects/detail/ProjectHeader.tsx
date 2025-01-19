@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -105,12 +106,41 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
     setShowArchiveDialog(true);
   };
 
+  const getProjectTypeBadgeVariant = (type: string) => {
+    switch (type) {
+      case 'artist':
+        return 'default';
+      case 'corporate':
+        return 'secondary';
+      case 'broadcast':
+        return 'destructive';
+      case 'dry_hire':
+        return 'outline';
+      default:
+        return 'default';
+    }
+  };
+
+  const formatProjectType = (type: string) => {
+    return type.split('_').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+
   return (
     <div className="flex items-center justify-between py-6">
       <div className="space-y-1">
-        <h2 className="text-2xl font-semibold tracking-tight">
-          {project.name}
-        </h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-2xl font-semibold tracking-tight">
+            {project.name}
+          </h2>
+          <Badge 
+            variant={getProjectTypeBadgeVariant(project.project_type)}
+            className="whitespace-nowrap"
+          >
+            {formatProjectType(project.project_type)}
+          </Badge>
+        </div>
         <p className="text-sm text-muted-foreground">
           Project #{String(project.project_number).padStart(4, '0')}
         </p>
