@@ -7,10 +7,9 @@ import { Project } from "@/types/projects";
 import { useForm } from "react-hook-form";
 import { CrewMemberSelect } from "./CrewMemberSelect";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { HourlyCategory } from "@/types/events";
-import { useProjectRoles } from "@/hooks/useProjectRoles";
 
 interface AddRoleDialogProps {
   isOpen: boolean;
@@ -29,8 +28,6 @@ interface FormData {
 
 export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDialogProps) {
   const { roles } = useCrewRoles();
-  const { toast } = useToast();
-  const { addRole } = useProjectRoles(project.id);
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
     defaultValues: {
@@ -42,48 +39,24 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
 
   const onSubmit = async (data: FormData) => {
     try {
-      // Get project type information
-      const isArtist = project?.project_type?.code === 'artist';
+      const { error } = await supabase
+        .from('project_roles')
+        .insert({
+          project_id: project.id,
+          role_id: data.role_id,
+          daily_rate: data.daily_rate,
+          hourly_rate: data.hourly_rate,
+          preferred_id: data.preferred_id || null,
+          hourly_category: data.hourly_category
+        });
 
-      let isHoursEvent = false;
-      if (eventId) {
-        // Get event type information for the current event (if applicable)
-        const { data: eventData, error: eventError } = await supabase
-          .from('project_events')
-          .select('event_types(name)')
-          .eq('id', eventId)
-          .single();
+      if (error) throw error;
 
-        if (eventError) {
-          console.error('Error fetching event type:', eventError);
-          throw eventError;
-        }
-
-        isHoursEvent = eventData?.event_types?.name?.toLowerCase() === 'hours';
-      }
-
-      await addRole({
-        role_id: data.role_id,
-        daily_rate: data.daily_rate,
-        hourly_rate: data.hourly_rate,
-        preferred_id: data.preferred_id || null,
-        hourly_category: data.hourly_category,
-        is_artist: isArtist,
-        is_hours_event: isHoursEvent
-      });
-
-      toast({
-        title: "Success",
-        description: "Role added successfully",
-      });
+      toast.success("Role added successfully");
       onClose();
     } catch (error) {
       console.error('Error adding role:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add role",
-        variant: "destructive",
-      });
+      toast.error("Failed to add role");
     }
   };
 
