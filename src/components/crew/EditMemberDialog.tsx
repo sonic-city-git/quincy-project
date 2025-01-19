@@ -136,7 +136,7 @@ export function EditMemberDialog({
           <DialogHeader>
             <DialogTitle>Edit Crew Member</DialogTitle>
             <DialogDescription>
-              Make changes to the crew member's information below.
+              Make changes to {member.name}'s information below.
             </DialogDescription>
           </DialogHeader>
           <EditMemberForm
