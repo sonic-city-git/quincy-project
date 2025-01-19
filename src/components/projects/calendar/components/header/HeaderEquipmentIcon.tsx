@@ -13,10 +13,6 @@ export function HeaderEquipmentIcon({
   onSyncAllEquipment,
   sectionTitle = 'equipment'
 }: HeaderEquipmentIconProps) {
-  if (sectionSyncStatus === 'no-equipment') {
-    return <Package className="h-6 w-6 text-zinc-400" />;
-  }
-
   const syncLabel = `Sync ${sectionTitle} equipment`;
 
   return (
@@ -24,6 +20,7 @@ export function HeaderEquipmentIcon({
       isSynced={sectionSyncStatus === 'synced'}
       onSync={onSyncAllEquipment}
       syncLabel={syncLabel}
+      isUnsynced={sectionSyncStatus === 'no-equipment'}
     />
   );
 }

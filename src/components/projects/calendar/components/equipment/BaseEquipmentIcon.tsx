@@ -19,6 +19,7 @@ interface BaseEquipmentIconProps {
   onViewDifferences?: () => void;
   onSync: () => void;
   syncLabel?: string;
+  isUnsynced?: boolean;
 }
 
 export function BaseEquipmentIcon({
@@ -26,7 +27,8 @@ export function BaseEquipmentIcon({
   isDisabled,
   onViewDifferences,
   onSync,
-  syncLabel = "Sync equipment"
+  syncLabel = "Sync equipment",
+  isUnsynced = false
 }: BaseEquipmentIconProps) {
   if (isSynced) {
     return (
@@ -57,7 +59,7 @@ export function BaseEquipmentIcon({
                 className="h-10 w-10 p-0"
                 disabled={isDisabled}
               >
-                <Package className="text-blue-500" />
+                <Package className={isUnsynced ? "text-zinc-400" : "text-blue-500"} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
@@ -73,7 +75,7 @@ export function BaseEquipmentIcon({
           </DropdownMenu>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Equipment out of sync</p>
+          <p>{isUnsynced ? "No equipment" : "Equipment out of sync"}</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
