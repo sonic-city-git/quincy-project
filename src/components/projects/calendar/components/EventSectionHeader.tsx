@@ -206,7 +206,7 @@ export function EventSectionHeader({
         
         <div className="flex items-center justify-center">
           {!isCancelled && !isInvoiceReady && (
-            <HeaderCrewIcon needsCrew={eventType?.needs_crew ?? false} />
+            <HeaderCrewIcon event={events[0]} />
           )}
         </div>
 

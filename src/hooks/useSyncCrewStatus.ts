@@ -19,10 +19,7 @@ export function useSyncCrewStatus(event: CalendarEvent) {
       // Then check if all roles are assigned to crew members
       const { data: eventRoles } = await supabase
         .from('project_event_roles')
-        .select(`
-          id,
-          crew_member_id
-        `)
+        .select('crew_member_id')
         .eq('event_id', event.id);
 
       if (!eventRoles) {
@@ -38,7 +35,8 @@ export function useSyncCrewStatus(event: CalendarEvent) {
         hasProjectRoles: true,
         isSynced: allRolesAssigned
       };
-    }
+    },
+    enabled: !!event.id && !!event.project_id
   });
 
   return {
