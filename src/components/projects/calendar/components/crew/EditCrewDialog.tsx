@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useSyncCrewStatus } from "@/hooks/useSyncCrewStatus";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -28,6 +28,41 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
   const queryClient = useQueryClient();
 
   const sortedCrew = sortCrew(crew);
+
+  // Effect to auto-assign preferred crew members on first open
+  useEffect(() => {
+    if (open) {
+      const autoAssignPreferredMembers = async () => {
+        try {
+          // Get project roles with preferred members
+          const { data: projectRoles } = await supabase
+            .from('project_roles')
+            .select(`
+              role_id,
+              preferred_id
+            `)
+            .eq('project_id', event.project_id)
+            .not('preferred_id', 'is', null);
+
+          if (!projectRoles?.length) return;
+
+          // For each unassigned role that has a preferred member, assign them
+          for (const role of roles) {
+            if (!role.assigned) {
+              const projectRole = projectRoles.find(pr => pr.role_id === role.id);
+              if (projectRole?.preferred_id) {
+                await handleAssignCrew(role.id, projectRole.preferred_id);
+              }
+            }
+          }
+        } catch (error) {
+          console.error("Error auto-assigning preferred members:", error);
+        }
+      };
+
+      autoAssignPreferredMembers();
+    }
+  }, [open, event.project_id, roles]);
 
   const handleAssignCrew = async (roleId: string, crewMemberId: string | null) => {
     setIsPending(true);
