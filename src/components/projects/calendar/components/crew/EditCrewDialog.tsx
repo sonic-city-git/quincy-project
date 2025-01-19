@@ -33,7 +33,7 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
       const initialAssignments = roles.reduce((acc, role) => {
         acc[role.id] = role.assigned?.id || null;
         return acc;
-      }, {} as Record<string, string>);
+      }, {} as Record<string, string | null>);
       setAssignments(initialAssignments);
     }
   }, [roles, open]);
@@ -67,6 +67,12 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
         if (error) throw error;
       }
 
+      // Update local state after successful database operation
+      setAssignments(prev => ({
+        ...prev,
+        [roleId]: crewMemberId
+      }));
+
       await Promise.all([
         queryClient.invalidateQueries({ 
           queryKey: ['events', event.project_id]
@@ -76,15 +82,12 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
         })
       ]);
 
-      setAssignments(prev => ({
-        ...prev,
-        [roleId]: crewMemberId
-      }));
-
       toast.success("Crew member assignment updated");
     } catch (error: any) {
       console.error("Error assigning crew member:", error);
       toast.error(error.message || "Failed to assign crew member");
+      
+      // Revert the local state on error
       setAssignments(prev => ({
         ...prev,
         [roleId]: roles.find(r => r.id === roleId)?.assigned?.id || null
