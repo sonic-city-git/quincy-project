@@ -30,21 +30,22 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
 
   const sortedCrew = sortCrew(crew);
 
-  // Initialize assignments when roles change
+  // Initialize assignments when roles change or dialog opens
   useEffect(() => {
-    const initialAssignments = roles.reduce((acc, role) => {
-      acc[role.id] = role.assigned?.id || "_none";
-      return acc;
-    }, {} as Record<string, string>);
-    setAssignments(initialAssignments);
-  }, [roles]);
+    if (open) {
+      const initialAssignments = roles.reduce((acc, role) => {
+        acc[role.id] = role.assigned?.id || "_none";
+        return acc;
+      }, {} as Record<string, string>);
+      setAssignments(initialAssignments);
+    }
+  }, [roles, open]);
 
   // Effect to auto-assign preferred crew members on first open
   useEffect(() => {
     if (open) {
       const autoAssignPreferredMembers = async () => {
         try {
-          // Get project roles with preferred members
           const { data: projectRoles } = await supabase
             .from('project_roles')
             .select(`
@@ -56,7 +57,6 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
 
           if (!projectRoles?.length) return;
 
-          // For each unassigned role that has a preferred member, assign them
           const newAssignments = { ...assignments };
           let hasChanges = false;
 
@@ -99,22 +99,36 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
 
       autoAssignPreferredMembers();
     }
-  }, [open, event.project_id, roles, assignments]);
+  }, [open, event.project_id, event.id, roles, assignments]);
 
   const handleAssignCrew = async (roleId: string, crewMemberId: string | null) => {
     setIsPending(true);
     try {
-      // First, try to update or insert the role assignment
-      const { error } = await supabase
-        .from('project_event_roles')
-        .upsert({
-          project_id: event.project_id,
-          event_id: event.id,
-          role_id: roleId,
-          crew_member_id: crewMemberId
-        });
+      if (crewMemberId === "_none") {
+        // Delete the role assignment if "None" is selected
+        const { error } = await supabase
+          .from('project_event_roles')
+          .delete()
+          .match({
+            project_id: event.project_id,
+            event_id: event.id,
+            role_id: roleId
+          });
 
-      if (error) throw error;
+        if (error) throw error;
+      } else {
+        // Update or insert the role assignment
+        const { error } = await supabase
+          .from('project_event_roles')
+          .upsert({
+            project_id: event.project_id,
+            event_id: event.id,
+            role_id: roleId,
+            crew_member_id: crewMemberId
+          });
+
+        if (error) throw error;
+      }
 
       // Only update local state and invalidate queries after successful database update
       await Promise.all([
