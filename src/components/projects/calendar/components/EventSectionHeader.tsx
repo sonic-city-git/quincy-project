@@ -52,6 +52,33 @@ export function EventSectionHeader({
     checkProjectEquipment();
   }, [events]);
 
+  const handleSyncAllEquipment = async () => {
+    if (!events.length) return;
+
+    try {
+      // Sync equipment for all events in this section
+      for (const event of events) {
+        const { error } = await supabase.rpc('sync_event_equipment', {
+          p_event_id: event.id,
+          p_project_id: event.project_id
+        });
+
+        if (error) {
+          console.error('Error syncing equipment for event:', event.id, error);
+          toast.error(`Failed to sync equipment for event ${event.name}`);
+          return;
+        }
+      }
+
+      // Invalidate queries to refresh the data
+      await queryClient.invalidateQueries({ queryKey: ['events', events[0].project_id] });
+      toast.success('Equipment synced successfully');
+    } catch (error) {
+      console.error('Error in handleSyncAllEquipment:', error);
+      toast.error('Failed to sync equipment');
+    }
+  };
+
   if (isDoneAndDusted) {
     return null;
   }
