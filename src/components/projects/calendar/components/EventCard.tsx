@@ -1,5 +1,4 @@
 import { Calendar } from "lucide-react";
-import { format } from "date-fns";
 import { CalendarEvent } from "@/types/events";
 
 interface EventCardProps {
@@ -19,7 +18,7 @@ export function EventCard({ event, onEdit }: EventCardProps) {
   return (
     <>
       <div 
-        className="flex items-center gap-2 cursor-pointer select-none" 
+        className="flex items-center gap-2 hover:text-primary cursor-pointer select-none" 
         onClick={handleClick}
       >
         <Calendar className={`${iconClasses} text-muted-foreground`} />
@@ -29,7 +28,7 @@ export function EventCard({ event, onEdit }: EventCardProps) {
       </div>
       
       <div 
-        className="flex flex-col justify-center cursor-pointer select-none" 
+        className="flex flex-col justify-center hover:text-primary cursor-pointer select-none" 
         onClick={handleClick}
       >
         <div className="flex items-center">

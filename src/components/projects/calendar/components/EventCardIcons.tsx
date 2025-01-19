@@ -1,5 +1,4 @@
 import { MapPin, Users } from "lucide-react";
-import { EquipmentIcon } from "./EquipmentIcon";
 import { CalendarEvent } from "@/types/events";
 import { useSyncStatus } from "@/hooks/useSyncStatus";
 import { useSyncCrewStatus } from "@/hooks/useSyncCrewStatus";
