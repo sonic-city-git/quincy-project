@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState } from "react";
 import { EditCrewDialog } from "./crew/EditCrewDialog";
+import { useProjectDetails } from "@/hooks/useProjectDetails";
 
 interface EventCardIconsProps {
   event: CalendarEvent;
@@ -23,6 +24,7 @@ export function EventCardIcons({
   const { isSynced: isEquipmentSynced, isChecking: isCheckingEquipment, hasProjectEquipment } = useSyncStatus(event);
   const { hasProjectRoles, isSynced: isCrewSynced, isChecking: isCheckingCrew, roles = [] } = useSyncCrewStatus(event);
   const [showEditDialog, setShowEditDialog] = useState(false);
+  const { project } = useProjectDetails(event.project_id);
 
   return (
     <>
@@ -85,6 +87,7 @@ export function EventCardIcons({
       {showEditDialog && (
         <EditCrewDialog
           event={event}
+          projectName={project?.name || ""}
           open={showEditDialog}
           onOpenChange={setShowEditDialog}
         />
