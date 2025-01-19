@@ -81,8 +81,8 @@ export function EditMemberForm({
             <FormItem>
               <FormLabel>Folder</FormLabel>
               <Select 
-                value={field.value || "none"} 
-                onValueChange={(value) => field.onChange(value === "none" ? "" : value)}
+                value={field.value || "_none"} 
+                onValueChange={(value) => field.onChange(value === "_none" ? "" : value)}
                 disabled={foldersLoading}
               >
                 <FormControl>
@@ -91,7 +91,7 @@ export function EditMemberForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="_none">None</SelectItem>
                   {folders.map(folder => (
                     <SelectItem key={folder.id} value={folder.id}>
                       {folder.name}
