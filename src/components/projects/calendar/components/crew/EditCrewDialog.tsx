@@ -64,15 +64,28 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
             if (assignments[role.id] === "_none") {
               const projectRole = projectRoles.find(pr => pr.role_id === role.id);
               if (projectRole?.preferred_id) {
-                newAssignments[role.id] = projectRole.preferred_id;
-                await handleAssignCrew(role.id, projectRole.preferred_id);
-                hasChanges = true;
+                const { error } = await supabase
+                  .from('project_event_roles')
+                  .upsert({
+                    project_id: event.project_id,
+                    event_id: event.id,
+                    role_id: role.id,
+                    crew_member_id: projectRole.preferred_id
+                  });
+
+                if (!error) {
+                  newAssignments[role.id] = projectRole.preferred_id;
+                  hasChanges = true;
+                }
               }
             }
           }
 
           if (hasChanges) {
             setAssignments(newAssignments);
+            await queryClient.invalidateQueries({ 
+              queryKey: ['events', event.project_id]
+            });
           }
         } catch (error) {
           console.error("Error auto-assigning preferred members:", error);
@@ -86,14 +99,19 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
   const handleAssignCrew = async (roleId: string, crewMemberId: string | null) => {
     setIsPending(true);
     try {
+      // First, try to update or insert the role assignment
       const { error } = await supabase
         .from('project_event_roles')
-        .update({ crew_member_id: crewMemberId })
-        .eq('event_id', event.id)
-        .eq('role_id', roleId);
+        .upsert({
+          project_id: event.project_id,
+          event_id: event.id,
+          role_id: roleId,
+          crew_member_id: crewMemberId
+        });
 
       if (error) throw error;
 
+      // Only update local state and invalidate queries after successful database update
       await queryClient.invalidateQueries({ 
         queryKey: ['events', event.project_id]
       });
