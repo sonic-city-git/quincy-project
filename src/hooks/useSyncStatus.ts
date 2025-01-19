@@ -3,13 +3,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { CalendarEvent } from "@/types/events";
 
 export function useSyncStatus(event: CalendarEvent) {
-  const [isSynced, setIsSynced] = useState<boolean>(true);
+  const [isSynced, setIsSynced] = useState<boolean>(false);
   const [isChecking, setIsChecking] = useState<boolean>(true);
 
   useEffect(() => {
     const checkSyncStatus = async () => {
       if (!event.type.needs_equipment) {
-        setIsSynced(true);
+        setIsSynced(false);
         setIsChecking(false);
         return;
       }
@@ -48,7 +48,14 @@ export function useSyncStatus(event: CalendarEvent) {
           ])
         );
 
-        // Check if all project equipment exists in event with correct quantities
+        // If there's no equipment in either the project or event, consider it not synced
+        if (projectMap.size === 0 && eventMap.size === 0) {
+          setIsSynced(false);
+          setIsChecking(false);
+          return;
+        }
+
+        // Check if project equipment matches event equipment
         let synced = true;
         
         // Check if project equipment matches event equipment
