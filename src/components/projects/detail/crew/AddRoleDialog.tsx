@@ -29,8 +29,8 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
     defaultValues: {
-      daily_rate: 0,
-      hourly_rate: 0
+      daily_rate: 7500,
+      hourly_rate: 850
     }
   });
 
