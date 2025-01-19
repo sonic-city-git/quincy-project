@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { useCrew } from "@/hooks/useCrew";
 import { useCrewSort } from "@/components/crew/useCrewSort";
 import { HourlyCategory } from "@/integrations/supabase/types/crew";
+import { useProjectDetails } from "@/hooks/useProjectDetails";
+import { useParams } from "react-router-dom";
 
 interface ProjectRoleListProps {
   projectId: string;
@@ -19,6 +21,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
   const { crew } = useCrew();
   const { sortCrew } = useCrewSort();
   const [isUpdating, setIsUpdating] = useState(false);
+  const { project } = useProjectDetails(projectId);
 
   const handleRateChange = async (roleId: string, field: 'daily_rate' | 'hourly_rate', value: string) => {
     setIsUpdating(true);
@@ -103,6 +106,8 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     return aIndex - bIndex;
   });
 
+  const isArtistProject = project?.project_type?.code === 'artist';
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-[200px_1fr] gap-4 px-4 mb-2">
@@ -154,14 +159,19 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
               <Select
                 defaultValue={role.hourly_category || 'flat'}
                 onValueChange={(value) => handleCategoryChange(role.id, value as HourlyCategory)}
+                disabled={isArtistProject}
               >
                 <SelectTrigger className="min-w-[140px] w-[130px]">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-900 border border-zinc-800">
                   <SelectItem value="flat">Flat</SelectItem>
-                  <SelectItem value="corporate">Corporate</SelectItem>
-                  <SelectItem value="broadcast">Broadcast</SelectItem>
+                  {!isArtistProject && (
+                    <>
+                      <SelectItem value="corporate">Corporate</SelectItem>
+                      <SelectItem value="broadcast">Broadcast</SelectItem>
+                    </>
+                  )}
                 </SelectContent>
               </Select>
               
