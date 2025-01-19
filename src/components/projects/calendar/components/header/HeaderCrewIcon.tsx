@@ -10,6 +10,7 @@ interface HeaderCrewIconProps {
 export function HeaderCrewIcon({ event }: HeaderCrewIconProps) {
   const { hasProjectRoles, isSynced, isChecking } = useSyncCrewStatus(event);
 
+  // Show the icon if there are project roles, regardless of event type
   if (!hasProjectRoles) return null;
   
   return (

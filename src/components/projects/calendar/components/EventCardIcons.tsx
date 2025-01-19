@@ -49,7 +49,7 @@ export function EventCardIcons({
       </div>
 
       <div className="flex justify-center items-center">
-        {hasProjectRoles && event.type.needs_crew && (
+        {hasProjectRoles && (
           <Tooltip>
             <TooltipTrigger asChild>
               <button 
