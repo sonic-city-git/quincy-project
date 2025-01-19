@@ -6,6 +6,7 @@ import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { CalendarView } from "./CalendarView";
 import { Card } from "@/components/ui/card";
 import { CalendarEvent } from "@/types/events";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -74,35 +75,37 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   }
 
   return (
-    <div className="w-full space-y-8">
-      <CalendarView
-        currentDate={currentDate}
-        setCurrentDate={setCurrentDate}
-        events={events || []}
-        onDayClick={handleDayClick}
-        eventTypes={eventTypes}
-        onAddMultipleEvents={handleAddMultipleEvents}
-        onEditEvent={handleEditEvent}
-      />
+    <TooltipProvider>
+      <div className="w-full space-y-8">
+        <CalendarView
+          currentDate={currentDate}
+          setCurrentDate={setCurrentDate}
+          events={events || []}
+          onDayClick={handleDayClick}
+          eventTypes={eventTypes}
+          onAddMultipleEvents={handleAddMultipleEvents}
+          onEditEvent={handleEditEvent}
+        />
 
-      {/* Add Dialog */}
-      <EventDialog
-        isOpen={isAddDialogOpen}
-        onClose={closeAddDialog}
-        date={selectedDate}
-        eventTypes={eventTypes}
-        onAddEvent={addEvent}
-      />
+        {/* Add Dialog */}
+        <EventDialog
+          isOpen={isAddDialogOpen}
+          onClose={closeAddDialog}
+          date={selectedDate}
+          eventTypes={eventTypes}
+          onAddEvent={addEvent}
+        />
 
-      {/* Edit Dialog */}
-      <EventDialog
-        isOpen={isEditDialogOpen}
-        onClose={closeEditDialog}
-        event={selectedEvent}
-        eventTypes={eventTypes}
-        onUpdateEvent={updateEvent}
-        onDeleteEvent={deleteEvent}
-      />
-    </div>
+        {/* Edit Dialog */}
+        <EventDialog
+          isOpen={isEditDialogOpen}
+          onClose={closeEditDialog}
+          event={selectedEvent}
+          eventTypes={eventTypes}
+          onUpdateEvent={updateEvent}
+          onDeleteEvent={deleteEvent}
+        />
+      </div>
+    </TooltipProvider>
   );
 }
