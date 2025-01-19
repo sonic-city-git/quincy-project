@@ -40,11 +40,20 @@ export function useProjectRoles(projectId: string) {
     hourly_rate: number;
     preferred_id: string;
     hourly_category: HourlyCategory;
+    is_artist?: boolean;
+    is_hours_event?: boolean;
   }) => {
     try {
       const { error } = await supabase
         .from('project_roles')
-        .insert([{ ...roleData, project_id: projectId }]);
+        .insert([{ 
+          project_id: projectId,
+          role_id: roleData.role_id,
+          daily_rate: roleData.daily_rate,
+          hourly_rate: roleData.hourly_rate,
+          preferred_id: roleData.preferred_id,
+          hourly_category: roleData.hourly_category
+        }]);
 
       if (error) throw error;
 

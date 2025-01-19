@@ -55,7 +55,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
   const onSubmit = async (data: FormData) => {
     try {
       // Get project type information
-      const isArtist = project?.project_type?.code === 'artist';
+      const isArtist = project?.project_types?.code === 'artist';
 
       // Get event type information for the current event (if applicable)
       const { data: eventType } = await supabase
