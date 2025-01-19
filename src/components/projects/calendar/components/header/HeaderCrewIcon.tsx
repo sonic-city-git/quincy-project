@@ -27,8 +27,9 @@ export function HeaderCrewIcon({ events, onSyncPreferredCrew }: HeaderCrewIconPr
 
   // Check if all events have their crew assigned
   const allEventsSynced = events.every(event => {
-    const { isSynced } = useSyncCrewStatus(event);
-    return isSynced;
+    // We don't want to use hooks in a loop, so we'll check the event's roles directly
+    const hasAllRolesAssigned = event.project_event_roles?.every(role => role.crew_member_id !== null);
+    return hasAllRolesAssigned;
   });
   
   // If all crew is assigned across all events, show green icon without dropdown
