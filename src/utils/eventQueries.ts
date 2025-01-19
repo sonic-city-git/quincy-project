@@ -66,7 +66,10 @@ export const createEvent = async (
         date: formattedDate,
         name: eventName.trim() || eventType.name,
         event_type_id: eventType.id,
-        status: status
+        status: status,
+        total_price: 0,
+        equipment_price: 0,
+        crew_price: 0
       })
       .select(`
         *,
