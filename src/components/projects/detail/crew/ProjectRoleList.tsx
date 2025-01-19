@@ -10,7 +10,6 @@ import { useCrew } from "@/hooks/useCrew";
 import { useCrewSort } from "@/components/crew/useCrewSort";
 import { HourlyCategory } from "@/integrations/supabase/types/crew";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
-import { useParams } from "react-router-dom";
 
 interface ProjectRoleListProps {
   projectId: string;
@@ -61,25 +60,6 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     }
   };
 
-  const handleCategoryChange = async (roleId: string, category: HourlyCategory) => {
-    setIsUpdating(true);
-    try {
-      const { error } = await supabase
-        .from('project_roles')
-        .update({ hourly_category: category })
-        .eq('id', roleId);
-
-      if (error) throw error;
-      await refetch();
-      toast.success('Rate category updated');
-    } catch (error) {
-      console.error('Error updating rate category:', error);
-      toast.error('Failed to update rate category');
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
   if (loading || isUpdating) {
     return (
       <div className="flex justify-center py-8">
@@ -106,16 +86,15 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     return aIndex - bIndex;
   });
 
-  const isArtistProject = project?.project_type?.code === 'artist';
+  const isArtistProject = project?.project_types?.code === 'artist';
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-[200px_1fr] gap-4 px-4 mb-2">
         <div className="text-sm font-medium">Role</div>
-        <div className="grid grid-cols-[1fr_1fr_1fr_2fr] gap-4">
+        <div className="grid grid-cols-[1fr_1fr_2fr] gap-4">
           <div className="text-sm font-medium">Daily rate</div>
           <div className="text-sm font-medium">Hourly rate</div>
-          <div className="text-sm font-medium">Category</div>
           <div className="text-sm font-medium">Preferred crew</div>
         </div>
       </div>
@@ -133,7 +112,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
               </span>
             </div>
             
-            <div className="grid grid-cols-[1fr_1fr_1fr_2fr] gap-4 items-center">
+            <div className="grid grid-cols-[1fr_1fr_2fr] gap-4 items-center">
               <Input
                 type="number"
                 inputMode="decimal"
@@ -155,25 +134,6 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
                 placeholder="Hourly rate"
                 onBlur={(e) => handleRateChange(role.id, 'hourly_rate', e.target.value)}
               />
-
-              <Select
-                defaultValue={role.hourly_category || 'flat'}
-                onValueChange={(value) => handleCategoryChange(role.id, value as HourlyCategory)}
-                disabled={isArtistProject}
-              >
-                <SelectTrigger className="min-w-[140px] w-[130px]">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent className="bg-zinc-900 border border-zinc-800">
-                  <SelectItem value="flat">Flat</SelectItem>
-                  {!isArtistProject && (
-                    <>
-                      <SelectItem value="corporate">Corporate</SelectItem>
-                      <SelectItem value="broadcast">Broadcast</SelectItem>
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
               
               <Select
                 defaultValue={role.preferred?.id}

@@ -234,3 +234,15 @@ export const deleteEvent = async (eventId: string, projectId: string) => {
     throw error;
   }
 };
+
+export const updateEventRole = async (roleId: string, data: any) => {
+  const { error } = await supabase
+    .from('project_event_roles')
+    .update(data)
+    .eq('id', roleId);
+
+  if (error) {
+    console.error('Error updating event role:', error);
+    throw error;
+  }
+};
