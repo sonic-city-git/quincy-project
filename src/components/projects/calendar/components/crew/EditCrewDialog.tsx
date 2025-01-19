@@ -83,9 +83,14 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
 
           if (hasChanges) {
             setAssignments(newAssignments);
-            await queryClient.invalidateQueries({ 
-              queryKey: ['events', event.project_id]
-            });
+            await Promise.all([
+              queryClient.invalidateQueries({ 
+                queryKey: ['events', event.project_id]
+              }),
+              queryClient.invalidateQueries({
+                queryKey: ['crew-sync-status', event.id]
+              })
+            ]);
           }
         } catch (error) {
           console.error("Error auto-assigning preferred members:", error);
@@ -112,9 +117,14 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
       if (error) throw error;
 
       // Only update local state and invalidate queries after successful database update
-      await queryClient.invalidateQueries({ 
-        queryKey: ['events', event.project_id]
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ 
+          queryKey: ['events', event.project_id]
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['crew-sync-status', event.id]
+        })
+      ]);
 
       // Update local state
       setAssignments(prev => ({
@@ -136,8 +146,21 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
     }
   };
 
+  const handleClose = async () => {
+    // Ensure all queries are invalidated when dialog closes
+    await Promise.all([
+      queryClient.invalidateQueries({ 
+        queryKey: ['events', event.project_id]
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ['crew-sync-status', event.id]
+      })
+    ]);
+    onOpenChange(false);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Crew Assignments</DialogTitle>
@@ -181,7 +204,7 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
         </ScrollArea>
 
         <div className="flex justify-end">
-          <Button onClick={() => onOpenChange(false)} disabled={isPending}>
+          <Button onClick={handleClose} disabled={isPending}>
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Done
           </Button>
