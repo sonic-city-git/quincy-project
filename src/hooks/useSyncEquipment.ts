@@ -1,7 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 export function useSyncEquipment(projectId: string, eventId: string) {
+  const queryClient = useQueryClient();
+
   const handleSync = async () => {
     try {
       console.log('Starting equipment sync for project:', projectId, 'event:', eventId);
