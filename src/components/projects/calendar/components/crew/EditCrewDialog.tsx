@@ -64,18 +64,26 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
             if (assignments[role.id] === "_none") {
               const projectRole = projectRoles.find(pr => pr.role_id === role.id);
               if (projectRole?.preferred_id) {
-                const { error } = await supabase
-                  .from('project_event_roles')
-                  .upsert({
-                    project_id: event.project_id,
-                    event_id: event.id,
-                    role_id: role.id,
-                    crew_member_id: projectRole.preferred_id
-                  });
+                // Check if preferred member is from Sonic City
+                const preferredMember = crew?.find(member => member.id === projectRole.preferred_id);
+                const SONIC_CITY_FOLDER_ID = "34f3469f-02bd-4ecf-82f9-11a4e88c2d77";
+                
+                if (preferredMember?.folder_id === SONIC_CITY_FOLDER_ID) {
+                  const { error } = await supabase
+                    .from('project_event_roles')
+                    .upsert({
+                      project_id: event.project_id,
+                      event_id: event.id,
+                      role_id: role.id,
+                      crew_member_id: projectRole.preferred_id
+                    });
 
-                if (!error) {
-                  newAssignments[role.id] = projectRole.preferred_id;
-                  hasChanges = true;
+                  if (!error) {
+                    newAssignments[role.id] = projectRole.preferred_id;
+                    hasChanges = true;
+                  }
+                } else {
+                  console.log('Preferred member is not from Sonic City, skipping auto-assignment');
                 }
               }
             }
@@ -99,7 +107,7 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
 
       autoAssignPreferredMembers();
     }
-  }, [open, event.project_id, event.id, roles, assignments]);
+  }, [open, event.project_id, event.id, roles, assignments, crew]);
 
   const handleAssignCrew = async (roleId: string, crewMemberId: string | null) => {
     setIsPending(true);
