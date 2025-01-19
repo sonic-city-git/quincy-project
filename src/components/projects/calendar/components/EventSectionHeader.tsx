@@ -9,6 +9,7 @@ import { useSyncSubscriptions } from "@/hooks/useSyncSubscriptions";
 import { StatusIcon } from "./header/StatusIcon";
 import { HeaderEquipmentIcon } from "./header/HeaderEquipmentIcon";
 import { HeaderCrewIcon } from "./header/HeaderCrewIcon";
+import { useEffect, useState } from "react";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -28,11 +29,28 @@ export function EventSectionHeader({
   const isDoneAndDusted = title.toLowerCase() === 'done and dusted';
   const sectionSyncStatus = useSectionSyncStatus(events);
   const queryClient = useQueryClient();
+  const [hasProjectEquipment, setHasProjectEquipment] = useState(false);
   
   // Set up sync subscriptions if we have events
   if (events.length > 0) {
     useSyncSubscriptions(events[0].project_id);
   }
+
+  useEffect(() => {
+    const checkProjectEquipment = async () => {
+      if (events.length > 0) {
+        const { data } = await supabase
+          .from('project_equipment')
+          .select('id')
+          .eq('project_id', events[0].project_id)
+          .limit(1);
+        
+        setHasProjectEquipment(!!data && data.length > 0);
+      }
+    };
+
+    checkProjectEquipment();
+  }, [events]);
 
   const handleSyncAllEquipment = async () => {
     if (!events.length) {
@@ -181,6 +199,7 @@ export function EventSectionHeader({
               sectionSyncStatus={sectionSyncStatus} 
               onSyncAllEquipment={handleSyncAllEquipment}
               sectionTitle={title}
+              hasProjectEquipment={hasProjectEquipment}
             />
           )}
         </div>

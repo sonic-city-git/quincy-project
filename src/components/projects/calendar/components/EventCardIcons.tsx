@@ -26,7 +26,7 @@ export function EventCardIcons({
       </div>
 
       <div className="flex justify-center items-center">
-        {showEquipmentIcon && (
+        {showEquipmentIcon && hasProjectEquipment && (
           <EquipmentIcon
             isEditingDisabled={isEditingDisabled}
             sectionTitle={sectionTitle}
