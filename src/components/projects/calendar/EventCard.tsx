@@ -74,7 +74,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
           </div>
 
           <div className="flex items-center justify-end text-sm text-muted-foreground">
-            {formatPrice(event.total_price - (event.equipment_price || 0))}
+            {formatPrice(event.crew_price)}
           </div>
 
           <div className="flex items-center justify-end text-sm font-medium">
