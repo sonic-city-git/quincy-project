@@ -150,6 +150,7 @@ export function EventManagementDialog({
 
   const selectedEventType = eventTypes.find(type => type.id === selectedType);
   const isNameRequired = selectedEventType?.name === 'Show' || selectedEventType?.name === 'Double Show';
+  const showCrewSection = selectedEventType?.needs_crew && hasProjectRoles;
 
   return (
     <>
@@ -234,7 +235,7 @@ export function EventManagementDialog({
             <Separator />
 
             {/* Crew Section */}
-            {hasProjectRoles && (
+            {showCrewSection && (
               <div className="space-y-4">
                 <h2 className="text-lg font-semibold">Crew Assignments</h2>
                 <ScrollArea className="h-[200px] pr-4">
