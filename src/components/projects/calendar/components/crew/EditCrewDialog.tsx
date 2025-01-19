@@ -9,6 +9,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useCrew } from "@/hooks/useCrew";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useCrewSort } from "@/hooks/useCrewSort";
 
 interface EditCrewDialogProps {
   event: CalendarEvent;
@@ -19,8 +21,11 @@ interface EditCrewDialogProps {
 export function EditCrewDialog({ event, open, onOpenChange }: EditCrewDialogProps) {
   const { roles = [] } = useSyncCrewStatus(event);
   const { crew = [] } = useCrew();
+  const { sortCrew } = useCrewSort();
   const [isPending, setIsPending] = useState(false);
   const queryClient = useQueryClient();
+
+  const sortedCrew = sortCrew(crew);
 
   const handleAssignCrew = async (roleId: string, crewMemberId: string | null) => {
     setIsPending(true);
@@ -53,35 +58,37 @@ export function EditCrewDialog({ event, open, onOpenChange }: EditCrewDialogProp
           <DialogTitle>Edit Crew Assignments</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {roles.map(role => (
-            <div key={role.id} className="flex items-center gap-4">
-              <div 
-                className="w-24 px-2 py-1 rounded text-sm text-white text-center"
-                style={{ backgroundColor: role.color }}
-              >
-                {role.name}
+        <ScrollArea className="h-[400px] pr-4">
+          <div className="space-y-4 py-4">
+            {roles.map(role => (
+              <div key={role.id} className="flex items-center gap-4">
+                <div 
+                  className="w-24 px-2 py-1 rounded text-sm text-white text-center"
+                  style={{ backgroundColor: role.color }}
+                >
+                  {role.name}
+                </div>
+                <Select
+                  value={role.assigned?.id || "_none"}
+                  onValueChange={(value) => handleAssignCrew(role.id, value === "_none" ? null : value)}
+                  disabled={isPending}
+                >
+                  <SelectTrigger className="flex-1">
+                    <SelectValue placeholder="Select crew member" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="_none">None</SelectItem>
+                    {sortedCrew.map(member => (
+                      <SelectItem key={member.id} value={member.id}>
+                        {member.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-              <Select
-                value={role.assigned?.id || "_none"}
-                onValueChange={(value) => handleAssignCrew(role.id, value === "_none" ? null : value)}
-                disabled={isPending}
-              >
-                <SelectTrigger className="flex-1">
-                  <SelectValue placeholder="Select crew member" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="_none">None</SelectItem>
-                  {crew.map(member => (
-                    <SelectItem key={member.id} value={member.id}>
-                      {member.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </ScrollArea>
 
         <div className="flex justify-end">
           <Button onClick={() => onOpenChange(false)} disabled={isPending}>
