@@ -9,7 +9,6 @@ import { CrewMemberSelect } from "./CrewMemberSelect";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { HourlyCategory } from "@/types/events";
 
 interface AddRoleDialogProps {
   isOpen: boolean;
@@ -23,7 +22,6 @@ interface FormData {
   daily_rate: number;
   hourly_rate: number;
   preferred_id?: string;
-  hourly_category: HourlyCategory;
 }
 
 export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDialogProps) {
@@ -32,8 +30,7 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
     defaultValues: {
       daily_rate: 0,
-      hourly_rate: 0,
-      hourly_category: "flat"
+      hourly_rate: 0
     }
   });
 
@@ -46,8 +43,7 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
           role_id: data.role_id,
           daily_rate: data.daily_rate,
           hourly_rate: data.hourly_rate,
-          preferred_id: data.preferred_id || null,
-          hourly_category: data.hourly_category
+          preferred_id: data.preferred_id || null
         });
 
       if (error) throw error;
@@ -69,7 +65,7 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
-            <Select onValueChange={(value) => setValue('role_id', value)}>
+            <Select onValueChange={(value) => setValue('role_id', value)} required>
               <SelectTrigger>
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
@@ -88,7 +84,8 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
             <Input
               type="number"
               step="0.01"
-              {...register('daily_rate', { valueAsNumber: true })}
+              required
+              {...register('daily_rate', { valueAsNumber: true, required: true })}
             />
           </div>
 
@@ -97,25 +94,9 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
             <Input
               type="number"
               step="0.01"
-              {...register('hourly_rate', { valueAsNumber: true })}
+              required
+              {...register('hourly_rate', { valueAsNumber: true, required: true })}
             />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="hourly_category">Hourly Category</Label>
-            <Select 
-              defaultValue="flat"
-              onValueChange={(value) => setValue('hourly_category', value as HourlyCategory)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="flat">Flat</SelectItem>
-                <SelectItem value="corporate">Corporate</SelectItem>
-                <SelectItem value="broadcast">Broadcast</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           <div className="space-y-2">
