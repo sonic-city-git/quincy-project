@@ -7,9 +7,10 @@ import { useCrewSort } from "@/components/crew/useCrewSort";
 interface CrewMemberSelectContentProps {
   crew: CrewMember[];
   onSelect?: (value: string) => void;
+  showNoneOption?: boolean;
 }
 
-export function CrewMemberSelectContent({ crew = [], onSelect }: CrewMemberSelectContentProps) {
+export function CrewMemberSelectContent({ crew = [], onSelect, showNoneOption = false }: CrewMemberSelectContentProps) {
   const { sortCrew } = useCrewSort();
   const sortedCrew = sortCrew(crew || []);
 
@@ -17,6 +18,15 @@ export function CrewMemberSelectContent({ crew = [], onSelect }: CrewMemberSelec
     <SelectContent>
       <ScrollArea className="h-[200px]">
         <div className="p-1">
+          {showNoneOption && (
+            <SelectItem 
+              value=""
+              className="flex items-center gap-3 py-2 px-3 cursor-pointer rounded-sm hover:bg-accent"
+              onClick={() => onSelect?.("")}
+            >
+              <span className="truncate">None</span>
+            </SelectItem>
+          )}
           {sortedCrew.map((member) => {
             const initials = member.name
               .split(' ')

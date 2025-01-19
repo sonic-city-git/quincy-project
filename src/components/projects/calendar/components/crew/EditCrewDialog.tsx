@@ -31,7 +31,7 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
   useEffect(() => {
     if (open) {
       const initialAssignments = roles.reduce((acc, role) => {
-        acc[role.id] = role.assigned?.id || "_none";
+        acc[role.id] = role.assigned?.id || null;
         return acc;
       }, {} as Record<string, string>);
       setAssignments(initialAssignments);
@@ -41,7 +41,7 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
   const handleAssignCrew = async (roleId: string, crewMemberId: string | null) => {
     setIsPending(true);
     try {
-      if (crewMemberId === "_none") {
+      if (!crewMemberId) {
         // Delete the role assignment if "None" is selected
         const { error } = await supabase
           .from('project_event_roles')
@@ -78,16 +78,16 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
 
       setAssignments(prev => ({
         ...prev,
-        [roleId]: crewMemberId || "_none"
+        [roleId]: crewMemberId
       }));
 
-      toast.success("Crew member assigned successfully");
+      toast.success("Crew member assignment updated");
     } catch (error: any) {
       console.error("Error assigning crew member:", error);
       toast.error(error.message || "Failed to assign crew member");
       setAssignments(prev => ({
         ...prev,
-        [roleId]: roles.find(r => r.id === roleId)?.assigned?.id || "_none"
+        [roleId]: roles.find(r => r.id === roleId)?.assigned?.id || null
       }));
     } finally {
       setIsPending(false);
@@ -130,14 +130,14 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
                   {role.name}
                 </div>
                 <Select
-                  value={assignments[role.id] || "_none"}
-                  onValueChange={(value) => handleAssignCrew(role.id, value === "_none" ? null : value)}
+                  value={assignments[role.id] || ""}
+                  onValueChange={(value) => handleAssignCrew(role.id, value || null)}
                   disabled={isPending}
                 >
                   <SelectTrigger className="flex-1">
-                    <SelectValue />
+                    <SelectValue placeholder="None" />
                   </SelectTrigger>
-                  <CrewMemberSelectContent crew={crew} />
+                  <CrewMemberSelectContent crew={crew} showNoneOption />
                 </Select>
               </div>
             ))}
