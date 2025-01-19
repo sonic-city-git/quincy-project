@@ -3,45 +3,65 @@ import { supabase } from "@/integrations/supabase/client";
 import { CalendarEvent } from "@/types/events";
 
 export function useSyncCrewStatus(event: CalendarEvent) {
-  const { data: syncStatus, isLoading: isChecking } = useQuery({
+  const { data, isLoading: isChecking } = useQuery({
     queryKey: ['crew-sync-status', event.id],
     queryFn: async () => {
-      // First check if project has any roles
+      // First get all project roles
       const { data: projectRoles } = await supabase
         .from('project_roles')
-        .select('id')
+        .select(`
+          id,
+          role:crew_roles (
+            id,
+            name,
+            color
+          )
+        `)
         .eq('project_id', event.project_id);
 
-      if (!projectRoles || projectRoles.length === 0) {
-        return { hasProjectRoles: false };
+      if (!projectRoles?.length) {
+        return { hasProjectRoles: false, roles: [], isSynced: false };
       }
 
-      // Then check if all roles are assigned to crew members
+      // Then get event role assignments
       const { data: eventRoles } = await supabase
         .from('project_event_roles')
-        .select('crew_member_id')
+        .select(`
+          role_id,
+          crew_member:crew_members (
+            id,
+            name
+          )
+        `)
         .eq('event_id', event.id);
 
-      if (!eventRoles) {
-        return { 
-          hasProjectRoles: true,
-          isSynced: false 
+      // Map roles with their assignments
+      const roles = projectRoles.map(pr => {
+        const eventRole = eventRoles?.find(er => er.role_id === pr.role.id);
+        return {
+          id: pr.role.id,
+          name: pr.role.name,
+          color: pr.role.color,
+          assigned: eventRole?.crew_member || null
         };
-      }
+      });
 
-      const allRolesAssigned = eventRoles.every(role => role.crew_member_id);
+      // Check if all roles have assignments
+      const isSynced = roles.every(role => role.assigned !== null);
 
       return {
         hasProjectRoles: true,
-        isSynced: allRolesAssigned
+        roles,
+        isSynced
       };
     },
     enabled: !!event.id && !!event.project_id
   });
 
   return {
-    hasProjectRoles: syncStatus?.hasProjectRoles ?? false,
-    isSynced: syncStatus?.isSynced ?? false,
+    hasProjectRoles: data?.hasProjectRoles || false,
+    roles: data?.roles || [],
+    isSynced: data?.isSynced || false,
     isChecking
   };
 }
