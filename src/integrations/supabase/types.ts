@@ -730,6 +730,7 @@ export type Database = {
       project_events: {
         Row: {
           created_at: string
+          crew_price: number | null
           date: string
           equipment_price: number | null
           event_type_id: string | null
@@ -743,6 +744,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          crew_price?: number | null
           date: string
           equipment_price?: number | null
           event_type_id?: string | null
@@ -756,6 +758,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          crew_price?: number | null
           date?: string
           equipment_price?: number | null
           event_type_id?: string | null

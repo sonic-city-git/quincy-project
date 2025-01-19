@@ -19,10 +19,10 @@ export interface CalendarEvent {
   name: string;
   type: EventType;
   status: EventStatus['name'];
-  revenue?: number;
   location?: string;
   equipment?: Array<{ id: string; name: string }>;
   project_id: string;
   equipment_price?: number;
+  crew_price?: number;
   total_price?: number;
 }
