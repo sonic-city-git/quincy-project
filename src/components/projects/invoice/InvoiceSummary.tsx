@@ -26,7 +26,7 @@ export function InvoiceSummary({ event }: InvoiceSummaryProps) {
           </p>
         </div>
         <div className="text-right">
-          <p className="font-medium">{formatCurrency(event.revenue || 0)}</p>
+          <p className="font-medium">{formatCurrency(event.total_price || 0)}</p>
           <p className="text-sm text-muted-foreground">Total</p>
         </div>
       </div>
@@ -34,11 +34,11 @@ export function InvoiceSummary({ event }: InvoiceSummaryProps) {
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
           <span>Equipment</span>
-          <span>{formatCurrency(0)}</span>
+          <span>{formatCurrency(event.equipment_price || 0)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span>Crew</span>
-          <span>{formatCurrency(0)}</span>
+          <span>{formatCurrency(event.crew_price || 0)}</span>
         </div>
         <div className="flex justify-between text-sm">
           <span>Additional Cost</span>
@@ -50,7 +50,7 @@ export function InvoiceSummary({ event }: InvoiceSummaryProps) {
         </div>
         <div className="flex justify-between text-sm font-medium">
           <span>VAT (25%)</span>
-          <span>{formatCurrency((event.revenue || 0) * 0.25)}</span>
+          <span>{formatCurrency((event.total_price || 0) * 0.25)}</span>
         </div>
       </div>
 

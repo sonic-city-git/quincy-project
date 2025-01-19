@@ -138,7 +138,9 @@ export const createEvent = async (
       name: eventData.name,
       type: eventData.event_types,
       status: eventData.status as CalendarEvent['status'],
-      revenue: eventData.revenue
+      equipment_price: eventData.equipment_price,
+      crew_price: eventData.crew_price,
+      total_price: eventData.total_price
     };
   } catch (error) {
     console.error('Error in createEvent:', error);
