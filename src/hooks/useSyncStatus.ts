@@ -5,6 +5,7 @@ import { CalendarEvent } from "@/types/events";
 export function useSyncStatus(event: CalendarEvent) {
   const [isSynced, setIsSynced] = useState<boolean>(false);
   const [isChecking, setIsChecking] = useState<boolean>(true);
+  const [hasProjectEquipment, setHasProjectEquipment] = useState<boolean>(false);
 
   useEffect(() => {
     const checkSyncStatus = async () => {
@@ -14,6 +15,7 @@ export function useSyncStatus(event: CalendarEvent) {
         // If event doesn't need equipment, set as synced
         if (!event.type.needs_equipment) {
           setIsSynced(true);
+          setHasProjectEquipment(false);
           setIsChecking(false);
           return;
         }
@@ -25,8 +27,11 @@ export function useSyncStatus(event: CalendarEvent) {
           .eq('project_id', event.project_id)
           .limit(1);
 
+        const projectHasEquipment = projectEquipment && projectEquipment.length > 0;
+        setHasProjectEquipment(projectHasEquipment);
+
         // If project has no equipment, set as synced (will show grey icon)
-        if (!projectEquipment || projectEquipment.length === 0) {
+        if (!projectHasEquipment) {
           setIsSynced(true);
           setIsChecking(false);
           return;
@@ -76,5 +81,5 @@ export function useSyncStatus(event: CalendarEvent) {
     };
   }, [event]);
 
-  return { isSynced, isChecking };
+  return { isSynced, isChecking, hasProjectEquipment };
 }

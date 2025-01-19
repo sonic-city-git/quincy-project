@@ -15,7 +15,7 @@ export function EventCardIcons({
   sectionTitle
 }: EventCardIconsProps) {
   const showEquipmentIcon = event.type.needs_equipment;
-  const { isSynced, isChecking } = useSyncStatus(event);
+  const { isSynced, isChecking, hasProjectEquipment } = useSyncStatus(event);
 
   return (
     <>
@@ -34,6 +34,7 @@ export function EventCardIcons({
             isChecking={isChecking}
             eventId={event.id}
             projectId={event.project_id}
+            hasProjectEquipment={hasProjectEquipment}
           />
         )}
       </div>

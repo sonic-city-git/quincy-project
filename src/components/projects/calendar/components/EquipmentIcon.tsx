@@ -40,6 +40,7 @@ interface EquipmentIconProps {
   isChecking: boolean;
   eventId: string;
   projectId: string;
+  hasProjectEquipment: boolean;
 }
 
 export function EquipmentIcon({
@@ -47,7 +48,8 @@ export function EquipmentIcon({
   isSynced,
   isChecking,
   eventId,
-  projectId
+  projectId,
+  hasProjectEquipment
 }: EquipmentIconProps) {
   const [showDifferences, setShowDifferences] = useState(false);
   const [differences, setDifferences] = useState<EquipmentDifference>({
@@ -153,6 +155,7 @@ export function EquipmentIcon({
         isDisabled={isEditingDisabled || isChecking}
         onViewDifferences={handleViewDifferences}
         onSync={handleSync}
+        hasProjectEquipment={hasProjectEquipment}
       />
 
       <EquipmentDifferenceDialog

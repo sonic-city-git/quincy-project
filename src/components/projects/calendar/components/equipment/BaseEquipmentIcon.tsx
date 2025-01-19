@@ -20,6 +20,7 @@ interface BaseEquipmentIconProps {
   onSync: () => void;
   syncLabel?: string;
   isUnsynced?: boolean;
+  hasProjectEquipment?: boolean;
 }
 
 export function BaseEquipmentIcon({
@@ -28,19 +29,21 @@ export function BaseEquipmentIcon({
   onViewDifferences,
   onSync,
   syncLabel = "Sync equipment",
-  isUnsynced = false
+  isUnsynced = false,
+  hasProjectEquipment = false
 }: BaseEquipmentIconProps) {
-  if (isSynced) {
+  // If synced or no project equipment, just show the icon without dropdown
+  if (isSynced || !hasProjectEquipment) {
     return (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="h-10 w-10 flex items-center justify-center">
-              <Package className="text-green-500" />
+              <Package className={isSynced ? "text-green-500" : "text-zinc-400"} />
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Equipment is synced</p>
+            <p>{!hasProjectEquipment ? "No equipment in project" : "Equipment is synced"}</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
