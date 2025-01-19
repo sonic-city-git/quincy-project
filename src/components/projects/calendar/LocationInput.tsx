@@ -2,77 +2,90 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface LocationInputProps {
   value: string;
   onChange: (value: string) => void;
 }
 
+const SCRIPT_ID = 'google-maps-script';
+const SCRIPT_LOADED_KEY = 'google-maps-script-loaded';
+
 export function LocationInput({ value, onChange }: LocationInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const scriptId = 'google-maps-script';
   const [apiKey, setApiKey] = useState<string | null>(null);
   const autocompleteInstance = useRef<google.maps.places.Autocomplete | null>(null);
   const [internalValue, setInternalValue] = useState(value);
 
   useEffect(() => {
     const fetchApiKey = async () => {
-      console.log('Fetching Google Maps API key...');
-      const { data: { GOOGLE_MAPS_API_KEY }, error } = await supabase.functions.invoke('get-secret', {
-        body: { secretName: 'GOOGLE_MAPS_API_KEY' }
-      });
+      try {
+        const { data: { GOOGLE_MAPS_API_KEY }, error } = await supabase.functions.invoke('get-secret', {
+          body: { secretName: 'GOOGLE_MAPS_API_KEY' }
+        });
 
-      if (error || !GOOGLE_MAPS_API_KEY) {
-        console.error('Error fetching Google Maps API key:', error);
-        setError('Could not load location search');
-        return;
+        if (error || !GOOGLE_MAPS_API_KEY) {
+          console.error('Error fetching Google Maps API key:', error);
+          setError('Could not load location search');
+          return;
+        }
+
+        setApiKey(GOOGLE_MAPS_API_KEY);
+      } catch (err) {
+        console.error('Error in fetchApiKey:', err);
+        setError('Failed to initialize location search');
       }
-
-      console.log('API key fetched successfully');
-      setApiKey(GOOGLE_MAPS_API_KEY);
     };
 
-    fetchApiKey();
+    // Only fetch API key if it hasn't been loaded before
+    if (!window[SCRIPT_LOADED_KEY]) {
+      fetchApiKey();
+    } else {
+      setIsLoaded(true);
+    }
   }, []);
 
   useEffect(() => {
-    if (!apiKey) return;
+    if (!apiKey || window[SCRIPT_LOADED_KEY]) return;
 
-    // Remove any existing script first
-    const existingScript = document.getElementById(scriptId);
-    if (existingScript) {
-      document.head.removeChild(existingScript);
-    }
-
-    console.log('Loading Google Maps script...');
-    const script = document.createElement('script');
-    script.id = scriptId;
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-    script.async = true;
-    script.defer = true;
-    
-    script.onload = () => {
-      console.log('Google Maps script loaded successfully');
-      setIsLoaded(true);
-    };
-
-    script.onerror = (e) => {
-      console.error('Failed to load Google Maps API:', e);
-      setError('Failed to load location search');
-      if (script.parentNode) {
-        script.parentNode.removeChild(script);
+    const loadGoogleMapsScript = () => {
+      // Remove any existing script
+      const existingScript = document.getElementById(SCRIPT_ID);
+      if (existingScript) {
+        document.head.removeChild(existingScript);
       }
+
+      const script = document.createElement('script');
+      script.id = SCRIPT_ID;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMaps`;
+      script.async = true;
+      script.defer = true;
+
+      // Define the callback function
+      window.initGoogleMaps = () => {
+        window[SCRIPT_LOADED_KEY] = true;
+        setIsLoaded(true);
+      };
+
+      script.onerror = (e) => {
+        console.error('Failed to load Google Maps API:', e);
+        setError('Failed to load location search');
+        if (script.parentNode) {
+          script.parentNode.removeChild(script);
+        }
+      };
+
+      document.head.appendChild(script);
     };
 
-    document.head.appendChild(script);
+    loadGoogleMapsScript();
 
     return () => {
-      const scriptElement = document.getElementById(scriptId);
-      if (scriptElement && scriptElement.parentNode) {
-        scriptElement.parentNode.removeChild(scriptElement);
-      }
+      // Cleanup callback
+      delete window.initGoogleMaps;
     };
   }, [apiKey]);
 
@@ -80,7 +93,6 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
     if (!isLoaded || !inputRef.current || error) return;
 
     try {
-      console.log('Initializing Places Autocomplete...');
       if (autocompleteInstance.current) {
         google.maps.event.clearInstanceListeners(autocompleteInstance.current);
       }
@@ -92,24 +104,22 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
 
       autocompleteInstance.current = new google.maps.places.Autocomplete(inputRef.current, options);
 
-      // Prevent the input from becoming readonly
       if (inputRef.current) {
         inputRef.current.setAttribute('autocomplete', 'off');
       }
 
       autocompleteInstance.current.addListener('place_changed', () => {
         const place = autocompleteInstance.current?.getPlace();
-        console.log('Place selected:', place);
         if (place?.name) {
           setInternalValue(place.name);
           onChange(place.name);
         }
       });
 
-      console.log('Places Autocomplete initialized successfully');
     } catch (err) {
       console.error('Error initializing Google Places Autocomplete:', err);
       setError('Failed to initialize location search');
+      toast.error('Failed to initialize location search');
     }
 
     return () => {
@@ -119,16 +129,15 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
     };
   }, [isLoaded, onChange, error]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    console.log('Input value changed:', newValue);
-    setInternalValue(newValue);
-    onChange(newValue);
-  };
-
   useEffect(() => {
     setInternalValue(value);
   }, [value]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    setInternalValue(newValue);
+    onChange(newValue);
+  };
 
   return (
     <div className="relative">
@@ -143,4 +152,12 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
       />
     </div>
   );
+}
+
+// Add type declaration for the window object
+declare global {
+  interface Window {
+    initGoogleMaps: () => void;
+    [key: string]: any;
+  }
 }
