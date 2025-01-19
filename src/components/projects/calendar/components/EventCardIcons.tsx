@@ -19,7 +19,7 @@ export function EventCardIcons({
 }: EventCardIconsProps) {
   const showEquipmentIcon = event.type.needs_equipment;
   const { isSynced: isEquipmentSynced, isChecking: isCheckingEquipment, hasProjectEquipment } = useSyncStatus(event);
-  const { hasProjectRoles, isSynced: isCrewSynced, isChecking: isCheckingCrew, roles = [] } = useSyncCrewStatus(event);
+  const { hasProjectRoles, isSynced: isCrewSynced, isCheckingCrew, roles = [] } = useSyncCrewStatus(event);
 
   return (
     <>
@@ -43,7 +43,7 @@ export function EventCardIcons({
         )}
       </div>
 
-      <div className="flex justify-center items-center">
+      <div className="flex justify-center items-center cursor-default">
         {hasProjectRoles && (
           <Tooltip>
             <TooltipTrigger>
