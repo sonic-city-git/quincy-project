@@ -47,7 +47,8 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
     try {
       console.log('Starting to add role:', data);
       
-      const { error } = await supabase
+      // First, add the project role
+      const { data: projectRole, error } = await supabase
         .from('project_roles')
         .insert({
           project_id: project.id,
@@ -55,9 +56,41 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
           daily_rate: data.daily_rate,
           hourly_rate: data.hourly_rate,
           preferred_id: data.preferred_id || null
-        });
+        })
+        .select()
+        .single();
 
       if (error) throw error;
+
+      // If there's a preferred crew member, assign them to all existing events
+      if (data.preferred_id) {
+        // Get all events for this project that need crew
+        const { data: events, error: eventsError } = await supabase
+          .from('project_events')
+          .select('id, event_types!inner(needs_crew)')
+          .eq('project_id', project.id)
+          .eq('event_types.needs_crew', true);
+
+        if (eventsError) throw eventsError;
+
+        if (events?.length > 0) {
+          // Create event role assignments for each event
+          const eventRoles = events.map(event => ({
+            project_id: project.id,
+            event_id: event.id,
+            role_id: data.role_id,
+            crew_member_id: data.preferred_id,
+            daily_rate: data.daily_rate,
+            hourly_rate: data.hourly_rate
+          }));
+
+          const { error: assignmentError } = await supabase
+            .from('project_event_roles')
+            .insert(eventRoles);
+
+          if (assignmentError) throw assignmentError;
+        }
+      }
 
       // Invalidate both project roles and event roles queries
       await Promise.all([
@@ -65,7 +98,10 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
           queryKey: ['project-roles', project.id] 
         }),
         queryClient.invalidateQueries({
-          queryKey: ['project-event-roles', eventId]
+          queryKey: ['project-event-roles']
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['crew-sync-status']
         })
       ]);
 
