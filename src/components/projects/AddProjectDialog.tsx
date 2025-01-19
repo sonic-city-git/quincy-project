@@ -12,7 +12,12 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
 
   const handleSubmit = async (data: any) => {
     try {
-      await addProject.mutateAsync(data);
+      await addProject.mutateAsync({
+        name: data.name,
+        customer_id: data.customer_id,
+        crew_member_id: data.crew_member_id,
+        project_type: data.project_type
+      });
       onOpenChange(false);
     } catch (error) {
       console.error('Failed to add project:', error);

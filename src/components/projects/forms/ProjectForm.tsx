@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { CustomerSelect } from "./CustomerSelect";
 import { OwnerSelect } from "./OwnerSelect";
 import { useForm } from "react-hook-form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ProjectFormData {
   name: string;
   customer_id: string;
   crew_member_id: string;
+  project_type: 'artist' | 'corporate' | 'broadcast' | 'dry_hire';
 }
 
 interface ProjectFormProps {
@@ -21,9 +23,9 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
     defaultValues: {
       name: '',
       customer_id: '',
-      crew_member_id: ''
+      crew_member_id: '',
+      project_type: 'artist'
     },
-    // Add required validation for all fields
     mode: 'onBlur'
   });
 
@@ -63,6 +65,26 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
             />
             {form.formState.errors.crew_member_id && (
               <p className="text-sm text-red-500">Owner is required</p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Select
+              value={form.watch('project_type')}
+              onValueChange={(value) => form.setValue('project_type', value as ProjectFormData['project_type'])}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select project type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="artist">Artist</SelectItem>
+                <SelectItem value="corporate">Corporate</SelectItem>
+                <SelectItem value="broadcast">Broadcast</SelectItem>
+                <SelectItem value="dry_hire">Dry Hire</SelectItem>
+              </SelectContent>
+            </Select>
+            {form.formState.errors.project_type && (
+              <p className="text-sm text-red-500">Project type is required</p>
             )}
           </div>
         </div>
