@@ -12,6 +12,7 @@ export function EventCard({ event, onEdit }: EventCardProps) {
   
   const handleClick = () => {
     if (onEdit) {
+      console.log('Opening edit dialog for event:', event);
       onEdit(event);
     }
   };
