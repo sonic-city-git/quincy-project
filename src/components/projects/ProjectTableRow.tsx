@@ -58,7 +58,8 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
     }
   };
 
-  const formatProjectType = (type: string) => {
+  const formatProjectType = (type: string | undefined) => {
+    if (!type) return 'Artist'; // Default value if type is undefined
     return type.split('_').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ');

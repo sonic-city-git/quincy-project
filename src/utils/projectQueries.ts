@@ -1,3 +1,5 @@
+import { Project } from "@/types/projects";
+
 export const projectBaseQuery = `
   *,
   customers (
@@ -11,7 +13,7 @@ export const projectBaseQuery = `
   )
 `;
 
-export const transformProjectData = (project: any) => ({
+export const transformProjectData = (project: any): Project => ({
   id: project.id,
   name: project.name,
   customer_id: project.customer_id,
