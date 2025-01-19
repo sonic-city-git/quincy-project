@@ -6,8 +6,8 @@ import { useSyncCrewStatus } from "@/hooks/useSyncCrewStatus";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useState } from "react";
-import { EditCrewDialog } from "./crew/EditCrewDialog";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
+import { EventManagementDialog } from "../EventManagementDialog";
 
 interface EventCardIconsProps {
   event: CalendarEvent;
@@ -85,11 +85,10 @@ export function EventCardIcons({
       </div>
 
       {showEditDialog && (
-        <EditCrewDialog
+        <EventManagementDialog
+          isOpen={showEditDialog}
+          onClose={() => setShowEditDialog(false)}
           event={event}
-          projectName={project?.name || ""}
-          open={showEditDialog}
-          onOpenChange={setShowEditDialog}
         />
       )}
     </>

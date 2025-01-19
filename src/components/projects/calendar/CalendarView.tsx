@@ -2,7 +2,6 @@ import { Calendar } from "@/components/ui/calendar/Calendar";
 import { CalendarEvent, EventType } from "@/types/events";
 import { useState } from "react";
 import { MultiEventDialog } from "./MultiEventDialog";
-import { EventDialog } from "./EventDialog";
 
 interface CalendarViewProps {
   currentDate: Date;
