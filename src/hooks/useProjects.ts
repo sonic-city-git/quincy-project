@@ -34,7 +34,7 @@ export function useProjects() {
     queryKey: ['projects'],
     queryFn: fetchProjects,
     staleTime: 0, // Always refetch when the query is invalidated
-    cacheTime: 0, // Don't cache the data
+    gcTime: 0, // Don't cache the data (formerly cacheTime)
   });
 
   return { projects, loading };
