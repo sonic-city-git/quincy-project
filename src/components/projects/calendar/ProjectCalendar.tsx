@@ -1,12 +1,12 @@
 import { useCalendarDate } from "@/hooks/useCalendarDate";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
-import { EventDialog } from "./EventDialog";
 import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import { CalendarView } from "./CalendarView";
 import { Card } from "@/components/ui/card";
 import { CalendarEvent } from "@/types/events";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { EventManagementDialog } from "./EventManagementDialog";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -88,20 +88,19 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         />
 
         {/* Add Dialog */}
-        <EventDialog
+        <EventManagementDialog
           isOpen={isAddDialogOpen}
           onClose={closeAddDialog}
-          date={selectedDate}
-          eventTypes={eventTypes}
-          onAddEvent={addEvent}
+          event={selectedEvent}
+          onUpdateEvent={updateEvent}
+          onDeleteEvent={deleteEvent}
         />
 
         {/* Edit Dialog */}
-        <EventDialog
+        <EventManagementDialog
           isOpen={isEditDialogOpen}
           onClose={closeEditDialog}
           event={selectedEvent}
-          eventTypes={eventTypes}
           onUpdateEvent={updateEvent}
           onDeleteEvent={deleteEvent}
         />
