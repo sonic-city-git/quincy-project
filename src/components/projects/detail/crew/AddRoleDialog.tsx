@@ -14,6 +14,7 @@ import * as z from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { HourlyCategory } from "@/integrations/supabase/types/crew";
 
 const formSchema = z.object({
   role_id: z.string({ required_error: "Please select a role" }),
@@ -54,7 +55,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
         daily_rate: parseFloat(data.daily_rate),
         hourly_rate: parseFloat(data.hourly_rate),
         preferred_id: data.preferred_id,
-        hourly_category: 'flat'
+        hourly_category: 'flat' as HourlyCategory
       });
 
       // Check if the preferred member is from Sonic City
@@ -81,7 +82,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
             crew_member_id: data.preferred_id,
             daily_rate: parseFloat(data.daily_rate),
             hourly_rate: parseFloat(data.hourly_rate),
-            hourly_category: 'flat'
+            hourly_category: 'flat' as HourlyCategory
           }));
 
           const { error: assignmentError } = await supabase
