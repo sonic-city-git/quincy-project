@@ -4,6 +4,7 @@ import { useSyncStatus } from "@/hooks/useSyncStatus";
 import { useSyncCrewStatus } from "@/hooks/useSyncCrewStatus";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { EquipmentIcon } from "./EquipmentIcon";
 
 interface EventCardIconsProps {
   event: CalendarEvent;

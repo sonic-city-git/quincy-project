@@ -1,4 +1,5 @@
 import { Calendar } from "lucide-react";
+import { formatDisplayDate } from "@/utils/dateFormatters";
 import { CalendarEvent } from "@/types/events";
 
 interface EventCardProps {
@@ -23,7 +24,7 @@ export function EventCard({ event, onEdit }: EventCardProps) {
       >
         <Calendar className={`${iconClasses} text-muted-foreground`} />
         <span className="text-sm text-muted-foreground">
-          {format(event.date, 'dd.MM.yy')}
+          {formatDisplayDate(event.date)}
         </span>
       </div>
       
