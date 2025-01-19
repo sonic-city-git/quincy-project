@@ -114,6 +114,7 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
         }
       };
 
+      // Using the modern addEventListener approach instead of addDomListener
       autocompleteInstance.current.addListener('place_changed', handlePlaceChanged);
 
       return () => {
