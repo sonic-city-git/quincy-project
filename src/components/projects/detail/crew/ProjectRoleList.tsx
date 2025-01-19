@@ -73,27 +73,44 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
         throw new Error('Role not found');
       }
 
-      // First delete any event role assignments
-      const { error: eventRolesError } = await supabase
+      console.log('Starting role deletion process:', {
+        projectRoleId: roleToDelete,
+        crewRoleId: roleToRemove.role.id
+      });
+
+      // Step 1: Delete event role assignments first
+      console.log('Step 1: Deleting event role assignments');
+      const { error: eventRolesError, data: deletedEventRoles } = await supabase
         .from('project_event_roles')
         .delete()
         .eq('project_id', projectId)
-        .eq('role_id', roleToRemove.role.id);
+        .eq('role_id', roleToRemove.role.id)
+        .select();
 
-      if (eventRolesError) throw eventRolesError;
+      if (eventRolesError) {
+        console.error('Error deleting event roles:', eventRolesError);
+        throw eventRolesError;
+      }
+      console.log('Deleted event roles:', deletedEventRoles);
 
-      // Then delete the project role
-      const { error } = await supabase
+      // Step 2: Delete the project role
+      console.log('Step 2: Deleting project role');
+      const { error: projectRoleError, data: deletedProjectRole } = await supabase
         .from('project_roles')
         .delete()
-        .eq('id', roleToDelete);
+        .eq('id', roleToDelete)
+        .select();
 
-      if (error) throw error;
+      if (projectRoleError) {
+        console.error('Error deleting project role:', projectRoleError);
+        throw projectRoleError;
+      }
+      console.log('Deleted project role:', deletedProjectRole);
 
       await refetch();
       toast.success('Role deleted successfully');
     } catch (error) {
-      console.error('Error deleting role:', error);
+      console.error('Error in handleDeleteRole:', error);
       toast.error('Failed to delete role');
     } finally {
       setIsUpdating(false);
