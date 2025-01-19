@@ -12,6 +12,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCrew } from "@/hooks/useCrew";
 import { useCrewSort } from "@/components/crew/useCrewSort";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface AddRoleDialogProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
   const { roles } = useCrewRoles();
   const { crew } = useCrew();
   const { sortCrew } = useCrewSort();
+  const queryClient = useQueryClient();
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
     defaultValues: {
@@ -43,6 +45,8 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
 
   const onSubmit = async (data: FormData) => {
     try {
+      console.log('Starting to add role:', data);
+      
       const { error } = await supabase
         .from('project_roles')
         .insert({
@@ -55,11 +59,21 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
 
       if (error) throw error;
 
-      toast.success("Role added successfully");
+      // Invalidate both project roles and event roles queries
+      await Promise.all([
+        queryClient.invalidateQueries({ 
+          queryKey: ['project-roles', project.id] 
+        }),
+        queryClient.invalidateQueries({
+          queryKey: ['project-event-roles', eventId]
+        })
+      ]);
+
+      toast.success('Role added successfully');
       onClose();
     } catch (error) {
       console.error('Error adding role:', error);
-      toast.error("Failed to add role");
+      toast.error('Failed to add role');
     }
   };
 
