@@ -38,6 +38,30 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
     }
   });
 
+  // Get crew roles and their costs for this event
+  const { data: eventRoles } = useQuery({
+    queryKey: ['event_roles', event.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_event_roles')
+        .select(`
+          *,
+          crew_roles (
+            name
+          ),
+          crew_members (
+            name
+          )
+        `)
+        .eq('event_id', event.id);
+      
+      if (error) throw error;
+      console.log('Event roles for event', event.id, ':', data);
+      return data;
+    },
+    enabled: eventType?.needs_crew
+  });
+
   return (
     <TooltipProvider>
       <Card 
