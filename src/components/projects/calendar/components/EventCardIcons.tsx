@@ -5,9 +5,6 @@ import { useSyncStatus } from "@/hooks/useSyncStatus";
 import { useSyncCrewStatus } from "@/hooks/useSyncCrewStatus";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useState } from "react";
-import { useProjectDetails } from "@/hooks/useProjectDetails";
-import { EventManagementDialog } from "../EventManagementDialog";
 
 interface EventCardIconsProps {
   event: CalendarEvent;
@@ -23,8 +20,6 @@ export function EventCardIcons({
   const showEquipmentIcon = event.type.needs_equipment;
   const { isSynced: isEquipmentSynced, isChecking: isCheckingEquipment, hasProjectEquipment } = useSyncStatus(event);
   const { hasProjectRoles, isSynced: isCrewSynced, isChecking: isCheckingCrew, roles = [] } = useSyncCrewStatus(event);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const { project } = useProjectDetails(event.project_id);
 
   return (
     <>
@@ -51,19 +46,13 @@ export function EventCardIcons({
       <div className="flex justify-center items-center">
         {hasProjectRoles && (
           <Tooltip>
-            <TooltipTrigger asChild>
-              <button 
-                onClick={() => !isEditingDisabled && setShowEditDialog(true)}
-                disabled={isEditingDisabled}
-                className="disabled:opacity-50"
-              >
-                <Users 
-                  className={cn(
-                    "h-6 w-6",
-                    isCrewSynced ? "text-green-500" : "text-blue-500"
-                  )}
-                />
-              </button>
+            <TooltipTrigger>
+              <Users 
+                className={cn(
+                  "h-6 w-6",
+                  isCrewSynced ? "text-green-500" : "text-blue-500"
+                )}
+              />
             </TooltipTrigger>
             <TooltipContent className="max-w-[300px]">
               <div className="space-y-2">
@@ -83,14 +72,6 @@ export function EventCardIcons({
           </Tooltip>
         )}
       </div>
-
-      {showEditDialog && (
-        <EventManagementDialog
-          isOpen={showEditDialog}
-          onClose={() => setShowEditDialog(false)}
-          event={event}
-        />
-      )}
     </>
   );
 }

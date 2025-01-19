@@ -10,7 +10,7 @@ interface EventCardProps {
 export function EventCard({ event, onEdit }: EventCardProps) {
   const iconClasses = "h-5 w-5 flex-shrink-0";
   
-  const handleDoubleClick = () => {
+  const handleClick = () => {
     if (onEdit) {
       onEdit(event);
     }
@@ -20,7 +20,7 @@ export function EventCard({ event, onEdit }: EventCardProps) {
     <>
       <div 
         className="flex items-center gap-2 cursor-pointer select-none" 
-        onDoubleClick={handleDoubleClick}
+        onClick={handleClick}
       >
         <Calendar className={`${iconClasses} text-muted-foreground`} />
         <span className="text-sm text-muted-foreground">
@@ -30,7 +30,7 @@ export function EventCard({ event, onEdit }: EventCardProps) {
       
       <div 
         className="flex flex-col justify-center cursor-pointer select-none" 
-        onDoubleClick={handleDoubleClick}
+        onClick={handleClick}
       >
         <div className="flex items-center">
           <span className="font-medium text-base truncate">
