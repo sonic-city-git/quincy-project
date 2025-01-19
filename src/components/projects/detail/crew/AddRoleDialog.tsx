@@ -19,8 +19,7 @@ const formSchema = z.object({
   role_id: z.string({ required_error: "Please select a role" }),
   daily_rate: z.string().min(1, "Daily rate is required"),
   hourly_rate: z.string().min(1, "Hourly rate is required"),
-  preferred_id: z.string({ required_error: "Please select a crew member" }),
-  hourly_category: z.enum(['flat', 'corporate', 'broadcast'])
+  preferred_id: z.string({ required_error: "Please select a crew member" })
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -44,20 +43,18 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
       role_id: '',
       daily_rate: '',
       hourly_rate: '',
-      preferred_id: '',
-      hourly_category: 'flat'
+      preferred_id: ''
     }
   });
 
   const onSubmit = async (data: FormData) => {
     try {
-      // First add the role to project_roles
       await addRole({
         role_id: data.role_id,
         daily_rate: parseFloat(data.daily_rate),
         hourly_rate: parseFloat(data.hourly_rate),
         preferred_id: data.preferred_id,
-        hourly_category: data.hourly_category
+        hourly_category: 'flat'
       });
 
       // Check if the preferred member is from Sonic City
@@ -84,7 +81,7 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
             crew_member_id: data.preferred_id,
             daily_rate: parseFloat(data.daily_rate),
             hourly_rate: parseFloat(data.hourly_rate),
-            hourly_category: data.hourly_category
+            hourly_category: 'flat'
           }));
 
           const { error: assignmentError } = await supabase
@@ -192,32 +189,6 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="hourly_category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category *</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="flat">Flat</SelectItem>
-                      <SelectItem value="corporate">Corporate</SelectItem>
-                      <SelectItem value="broadcast">Broadcast</SelectItem>
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
