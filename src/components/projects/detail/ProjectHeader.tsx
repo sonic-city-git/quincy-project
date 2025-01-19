@@ -53,19 +53,20 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
     }
   });
 
-  // Refetch archive status when events are updated
+  // Listen for project events status changes
   useEffect(() => {
     const channel = supabase
       .channel('project_events_changes')
       .on(
         'postgres_changes',
         {
-          event: 'UPDATE',
+          event: '*',
           schema: 'public',
           table: 'project_events',
           filter: `project_id=eq.${project.id}`,
         },
         () => {
+          console.log('Project events changed, refetching archive status');
           refetchArchiveStatus();
         }
       )
@@ -87,6 +88,9 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
 
       toast.success("Project archived successfully");
       navigate('/projects');
+      
+      // Invalidate projects query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
     } catch (error) {
       console.error('Error archiving project:', error);
       toast.error("Failed to archive project");

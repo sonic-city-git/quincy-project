@@ -33,6 +33,8 @@ export function useProjects() {
   const { data: projects = [], isLoading: loading } = useQuery({
     queryKey: ['projects'],
     queryFn: fetchProjects,
+    staleTime: 0, // Always refetch when the query is invalidated
+    cacheTime: 0, // Don't cache the data
   });
 
   return { projects, loading };
