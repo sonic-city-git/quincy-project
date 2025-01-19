@@ -861,6 +861,7 @@ export type Database = {
           name: string
           owner_id: string | null
           project_number: number
+          project_type: Database["public"]["Enums"]["project_type"]
           to_be_invoiced: number | null
           updated_at: string
         }
@@ -873,6 +874,7 @@ export type Database = {
           name: string
           owner_id?: string | null
           project_number?: number
+          project_type?: Database["public"]["Enums"]["project_type"]
           to_be_invoiced?: number | null
           updated_at?: string
         }
@@ -885,6 +887,7 @@ export type Database = {
           name?: string
           owner_id?: string | null
           project_number?: number
+          project_type?: Database["public"]["Enums"]["project_type"]
           to_be_invoiced?: number | null
           updated_at?: string
         }
@@ -1049,6 +1052,7 @@ export type Database = {
     Enums: {
       event_status: "proposed" | "confirmed" | "cancelled"
       hourly_rate_category: "flat" | "corporate" | "broadcast"
+      project_type: "artist" | "corporate" | "broadcast" | "dry_hire"
     }
     CompositeTypes: {
       [_ in never]: never
