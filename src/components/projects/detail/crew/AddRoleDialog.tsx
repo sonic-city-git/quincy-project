@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { HourlyCategory } from "@/types/events";
+import { useProjectRoles } from "@/hooks/useProjectRoles";
 
 interface AddRoleDialogProps {
   isOpen: boolean;
@@ -147,7 +148,8 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
           <div className="space-y-2">
             <Label>Preferred Crew Member</Label>
             <CrewMemberSelect
-              onSelect={(memberId) => setValue('preferred_id', memberId)}
+              value={watch('preferred_id') || ''}
+              onChange={(value) => setValue('preferred_id', value)}
             />
           </div>
 
