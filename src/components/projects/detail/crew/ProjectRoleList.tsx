@@ -68,12 +68,17 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     
     setIsUpdating(true);
     try {
+      const roleToRemove = roles.find(r => r.id === roleToDelete);
+      if (!roleToRemove?.role?.id) {
+        throw new Error('Role not found');
+      }
+
       // First delete any event role assignments
       const { error: eventRolesError } = await supabase
         .from('project_event_roles')
         .delete()
         .eq('project_id', projectId)
-        .eq('role_id', roles.find(r => r.id === roleToDelete)?.role?.id);
+        .eq('role_id', roleToRemove.role.id);
 
       if (eventRolesError) throw eventRolesError;
 
