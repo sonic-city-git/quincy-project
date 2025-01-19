@@ -10,6 +10,12 @@ export const projectBaseQuery = `
     id,
     name,
     avatar_url
+  ),
+  project_types (
+    id,
+    name,
+    code,
+    price_multiplier
   )
 `;
 
@@ -24,7 +30,8 @@ export const transformProjectData = (project: any): Project => ({
   updated_at: project.updated_at,
   to_be_invoiced: project.to_be_invoiced,
   is_archived: project.is_archived || false,
-  project_type: project.project_type || 'artist',
+  project_type_id: project.project_type_id,
+  project_type: project.project_types,
   customer: project.customers,
   owner: project.owner
 });

@@ -851,6 +851,33 @@ export type Database = {
           },
         ]
       }
+      project_types: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          price_multiplier: number | null
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          price_multiplier?: number | null
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          price_multiplier?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           color: string | null
@@ -861,7 +888,7 @@ export type Database = {
           name: string
           owner_id: string | null
           project_number: number
-          project_type: Database["public"]["Enums"]["project_type"]
+          project_type_id: string | null
           to_be_invoiced: number | null
           updated_at: string
         }
@@ -874,7 +901,7 @@ export type Database = {
           name: string
           owner_id?: string | null
           project_number?: number
-          project_type?: Database["public"]["Enums"]["project_type"]
+          project_type_id?: string | null
           to_be_invoiced?: number | null
           updated_at?: string
         }
@@ -887,7 +914,7 @@ export type Database = {
           name?: string
           owner_id?: string | null
           project_number?: number
-          project_type?: Database["public"]["Enums"]["project_type"]
+          project_type_id?: string | null
           to_be_invoiced?: number | null
           updated_at?: string
         }
@@ -904,6 +931,13 @@ export type Database = {
             columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "crew_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_project_type_id_fkey"
+            columns: ["project_type_id"]
+            isOneToOne: false
+            referencedRelation: "project_types"
             referencedColumns: ["id"]
           },
         ]

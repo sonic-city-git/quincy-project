@@ -16,7 +16,7 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
         name: data.name,
         customer_id: data.customer_id,
         crew_member_id: data.crew_member_id,
-        project_type: data.project_type
+        project_type_id: data.project_type_id
       });
       onOpenChange(false);
     } catch (error) {

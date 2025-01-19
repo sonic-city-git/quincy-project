@@ -43,8 +43,8 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
     }
   };
 
-  const getProjectTypeBadgeVariant = (type: string) => {
-    switch (type) {
+  const getProjectTypeBadgeVariant = (code: string | undefined) => {
+    switch (code) {
       case 'artist':
         return 'default';
       case 'corporate':
@@ -56,13 +56,6 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
       default:
         return 'default';
     }
-  };
-
-  const formatProjectType = (type: string | undefined) => {
-    if (!type) return 'Artist'; // Default value if type is undefined
-    return type.split('_').map(word => 
-      word.charAt(0).toUpperCase() + word.slice(1)
-    ).join(' ');
   };
 
   return (
@@ -81,10 +74,10 @@ export function ProjectTableRow({ project, index }: ProjectTableRowProps) {
               {project.name}
             </div>
             <Badge 
-              variant={getProjectTypeBadgeVariant(project.project_type)}
+              variant={getProjectTypeBadgeVariant(project.project_type?.code)}
               className="whitespace-nowrap"
             >
-              {formatProjectType(project.project_type)}
+              {project.project_type?.name || 'Artist'}
             </Badge>
           </div>
         </div>

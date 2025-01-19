@@ -19,7 +19,7 @@ interface AddProjectData {
   name: string;
   customer_id?: string;
   crew_member_id?: string;
-  project_type: 'artist' | 'corporate' | 'broadcast' | 'dry_hire';
+  project_type_id: string;
 }
 
 export function useAddProject() {
@@ -36,7 +36,7 @@ export function useAddProject() {
           customer_id: data.customer_id || null,
           owner_id: data.crew_member_id || null,
           color: getRandomColor(),
-          project_type: data.project_type,
+          project_type_id: data.project_type_id,
         }])
         .select()
         .single();

@@ -9,7 +9,13 @@ export interface Project {
   updated_at: string;
   to_be_invoiced: number | null;
   is_archived: boolean;
-  project_type: 'artist' | 'corporate' | 'broadcast' | 'dry_hire';
+  project_type_id: string | null;
+  project_type?: {
+    id: string;
+    name: string;
+    code: string;
+    price_multiplier: number;
+  } | null;
   customer?: {
     id: string;
     name: string;
