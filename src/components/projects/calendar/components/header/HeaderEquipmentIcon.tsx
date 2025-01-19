@@ -13,6 +13,7 @@ export function HeaderEquipmentIcon({
   sectionTitle = 'equipment',
   hasProjectEquipment
 }: HeaderEquipmentIconProps) {
+  // If project has no equipment, don't show the icon
   if (!hasProjectEquipment) {
     return null;
   }
@@ -25,6 +26,7 @@ export function HeaderEquipmentIcon({
       onSync={onSyncAllEquipment}
       syncLabel={syncLabel}
       isUnsynced={sectionSyncStatus === 'no-equipment'}
+      hasProjectEquipment={hasProjectEquipment}
     />
   );
 }

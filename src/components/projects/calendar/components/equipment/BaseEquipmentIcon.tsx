@@ -32,18 +32,23 @@ export function BaseEquipmentIcon({
   isUnsynced = false,
   hasProjectEquipment = false
 }: BaseEquipmentIconProps) {
-  // If synced or no project equipment, just show the icon without dropdown
-  if (isSynced || !hasProjectEquipment) {
+  // If no project equipment, don't show anything
+  if (!hasProjectEquipment) {
+    return null;
+  }
+
+  // If synced, just show the green icon without dropdown
+  if (isSynced) {
     return (
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <div className="h-10 w-10 flex items-center justify-center">
-              <Package className={isSynced ? "text-green-500" : "text-zinc-400"} />
+              <Package className="text-green-500" />
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>{!hasProjectEquipment ? "No equipment in project" : "Equipment is synced"}</p>
+            <p>Equipment is synced</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -62,7 +67,7 @@ export function BaseEquipmentIcon({
                 className="h-10 w-10 p-0"
                 disabled={isDisabled}
               >
-                <Package className={isUnsynced ? "text-zinc-400" : "text-blue-500"} />
+                <Package className="text-blue-500" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
