@@ -28,10 +28,21 @@ export function useSectionSyncStatus(events: CalendarEvent[]) {
         });
 
         const results = await Promise.all(promises);
+        
+        // Check if any events have equipment
         const hasAnyEquipment = results.some(r => r.hasEquipment);
-        const allSynced = results.every(r => r.isSynced);
+        
+        if (!hasAnyEquipment) {
+          setSectionSyncStatus('no-equipment');
+          return;
+        }
 
-        setSectionSyncStatus(hasAnyEquipment ? (allSynced ? 'synced' : 'not-synced') : 'no-equipment');
+        // If all events with equipment are synced -> green
+        // If any event with equipment is not synced -> blue
+        // If no events have equipment -> grey
+        const allSynced = results.every(r => !r.hasEquipment || r.isSynced);
+        setSectionSyncStatus(allSynced ? 'synced' : 'not-synced');
+
       } catch (error) {
         console.error('Error checking section sync status:', error);
         setSectionSyncStatus('no-equipment');

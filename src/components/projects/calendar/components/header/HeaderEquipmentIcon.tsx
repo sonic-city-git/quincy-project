@@ -1,5 +1,6 @@
 import { Package } from "lucide-react";
 import { BaseEquipmentIcon } from "../equipment/BaseEquipmentIcon";
+import { CalendarEvent } from "@/types/events";
 
 interface HeaderEquipmentIconProps {
   sectionSyncStatus: 'synced' | 'not-synced' | 'no-equipment';
@@ -13,7 +14,7 @@ export function HeaderEquipmentIcon({
   sectionTitle = 'equipment'
 }: HeaderEquipmentIconProps) {
   if (sectionSyncStatus === 'no-equipment') {
-    return <Package className="h-6 w-6 text-muted-foreground" />;
+    return <Package className="h-6 w-6 text-zinc-400" />;
   }
 
   const syncLabel = `Sync ${sectionTitle} equipment`;

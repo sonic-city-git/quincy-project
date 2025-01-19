@@ -38,7 +38,7 @@ export function BaseEquipmentIcon({
             </div>
           </TooltipTrigger>
           <TooltipContent>
-            <p>Equipment is NSYNC</p>
+            <p>Equipment is synced</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
