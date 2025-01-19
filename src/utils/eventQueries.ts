@@ -16,7 +16,7 @@ export const fetchEvents = async (projectId: string) => {
         color,
         needs_crew,
         needs_equipment,
-        rate_multiplier
+        crew_rate_multiplier
       )
     `)
     .eq('project_id', projectId);
@@ -76,7 +76,7 @@ export const createEvent = async (
           color,
           needs_crew,
           needs_equipment,
-          rate_multiplier
+          crew_rate_multiplier
         )
       `)
       .single();
