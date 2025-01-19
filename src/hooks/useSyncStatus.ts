@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarEvent } from "@/types/events";
 
-export function useSyncStatus(event: CalendarEvent) {
+export function useSyncStatus(event: CalendarEvent | null) {
   const [isSynced, setIsSynced] = useState<boolean>(false);
   const [isChecking, setIsChecking] = useState<boolean>(true);
   const [hasProjectEquipment, setHasProjectEquipment] = useState<boolean>(false);
@@ -12,8 +12,8 @@ export function useSyncStatus(event: CalendarEvent) {
       setIsChecking(true);
       
       try {
-        // If event doesn't need equipment, set as synced
-        if (!event.type.needs_equipment) {
+        // If no event or event doesn't need equipment, set as synced
+        if (!event || !event.type?.needs_equipment) {
           setIsSynced(true);
           setHasProjectEquipment(false);
           setIsChecking(false);
@@ -63,22 +63,24 @@ export function useSyncStatus(event: CalendarEvent) {
 
     checkSyncStatus();
 
-    // Subscribe to changes
-    const channel = supabase
-      .channel(`sync-status-${event.id}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'project_event_equipment',
-        filter: `event_id=eq.${event.id}`
-      }, () => {
-        checkSyncStatus();
-      })
-      .subscribe();
+    // Only set up subscription if we have a valid event
+    if (event?.id) {
+      const channel = supabase
+        .channel(`sync-status-${event.id}`)
+        .on('postgres_changes', {
+          event: '*',
+          schema: 'public',
+          table: 'project_event_equipment',
+          filter: `event_id=eq.${event.id}`
+        }, () => {
+          checkSyncStatus();
+        })
+        .subscribe();
 
-    return () => {
-      channel.unsubscribe();
-    };
+      return () => {
+        channel.unsubscribe();
+      };
+    }
   }, [event]);
 
   return { isSynced, isChecking, hasProjectEquipment };
