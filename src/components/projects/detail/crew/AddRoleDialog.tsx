@@ -1,14 +1,15 @@
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
-import { useProjectRoles } from "@/hooks/useProjectRoles";
 import { Project } from "@/types/projects";
 import { useForm } from "react-hook-form";
 import { CrewMemberSelect } from "./CrewMemberSelect";
-import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { HourlyCategory } from "@/types/events";
 
 interface AddRoleDialogProps {
   isOpen: boolean;
@@ -21,39 +22,67 @@ interface FormData {
   role_id: string;
   daily_rate: number;
   hourly_rate: number;
-  preferred_id: string;
-  hourly_category: "flat" | "corporate" | "broadcast";
+  preferred_id?: string;
+  hourly_category: HourlyCategory;
 }
 
-export function AddRoleDialog({ isOpen, onClose, project }: AddRoleDialogProps) {
+export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDialogProps) {
   const { roles } = useCrewRoles();
+  const { toast } = useToast();
   const { addRole } = useProjectRoles(project.id);
 
-  const form = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
     defaultValues: {
-      role_id: "",
       daily_rate: 0,
       hourly_rate: 0,
-      preferred_id: "",
       hourly_category: "flat"
     }
   });
 
   const onSubmit = async (data: FormData) => {
     try {
+      // Get project type information
+      const isArtist = project?.project_type?.code === 'artist';
+
+      let isHoursEvent = false;
+      if (eventId) {
+        // Get event type information for the current event (if applicable)
+        const { data: eventData, error: eventError } = await supabase
+          .from('project_events')
+          .select('event_types(name)')
+          .eq('id', eventId)
+          .single();
+
+        if (eventError) {
+          console.error('Error fetching event type:', eventError);
+          throw eventError;
+        }
+
+        isHoursEvent = eventData?.event_types?.name?.toLowerCase() === 'hours';
+      }
+
       await addRole({
         role_id: data.role_id,
         daily_rate: data.daily_rate,
         hourly_rate: data.hourly_rate,
         preferred_id: data.preferred_id || null,
-        hourly_category: data.hourly_category
+        hourly_category: data.hourly_category,
+        is_artist: isArtist,
+        is_hours_event: isHoursEvent
       });
-      
-      toast.success("Role added successfully");
+
+      toast({
+        title: "Success",
+        description: "Role added successfully",
+      });
       onClose();
     } catch (error) {
       console.error('Error adding role:', error);
-      toast.error("Failed to add role");
+      toast({
+        title: "Error",
+        description: "Failed to add role",
+        variant: "destructive",
+      });
     }
   };
 
@@ -63,72 +92,74 @@ export function AddRoleDialog({ isOpen, onClose, project }: AddRoleDialogProps) 
         <DialogHeader>
           <DialogTitle>Add Role</DialogTitle>
         </DialogHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="role">Role</Label>
+            <Select onValueChange={(value) => setValue('role_id', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select a role" />
+              </SelectTrigger>
+              <SelectContent>
+                {roles?.map((role) => (
+                  <SelectItem key={role.id} value={role.id}>
+                    {role.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-4">
-              <Select
-                value={form.watch("role_id")}
-                onValueChange={(value) => form.setValue("role_id", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {roles?.map((role) => (
-                    <SelectItem key={role.id} value={role.id}>
-                      {role.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="space-y-2">
+            <Label htmlFor="daily_rate">Daily Rate</Label>
+            <Input
+              type="number"
+              step="0.01"
+              {...register('daily_rate', { valueAsNumber: true })}
+            />
+          </div>
 
-              <Input
-                type="number"
-                placeholder="Daily rate"
-                {...form.register("daily_rate", { valueAsNumber: true })}
-              />
+          <div className="space-y-2">
+            <Label htmlFor="hourly_rate">Hourly Rate</Label>
+            <Input
+              type="number"
+              step="0.01"
+              {...register('hourly_rate', { valueAsNumber: true })}
+            />
+          </div>
 
-              <Input
-                type="number"
-                placeholder="Hourly rate"
-                {...form.register("hourly_rate", { valueAsNumber: true })}
-              />
+          <div className="space-y-2">
+            <Label htmlFor="hourly_category">Hourly Category</Label>
+            <Select 
+              defaultValue="flat"
+              onValueChange={(value) => setValue('hourly_category', value as HourlyCategory)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="flat">Flat</SelectItem>
+                <SelectItem value="corporate">Corporate</SelectItem>
+                <SelectItem value="broadcast">Broadcast</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-              <CrewMemberSelect
-                value={form.watch("preferred_id")}
-                onChange={(value) => form.setValue("preferred_id", value)}
-              />
+          <div className="space-y-2">
+            <Label>Preferred Crew Member</Label>
+            <CrewMemberSelect
+              onSelect={(memberId) => setValue('preferred_id', memberId)}
+            />
+          </div>
 
-              <Select
-                value={form.watch("hourly_category")}
-                onValueChange={(value) => form.setValue("hourly_category", value as "flat" | "corporate" | "broadcast")}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select hourly category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="flat">Flat</SelectItem>
-                  <SelectItem value="corporate">Corporate</SelectItem>
-                  <SelectItem value="broadcast">Broadcast</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onClose}
-              >
-                Cancel
-              </Button>
-              <Button type="submit">
-                Add Role
-              </Button>
-            </div>
-          </form>
-        </Form>
+          <div className="flex justify-end space-x-2">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit">
+              Add Role
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
