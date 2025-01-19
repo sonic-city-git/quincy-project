@@ -21,9 +21,14 @@ export function useSectionSyncStatus(events: CalendarEvent[]) {
             .select('is_synced')
             .eq('event_id', event.id);
 
+          // If event has no equipment, consider it as "no equipment"
+          if (!eventEquipment || eventEquipment.length === 0) {
+            return { hasEquipment: false };
+          }
+
           return {
-            hasEquipment: eventEquipment && eventEquipment.length > 0,
-            isSynced: eventEquipment?.every(item => item.is_synced)
+            hasEquipment: true,
+            isSynced: eventEquipment.every(item => item.is_synced)
           };
         });
 
@@ -37,9 +42,8 @@ export function useSectionSyncStatus(events: CalendarEvent[]) {
           return;
         }
 
-        // If all events with equipment are synced -> green
         // If any event with equipment is not synced -> blue
-        // If no events have equipment -> grey
+        // If all events with equipment are synced -> green
         const allSynced = results.every(r => !r.hasEquipment || r.isSynced);
         setSectionSyncStatus(allSynced ? 'synced' : 'not-synced');
 
