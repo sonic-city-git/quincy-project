@@ -53,7 +53,6 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
 
       window.initGoogleMaps = () => {
         setIsLoaded(true);
-        console.log('Google Maps script loaded successfully');
       };
 
       const script = document.createElement('script');
@@ -105,7 +104,7 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
         inputRef.current.setAttribute('autocomplete', 'off');
       }
 
-      const placeChangedListener = autocompleteInstance.current.addListener('place_changed', () => {
+      const handlePlaceChanged = () => {
         try {
           const place = autocompleteInstance.current?.getPlace();
           if (place?.name) {
@@ -116,21 +115,21 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
           console.error('Error handling place selection:', err);
           toast.error('Error selecting location. Please try typing the location manually.');
         }
-      });
+      };
 
-      // Handle potential API errors
-      google.maps.event.addDomListener(window, 'error.places', () => {
+      const handlePlacesError = () => {
         setError('Location search is currently unavailable');
         toast.error('Location search is currently unavailable. Please try typing the location manually.');
-      });
+      };
+
+      autocompleteInstance.current.addListener('place_changed', handlePlaceChanged);
+      window.addEventListener('error.places', handlePlacesError);
 
       return () => {
-        if (placeChangedListener) {
-          google.maps.event.removeListener(placeChangedListener);
-        }
         if (autocompleteInstance.current) {
           google.maps.event.clearInstanceListeners(autocompleteInstance.current);
         }
+        window.removeEventListener('error.places', handlePlacesError);
       };
     } catch (err) {
       console.error('Error initializing Google Places Autocomplete:', err);
