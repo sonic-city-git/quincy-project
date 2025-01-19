@@ -1,5 +1,4 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CalendarEvent } from "@/types/events";
 import { useSyncCrewStatus } from "@/hooks/useSyncCrewStatus";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,6 +10,7 @@ import { Loader2 } from "lucide-react";
 import { useCrew } from "@/hooks/useCrew";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCrewSort } from "@/components/crew/useCrewSort";
+import { format } from "date-fns";
 
 interface EditCrewDialogProps {
   event: CalendarEvent;
@@ -56,6 +56,10 @@ export function EditCrewDialog({ event, open, onOpenChange }: EditCrewDialogProp
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Crew Assignments</DialogTitle>
+          <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+            <p>{event.name}</p>
+            <p>{format(event.date, 'dd.MM.yy')}</p>
+          </div>
         </DialogHeader>
 
         <ScrollArea className="h-[400px] pr-4">
