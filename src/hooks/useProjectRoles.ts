@@ -1,14 +1,13 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { HourlyCategory, ProjectRole } from "@/integrations/supabase/types/crew";
+import { HourlyCategory } from "@/types/events";
+import { useQuery } from "@tanstack/react-query";
 
-export function useProjectRoles(projectId: string) {
-  const queryClient = useQueryClient();
-
-  const { data: roles = [], isLoading: loading, refetch } = useQuery({
-    queryKey: ['project_roles', projectId],
+export const useProjectRoles = (projectId?: string) => {
+  const { data: roles, isLoading } = useQuery({
+    queryKey: ['project-roles', projectId],
     queryFn: async () => {
+      if (!projectId) return [];
+
       const { data, error } = await supabase
         .from('project_roles')
         .select(`
@@ -18,20 +17,17 @@ export function useProjectRoles(projectId: string) {
             name,
             color
           ),
-          preferred:crew_members!project_roles_preferred_id_fkey (
+          preferred:crew_members (
             id,
             name
           )
         `)
         .eq('project_id', projectId);
 
-      if (error) {
-        console.error('Error fetching project roles:', error);
-        toast.error('Failed to fetch project roles');
-        throw error;
-      }
+      if (error) throw error;
       return data;
-    }
+    },
+    enabled: !!projectId
   });
 
   const addRole = async (roleData: {
@@ -56,55 +52,15 @@ export function useProjectRoles(projectId: string) {
         }]);
 
       if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ['project_roles', projectId] });
-      toast.success('Role added successfully');
     } catch (error) {
       console.error('Error adding role:', error);
-      toast.error('Failed to add role');
-    }
-  };
-
-  const updateRole = async (roleId: string, roleData: any) => {
-    try {
-      const { error } = await supabase
-        .from('project_roles')
-        .update(roleData)
-        .eq('id', roleId);
-
-      if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ['project_roles', projectId] });
-      toast.success('Role updated successfully');
-    } catch (error) {
-      console.error('Error updating role:', error);
-      toast.error('Failed to update role');
-    }
-  };
-
-  const deleteRole = async (roleId: string) => {
-    try {
-      const { error } = await supabase
-        .from('project_roles')
-        .delete()
-        .eq('id', roleId);
-
-      if (error) throw error;
-
-      await queryClient.invalidateQueries({ queryKey: ['project_roles', projectId] });
-      toast.success('Role deleted successfully');
-    } catch (error) {
-      console.error('Error deleting role:', error);
-      toast.error('Failed to delete role');
+      throw error;
     }
   };
 
   return {
     roles,
-    loading,
-    deleteRole,
-    updateRole,
-    addRole,
-    refetch
+    isLoading,
+    addRole
   };
-}
+};

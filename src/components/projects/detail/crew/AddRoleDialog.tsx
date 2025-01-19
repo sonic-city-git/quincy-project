@@ -1,54 +1,47 @@
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { useForm } from "react-hook-form";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
-import { useCrew } from "@/hooks/useCrew";
 import { useProjectRoles } from "@/hooks/useProjectRoles";
-import { useCrewSort } from "@/components/crew/useCrewSort";
-import { Loader2 } from "lucide-react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { Project } from "@/types/projects";
+import { useForm } from "react-hook-form";
+import { CrewMemberSelect } from "./CrewMemberSelect";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { HourlyCategory } from "@/integrations/supabase/types/crew";
-import { useProjectDetails } from "@/hooks/useProjectDetails";
-import { useParams } from "react-router-dom";
-
-const formSchema = z.object({
-  role_id: z.string({ required_error: "Please select a role" }),
-  daily_rate: z.string().min(1, "Daily rate is required"),
-  hourly_rate: z.string().min(1, "Hourly rate is required"),
-  preferred_id: z.string({ required_error: "Please select a crew member" })
-});
-
-type FormData = z.infer<typeof formSchema>;
+import { HourlyCategory } from "@/types/events";
 
 interface AddRoleDialogProps {
-  projectId: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  isOpen: boolean;
+  onClose: () => void;
+  project: Project;
+  eventId?: string;
 }
 
-export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogProps) {
-  const { roles, isLoading: rolesLoading } = useCrewRoles();
-  const { crew, loading: crewLoading } = useCrew();
-  const { addRole, loading } = useProjectRoles(projectId);
-  const { sortCrew } = useCrewSort();
-  const queryClient = useQueryClient();
-  const { project } = useProjectDetails(projectId);
-  const { id } = useParams();
+interface FormData {
+  role_id: string;
+  daily_rate: number;
+  hourly_rate: number;
+  preferred_id: string;
+  hourly_category: HourlyCategory;
+}
+
+export function AddRoleDialog({
+  isOpen,
+  onClose,
+  project,
+  eventId
+}: AddRoleDialogProps) {
+  const { data: roles } = useCrewRoles();
+  const { addRole } = useProjectRoles(project.id);
 
   const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
     defaultValues: {
-      role_id: '',
-      daily_rate: '',
-      hourly_rate: '',
-      preferred_id: ''
+      role_id: "",
+      daily_rate: 0,
+      hourly_rate: 0,
+      preferred_id: "",
+      hourly_category: "flat"
     }
   });
 
@@ -59,42 +52,27 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
 
       // Get event type information for the current event (if applicable)
       const { data: eventType } = await supabase
-        .from('event_types')
-        .select('name')
+        .from('project_events')
+        .select('event_types(name)')
+        .eq('id', eventId)
         .single();
 
-      const isHoursEvent = eventType?.name === 'hours';
+      const isHoursEvent = eventType?.event_types?.name === 'Hours';
 
       await addRole({
-        role_id: data.role_id,
-        daily_rate: parseFloat(data.daily_rate),
-        hourly_rate: parseFloat(data.hourly_rate),
-        preferred_id: data.preferred_id,
-        hourly_category: 'flat' as HourlyCategory,
+        ...data,
         is_artist: isArtist,
         is_hours_event: isHoursEvent
       });
 
-      // Invalidate relevant queries
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['project_roles', projectId] }),
-        queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
-        queryClient.invalidateQueries({ queryKey: ['crew-sync-status'] })
-      ]);
-
-      form.reset();
-      onOpenChange(false);
-      toast.success("Role added successfully");
+      onClose();
     } catch (error) {
       console.error('Error adding role:', error);
-      toast.error("Failed to add role");
     }
   };
 
-  const sortedCrew = crew ? sortCrew(crew) : [];
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Role</DialogTitle>
@@ -102,124 +80,64 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="role_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Role *</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={rolesLoading}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {roles.map((role) => (
-                        <SelectItem
-                          key={role.id}
-                          value={role.id}
-                          className="cursor-pointer"
-                        >
-                          {role.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-4">
+              <Select
+                value={form.watch("role_id")}
+                onValueChange={(value) => form.setValue("role_id", value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {roles?.map((role) => (
+                    <SelectItem key={role.id} value={role.id}>
+                      {role.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <FormField
-              control={form.control}
-              name="daily_rate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Daily Rate *</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      pattern="[0-9]*"
-                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      placeholder="Enter daily rate"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <Input
+                type="number"
+                placeholder="Daily rate"
+                {...form.register("daily_rate", { valueAsNumber: true })}
+              />
 
-            <FormField
-              control={form.control}
-              name="hourly_rate"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Hourly Rate *</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      pattern="[0-9]*"
-                      className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                      placeholder="Enter hourly rate"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <Input
+                type="number"
+                placeholder="Hourly rate"
+                {...form.register("hourly_rate", { valueAsNumber: true })}
+              />
 
-            <FormField
-              control={form.control}
-              name="preferred_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Preferred Crew Member *</FormLabel>
-                  <Select
-                    value={field.value}
-                    onValueChange={field.onChange}
-                    disabled={crewLoading}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select crew member" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="max-h-[200px] overflow-y-auto">
-                      {sortedCrew.map((member) => (
-                        <SelectItem
-                          key={member.id}
-                          value={member.id}
-                          className="cursor-pointer"
-                        >
-                          {member.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              <CrewMemberSelect
+                value={form.watch("preferred_id")}
+                onChange={(value) => form.setValue("preferred_id", value)}
+              />
+
+              <Select
+                value={form.watch("hourly_category")}
+                onValueChange={(value) => form.setValue("hourly_category", value as HourlyCategory)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select hourly category" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="flat">Flat</SelectItem>
+                  <SelectItem value="corporate">Corporate</SelectItem>
+                  <SelectItem value="broadcast">Broadcast</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => onOpenChange(false)}
+                onClick={onClose}
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit">
                 Add Role
               </Button>
             </div>
