@@ -52,131 +52,6 @@ export function EventSectionHeader({
     checkProjectEquipment();
   }, [events]);
 
-  const handleSyncAllEquipment = async () => {
-    if (!events.length) {
-      console.log('No events to process');
-      return;
-    }
-
-    try {
-      console.log(`Processing ${events.length} events for sync`);
-      const projectId = events[0].project_id;
-      
-      // Create sync operations for each event
-      for (const event of events) {
-        const { error: syncError } = await supabase
-          .from('sync_operations')
-          .insert({
-            project_id: projectId,
-            event_id: event.id,
-            status: 'pending'
-          });
-
-        if (syncError) throw syncError;
-      }
-
-      // Process events in batches
-      const batchSize = 5;
-      for (let i = 0; i < events.length; i += batchSize) {
-        const batch = events.slice(i, i + batchSize);
-        
-        await Promise.all(batch.map(async (event) => {
-          try {
-            const { data: projectEquipment } = await supabase
-              .from('project_equipment')
-              .select('*')
-              .eq('project_id', event.project_id);
-
-            if (projectEquipment && projectEquipment.length > 0) {
-              const uniqueEquipment = new Map();
-              
-              projectEquipment.forEach(item => {
-                if (uniqueEquipment.has(item.equipment_id)) {
-                  const existing = uniqueEquipment.get(item.equipment_id);
-                  existing.quantity += item.quantity;
-                  uniqueEquipment.set(item.equipment_id, existing);
-                } else {
-                  uniqueEquipment.set(item.equipment_id, item);
-                }
-              });
-
-              const eventEquipment = Array.from(uniqueEquipment.values()).map(item => ({
-                project_id: event.project_id,
-                event_id: event.id,
-                equipment_id: item.equipment_id,
-                quantity: item.quantity,
-                group_id: item.group_id,
-                is_synced: true
-              }));
-
-              const { error: deleteError } = await supabase
-                .from('project_event_equipment')
-                .delete()
-                .eq('event_id', event.id);
-
-              if (deleteError) throw deleteError;
-
-              const { error: insertError } = await supabase
-                .from('project_event_equipment')
-                .insert(eventEquipment);
-
-              if (insertError) throw insertError;
-
-              // Update sync operation status
-              const { error: updateError } = await supabase
-                .from('sync_operations')
-                .update({ status: 'completed' })
-                .eq('event_id', event.id);
-
-              if (updateError) throw updateError;
-
-              // Invalidate queries for immediate UI update
-              await Promise.all([
-                queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
-                queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
-                queryClient.invalidateQueries({ queryKey: ['calendar-events', event.project_id] })
-              ]);
-
-              console.log(`Successfully synced equipment for event ${event.id}`);
-            }
-          } catch (eventError) {
-            console.error(`Error syncing event ${event.id}:`, eventError);
-            
-            // Update sync operation status with error
-            const { error: updateError } = await supabase
-              .from('sync_operations')
-              .update({ 
-                status: 'failed',
-                error_message: eventError.message,
-                attempts: 1
-              })
-              .eq('event_id', event.id);
-
-            if (updateError) {
-              console.error('Error updating sync operation:', updateError);
-            }
-            
-            throw eventError;
-          }
-        }));
-      }
-
-      // Invalidate queries one final time to ensure UI is up to date
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['events', events[0].project_id] }),
-        queryClient.invalidateQueries({ queryKey: ['calendar-events', events[0].project_id] }),
-        ...events.map(event => 
-          queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] })
-        )
-      ]);
-
-      toast.success(`Equipment synchronized for all ${title} events`);
-    } catch (error) {
-      console.error('Error syncing equipment:', error);
-      toast.error('Failed to sync equipment');
-    }
-  };
-
   if (isDoneAndDusted) {
     return null;
   }
@@ -205,7 +80,7 @@ export function EventSectionHeader({
         </div>
         
         <div className="flex items-center justify-center">
-          {!isCancelled && !isInvoiceReady && (
+          {!isCancelled && !isInvoiceReady && eventType?.needs_crew && (
             <HeaderCrewIcon events={events} />
           )}
         </div>

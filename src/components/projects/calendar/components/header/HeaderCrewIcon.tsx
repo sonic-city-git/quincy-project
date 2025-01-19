@@ -20,7 +20,7 @@ interface HeaderCrewIconProps {
 export function HeaderCrewIcon({ events, onSyncPreferredCrew }: HeaderCrewIconProps) {
   // Check first event to see if we need crew at all
   const firstEvent = events[0];
-  if (!firstEvent) return null;
+  if (!firstEvent || !firstEvent.type.needs_crew) return null;
 
   const { hasProjectRoles, isSynced: firstEventSynced, isChecking } = useSyncCrewStatus(firstEvent);
 
