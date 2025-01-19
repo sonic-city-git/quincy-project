@@ -1,4 +1,4 @@
-import { Users, Check, AlertOctagon } from "lucide-react";
+import { Users } from "lucide-react";
 import { CalendarEvent } from "@/types/events";
 import { useSyncCrewStatus } from "@/hooks/useSyncCrewStatus";
 import { cn } from "@/lib/utils";
@@ -14,20 +14,12 @@ export function HeaderCrewIcon({ event }: HeaderCrewIconProps) {
   
   return (
     <div className="flex items-center gap-2">
-      <Users className="h-6 w-6 text-muted-foreground" />
-      {!isChecking && (
-        isSynced ? (
-          <Check className={cn(
-            "h-4 w-4",
-            "text-green-500"
-          )} />
-        ) : (
-          <AlertOctagon className={cn(
-            "h-4 w-4",
-            "text-blue-500"
-          )} />
-        )
-      )}
+      <Users 
+        className={cn(
+          "h-6 w-6",
+          isSynced ? "text-green-500" : "text-blue-500"
+        )} 
+      />
     </div>
   );
 }

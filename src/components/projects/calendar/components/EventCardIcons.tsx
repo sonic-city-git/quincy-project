@@ -1,4 +1,4 @@
-import { MapPin, Users, Check, AlertOctagon } from "lucide-react";
+import { MapPin, Users } from "lucide-react";
 import { EquipmentIcon } from "./EquipmentIcon";
 import { CalendarEvent } from "@/types/events";
 import { useSyncStatus } from "@/hooks/useSyncStatus";
@@ -42,24 +42,14 @@ export function EventCardIcons({
         )}
       </div>
 
-      <div className="flex justify-center items-center gap-2">
+      <div className="flex justify-center items-center">
         {hasProjectRoles && (
-          <>
-            <Users className="h-6 w-6 text-muted-foreground" />
-            {!isCheckingCrew && (
-              isCrewSynced ? (
-                <Check className={cn(
-                  "h-4 w-4",
-                  "text-green-500"
-                )} />
-              ) : (
-                <AlertOctagon className={cn(
-                  "h-4 w-4",
-                  "text-blue-500"
-                )} />
-              )
+          <Users 
+            className={cn(
+              "h-6 w-6",
+              isCrewSynced ? "text-green-500" : "text-blue-500"
             )}
-          </>
+          />
         )}
       </div>
     </>
