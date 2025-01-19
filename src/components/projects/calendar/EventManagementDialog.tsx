@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { CalendarEvent, EventType } from "@/types/events";
 import { useState, useEffect } from "react";
 import { useEventTypes } from "@/hooks/useEventTypes";
@@ -105,7 +105,6 @@ export function EventManagementDialog({
 
     try {
       if (!crewMemberId) {
-        // Delete the role assignment if "None" is selected
         const { error } = await supabase
           .from('project_event_roles')
           .delete()
@@ -117,7 +116,6 @@ export function EventManagementDialog({
 
         if (error) throw error;
       } else {
-        // Update or insert the role assignment
         const { error } = await supabase
           .from('project_event_roles')
           .upsert({
@@ -157,6 +155,13 @@ export function EventManagementDialog({
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Edit Event</DialogTitle>
+            <DialogDescription>
+              Make changes to your event here. Click save when you're done.
+            </DialogDescription>
+          </DialogHeader>
+          
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Event Details Section */}
             <div className="space-y-4">
