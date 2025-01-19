@@ -10,7 +10,6 @@ interface LocationInputProps {
 }
 
 const SCRIPT_ID = 'google-maps-script';
-const SCRIPT_LOADED_KEY = 'google-maps-script-loaded';
 
 export function LocationInput({ value, onChange }: LocationInputProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -40,23 +39,23 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
       }
     };
 
-    // Only fetch API key if it hasn't been loaded before
-    if (!window[SCRIPT_LOADED_KEY]) {
-      fetchApiKey();
-    } else {
-      setIsLoaded(true);
-    }
+    fetchApiKey();
   }, []);
 
   useEffect(() => {
-    if (!apiKey || window[SCRIPT_LOADED_KEY]) return;
+    if (!apiKey) return;
 
     const loadGoogleMapsScript = () => {
-      // Remove any existing script
+      // Remove any existing script to prevent duplicates
       const existingScript = document.getElementById(SCRIPT_ID);
       if (existingScript) {
         document.head.removeChild(existingScript);
       }
+
+      window.initGoogleMaps = () => {
+        setIsLoaded(true);
+        console.log('Google Maps script loaded successfully');
+      };
 
       const script = document.createElement('script');
       script.id = SCRIPT_ID;
@@ -64,15 +63,10 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
       script.async = true;
       script.defer = true;
 
-      // Define the callback function
-      window.initGoogleMaps = () => {
-        window[SCRIPT_LOADED_KEY] = true;
-        setIsLoaded(true);
-      };
-
       script.onerror = (e) => {
         console.error('Failed to load Google Maps API:', e);
-        setError('Failed to load location search');
+        setError('Location search is temporarily unavailable');
+        toast.error('Location search is temporarily unavailable');
         if (script.parentNode) {
           script.parentNode.removeChild(script);
         }
@@ -81,18 +75,25 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
       document.head.appendChild(script);
     };
 
-    loadGoogleMapsScript();
+    if (!document.getElementById(SCRIPT_ID)) {
+      loadGoogleMapsScript();
+    }
 
     return () => {
-      // Cleanup callback
       delete window.initGoogleMaps;
+      const script = document.getElementById(SCRIPT_ID);
+      if (script) {
+        script.remove();
+      }
     };
   }, [apiKey]);
 
   useEffect(() => {
-    if (!isLoaded || !inputRef.current || error) return;
+    if (!isLoaded || !inputRef.current) return;
 
     try {
+      console.log('Initializing Places Autocomplete...');
+      
       if (autocompleteInstance.current) {
         google.maps.event.clearInstanceListeners(autocompleteInstance.current);
       }
@@ -103,12 +104,13 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
       };
 
       autocompleteInstance.current = new google.maps.places.Autocomplete(inputRef.current, options);
+      console.log('Places Autocomplete initialized successfully');
 
       if (inputRef.current) {
         inputRef.current.setAttribute('autocomplete', 'off');
       }
 
-      autocompleteInstance.current.addListener('place_changed', () => {
+      const placeChangedListener = autocompleteInstance.current.addListener('place_changed', () => {
         const place = autocompleteInstance.current?.getPlace();
         if (place?.name) {
           setInternalValue(place.name);
@@ -116,18 +118,20 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
         }
       });
 
+      return () => {
+        if (placeChangedListener) {
+          google.maps.event.removeListener(placeChangedListener);
+        }
+        if (autocompleteInstance.current) {
+          google.maps.event.clearInstanceListeners(autocompleteInstance.current);
+        }
+      };
     } catch (err) {
       console.error('Error initializing Google Places Autocomplete:', err);
-      setError('Failed to initialize location search');
-      toast.error('Failed to initialize location search');
+      setError('Location search initialization failed');
+      toast.error('Location search initialization failed');
     }
-
-    return () => {
-      if (autocompleteInstance.current) {
-        google.maps.event.clearInstanceListeners(autocompleteInstance.current);
-      }
-    };
-  }, [isLoaded, onChange, error]);
+  }, [isLoaded, onChange]);
 
   useEffect(() => {
     setInternalValue(value);
@@ -154,10 +158,9 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
   );
 }
 
-// Add type declaration for the window object
 declare global {
   interface Window {
     initGoogleMaps: () => void;
-    [key: string]: any;
+    google: typeof google;
   }
 }
