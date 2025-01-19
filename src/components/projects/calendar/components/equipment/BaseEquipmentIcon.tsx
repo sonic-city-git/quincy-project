@@ -57,7 +57,7 @@ export function BaseEquipmentIcon({
                 className="h-10 w-10 p-0"
                 disabled={isDisabled}
               >
-                <Package className="text-blue-500" />
+                <Package className="text-zinc-400" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">

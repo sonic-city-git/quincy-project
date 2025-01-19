@@ -7,6 +7,7 @@ export function useSectionSyncStatus(events: CalendarEvent[]) {
 
   useEffect(() => {
     const checkSectionSyncStatus = async () => {
+      // First check if any events need equipment based on their type
       const eventsWithEquipment = events.filter(event => event.type.needs_equipment);
       
       if (eventsWithEquipment.length === 0) {
@@ -21,9 +22,9 @@ export function useSectionSyncStatus(events: CalendarEvent[]) {
             .select('is_synced')
             .eq('event_id', event.id);
 
-          // If event has no equipment, consider it as "no equipment"
+          // If event has no equipment but needs it, consider it as "not synced"
           if (!eventEquipment || eventEquipment.length === 0) {
-            return { hasEquipment: false };
+            return { hasEquipment: false, isSynced: false };
           }
 
           return {
@@ -34,18 +35,10 @@ export function useSectionSyncStatus(events: CalendarEvent[]) {
 
         const results = await Promise.all(promises);
         
-        // Check if any events have equipment
-        const hasAnyEquipment = results.some(r => r.hasEquipment);
-        
-        if (!hasAnyEquipment) {
-          setSectionSyncStatus('no-equipment');
-          return;
-        }
-
-        // If any event with equipment is not synced -> blue
-        // If all events with equipment are synced -> green
-        const allSynced = results.every(r => !r.hasEquipment || r.isSynced);
-        setSectionSyncStatus(allSynced ? 'synced' : 'not-synced');
+        // If any event that needs equipment doesn't have it, or has unsynced equipment
+        // mark the section as not synced
+        const hasUnsynced = results.some(r => !r.isSynced);
+        setSectionSyncStatus(hasUnsynced ? 'not-synced' : 'synced');
 
       } catch (error) {
         console.error('Error checking section sync status:', error);
