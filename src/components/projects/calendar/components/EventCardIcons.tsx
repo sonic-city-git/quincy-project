@@ -9,14 +9,6 @@ interface EventCardIconsProps {
   sectionTitle?: string;
 }
 
-const EQUIPMENT_EVENT_TYPES = [
-  'Show',
-  'Double Show',
-  'Travel',
-  'INT Storage',
-  'EXT Storage'
-];
-
 export function EventCardIcons({
   event,
   isEditingDisabled,
@@ -29,7 +21,7 @@ export function EventCardIcons({
     <>
       <div className="flex justify-center items-center">
         <MapPin 
-          className={`h-6 w-6 ${event.location ? 'text-green-500' : 'text-muted-foreground'}`} 
+          className={`h-6 w-6 ${event.location ? 'text-green-500' : 'text-zinc-400'}`} 
         />
       </div>
 
@@ -48,7 +40,7 @@ export function EventCardIcons({
 
       <div className="flex justify-center items-center">
         {event.type.needs_crew && (
-          <Users className={`h-6 w-6 ${isEditingDisabled ? 'text-green-500' : 'text-muted-foreground'}`} />
+          <Users className={`h-6 w-6 ${isEditingDisabled ? 'text-green-500' : 'text-zinc-400'}`} />
         )}
       </div>
     </>
