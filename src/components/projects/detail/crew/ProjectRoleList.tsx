@@ -2,16 +2,15 @@ import { useProjectRoles } from "@/hooks/useProjectRoles";
 import { Card } from "@/components/ui/card";
 import { Loader2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCrew } from "@/hooks/useCrew";
-import { useCrewSort } from "@/components/crew/useCrewSort";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { CrewMemberSelectContent } from "@/components/crew/CrewMemberSelectContent";
 
 interface ProjectRoleListProps {
   projectId: string;
@@ -20,7 +19,6 @@ interface ProjectRoleListProps {
 export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
   const { roles, isLoading, refetch } = useProjectRoles(projectId);
   const { crew } = useCrew();
-  const { sortCrew } = useCrewSort();
   const [isUpdating, setIsUpdating] = useState(false);
   const { project } = useProjectDetails(projectId);
   const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
@@ -169,8 +167,6 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     );
   }
 
-  const sortedCrew = sortCrew(crew || []);
-
   // Sort roles based on predefined order
   const roleOrder = ['FOH', 'MON', 'PLB', 'BCK', 'PM', 'TM'];
   const sortedRoles = [...roles].sort((a, b) => {
@@ -178,8 +174,6 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     const bIndex = roleOrder.indexOf(b.role?.name || '');
     return aIndex - bIndex;
   });
-
-  // ... keep existing code (JSX rendering)
 
   return (
     <div className="space-y-4">
@@ -235,13 +229,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
                 <SelectTrigger className="max-w-[300px]">
                   <SelectValue placeholder="Select preferred" />
                 </SelectTrigger>
-                <SelectContent className="max-h-[200px] overflow-y-auto bg-zinc-900 border border-zinc-800">
-                  {sortedCrew.map((member) => (
-                    <SelectItem key={member.id} value={member.id}>
-                      {member.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                <CrewMemberSelectContent crew={crew || []} />
               </Select>
             </div>
 

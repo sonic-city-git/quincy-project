@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useSyncCrewStatus } from "@/hooks/useSyncCrewStatus";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -9,9 +9,9 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useCrew } from "@/hooks/useCrew";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCrewSort } from "@/components/crew/useCrewSort";
 import { format } from "date-fns";
 import { CalendarEvent } from "@/types/events";
+import { CrewMemberSelectContent } from "@/components/crew/CrewMemberSelectContent";
 
 interface EditCrewDialogProps {
   event: CalendarEvent;
@@ -23,12 +23,9 @@ interface EditCrewDialogProps {
 export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditCrewDialogProps) {
   const { roles = [] } = useSyncCrewStatus(event);
   const { crew = [] } = useCrew();
-  const { sortCrew } = useCrewSort();
   const [isPending, setIsPending] = useState(false);
   const [assignments, setAssignments] = useState<Record<string, string | null>>({});
   const queryClient = useQueryClient();
-
-  const sortedCrew = sortCrew(crew);
 
   // Initialize assignments when roles change or dialog opens
   useEffect(() => {
@@ -211,14 +208,7 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
                   <SelectTrigger className="flex-1">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="_none">None</SelectItem>
-                    {sortedCrew.map(member => (
-                      <SelectItem key={member.id} value={member.id}>
-                        {member.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
+                  <CrewMemberSelectContent crew={crew} />
                 </Select>
               </div>
             ))}
