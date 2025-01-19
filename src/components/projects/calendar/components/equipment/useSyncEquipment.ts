@@ -12,7 +12,11 @@ export function useSyncEquipment(projectId: string, eventId: string) {
       // Get project equipment
       const { data: projectEquipment, error: projectError } = await supabase
         .from('project_equipment')
-        .select('equipment_id, quantity, group_id')
+        .select(`
+          equipment_id,
+          quantity,
+          group_id
+        `)
         .eq('project_id', projectId);
 
       if (projectError) {
@@ -20,8 +24,7 @@ export function useSyncEquipment(projectId: string, eventId: string) {
         throw projectError;
       }
 
-      if (!projectEquipment?.length) {
-        console.log('No equipment found in project');
+      if (!projectEquipment) {
         toast.error("No equipment found in project");
         return;
       }
@@ -29,39 +32,46 @@ export function useSyncEquipment(projectId: string, eventId: string) {
       console.log('Fetched project equipment:', projectEquipment);
 
       try {
-        // First delete all existing equipment for this event
-        const { error: deleteError } = await supabase
+        // Check for existing equipment records
+        const { data: existingEquipment } = await supabase
           .from('project_event_equipment')
-          .delete()
+          .select('equipment_id')
           .eq('event_id', eventId);
 
-        if (deleteError) {
-          console.error('Error deleting existing event equipment:', deleteError);
-          throw deleteError;
+        // Delete existing equipment if any exists
+        if (existingEquipment && existingEquipment.length > 0) {
+          const { error: deleteError } = await supabase
+            .from('project_event_equipment')
+            .delete()
+            .eq('event_id', eventId);
+
+          if (deleteError) {
+            console.error('Error deleting existing event equipment:', deleteError);
+            throw deleteError;
+          }
+
+          console.log('Deleted existing event equipment');
         }
 
-        console.log('Deleted existing event equipment');
+        // Prepare the equipment records for insertion
+        const equipmentRecords = projectEquipment.map(item => ({
+          project_id: projectId,
+          event_id: eventId,
+          equipment_id: item.equipment_id,
+          quantity: item.quantity,
+          group_id: item.group_id,
+          is_synced: true
+        }));
 
-        // Wait a moment to ensure delete is processed
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Insert all equipment records in a single operation
+        const { error: insertError } = await supabase
+          .from('project_event_equipment')
+          .insert(equipmentRecords)
+          .select();
 
-        // Now insert the new equipment records one by one to avoid conflicts
-        for (const item of projectEquipment) {
-          const { error: insertError } = await supabase
-            .from('project_event_equipment')
-            .insert({
-              project_id: projectId,
-              event_id: eventId,
-              equipment_id: item.equipment_id,
-              quantity: item.quantity,
-              group_id: item.group_id,
-              is_synced: true
-            });
-
-          if (insertError) {
-            console.error('Error inserting equipment item:', item, insertError);
-            throw insertError;
-          }
+        if (insertError) {
+          console.error('Error inserting equipment records:', insertError);
+          throw insertError;
         }
 
         console.log('Successfully inserted new event equipment');
