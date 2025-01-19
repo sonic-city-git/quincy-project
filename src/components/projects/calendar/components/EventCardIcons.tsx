@@ -19,7 +19,7 @@ export function EventCardIcons({
 }: EventCardIconsProps) {
   const showEquipmentIcon = event.type.needs_equipment;
   const { isSynced: isEquipmentSynced, isChecking: isCheckingEquipment, hasProjectEquipment } = useSyncStatus(event);
-  const { hasProjectRoles, isSynced: isCrewSynced, isCheckingCrew, roles = [] } = useSyncCrewStatus(event);
+  const { hasProjectRoles, isSynced: isCrewSynced, isChecking, roles = [] } = useSyncCrewStatus(event);
 
   return (
     <>
