@@ -124,35 +124,26 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-[200px_1fr] gap-4 px-4 mb-2">
+      <div className="grid grid-cols-[200px_1fr_48px] gap-4 px-4 mb-2">
         <div className="text-sm font-medium">Role</div>
         <div className="grid grid-cols-[1fr_1fr_2fr] gap-4">
           <div className="text-sm font-medium">Daily rate</div>
           <div className="text-sm font-medium">Hourly rate</div>
           <div className="text-sm font-medium">Preferred crew</div>
         </div>
+        <div /> {/* Spacer for delete button column */}
       </div>
       {sortedRoles.map((role) => (
         <Card key={role.id} className="p-4 bg-zinc-900/50">
-          <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
-            <div className="flex items-center justify-between">
-              <span 
-                className="inline-flex items-center justify-center w-32 px-3 py-1.5 rounded-md text-sm font-medium text-white"
-                style={{ 
-                  backgroundColor: role.role?.color
-                }}
-              >
-                {role.role?.name}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-red-500 hover:text-red-400 hover:bg-red-500/10"
-                onClick={() => setRoleToDelete(role.id)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+          <div className="grid grid-cols-[200px_1fr_48px] gap-4 items-center">
+            <span 
+              className="inline-flex items-center justify-center w-32 px-3 py-1.5 rounded-md text-sm font-medium text-white"
+              style={{ 
+                backgroundColor: role.role?.color
+              }}
+            >
+              {role.role?.name}
+            </span>
             
             <div className="grid grid-cols-[1fr_1fr_2fr] gap-4 items-center">
               <Input
@@ -193,6 +184,15 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
                 </SelectContent>
               </Select>
             </div>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-red-500 hover:text-red-400 hover:bg-red-500/10"
+              onClick={() => setRoleToDelete(role.id)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </Card>
       ))}
