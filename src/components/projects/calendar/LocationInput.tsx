@@ -46,7 +46,6 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
     if (!apiKey) return;
 
     const loadGoogleMapsScript = () => {
-      // Remove any existing script to prevent duplicates
       const existingScript = document.getElementById(SCRIPT_ID);
       if (existingScript) {
         document.head.removeChild(existingScript);
@@ -63,10 +62,9 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
       script.async = true;
       script.defer = true;
 
-      script.onerror = (e) => {
-        console.error('Failed to load Google Maps API:', e);
+      script.onerror = () => {
         setError('Location search is temporarily unavailable');
-        toast.error('Location search is temporarily unavailable');
+        toast.error('Location search is temporarily unavailable. Please try again later.');
         if (script.parentNode) {
           script.parentNode.removeChild(script);
         }
@@ -92,8 +90,6 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
     if (!isLoaded || !inputRef.current) return;
 
     try {
-      console.log('Initializing Places Autocomplete...');
-      
       if (autocompleteInstance.current) {
         google.maps.event.clearInstanceListeners(autocompleteInstance.current);
       }
@@ -104,18 +100,28 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
       };
 
       autocompleteInstance.current = new google.maps.places.Autocomplete(inputRef.current, options);
-      console.log('Places Autocomplete initialized successfully');
 
       if (inputRef.current) {
         inputRef.current.setAttribute('autocomplete', 'off');
       }
 
       const placeChangedListener = autocompleteInstance.current.addListener('place_changed', () => {
-        const place = autocompleteInstance.current?.getPlace();
-        if (place?.name) {
-          setInternalValue(place.name);
-          onChange(place.name);
+        try {
+          const place = autocompleteInstance.current?.getPlace();
+          if (place?.name) {
+            setInternalValue(place.name);
+            onChange(place.name);
+          }
+        } catch (err) {
+          console.error('Error handling place selection:', err);
+          toast.error('Error selecting location. Please try typing the location manually.');
         }
+      });
+
+      // Handle potential API errors
+      google.maps.event.addDomListener(window, 'error.places', () => {
+        setError('Location search is currently unavailable');
+        toast.error('Location search is currently unavailable. Please try typing the location manually.');
       });
 
       return () => {
@@ -129,7 +135,7 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
     } catch (err) {
       console.error('Error initializing Google Places Autocomplete:', err);
       setError('Location search initialization failed');
-      toast.error('Location search initialization failed');
+      toast.error('Location search is unavailable. Please type the location manually.');
     }
   }, [isLoaded, onChange]);
 
@@ -148,11 +154,10 @@ export function LocationInput({ value, onChange }: LocationInputProps) {
       <MapPin className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
       <Input
         ref={inputRef}
-        placeholder={error || "Enter location"}
+        placeholder={error ? "Enter location manually" : "Enter location"}
         value={internalValue}
         onChange={handleInputChange}
         className="pl-8"
-        disabled={!!error}
       />
     </div>
   );
