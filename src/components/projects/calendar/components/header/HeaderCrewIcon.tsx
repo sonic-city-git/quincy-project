@@ -11,18 +11,28 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface HeaderCrewIconProps {
-  event: CalendarEvent;
+  events: CalendarEvent[];
   onSyncPreferredCrew?: () => void;
 }
 
-export function HeaderCrewIcon({ event, onSyncPreferredCrew }: HeaderCrewIconProps) {
-  const { hasProjectRoles, isSynced, isChecking } = useSyncCrewStatus(event);
+export function HeaderCrewIcon({ events, onSyncPreferredCrew }: HeaderCrewIconProps) {
+  // Check first event to see if we need crew at all
+  const firstEvent = events[0];
+  if (!firstEvent) return null;
+
+  const { hasProjectRoles, isSynced: firstEventSynced, isChecking } = useSyncCrewStatus(firstEvent);
 
   // Show nothing if there are no project roles
   if (!hasProjectRoles) return null;
+
+  // Check if all events have their crew assigned
+  const allEventsSynced = events.every(event => {
+    const { isSynced } = useSyncCrewStatus(event);
+    return isSynced;
+  });
   
-  // If all crew is assigned, show green icon without dropdown
-  if (isSynced) {
+  // If all crew is assigned across all events, show green icon without dropdown
+  if (allEventsSynced) {
     return (
       <div className="flex items-center gap-2">
         <Users className="h-6 w-6 text-green-500" />
