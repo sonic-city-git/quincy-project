@@ -9,7 +9,6 @@ import { Project } from "@/types/projects";
 import { useForm } from "react-hook-form";
 import { CrewMemberSelect } from "./CrewMemberSelect";
 import { supabase } from "@/integrations/supabase/client";
-import { HourlyCategory } from "@/types/events";
 
 interface AddRoleDialogProps {
   isOpen: boolean;
@@ -23,16 +22,11 @@ interface FormData {
   daily_rate: number;
   hourly_rate: number;
   preferred_id: string;
-  hourly_category: HourlyCategory;
+  hourly_category: "flat" | "corporate" | "broadcast";
 }
 
-export function AddRoleDialog({
-  isOpen,
-  onClose,
-  project,
-  eventId
-}: AddRoleDialogProps) {
-  const { data: roles } = useCrewRoles();
+export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDialogProps) {
+  const { roles } = useCrewRoles();
   const { addRole } = useProjectRoles(project.id);
 
   const form = useForm<FormData>({
@@ -48,7 +42,7 @@ export function AddRoleDialog({
   const onSubmit = async (data: FormData) => {
     try {
       // Get project type information
-      const isArtist = project?.project_types?.code === 'artist';
+      const isArtist = project?.project_type?.code === 'artist';
 
       // Get event type information for the current event (if applicable)
       const { data: eventType } = await supabase
@@ -116,7 +110,7 @@ export function AddRoleDialog({
 
               <Select
                 value={form.watch("hourly_category")}
-                onValueChange={(value) => form.setValue("hourly_category", value as HourlyCategory)}
+                onValueChange={(value) => form.setValue("hourly_category", value as "flat" | "corporate" | "broadcast")}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select hourly category" />

@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { AddRoleDialog } from "./AddRoleDialog";
 import { ProjectRoleList } from "./ProjectRoleList";
+import { useProjectDetails } from "@/hooks/useProjectDetails";
 
 interface ProjectCrewTabProps {
   projectId: string;
@@ -11,6 +12,9 @@ interface ProjectCrewTabProps {
 
 export function ProjectCrewTab({ projectId }: ProjectCrewTabProps) {
   const [isAddingRole, setIsAddingRole] = useState(false);
+  const { project } = useProjectDetails(projectId);
+
+  if (!project) return null;
 
   return (
     <div className="space-y-6">
@@ -26,9 +30,9 @@ export function ProjectCrewTab({ projectId }: ProjectCrewTabProps) {
       </Card>
 
       <AddRoleDialog
-        projectId={projectId}
-        open={isAddingRole}
-        onOpenChange={setIsAddingRole}
+        project={project}
+        isOpen={isAddingRole}
+        onClose={() => setIsAddingRole(false)}
       />
     </div>
   );
