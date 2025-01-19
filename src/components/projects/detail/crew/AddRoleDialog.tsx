@@ -8,7 +8,7 @@ import { useProjectRoles } from "@/hooks/useProjectRoles";
 import { Project } from "@/types/projects";
 import { useForm } from "react-hook-form";
 import { CrewMemberSelect } from "./CrewMemberSelect";
-import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface AddRoleDialogProps {
   isOpen: boolean;
@@ -25,7 +25,7 @@ interface FormData {
   hourly_category: "flat" | "corporate" | "broadcast";
 }
 
-export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDialogProps) {
+export function AddRoleDialog({ isOpen, onClose, project }: AddRoleDialogProps) {
   const { roles } = useCrewRoles();
   const { addRole } = useProjectRoles(project.id);
 
@@ -41,27 +41,19 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
 
   const onSubmit = async (data: FormData) => {
     try {
-      // Get project type information
-      const isArtist = project?.project_type?.code === 'artist';
-
-      // Get event type information for the current event (if applicable)
-      const { data: eventType } = await supabase
-        .from('project_events')
-        .select('event_types(name)')
-        .eq('id', eventId)
-        .single();
-
-      const isHoursEvent = eventType?.event_types?.name === 'Hours';
-
       await addRole({
-        ...data,
-        is_artist: isArtist,
-        is_hours_event: isHoursEvent
+        role_id: data.role_id,
+        daily_rate: data.daily_rate,
+        hourly_rate: data.hourly_rate,
+        preferred_id: data.preferred_id || null,
+        hourly_category: data.hourly_category
       });
-
+      
+      toast.success("Role added successfully");
       onClose();
     } catch (error) {
       console.error('Error adding role:', error);
+      toast.error("Failed to add role");
     }
   };
 
