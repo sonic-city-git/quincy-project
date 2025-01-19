@@ -23,14 +23,17 @@ export function useSyncCrewStatus(event: CalendarEvent) {
         return { hasProjectRoles: false, roles: [], isSynced: false };
       }
 
-      // Then get event role assignments
+      // Then get event role assignments with crew member details
       const { data: eventRoles } = await supabase
         .from('project_event_roles')
         .select(`
           role_id,
           crew_member:crew_members (
             id,
-            name
+            name,
+            email,
+            phone,
+            avatar_url
           )
         `)
         .eq('event_id', event.id);
