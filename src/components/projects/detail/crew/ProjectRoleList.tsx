@@ -45,46 +45,12 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
   const handlePreferredChange = async (roleId: string, preferredId: string) => {
     setIsUpdating(true);
     try {
-      // First update the project role
       const { error } = await supabase
         .from('project_roles')
         .update({ preferred_id: preferredId })
         .eq('id', roleId);
 
       if (error) throw error;
-
-      // Check if the preferred member is from Sonic City
-      const preferredMember = crew?.find(member => member.id === preferredId);
-      const SONIC_CITY_FOLDER_ID = "34f3469f-02bd-4ecf-82f9-11a4e88c2d77";
-      
-      if (preferredMember?.folder_id === SONIC_CITY_FOLDER_ID) {
-        // Get all events for this project that need crew
-        const { data: events, error: eventsError } = await supabase
-          .from('project_events')
-          .select('id, event_types!inner(needs_crew)')
-          .eq('project_id', projectId)
-          .eq('event_types.needs_crew', true);
-
-        if (eventsError) throw eventsError;
-
-        if (events?.length > 0) {
-          // Create event role assignments for each event
-          const eventRoles = events.map(event => ({
-            project_id: projectId,
-            event_id: event.id,
-            role_id: roles.find(r => r.id === roleId)?.role?.id,
-            crew_member_id: preferredId
-          }));
-
-          const { error: assignmentError } = await supabase
-            .from('project_event_roles')
-            .upsert(eventRoles);
-
-          if (assignmentError) throw assignmentError;
-        }
-      } else {
-        console.log('Preferred member is not from Sonic City, skipping auto-assignment');
-      }
 
       await refetch();
       toast.success('Preferred member updated');

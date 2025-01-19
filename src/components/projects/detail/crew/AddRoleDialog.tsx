@@ -28,7 +28,7 @@ interface FormData {
   preferred_id?: string;
 }
 
-export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDialogProps) {
+export function AddRoleDialog({ isOpen, onClose, project }: AddRoleDialogProps) {
   const { roles } = useCrewRoles();
   const { crew } = useCrew();
   const { sortCrew } = useCrewSort();
@@ -47,8 +47,8 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
     try {
       console.log('Starting to add role:', data);
       
-      // First, add the project role
-      const { data: projectRole, error } = await supabase
+      // Add the project role
+      const { error } = await supabase
         .from('project_roles')
         .insert({
           project_id: project.id,
@@ -56,50 +56,11 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
           daily_rate: data.daily_rate,
           hourly_rate: data.hourly_rate,
           preferred_id: data.preferred_id || null
-        })
-        .select()
-        .single();
+        });
 
       if (error) throw error;
 
-      // If there's a preferred crew member, check if they're from Sonic City before auto-assigning
-      if (data.preferred_id) {
-        const preferredMember = crew?.find(member => member.id === data.preferred_id);
-        const SONIC_CITY_FOLDER_ID = "34f3469f-02bd-4ecf-82f9-11a4e88c2d77";
-        
-        if (preferredMember?.folder_id === SONIC_CITY_FOLDER_ID) {
-          // Get all events for this project that need crew
-          const { data: events, error: eventsError } = await supabase
-            .from('project_events')
-            .select('id, event_types!inner(needs_crew)')
-            .eq('project_id', project.id)
-            .eq('event_types.needs_crew', true);
-
-          if (eventsError) throw eventsError;
-
-          if (events?.length > 0) {
-            // Create event role assignments for each event
-            const eventRoles = events.map(event => ({
-              project_id: project.id,
-              event_id: event.id,
-              role_id: data.role_id,
-              crew_member_id: data.preferred_id,
-              daily_rate: data.daily_rate,
-              hourly_rate: data.hourly_rate
-            }));
-
-            const { error: assignmentError } = await supabase
-              .from('project_event_roles')
-              .insert(eventRoles);
-
-            if (assignmentError) throw assignmentError;
-          }
-        } else {
-          console.log('Preferred member is not from Sonic City, skipping auto-assignment');
-        }
-      }
-
-      // Invalidate both project roles and event roles queries
+      // Invalidate queries
       await Promise.all([
         queryClient.invalidateQueries({ 
           queryKey: ['project-roles', project.id] 

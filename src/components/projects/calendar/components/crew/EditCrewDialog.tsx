@@ -38,74 +38,6 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
     }
   }, [roles, open]);
 
-  // Effect to auto-assign preferred crew members on first open
-  useEffect(() => {
-    if (open) {
-      const autoAssignPreferredMembers = async () => {
-        try {
-          const { data: projectRoles } = await supabase
-            .from('project_roles')
-            .select(`
-              role_id,
-              preferred_id
-            `)
-            .eq('project_id', event.project_id)
-            .not('preferred_id', 'is', null);
-
-          if (!projectRoles?.length) return;
-
-          const newAssignments = { ...assignments };
-          let hasChanges = false;
-
-          for (const role of roles) {
-            if (assignments[role.id] === "_none") {
-              const projectRole = projectRoles.find(pr => pr.role_id === role.id);
-              if (projectRole?.preferred_id) {
-                // Check if preferred member is from Sonic City
-                const preferredMember = crew?.find(member => member.id === projectRole.preferred_id);
-                const SONIC_CITY_FOLDER_ID = "34f3469f-02bd-4ecf-82f9-11a4e88c2d77";
-                
-                if (preferredMember?.folder_id === SONIC_CITY_FOLDER_ID) {
-                  const { error } = await supabase
-                    .from('project_event_roles')
-                    .upsert({
-                      project_id: event.project_id,
-                      event_id: event.id,
-                      role_id: role.id,
-                      crew_member_id: projectRole.preferred_id
-                    });
-
-                  if (!error) {
-                    newAssignments[role.id] = projectRole.preferred_id;
-                    hasChanges = true;
-                  }
-                } else {
-                  console.log('Preferred member is not from Sonic City, skipping auto-assignment');
-                }
-              }
-            }
-          }
-
-          if (hasChanges) {
-            setAssignments(newAssignments);
-            await Promise.all([
-              queryClient.invalidateQueries({ 
-                queryKey: ['events', event.project_id]
-              }),
-              queryClient.invalidateQueries({
-                queryKey: ['crew-sync-status', event.id]
-              })
-            ]);
-          }
-        } catch (error) {
-          console.error("Error auto-assigning preferred members:", error);
-        }
-      };
-
-      autoAssignPreferredMembers();
-    }
-  }, [open, event.project_id, event.id, roles, assignments, crew]);
-
   const handleAssignCrew = async (roleId: string, crewMemberId: string | null) => {
     setIsPending(true);
     try {
@@ -135,7 +67,6 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
         if (error) throw error;
       }
 
-      // Only update local state and invalidate queries after successful database update
       await Promise.all([
         queryClient.invalidateQueries({ 
           queryKey: ['events', event.project_id]
@@ -145,7 +76,6 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
         })
       ]);
 
-      // Update local state
       setAssignments(prev => ({
         ...prev,
         [roleId]: crewMemberId || "_none"
@@ -155,7 +85,6 @@ export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditC
     } catch (error: any) {
       console.error("Error assigning crew member:", error);
       toast.error(error.message || "Failed to assign crew member");
-      // Revert assignment on error
       setAssignments(prev => ({
         ...prev,
         [roleId]: roles.find(r => r.id === roleId)?.assigned?.id || "_none"
