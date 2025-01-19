@@ -27,4 +27,9 @@ export interface CalendarEvent {
   equipment_price?: number;
   crew_price?: number;
   total_price?: number;
+  project_event_roles?: Array<{
+    id: string;
+    crew_member_id: string | null;
+    role_id: string;
+  }>;
 }

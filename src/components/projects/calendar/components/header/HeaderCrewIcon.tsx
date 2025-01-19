@@ -9,6 +9,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface HeaderCrewIconProps {
   events: CalendarEvent[];
@@ -22,14 +24,26 @@ export function HeaderCrewIcon({ events, onSyncPreferredCrew }: HeaderCrewIconPr
 
   const { hasProjectRoles, isSynced: firstEventSynced, isChecking } = useSyncCrewStatus(firstEvent);
 
+  // Get crew assignments for all events
+  const { data: eventRoles } = useQuery({
+    queryKey: ['event-roles', events.map(e => e.id)],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('project_event_roles')
+        .select('event_id, crew_member_id')
+        .in('event_id', events.map(e => e.id));
+      return data || [];
+    },
+    enabled: events.length > 0
+  });
+
   // Show nothing if there are no project roles
   if (!hasProjectRoles) return null;
 
   // Check if all events have their crew assigned
   const allEventsSynced = events.every(event => {
-    // We don't want to use hooks in a loop, so we'll check the event's roles directly
-    const hasAllRolesAssigned = event.project_event_roles?.every(role => role.crew_member_id !== null);
-    return hasAllRolesAssigned;
+    const eventAssignments = eventRoles?.filter(role => role.event_id === event.id) || [];
+    return eventAssignments.every(role => role.crew_member_id !== null);
   });
   
   // If all crew is assigned across all events, show green icon without dropdown
