@@ -32,49 +32,74 @@ export function useSyncEquipment(projectId: string, eventId: string) {
       console.log('Fetched project equipment:', projectEquipment);
 
       try {
-        // Check for existing equipment records
-        const { data: existingEquipment } = await supabase
+        // Get existing event equipment
+        const { data: eventEquipment } = await supabase
           .from('project_event_equipment')
-          .select('equipment_id')
+          .select('equipment_id, id')
           .eq('event_id', eventId);
 
-        // Delete existing equipment if any exists
-        if (existingEquipment && existingEquipment.length > 0) {
+        // Create maps for easier lookup
+        const projectEquipMap = new Map(
+          projectEquipment.map(item => [item.equipment_id, item])
+        );
+        const eventEquipMap = new Map(
+          eventEquipment?.map(item => [item.equipment_id, item]) || []
+        );
+
+        // Update existing equipment
+        for (const [equipId, projectItem] of projectEquipMap.entries()) {
+          if (eventEquipMap.has(equipId)) {
+            const { error: updateError } = await supabase
+              .from('project_event_equipment')
+              .update({
+                quantity: projectItem.quantity,
+                group_id: projectItem.group_id,
+                is_synced: true
+              })
+              .eq('event_id', eventId)
+              .eq('equipment_id', equipId);
+
+            if (updateError) {
+              console.error('Error updating equipment:', updateError);
+              throw updateError;
+            }
+          } else {
+            // Insert new equipment
+            const { error: insertError } = await supabase
+              .from('project_event_equipment')
+              .insert({
+                project_id: projectId,
+                event_id: eventId,
+                equipment_id: projectItem.equipment_id,
+                quantity: projectItem.quantity,
+                group_id: projectItem.group_id,
+                is_synced: true
+              });
+
+            if (insertError) {
+              console.error('Error inserting new equipment:', insertError);
+              throw insertError;
+            }
+          }
+        }
+
+        // Remove equipment that no longer exists in project
+        const equipmentToRemove = Array.from(eventEquipMap.keys())
+          .filter(equipId => !projectEquipMap.has(equipId));
+
+        if (equipmentToRemove.length > 0) {
           const { error: deleteError } = await supabase
             .from('project_event_equipment')
             .delete()
-            .eq('event_id', eventId);
+            .eq('event_id', eventId)
+            .in('equipment_id', equipmentToRemove);
 
           if (deleteError) {
-            console.error('Error deleting existing event equipment:', deleteError);
+            console.error('Error removing old equipment:', deleteError);
             throw deleteError;
           }
-
-          console.log('Deleted existing event equipment');
         }
 
-        // Prepare the equipment records for insertion
-        const equipmentRecords = projectEquipment.map(item => ({
-          project_id: projectId,
-          event_id: eventId,
-          equipment_id: item.equipment_id,
-          quantity: item.quantity,
-          group_id: item.group_id,
-          is_synced: true
-        }));
-
-        // Insert all equipment records in a single operation
-        const { error: insertError } = await supabase
-          .from('project_event_equipment')
-          .insert(equipmentRecords)
-          .select();
-
-        if (insertError) {
-          console.error('Error inserting equipment records:', insertError);
-          throw insertError;
-        }
-
-        console.log('Successfully inserted new event equipment');
         toast.success("Equipment synced successfully");
         
         // Invalidate relevant queries
@@ -85,7 +110,6 @@ export function useSyncEquipment(projectId: string, eventId: string) {
       } catch (error) {
         console.error('Error syncing equipment:', error);
         toast.error("Failed to sync equipment");
-        throw error;
       }
     } catch (error) {
       console.error('Error in handleSync:', error);
