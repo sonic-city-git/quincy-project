@@ -13,6 +13,8 @@ export interface EventStatus {
   description?: string;
 }
 
+export type HourlyCategory = 'flat' | 'corporate' | 'broadcast';
+
 export interface CalendarEvent {
   id: string;
   date: Date;

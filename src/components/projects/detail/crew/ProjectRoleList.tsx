@@ -15,7 +15,7 @@ interface ProjectRoleListProps {
 }
 
 export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
-  const { roles, loading, refetch } = useProjectRoles(projectId);
+  const { roles, isLoading, refetch } = useProjectRoles(projectId);
   const { crew } = useCrew();
   const { sortCrew } = useCrewSort();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -59,7 +59,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     }
   };
 
-  if (loading || isUpdating) {
+  if (isLoading || isUpdating) {
     return (
       <div className="flex justify-center py-8">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

@@ -3,7 +3,7 @@ import { HourlyCategory } from "@/types/events";
 import { useQuery } from "@tanstack/react-query";
 
 export const useProjectRoles = (projectId?: string) => {
-  const { data: roles, isLoading } = useQuery({
+  const { data: roles, isLoading, refetch } = useQuery({
     queryKey: ['project-roles', projectId],
     queryFn: async () => {
       if (!projectId) return [];
@@ -59,8 +59,9 @@ export const useProjectRoles = (projectId?: string) => {
   };
 
   return {
-    roles,
+    roles: roles || [],
     isLoading,
-    addRole
+    addRole,
+    refetch
   };
 };
