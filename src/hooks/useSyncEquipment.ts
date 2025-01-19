@@ -7,6 +7,8 @@ export function useSyncEquipment(projectId: string, eventId: string) {
 
   const handleSync = async () => {
     try {
+      console.log('Starting equipment sync for project:', projectId, 'event:', eventId);
+      
       // Get project equipment
       const { data: projectEquipment, error: projectError } = await supabase
         .from('project_equipment')
@@ -23,10 +25,12 @@ export function useSyncEquipment(projectId: string, eventId: string) {
         return;
       }
 
-      // Get current event equipment to find what needs to be deleted
+      console.log('Fetched project equipment:', projectEquipment);
+
+      // Get current event equipment
       const { data: currentEventEquipment, error: eventError } = await supabase
         .from('project_event_equipment')
-        .select('id, equipment_id, group_id')
+        .select('id, equipment_id, quantity, group_id')
         .eq('event_id', eventId);
 
       if (eventError) {
@@ -34,63 +38,42 @@ export function useSyncEquipment(projectId: string, eventId: string) {
         throw eventError;
       }
 
-      // Create a map of existing event equipment for easy lookup
-      const eventEquipmentMap = new Map(
-        currentEventEquipment?.map(item => [
-          `${item.equipment_id}-${item.group_id || 'null'}`,
-          item
-        ]) || []
-      );
+      console.log('Fetched current event equipment:', currentEventEquipment);
 
-      // Create a map of project equipment
-      const projectEquipmentMap = new Map(
-        projectEquipment.map(item => [
-          `${item.equipment_id}-${item.group_id || 'null'}`,
-          item
-        ])
-      );
+      // First, delete all existing event equipment
+      if (currentEventEquipment && currentEventEquipment.length > 0) {
+        const { error: deleteError } = await supabase
+          .from('project_event_equipment')
+          .delete()
+          .eq('event_id', eventId);
 
-      // Delete equipment that's no longer in the project
-      for (const [key, eventItem] of eventEquipmentMap) {
-        if (!projectEquipmentMap.has(key)) {
-          const { error: deleteError } = await supabase
-            .from('project_event_equipment')
-            .delete()
-            .eq('id', eventItem.id);
-
-          if (deleteError) {
-            console.error('Error deleting equipment:', deleteError);
-            throw deleteError;
-          }
+        if (deleteError) {
+          console.error('Error deleting existing equipment:', deleteError);
+          throw deleteError;
         }
+        console.log('Deleted existing event equipment');
       }
 
-      // Update or insert project equipment one by one
-      for (const [key, projectItem] of projectEquipmentMap) {
-        const eventItem = eventEquipmentMap.get(key);
-        
-        // If item exists in event and has same quantity, skip it
-        if (eventItem && currentEventEquipment?.find(e => 
-          e.equipment_id === projectItem.equipment_id && 
-          e.group_id === projectItem.group_id
-        )) {
-          continue;
-        }
+      // Then insert all project equipment as new rows
+      if (projectEquipment.length > 0) {
+        const equipmentToInsert = projectEquipment.map(item => ({
+          project_id: projectId,
+          event_id: eventId,
+          equipment_id: item.equipment_id,
+          quantity: item.quantity,
+          group_id: item.group_id,
+          is_synced: true
+        }));
 
-        const { error: upsertError } = await supabase
+        console.log('Inserting new equipment:', equipmentToInsert);
+
+        const { error: insertError } = await supabase
           .from('project_event_equipment')
-          .upsert({
-            project_id: projectId,
-            event_id: eventId,
-            equipment_id: projectItem.equipment_id,
-            quantity: projectItem.quantity,
-            group_id: projectItem.group_id,
-            is_synced: true
-          });
+          .insert(equipmentToInsert);
 
-        if (upsertError) {
-          console.error('Error upserting equipment:', upsertError);
-          throw upsertError;
+        if (insertError) {
+          console.error('Error inserting equipment:', insertError);
+          throw insertError;
         }
       }
 
