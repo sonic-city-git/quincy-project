@@ -11,14 +11,16 @@ import { useCrew } from "@/hooks/useCrew";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCrewSort } from "@/components/crew/useCrewSort";
 import { format } from "date-fns";
+import { CalendarEvent } from "@/types/events";
 
 interface EditCrewDialogProps {
   event: CalendarEvent;
+  projectName: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function EditCrewDialog({ event, open, onOpenChange }: EditCrewDialogProps) {
+export function EditCrewDialog({ event, projectName, open, onOpenChange }: EditCrewDialogProps) {
   const { roles = [] } = useSyncCrewStatus(event);
   const { crew = [] } = useCrew();
   const { sortCrew } = useCrewSort();
@@ -57,6 +59,7 @@ export function EditCrewDialog({ event, open, onOpenChange }: EditCrewDialogProp
         <DialogHeader>
           <DialogTitle>Edit Crew Assignments</DialogTitle>
           <div className="mt-2 space-y-1 text-sm text-muted-foreground">
+            <p>{projectName}</p>
             <p>{event.name}</p>
             <p>{format(event.date, 'dd.MM.yy')}</p>
           </div>
