@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCrew } from "@/hooks/useCrew";
 import { useCrewSort } from "@/components/crew/useCrewSort";
-import { HourlyCategory } from "@/integrations/supabase/types/crew";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
 
 interface ProjectRoleListProps {
@@ -85,8 +84,6 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
     const bIndex = roleOrder.indexOf(b.role?.name || '');
     return aIndex - bIndex;
   });
-
-  const isArtistProject = project?.project_types?.code === 'artist';
 
   return (
     <div className="space-y-4">
