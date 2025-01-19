@@ -18,13 +18,27 @@ export function useSyncStatus(event: CalendarEvent) {
           return;
         }
 
+        // First check if project has any equipment
+        const { data: projectEquipment } = await supabase
+          .from('project_equipment')
+          .select('id')
+          .eq('project_id', event.project_id)
+          .limit(1);
+
+        // If project has no equipment, set as synced (will show grey icon)
+        if (!projectEquipment || projectEquipment.length === 0) {
+          setIsSynced(true);
+          setIsChecking(false);
+          return;
+        }
+
         // Check if event has any equipment
         const { data: eventEquipment } = await supabase
           .from('project_event_equipment')
           .select('is_synced')
           .eq('event_id', event.id);
 
-        // If no equipment exists, set as "no equipment" state (not synced)
+        // If no equipment exists but project has equipment, mark as not synced (blue)
         if (!eventEquipment || eventEquipment.length === 0) {
           setIsSynced(false);
           setIsChecking(false);
