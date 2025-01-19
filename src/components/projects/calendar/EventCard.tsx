@@ -23,27 +23,6 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
     return ['cancelled', 'invoice ready'].includes(status);
   };
 
-  // Fetch project roles and event type to calculate crew price
-  const { data: projectRoles } = useQuery({
-    queryKey: ['project_roles', event.project_id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('project_roles')
-        .select(`
-          *,
-          role:crew_roles (
-            id,
-            name,
-            color
-          )
-        `)
-        .eq('project_id', event.project_id);
-      
-      if (error) throw error;
-      return data || [];
-    }
-  });
-
   // Get event type details including crew_rate_multiplier and needs_crew
   const { data: eventType } = useQuery({
     queryKey: ['event_type', event.type.id],
@@ -58,21 +37,6 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
       return data;
     }
   });
-
-  // Calculate crew price based on roles and daily rates
-  const crewPrice = eventType?.needs_crew 
-    ? projectRoles?.reduce((total, role) => {
-        if (!role.daily_rate) return total;
-        const basePrice = role.daily_rate;
-        const crewRateMultiplier = eventType?.crew_rate_multiplier || 1.0;
-        return total + (basePrice * crewRateMultiplier);
-      }, 0) || 0
-    : 0;
-
-  // Calculate equipment price with equipment rate multiplier
-  const equipmentPrice = event.equipment_price 
-    ? event.equipment_price * (eventType?.equipment_rate_multiplier || 1.0)
-    : 0;
 
   return (
     <TooltipProvider>
@@ -106,15 +70,15 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
           </div>
 
           <div className="flex items-center justify-end text-sm text-muted-foreground">
-            {formatPrice(equipmentPrice)}
+            {formatPrice(event.equipment_price)}
           </div>
 
           <div className="flex items-center justify-end text-sm text-muted-foreground">
-            {formatPrice(crewPrice)}
+            {formatPrice(event.total_price - (event.equipment_price || 0))}
           </div>
 
           <div className="flex items-center justify-end text-sm font-medium">
-            {formatPrice(equipmentPrice + crewPrice)}
+            {formatPrice(event.total_price)}
           </div>
         </EventCardGrid>
       </Card>
