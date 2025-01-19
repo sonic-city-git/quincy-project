@@ -5,10 +5,13 @@ import { Input } from "@/components/ui/input";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 import { Project } from "@/types/projects";
 import { useForm } from "react-hook-form";
-import { CrewMemberSelect } from "./CrewMemberSelect";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useCrew } from "@/hooks/useCrew";
+import { useCrewSort } from "@/components/crew/useCrewSort";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface AddRoleDialogProps {
   isOpen: boolean;
@@ -26,6 +29,8 @@ interface FormData {
 
 export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDialogProps) {
   const { roles } = useCrewRoles();
+  const { crew } = useCrew();
+  const { sortCrew } = useCrewSort();
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
     defaultValues: {
@@ -33,6 +38,8 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
       hourly_rate: 850
     }
   });
+
+  const sortedCrew = sortCrew(crew || []);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -101,10 +108,50 @@ export function AddRoleDialog({ isOpen, onClose, project, eventId }: AddRoleDial
 
           <div className="space-y-2">
             <Label>Preferred Crew Member</Label>
-            <CrewMemberSelect
+            <Select
               value={watch('preferred_id') || ''}
-              onChange={(value) => setValue('preferred_id', value)}
-            />
+              onValueChange={(value) => setValue('preferred_id', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select preferred crew member" />
+              </SelectTrigger>
+              <SelectContent>
+                <ScrollArea className="h-[200px]">
+                  {sortedCrew.map((member) => {
+                    const initials = member.name
+                      .split(' ')
+                      .map(n => n[0])
+                      .join('')
+                      .toUpperCase();
+
+                    return (
+                      <SelectItem 
+                        key={member.id} 
+                        value={member.id}
+                        className="flex items-center gap-3 py-2"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-8 w-8">
+                            {member.avatar_url ? (
+                              <AvatarImage 
+                                src={member.avatar_url} 
+                                alt={member.name} 
+                                className="object-cover"
+                              />
+                            ) : (
+                              <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
+                                {initials}
+                              </AvatarFallback>
+                            )}
+                          </Avatar>
+                          <span className="truncate">{member.name}</span>
+                        </div>
+                      </SelectItem>
+                    );
+                  })}
+                </ScrollArea>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end space-x-2">
