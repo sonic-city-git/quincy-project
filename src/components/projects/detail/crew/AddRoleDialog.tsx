@@ -15,6 +15,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { HourlyCategory } from "@/integrations/supabase/types/crew";
+import { useProjectDetails } from "@/hooks/useProjectDetails";
+import { useParams } from "react-router-dom";
 
 const formSchema = z.object({
   role_id: z.string({ required_error: "Please select a role" }),
@@ -37,6 +39,8 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
   const { addRole, loading } = useProjectRoles(projectId);
   const { sortCrew } = useCrewSort();
   const queryClient = useQueryClient();
+  const { project } = useProjectDetails(projectId);
+  const { id } = useParams();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -50,48 +54,26 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
 
   const onSubmit = async (data: FormData) => {
     try {
+      // Get project type information
+      const isArtist = project?.project_type?.code === 'artist';
+
+      // Get event type information for the current event (if applicable)
+      const { data: eventType } = await supabase
+        .from('event_types')
+        .select('name')
+        .single();
+
+      const isHoursEvent = eventType?.name === 'hours';
+
       await addRole({
         role_id: data.role_id,
         daily_rate: parseFloat(data.daily_rate),
         hourly_rate: parseFloat(data.hourly_rate),
         preferred_id: data.preferred_id,
-        hourly_category: 'flat' as HourlyCategory
+        hourly_category: 'flat' as HourlyCategory,
+        is_artist: isArtist,
+        is_hours_event: isHoursEvent
       });
-
-      // Check if the preferred member is from Sonic City
-      const { data: crewMember } = await supabase
-        .from('crew_members')
-        .select('folder_id, crew_folders!inner(name)')
-        .eq('id', data.preferred_id)
-        .single();
-
-      if (crewMember?.crew_folders?.name === 'Sonic City') {
-        // Get all existing events for this project
-        const { data: events } = await supabase
-          .from('project_events')
-          .select('id')
-          .eq('project_id', projectId)
-          .not('status', 'in', ['cancelled', 'invoice ready']);
-
-        if (events?.length) {
-          // Add role assignments for each event
-          const roleAssignments = events.map(event => ({
-            project_id: projectId,
-            event_id: event.id,
-            role_id: data.role_id,
-            crew_member_id: data.preferred_id,
-            daily_rate: parseFloat(data.daily_rate),
-            hourly_rate: parseFloat(data.hourly_rate),
-            hourly_category: 'flat' as HourlyCategory
-          }));
-
-          const { error: assignmentError } = await supabase
-            .from('project_event_roles')
-            .upsert(roleAssignments);
-
-          if (assignmentError) throw assignmentError;
-        }
-      }
 
       // Invalidate relevant queries
       await Promise.all([
@@ -103,9 +85,9 @@ export function AddRoleDialog({ projectId, open, onOpenChange }: AddRoleDialogPr
       form.reset();
       onOpenChange(false);
       toast.success("Role added successfully");
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error adding role:', error);
-      toast.error(error.message || "Failed to add role");
+      toast.error("Failed to add role");
     }
   };
 

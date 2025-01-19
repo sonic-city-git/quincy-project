@@ -1061,14 +1061,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      calculate_hourly_cost: {
-        Args: {
-          p_hours: number
-          p_hourly_rate: number
-          p_category: Database["public"]["Enums"]["hourly_rate_category"]
-        }
-        Returns: number
-      }
+      calculate_hourly_cost:
+        | {
+            Args: {
+              p_hours: number
+              p_hourly_rate: number
+              p_category: Database["public"]["Enums"]["hourly_rate_category"]
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              p_hours: number
+              p_hourly_rate: number
+              p_category: Database["public"]["Enums"]["hourly_rate_category"]
+              p_is_artist?: boolean
+              p_is_hours_event?: boolean
+            }
+            Returns: number
+          }
       sync_all_avatars: {
         Args: Record<PropertyKey, never>
         Returns: undefined
