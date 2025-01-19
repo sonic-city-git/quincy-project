@@ -8,6 +8,8 @@ import { EventCardGrid } from "./components/EventCardGrid";
 import { EventCardStatus } from "./components/EventCardStatus";
 import { EventActions } from "./components/EventActions";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -20,6 +22,50 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
   const isEditingDisabled = (status: string) => {
     return ['cancelled', 'invoice ready'].includes(status);
   };
+
+  // Fetch project roles and event type to calculate crew price
+  const { data: projectRoles } = useQuery({
+    queryKey: ['project_roles', event.project_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('project_roles')
+        .select(`
+          *,
+          role:crew_roles (
+            id,
+            name,
+            color
+          )
+        `)
+        .eq('project_id', event.project_id);
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
+
+  // Get event type details including crew_rate_multiplier
+  const { data: eventType } = useQuery({
+    queryKey: ['event_type', event.type.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('event_types')
+        .select('*')
+        .eq('id', event.type.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // Calculate crew price based on roles and daily rates
+  const crewPrice = projectRoles?.reduce((total, role) => {
+    if (!role.daily_rate) return total;
+    const basePrice = role.daily_rate;
+    const crewRateMultiplier = eventType?.crew_rate_multiplier || 1.0;
+    return total + (basePrice * crewRateMultiplier);
+  }, 0) || 0;
 
   return (
     <TooltipProvider>
@@ -57,11 +103,11 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
           </div>
 
           <div className="flex items-center justify-end text-sm text-muted-foreground">
-            {formatPrice(0)} {/* Crew price - will be implemented later */}
+            {formatPrice(crewPrice)}
           </div>
 
           <div className="flex items-center justify-end text-sm font-medium">
-            {formatPrice(event.total_price)}
+            {formatPrice((event.equipment_price || 0) + crewPrice)}
           </div>
         </EventCardGrid>
       </Card>
