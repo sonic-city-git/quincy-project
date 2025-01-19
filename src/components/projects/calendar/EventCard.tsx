@@ -44,7 +44,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
     }
   });
 
-  // Get event type details including crew_rate_multiplier
+  // Get event type details including crew_rate_multiplier and needs_crew
   const { data: eventType } = useQuery({
     queryKey: ['event_type', event.type.id],
     queryFn: async () => {
@@ -60,12 +60,14 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
   });
 
   // Calculate crew price based on roles and daily rates
-  const crewPrice = projectRoles?.reduce((total, role) => {
-    if (!role.daily_rate) return total;
-    const basePrice = role.daily_rate;
-    const crewRateMultiplier = eventType?.crew_rate_multiplier || 1.0;
-    return total + (basePrice * crewRateMultiplier);
-  }, 0) || 0;
+  const crewPrice = eventType?.needs_crew 
+    ? projectRoles?.reduce((total, role) => {
+        if (!role.daily_rate) return total;
+        const basePrice = role.daily_rate;
+        const crewRateMultiplier = eventType?.crew_rate_multiplier || 1.0;
+        return total + (basePrice * crewRateMultiplier);
+      }, 0) || 0
+    : 0;
 
   return (
     <TooltipProvider>
