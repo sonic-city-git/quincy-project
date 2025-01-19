@@ -69,6 +69,11 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
       }, 0) || 0
     : 0;
 
+  // Calculate equipment price with equipment rate multiplier
+  const equipmentPrice = event.equipment_price 
+    ? event.equipment_price * (eventType?.equipment_rate_multiplier || 1.0)
+    : 0;
+
   return (
     <TooltipProvider>
       <Card 
@@ -101,7 +106,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
           </div>
 
           <div className="flex items-center justify-end text-sm text-muted-foreground">
-            {formatPrice(event.equipment_price)}
+            {formatPrice(equipmentPrice)}
           </div>
 
           <div className="flex items-center justify-end text-sm text-muted-foreground">
@@ -109,7 +114,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
           </div>
 
           <div className="flex items-center justify-end text-sm font-medium">
-            {formatPrice((event.equipment_price || 0) + crewPrice)}
+            {formatPrice(equipmentPrice + crewPrice)}
           </div>
         </EventCardGrid>
       </Card>
