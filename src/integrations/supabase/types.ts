@@ -737,7 +737,6 @@ export type Database = {
           location: string | null
           name: string
           project_id: string | null
-          revenue: number | null
           status: string
           total_price: number | null
           updated_at: string
@@ -751,7 +750,6 @@ export type Database = {
           location?: string | null
           name: string
           project_id?: string | null
-          revenue?: number | null
           status?: string
           total_price?: number | null
           updated_at?: string
@@ -765,7 +763,6 @@ export type Database = {
           location?: string | null
           name?: string
           project_id?: string | null
-          revenue?: number | null
           status?: string
           total_price?: number | null
           updated_at?: string
