@@ -1,6 +1,6 @@
 import { useProjectRoles } from "@/hooks/useProjectRoles";
 import { Card } from "@/components/ui/card";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
@@ -9,6 +9,9 @@ import { toast } from "sonner";
 import { useCrew } from "@/hooks/useCrew";
 import { useCrewSort } from "@/components/crew/useCrewSort";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface ProjectRoleListProps {
   projectId: string;
@@ -20,6 +23,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
   const { sortCrew } = useCrewSort();
   const [isUpdating, setIsUpdating] = useState(false);
   const { project } = useProjectDetails(projectId);
+  const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
 
   const handleRateChange = async (roleId: string, field: 'daily_rate' | 'hourly_rate', value: string) => {
     setIsUpdating(true);
@@ -56,6 +60,39 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
       toast.error('Failed to update preferred member');
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleDeleteRole = async () => {
+    if (!roleToDelete) return;
+    
+    setIsUpdating(true);
+    try {
+      // First delete any event role assignments
+      const { error: eventRolesError } = await supabase
+        .from('project_event_roles')
+        .delete()
+        .eq('project_id', projectId)
+        .eq('role_id', roles.find(r => r.id === roleToDelete)?.role?.id);
+
+      if (eventRolesError) throw eventRolesError;
+
+      // Then delete the project role
+      const { error } = await supabase
+        .from('project_roles')
+        .delete()
+        .eq('id', roleToDelete);
+
+      if (error) throw error;
+
+      await refetch();
+      toast.success('Role deleted successfully');
+    } catch (error) {
+      console.error('Error deleting role:', error);
+      toast.error('Failed to delete role');
+    } finally {
+      setIsUpdating(false);
+      setRoleToDelete(null);
     }
   };
 
@@ -98,7 +135,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
       {sortedRoles.map((role) => (
         <Card key={role.id} className="p-4 bg-zinc-900/50">
           <div className="grid grid-cols-[200px_1fr] gap-4 items-center">
-            <div className="flex-shrink-0">
+            <div className="flex items-center justify-between">
               <span 
                 className="inline-flex items-center justify-center w-32 px-3 py-1.5 rounded-md text-sm font-medium text-white"
                 style={{ 
@@ -107,6 +144,14 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
               >
                 {role.role?.name}
               </span>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                onClick={() => setRoleToDelete(role.id)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
             
             <div className="grid grid-cols-[1fr_1fr_2fr] gap-4 items-center">
@@ -151,6 +196,23 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
           </div>
         </Card>
       ))}
+
+      <AlertDialog open={!!roleToDelete} onOpenChange={() => setRoleToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Role</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the role from the project and delete any crew assignments. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteRole} className="bg-red-500 hover:bg-red-600">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
