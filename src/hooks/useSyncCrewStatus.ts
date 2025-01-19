@@ -2,10 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarEvent } from "@/types/events";
 
-export function useSyncCrewStatus(event: CalendarEvent) {
+export function useSyncCrewStatus(event: CalendarEvent | null) {
   const { data, isLoading: isChecking } = useQuery({
-    queryKey: ['crew-sync-status', event.id],
+    queryKey: ['crew-sync-status', event?.id],
     queryFn: async () => {
+      if (!event) {
+        return { hasProjectRoles: false, roles: [], isSynced: false };
+      }
+
       // First get all project roles
       const { data: projectRoles } = await supabase
         .from('project_roles')
@@ -58,7 +62,7 @@ export function useSyncCrewStatus(event: CalendarEvent) {
         isSynced
       };
     },
-    enabled: !!event.id && !!event.project_id
+    enabled: !!event?.id && !!event?.project_id
   });
 
   return {

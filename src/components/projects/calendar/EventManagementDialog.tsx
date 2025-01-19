@@ -44,8 +44,8 @@ export function EventManagementDialog({
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const { crew = [] } = useCrew();
-  const { isSynced: isEquipmentSynced, isChecking: isCheckingEquipment, hasProjectEquipment } = useSyncStatus(event!);
-  const { hasProjectRoles, roles = [], isChecking: isCheckingCrew } = useSyncCrewStatus(event!);
+  const { isSynced: isEquipmentSynced, isChecking: isCheckingEquipment, hasProjectEquipment } = useSyncStatus(event);
+  const { hasProjectRoles, roles = [], isChecking: isCheckingCrew } = useSyncCrewStatus(event);
 
   // Reset form when dialog opens/closes
   useEffect(() => {
