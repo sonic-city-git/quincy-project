@@ -63,15 +63,15 @@ export function EditCrewDialog({ event, open, onOpenChange }: EditCrewDialogProp
                 {role.name}
               </div>
               <Select
-                value={role.assigned?.id || ""}
-                onValueChange={(value) => handleAssignCrew(role.id, value || null)}
+                value={role.assigned?.id || "_none"}
+                onValueChange={(value) => handleAssignCrew(role.id, value === "_none" ? null : value)}
                 disabled={isPending}
               >
                 <SelectTrigger className="flex-1">
                   <SelectValue placeholder="Select crew member" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="_none">None</SelectItem>
                   {crew.map(member => (
                     <SelectItem key={member.id} value={member.id}>
                       {member.name}
