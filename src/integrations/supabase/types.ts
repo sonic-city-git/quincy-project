@@ -384,7 +384,6 @@ export type Database = {
           name: string
           needs_crew: boolean | null
           needs_equipment: boolean | null
-          rate_multiplier: number | null
           rate_type: string | null
           updated_at: string
         }
@@ -398,7 +397,6 @@ export type Database = {
           name: string
           needs_crew?: boolean | null
           needs_equipment?: boolean | null
-          rate_multiplier?: number | null
           rate_type?: string | null
           updated_at?: string
         }
@@ -412,7 +410,6 @@ export type Database = {
           name?: string
           needs_crew?: boolean | null
           needs_equipment?: boolean | null
-          rate_multiplier?: number | null
           rate_type?: string | null
           updated_at?: string
         }

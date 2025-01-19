@@ -120,6 +120,7 @@ export const createEvent = async (
       }
     }
 
+    // Only create role assignments if the event type needs crew
     if (eventType.needs_crew) {
       console.log('Event needs crew, creating role assignments');
       try {
