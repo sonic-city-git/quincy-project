@@ -30,7 +30,15 @@ export function LocationInput({ value, onChange, disabled }: LocationInputProps)
           body: { key: 'GOOGLE_MAPS_API_KEY' }
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching Google Maps API key:', error);
+          throw error;
+        }
+        
+        if (!data?.secret) {
+          throw new Error('No API key returned');
+        }
+        
         setApiKey(data.secret);
       } catch (err) {
         console.error('Error fetching Google Maps API key:', err);
@@ -72,7 +80,6 @@ export function LocationInput({ value, onChange, disabled }: LocationInputProps)
             }
           };
 
-          // Using addEventListener for modern event handling
           autocompleteInstance.current.addListener('place_changed', handlePlaceChanged);
           setIsLoading(false);
           setError(null);
@@ -92,16 +99,13 @@ export function LocationInput({ value, onChange, disabled }: LocationInputProps)
       document.head.appendChild(script);
     };
 
-    // Check if the script is already loaded
     if (!window.google) {
       loadGoogleMapsScript();
     } else {
-      // If already loaded, just initialize autocomplete
       window.initGoogleMaps();
     }
 
     return () => {
-      // Cleanup
       if (autocompleteInstance.current) {
         window.google?.maps?.event?.clearInstanceListeners(autocompleteInstance.current);
       }

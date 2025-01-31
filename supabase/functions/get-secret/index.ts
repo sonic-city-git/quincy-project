@@ -11,9 +11,9 @@ serve(async (req) => {
   }
 
   try {
-    const { secretName } = await req.json()
+    const { key } = await req.json()
     
-    if (!secretName) {
+    if (!key) {
       return new Response(
         JSON.stringify({ error: 'Secret name is required' }),
         { 
@@ -23,11 +23,11 @@ serve(async (req) => {
       )
     }
 
-    const secret = Deno.env.get(secretName)
+    const secret = Deno.env.get(key)
     
     if (!secret) {
       return new Response(
-        JSON.stringify({ error: `Secret ${secretName} not found` }),
+        JSON.stringify({ error: `Secret ${key} not found` }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 404 
@@ -36,7 +36,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ [secretName]: secret }),
+      JSON.stringify({ secret }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
