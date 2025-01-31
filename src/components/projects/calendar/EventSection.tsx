@@ -25,9 +25,27 @@ export function EventSection({
   const eventType = events[0]?.type;
   
   // Calculate total prices for the section
-  const totalEquipmentPrice = events.reduce((sum, event) => sum + (event.equipment_price || 0), 0);
-  const totalCrewPrice = events.reduce((sum, event) => sum + (event.crew_price || 0), 0);
-  const totalPrice = events.reduce((sum, event) => sum + (event.total_price || 0), 0);
+  const totalEquipmentPrice = events.reduce((sum, event) => {
+    console.log(`Event ${event.id} equipment price:`, event.equipment_price);
+    return sum + (event.equipment_price || 0);
+  }, 0);
+  
+  const totalCrewPrice = events.reduce((sum, event) => {
+    console.log(`Event ${event.id} crew price:`, event.crew_price);
+    return sum + (event.crew_price || 0);
+  }, 0);
+  
+  const totalPrice = events.reduce((sum, event) => {
+    console.log(`Event ${event.id} total price:`, event.total_price);
+    return sum + (event.total_price || 0);
+  }, 0);
+
+  console.log('Section totals:', {
+    title,
+    totalEquipmentPrice,
+    totalCrewPrice,
+    totalPrice
+  });
 
   // Get the appropriate total label based on the section title
   const getTotalLabel = () => {
