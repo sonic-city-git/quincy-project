@@ -26,7 +26,7 @@ export function EventSection({
   
   // Calculate total prices for the section
   const totalEquipmentPrice = events.reduce((sum, event) => sum + (event.equipment_price || 0), 0);
-  const totalCrewPrice = 0; // TODO: Implement crew price calculation
+  const totalCrewPrice = events.reduce((sum, event) => sum + (event.crew_price || 0), 0);
   const totalPrice = events.reduce((sum, event) => sum + (event.total_price || 0), 0);
 
   // Get the appropriate total label based on the section title
