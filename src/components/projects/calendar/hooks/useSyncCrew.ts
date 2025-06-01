@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
@@ -23,7 +24,14 @@ export function useSyncCrew() {
       for (const event of eventsNeedingCrew) {
         const { data: projectRoles } = await supabase
           .from('project_roles')
-          .select('*')
+          .select(`
+            *,
+            crew_roles (
+              id,
+              name,
+              color
+            )
+          `)
           .eq('project_id', event.project_id);
 
         if (projectRoles && projectRoles.length > 0) {
@@ -33,22 +41,28 @@ export function useSyncCrew() {
             .delete()
             .eq('event_id', event.id);
 
-          // Create new event roles based on project roles
+          // Create new event roles based on project roles with proper rates
           const eventRoles = projectRoles.map(role => ({
             project_id: event.project_id,
             event_id: event.id,
             role_id: role.role_id,
+            crew_member_id: role.preferred_id,
             daily_rate: role.daily_rate,
-            hourly_rate: role.hourly_rate
+            hourly_rate: role.hourly_rate,
+            hourly_category: role.hourly_category || 'flat',
+            hours_worked: null,
+            // Set total_cost to daily_rate for immediate calculation
+            total_cost: role.daily_rate || null
           }));
 
           await supabase
             .from('project_event_roles')
-            .upsert(eventRoles);
+            .insert(eventRoles);
         }
       }
 
       await queryClient.invalidateQueries({ queryKey: ['project-event-roles'] });
+      await queryClient.invalidateQueries({ queryKey: ['events'] });
       toast.success('Crew roles synchronized successfully');
     } catch (error) {
       console.error('Error syncing crew:', error);

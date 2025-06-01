@@ -1,10 +1,11 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 export const createRoleAssignments = async (projectId: string, eventId: string) => {
   console.log('Creating role assignments for:', { projectId, eventId });
 
   try {
-    // First, fetch all project roles with their associated crew roles
+    // First, fetch all project roles with their associated crew roles and rates
     const { data: projectRoles, error: rolesError } = await supabase
       .from('project_roles')
       .select(`
@@ -13,6 +14,7 @@ export const createRoleAssignments = async (projectId: string, eventId: string) 
         daily_rate,
         hourly_rate,
         preferred_id,
+        hourly_category,
         crew_roles (
           id,
           name,
@@ -33,18 +35,22 @@ export const createRoleAssignments = async (projectId: string, eventId: string) 
       return [];
     }
 
-    // Create event role assignments for each project role
+    // Create event role assignments for each project role with proper rate copying
     const roleAssignments = projectRoles.map(role => ({
       project_id: projectId,
       event_id: eventId,
       role_id: role.role_id,
       crew_member_id: role.preferred_id,
-      daily_rate: role.daily_rate || null,
-      hourly_rate: role.hourly_rate || null,
-      hours_worked: null
+      daily_rate: role.daily_rate,
+      hourly_rate: role.hourly_rate,
+      hourly_category: role.hourly_category || 'flat',
+      hours_worked: null,
+      // For daily events, set total_cost to daily_rate immediately
+      // For hourly events, total_cost will be calculated when hours_worked is set
+      total_cost: role.daily_rate || null
     }));
 
-    console.log('Creating role assignments:', roleAssignments);
+    console.log('Creating role assignments with rates:', roleAssignments);
 
     const { data: insertedRoles, error: insertError } = await supabase
       .from('project_event_roles')
