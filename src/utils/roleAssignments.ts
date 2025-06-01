@@ -35,8 +35,24 @@ export const createRoleAssignments = async (projectId: string, eventId: string) 
       return [];
     }
 
-    // Create event role assignments for each project role with proper rate copying
-    const roleAssignments = projectRoles.map(role => ({
+    // Check if event roles already exist to avoid duplicates
+    const { data: existingRoles } = await supabase
+      .from('project_event_roles')
+      .select('role_id')
+      .eq('event_id', eventId);
+
+    const existingRoleIds = new Set(existingRoles?.map(r => r.role_id) || []);
+
+    // Filter out roles that already exist for this event
+    const rolesToCreate = projectRoles.filter(role => !existingRoleIds.has(role.role_id));
+
+    if (rolesToCreate.length === 0) {
+      console.log('All roles already exist for this event');
+      return [];
+    }
+
+    // Create event role assignments for each new project role with proper rate copying
+    const roleAssignments = rolesToCreate.map(role => ({
       project_id: projectId,
       event_id: eventId,
       role_id: role.role_id,

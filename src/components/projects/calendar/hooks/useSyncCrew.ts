@@ -35,29 +35,58 @@ export function useSyncCrew() {
           .eq('project_id', event.project_id);
 
         if (projectRoles && projectRoles.length > 0) {
-          // Delete existing event roles
-          await supabase
+          // Check existing event roles to avoid duplicates
+          const { data: existingRoles } = await supabase
             .from('project_event_roles')
-            .delete()
+            .select('role_id')
             .eq('event_id', event.id);
 
-          // Create new event roles based on project roles with proper rates
-          const eventRoles = projectRoles.map(role => ({
-            project_id: event.project_id,
-            event_id: event.id,
-            role_id: role.role_id,
-            crew_member_id: role.preferred_id,
-            daily_rate: role.daily_rate,
-            hourly_rate: role.hourly_rate,
-            hourly_category: role.hourly_category || 'flat',
-            hours_worked: null,
-            // Set total_cost to daily_rate for immediate calculation
-            total_cost: role.daily_rate || null
-          }));
+          const existingRoleIds = new Set(existingRoles?.map(r => r.role_id) || []);
 
-          await supabase
-            .from('project_event_roles')
-            .insert(eventRoles);
+          // Only create roles that don't already exist
+          const rolesToCreate = projectRoles.filter(role => !existingRoleIds.has(role.role_id));
+
+          if (rolesToCreate.length > 0) {
+            // Create new event roles based on project roles with proper rates
+            const eventRoles = rolesToCreate.map(role => ({
+              project_id: event.project_id,
+              event_id: event.id,
+              role_id: role.role_id,
+              crew_member_id: role.preferred_id,
+              daily_rate: role.daily_rate,
+              hourly_rate: role.hourly_rate,
+              hourly_category: role.hourly_category || 'flat',
+              hours_worked: null,
+              // Set total_cost to daily_rate for immediate calculation
+              total_cost: role.daily_rate || null
+            }));
+
+            const { error: insertError } = await supabase
+              .from('project_event_roles')
+              .insert(eventRoles);
+
+            if (insertError) {
+              console.error('Error inserting event roles:', insertError);
+              throw insertError;
+            }
+          }
+
+          // Update existing roles with current project role rates
+          for (const existingRoleId of existingRoleIds) {
+            const projectRole = projectRoles.find(pr => pr.role_id === existingRoleId);
+            if (projectRole) {
+              await supabase
+                .from('project_event_roles')
+                .update({
+                  daily_rate: projectRole.daily_rate,
+                  hourly_rate: projectRole.hourly_rate,
+                  hourly_category: projectRole.hourly_category || 'flat',
+                  total_cost: projectRole.daily_rate || null
+                })
+                .eq('event_id', event.id)
+                .eq('role_id', existingRoleId);
+            }
+          }
         }
       }
 
