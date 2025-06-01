@@ -61,9 +61,8 @@ export const createRoleAssignments = async (projectId: string, eventId: string) 
       hourly_rate: role.hourly_rate,
       hourly_category: role.hourly_category || 'flat',
       hours_worked: null,
-      // For daily events, set total_cost to daily_rate immediately
-      // For hourly events, total_cost will be calculated when hours_worked is set
-      total_cost: role.daily_rate || null
+      // Set total_cost to daily_rate for immediate calculation
+      total_cost: role.daily_rate || 0
     }));
 
     console.log('Creating role assignments with rates:', roleAssignments);
@@ -91,8 +90,10 @@ export const createRoleAssignments = async (projectId: string, eventId: string) 
 
     console.log('Successfully created role assignments:', insertedRoles);
 
-    // The database triggers will automatically update event prices when roles are inserted
-    console.log('Database triggers will update event prices automatically');
+    // Wait a moment for database triggers to process
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    console.log('Role assignments created, database triggers will update event prices automatically');
 
     return insertedRoles;
   } catch (error) {

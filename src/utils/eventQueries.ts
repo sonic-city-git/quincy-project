@@ -135,8 +135,8 @@ export const createEvent = async (
       }
     }
 
-    // Wait a brief moment for database triggers to complete
-    await new Promise(resolve => setTimeout(resolve, 100));
+    // Wait longer for database triggers to complete price calculations
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     // Fetch the updated event with calculated prices
     const { data: updatedEvent, error: fetchError } = await supabase
