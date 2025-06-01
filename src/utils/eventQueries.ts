@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarEvent, EventType } from "@/types/events";
 import { formatDatabaseDate } from "./dateFormatters";
@@ -134,16 +135,54 @@ export const createEvent = async (
       }
     }
 
+    // Wait a brief moment for database triggers to complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Fetch the updated event with calculated prices
+    const { data: updatedEvent, error: fetchError } = await supabase
+      .from('project_events')
+      .select(`
+        *,
+        event_types (
+          id,
+          name,
+          color,
+          needs_crew,
+          needs_equipment,
+          crew_rate_multiplier
+        )
+      `)
+      .eq('id', eventData.id)
+      .single();
+
+    if (fetchError) {
+      console.error('Error fetching updated event:', fetchError);
+      // Return the original event data if we can't fetch the updated version
+      return {
+        id: eventData.id,
+        project_id: eventData.project_id,
+        date: new Date(eventData.date),
+        name: eventData.name,
+        type: eventData.event_types,
+        status: eventData.status as CalendarEvent['status'],
+        equipment_price: eventData.equipment_price,
+        crew_price: eventData.crew_price,
+        total_price: eventData.total_price
+      };
+    }
+
+    console.log('Returning updated event with calculated prices:', updatedEvent);
+
     return {
-      id: eventData.id,
-      project_id: eventData.project_id,
-      date: new Date(eventData.date),
-      name: eventData.name,
-      type: eventData.event_types,
-      status: eventData.status as CalendarEvent['status'],
-      equipment_price: eventData.equipment_price,
-      crew_price: eventData.crew_price,
-      total_price: eventData.total_price
+      id: updatedEvent.id,
+      project_id: updatedEvent.project_id,
+      date: new Date(updatedEvent.date),
+      name: updatedEvent.name,
+      type: updatedEvent.event_types,
+      status: updatedEvent.status as CalendarEvent['status'],
+      equipment_price: updatedEvent.equipment_price,
+      crew_price: updatedEvent.crew_price,
+      total_price: updatedEvent.total_price
     };
   } catch (error) {
     console.error('Error in createEvent:', error);

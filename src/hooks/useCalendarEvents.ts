@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { CalendarEvent, EventType } from '@/types/events';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -57,6 +58,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   const addEvent = async (date: Date, eventName: string, eventType: EventType, status: CalendarEvent['status'] = 'proposed') => {
     const newEvent = await addEventHandler(date, eventName, eventType, status);
     
+    // The useEventManagement hook already handles query invalidation
+    // but we can optimistically update the cache for immediate UI feedback
     queryClient.setQueryData(['events', projectId], (old: CalendarEvent[] | undefined) => 
       old ? [...old, newEvent] : [newEvent]
     );
@@ -70,13 +73,11 @@ export const useCalendarEvents = (projectId: string | undefined) => {
     try {
       await updateEventQuery(projectId, updatedEvent);
       
-      queryClient.setQueryData(['events', projectId], (old: CalendarEvent[] | undefined) => 
-        old?.map(event => 
-          event.id === updatedEvent.id
-            ? updatedEvent
-            : event
-        ) || []
-      );
+      // Invalidate queries to ensure fresh data
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
+        queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] })
+      ]);
 
       toast.success("Event updated successfully");
     } catch (error) {
