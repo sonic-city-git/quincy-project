@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { ProjectCalendar } from "@/components/projects/calendar/ProjectCalendar";
 import { EventList } from "@/components/projects/calendar/EventList";
@@ -7,6 +8,7 @@ import { fetchEvents } from "@/utils/eventQueries";
 import { useEffect } from "react";
 import { ProjectInfo } from "./ProjectInfo";
 import { useEventUpdate } from "@/hooks/useEventUpdate";
+import { SyncCrewDataButton } from "./SyncCrewDataButton";
 
 interface ProjectGeneralTabProps {
   project: Project;
@@ -58,6 +60,10 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
 
       {/* Event List Section */}
       <Card className="rounded-lg bg-zinc-800/45 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Events</h3>
+          <SyncCrewDataButton projectId={projectId} />
+        </div>
         <EventList 
           events={events} 
           isLoading={isLoading}
