@@ -91,16 +91,8 @@ export const createRoleAssignments = async (projectId: string, eventId: string) 
 
     console.log('Successfully created role assignments:', insertedRoles);
 
-    // Trigger price calculation update for the event
-    console.log('Triggering price calculation for event:', eventId);
-    const { error: priceUpdateError } = await supabase.rpc('update_event_prices', {
-      event_id: eventId
-    });
-
-    if (priceUpdateError) {
-      console.error('Error updating event prices:', priceUpdateError);
-      // Don't throw here as the roles were created successfully
-    }
+    // The database triggers will automatically update event prices when roles are inserted
+    console.log('Database triggers will update event prices automatically');
 
     return insertedRoles;
   } catch (error) {

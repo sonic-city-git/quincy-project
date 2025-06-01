@@ -88,16 +88,8 @@ export function useSyncCrew() {
             }
           }
 
-          // Trigger price calculation update for the event after any changes
-          console.log('Triggering price calculation for event:', event.id);
-          const { error: priceUpdateError } = await supabase.rpc('update_event_prices', {
-            event_id: event.id
-          });
-
-          if (priceUpdateError) {
-            console.error('Error updating event prices:', priceUpdateError);
-            // Don't throw here as the sync was successful
-          }
+          // Database triggers will automatically update event prices when roles are updated
+          console.log('Database triggers will update event prices automatically for event:', event.id);
         }
       }
 
