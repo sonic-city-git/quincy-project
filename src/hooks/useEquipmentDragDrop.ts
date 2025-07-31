@@ -168,6 +168,7 @@ export function useEquipmentDragDrop(projectId: string) {
         queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
         queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] }),
         queryClient.invalidateQueries({ queryKey: ['project-events', projectId] }),
+        queryClient.invalidateQueries({ queryKey: ['sync-status'] }),
         ...(eventId ? [
           queryClient.invalidateQueries({ queryKey: ['project-event-equipment', eventId] })
         ] : []),

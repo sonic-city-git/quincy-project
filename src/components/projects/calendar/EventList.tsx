@@ -23,7 +23,9 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
     return <EventListEmpty />;
   }
 
-  const { proposed, confirmed, ready, cancelled, doneAndDusted } = groupEventsByStatus(events);
+  // Filter out null/undefined events before grouping
+  const validEvents = events.filter(event => event && event.date && event.status);
+  const { proposed, confirmed, ready, cancelled, doneAndDusted } = groupEventsByStatus(validEvents);
 
   return (
     <div className="space-y-4">

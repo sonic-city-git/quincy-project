@@ -93,7 +93,9 @@ export function useSyncSubscriptions(projectId: string) {
           console.log('Project equipment changed:', payload);
           await Promise.all([
             queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] }),
-            queryClient.invalidateQueries({ queryKey: ['events', projectId] })
+            queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
+            // Invalidate all sync status queries for events in this project
+            queryClient.invalidateQueries({ queryKey: ['sync-status'] })
           ]);
         }
       )
@@ -117,9 +119,14 @@ export function useSyncSubscriptions(projectId: string) {
           const eventId = newData?.event_id || oldData?.event_id;
           
           if (eventId) {
-            await queryClient.invalidateQueries({ 
-              queryKey: ['project-event-equipment', eventId] 
-            });
+            await Promise.all([
+              queryClient.invalidateQueries({ 
+                queryKey: ['project-event-equipment', eventId] 
+              }),
+              queryClient.invalidateQueries({ 
+                queryKey: ['sync-status'] 
+              })
+            ]);
           }
         }
       )

@@ -40,9 +40,10 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
 
       if (error) throw error;
       
-      await queryClient.invalidateQueries({ 
-        queryKey: ['project-equipment'] 
-      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['project-equipment'] }),
+        queryClient.invalidateQueries({ queryKey: ['sync-status'] })
+      ]);
       
       toast.success('Quantity updated');
     } catch (error) {

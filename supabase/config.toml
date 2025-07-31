@@ -12,14 +12,11 @@ port = 54322
 enabled = true
 port = 54323
 
-[[functions]]
 [functions.normalize-folder-names]
 verify_jwt = false
 
-[[functions]]
 [functions.sync-customers]
 verify_jwt = false
 
-[[functions]]
 [functions.get-secret]
 verify_jwt = false

@@ -35,7 +35,7 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
   const [processedCount, setProcessedCount] = useState(0);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const invoiceReadyEvents = events.filter(event => event.status === 'invoice ready');
+  const invoiceReadyEvents = events.filter(event => event && event.status === 'invoice ready');
   const totalEvents = invoiceReadyEvents.length;
 
   const handleGenerateInvoice = () => {

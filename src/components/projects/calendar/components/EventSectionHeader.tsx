@@ -71,11 +71,57 @@ export function EventSectionHeader({
       }
 
       // Invalidate queries to refresh the data
-      await queryClient.invalidateQueries({ queryKey: ['events', events[0].project_id] });
+      console.log('🔄 [GROUP-SYNC] Invalidating queries to update event icons...');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['events', events[0].project_id] }),
+        queryClient.invalidateQueries({ queryKey: ['sync-status'] }), // Critical: update individual event icons
+        queryClient.invalidateQueries({ queryKey: ['project-event-equipment'] })
+      ]);
+      console.log('✅ [GROUP-SYNC] Queries invalidated, event icons should update');
       toast.success('Equipment synced successfully');
     } catch (error) {
       console.error('Error in handleSyncAllEquipment:', error);
       toast.error('Failed to sync equipment');
+    }
+  };
+
+  const handleSyncPreferredCrew = async () => {
+    if (!events.length) return;
+
+    try {
+      // Sync preferred crew for all events in this section  
+      for (const event of events) {
+        // Get project roles with preferred crew members
+        const { data: projectRoles } = await supabase
+          .from('project_roles')
+          .select('*')
+          .eq('project_id', event.project_id)
+          .not('preferred_id', 'is', null);
+
+        if (projectRoles && projectRoles.length > 0) {
+          // Update event roles with preferred crew members
+          for (const projectRole of projectRoles) {
+            const { error } = await supabase
+              .from('project_event_roles')
+              .update({ crew_member_id: projectRole.preferred_id })
+              .eq('event_id', event.id)
+              .eq('role_id', projectRole.role_id)
+              .is('crew_member_id', null); // Only update unassigned roles
+
+            if (error) {
+              console.error('Error syncing preferred crew for event:', event.id, error);
+            }
+          }
+        }
+      }
+
+      // Invalidate queries to refresh the data
+      await queryClient.invalidateQueries({ queryKey: ['events', events[0].project_id] });
+      await queryClient.invalidateQueries({ queryKey: ['project-event-roles'] });
+      toast.success('Preferred crew synced successfully');
+    } catch (error) {
+      console.error('Error in handleSyncPreferredCrew:', error);
+      toast.error('Failed to sync preferred crew');
     }
   };
 
@@ -108,7 +154,10 @@ export function EventSectionHeader({
         
         <div className="flex items-center justify-center">
           {!isCancelled && !isInvoiceReady && eventType?.needs_crew && (
-            <HeaderCrewIcon events={events} />
+            <HeaderCrewIcon 
+              events={events} 
+              onSyncPreferredCrew={handleSyncPreferredCrew}
+            />
           )}
         </div>
 

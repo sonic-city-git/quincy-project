@@ -1,87 +1,95 @@
-import { useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CalendarEvent } from "@/types/events";
+import { useEffect } from "react";
 
 export function useSyncStatus(event: CalendarEvent | null) {
-  const [isSynced, setIsSynced] = useState<boolean>(false);
-  const [isChecking, setIsChecking] = useState<boolean>(true);
-  const [hasProjectEquipment, setHasProjectEquipment] = useState<boolean>(false);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const checkSyncStatus = async () => {
-      setIsChecking(true);
-      
-      try {
-        // If no event or event doesn't need equipment, set as synced
-        if (!event || !event.type?.needs_equipment) {
-          setIsSynced(true);
-          setHasProjectEquipment(false);
-          setIsChecking(false);
-          return;
-        }
-
-        // First check if project has any equipment
-        const { data: projectEquipment } = await supabase
-          .from('project_equipment')
-          .select('id')
-          .eq('project_id', event.project_id)
-          .limit(1);
-
-        const projectHasEquipment = projectEquipment && projectEquipment.length > 0;
-        setHasProjectEquipment(projectHasEquipment);
-
-        // If project has no equipment, set as synced (will show grey icon)
-        if (!projectHasEquipment) {
-          setIsSynced(true);
-          setIsChecking(false);
-          return;
-        }
-
-        // Check if event has any equipment
-        const { data: eventEquipment } = await supabase
-          .from('project_event_equipment')
-          .select('is_synced')
-          .eq('event_id', event.id);
-
-        // If no equipment exists but project has equipment, mark as not synced (blue)
-        if (!eventEquipment || eventEquipment.length === 0) {
-          setIsSynced(false);
-          setIsChecking(false);
-          return;
-        }
-
-        // Check if all equipment is synced
-        const allSynced = eventEquipment.every(item => item.is_synced);
-        setIsSynced(allSynced);
-      } catch (error) {
-        console.error('Error checking sync status:', error);
-        setIsSynced(false);
+  const { data, isLoading: isChecking } = useQuery({
+    queryKey: ['sync-status', event?.id],
+    queryFn: async () => {
+      if (!event || !event.type?.needs_equipment) {
+        return {
+          isSynced: true,
+          hasProjectEquipment: false
+        };
       }
 
-      setIsChecking(false);
-    };
+      // First check if project has any equipment
+      const { data: projectEquipment } = await supabase
+        .from('project_equipment')
+        .select('equipment_id, quantity')
+        .eq('project_id', event.project_id);
 
-    checkSyncStatus();
+      const hasProjectEquipment = !!projectEquipment && projectEquipment.length > 0;
 
-    // Only set up subscription if we have a valid event
-    if (event?.id) {
-      const channel = supabase
-        .channel(`sync-status-${event.id}`)
-        .on('postgres_changes', {
-          event: '*',
-          schema: 'public',
-          table: 'project_event_equipment',
-          filter: `event_id=eq.${event.id}`
-        }, () => {
-          checkSyncStatus();
-        })
-        .subscribe();
+      if (!hasProjectEquipment) {
+        return {
+          isSynced: true,
+          hasProjectEquipment: false
+        };
+      }
 
-      return () => {
-        channel.unsubscribe();
+      // Get event equipment separately
+      const { data: eventEquipment } = await supabase
+        .from('project_event_equipment')
+        .select('equipment_id, quantity, is_synced')
+        .eq('event_id', event.id);
+
+      // If no event equipment exists, it's not synced
+      if (!eventEquipment || eventEquipment.length === 0) {
+        return {
+          isSynced: false,
+          hasProjectEquipment: true
+        };
+      }
+
+      // Create maps for easy comparison
+      const projectMap = new Map(projectEquipment.map(item => [item.equipment_id, item.quantity]));
+      const eventMap = new Map(eventEquipment.map(item => [item.equipment_id, { quantity: item.quantity, is_synced: item.is_synced }]));
+
+      // Check if all project equipment is synced to the event with correct quantities
+      const isSynced = projectEquipment.every(projectItem => {
+        const eventItem = eventMap.get(projectItem.equipment_id);
+        return eventItem && 
+               eventItem.is_synced && 
+               eventItem.quantity === projectItem.quantity;
+      });
+
+      return {
+        isSynced,
+        hasProjectEquipment: true
       };
-    }
-  }, [event]);
+    },
+    enabled: !!event?.id && !!event?.project_id
+  });
 
-  return { isSynced, isChecking, hasProjectEquipment };
+  // Set up real-time subscription
+  useEffect(() => {
+    if (!event?.id) return;
+
+    const channel = supabase
+      .channel(`sync-status-${event.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'project_event_equipment',
+        filter: `event_id=eq.${event.id}`
+      }, () => {
+        // Invalidate the query to trigger a refresh
+        queryClient.invalidateQueries({ queryKey: ['sync-status', event.id] });
+      })
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [event?.id, queryClient]);
+
+  return {
+    isSynced: data?.isSynced ?? false,
+    hasProjectEquipment: data?.hasProjectEquipment ?? false,
+    isChecking
+  };
 }

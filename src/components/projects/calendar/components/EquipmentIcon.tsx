@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { BaseEquipmentIcon } from "./equipment/BaseEquipmentIcon";
 import { EquipmentDifferenceDialog } from "./equipment/EquipmentDifferenceDialog";
-import { useSyncEquipment } from "./equipment/useSyncEquipment";
+import { useSyncEquipment } from "@/hooks/useSyncEquipment";
 
 interface Equipment {
   name: string;
@@ -41,6 +41,7 @@ interface EquipmentIconProps {
   eventId: string;
   projectId: string;
   hasProjectEquipment: boolean;
+  eventDate: string; // Add event date for sync
 }
 
 export function EquipmentIcon({
@@ -49,7 +50,8 @@ export function EquipmentIcon({
   isChecking,
   eventId,
   projectId,
-  hasProjectEquipment
+  hasProjectEquipment,
+  eventDate
 }: EquipmentIconProps) {
   const [showDifferences, setShowDifferences] = useState(false);
   const [differences, setDifferences] = useState<EquipmentDifference>({
@@ -58,7 +60,19 @@ export function EquipmentIcon({
     changed: []
   });
 
-  const { handleSync } = useSyncEquipment(projectId, eventId);
+  const { syncEquipment } = useSyncEquipment(eventId, projectId);
+  
+  const handleSync = async () => {
+    console.log('🎯 handleSync called for event:', eventId, 'date:', eventDate);
+    try {
+      // Convert date to YYYY-MM-DD string format
+      const dateString = typeof eventDate === 'string' ? eventDate : new Date(eventDate).toISOString().split('T')[0];
+      const result = await syncEquipment(dateString);
+      console.log('🎯 handleSync result:', result);
+    } catch (error) {
+      console.error('🎯 handleSync error:', error);
+    }
+  };
 
   const fetchDifferences = async () => {
     try {

@@ -39,7 +39,9 @@ export function Calendar({
   onDragEnter,
   onDragEnd,
 }: CalendarProps) {
-  console.log('Calendar render', { events });
+  // Filter out any null/undefined events and events with invalid dates
+  const validEvents = events.filter(event => event && event.date);
+  console.log('Calendar render', { events, validEvents });
 
   const weeks = useMemo(() => {
     const start = startOfWeek(startOfMonth(month), { weekStartsOn: 1 }); // 1 = Monday
@@ -61,7 +63,14 @@ export function Calendar({
   }, [month]);
 
   const getEventForDate = (date: Date): CalendarEvent | undefined => {
-    return events.find(event => isSameDay(new Date(event.date), date));
+    return validEvents.find(event => {
+      try {
+        return isSameDay(new Date(event.date), date);
+      } catch (error) {
+        console.warn('Invalid date in event:', event);
+        return false;
+      }
+    });
   };
 
   const isDateSelected = (date: Date): boolean => {

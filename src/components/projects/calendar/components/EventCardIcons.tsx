@@ -40,6 +40,7 @@ export function EventCardIcons({
             eventId={event.id}
             projectId={event.project_id}
             hasProjectEquipment={hasProjectEquipment}
+            eventDate={event.date}
           />
         )}
       </div>

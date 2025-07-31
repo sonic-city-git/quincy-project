@@ -86,7 +86,11 @@ export function useProjectEquipment(projectId: string) {
         toast.success('Equipment added to project');
       }
 
-      queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] });
+      // Invalidate relevant queries to update UI and sync status
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['project-equipment', projectId] }),
+        queryClient.invalidateQueries({ queryKey: ['sync-status'] })
+      ]);
     } catch (error: any) {
       console.error('Error adding equipment:', error);
       toast.error(error.message || 'Failed to add equipment');
@@ -110,6 +114,9 @@ export function useProjectEquipment(projectId: string) {
 
       if (error) throw error;
 
+      // Invalidate sync status queries to update event icons
+      await queryClient.invalidateQueries({ queryKey: ['sync-status'] });
+      
       toast.success('Equipment removed from project');
     } catch (error: any) {
       // Revert to previous state if there's an error

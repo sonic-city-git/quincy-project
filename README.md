@@ -1,69 +1,112 @@
-# Welcome to your Lovable project
+# QUINCY - Production Logistics Management System
 
-## Project info
+## Overview
+QUINCY is an intelligent system for managing production logistics in the entertainment industry, designed to handle the complexity of audio/crew/equipment logistics for touring bands and media productions.
 
-**URL**: https://lovable.dev/projects/f8e1b9e7-465f-4f45-aeb8-b43ed896805d
+## Core Purpose
+[Addressing industry pain points][[memory:7394403115262325804]] in managing complex productions with clarity, automation, and minimal friction.
 
-## How can I edit this code?
+## Key Features
+- 🎯 Real-time scheduling with conflict detection
+- 👥 Comprehensive crew management and role assignment
+- 📦 Equipment logistics and availability tracking
+- 💰 Integrated pricing and Tripletex-ready invoicing
+- 🔍 Multi-dimensional filtering (manager, event type, client, gear)
+- 🔄 Live updates and reactive behavior
 
-There are several ways of editing your application.
+## Guiding Principles
+[Our core principles][[memory:7136736271792394336]] shape every aspect of QUINCY:
 
-**Use Lovable**
+### 🧠 Prompt-First Design
+- All system logic begins as natural language prompts
+- AI-friendly architecture for future extensibility
+- Clear documentation and modular design
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/f8e1b9e7-465f-4f45-aeb8-b43ed896805d) and start prompting.
+### 🎛️ Industry-Accurate Calculations
+- Support for complex pricing structures
+- Overtime rules and event multipliers
+- Role-based rates and dry hire logic
 
-Changes made via Lovable will be committed automatically to this repo.
+### 🧩 Modularity & Composability
+- Independent yet interoperable modules
+- Projects, Events, Crew, Equipment
+- Clean separation of concerns
 
-**Use your preferred IDE**
+### 🔒 Reliability by Default
+- Strict database constraints
+- Real-time conflict detection
+- Comprehensive audit trails
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 🌓 Minimal, Professional UI
+- Dark mode by default
+- Focus on clarity and efficiency
+- Professional and elegant design
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### ⚙️ Real-Time Operational Sync
+- Live updates via Supabase subscriptions
+- Instant recalculation of dependencies
+- Reactive data flow
 
-Follow these steps:
+### 🚪 Role-Based Simplicity
+Different views for different roles:
+- Production Managers: Full project overview
+- Crew Members: Personal schedule and tasks
+- Finance Team: Invoicing and reporting
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 🧾 Seamless Financial Flow
+- Native Tripletex integration
+- Real-time financial tracking
+- Automated invoice generation
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## Tech Stack
+- Frontend: React + TypeScript + Vite
+- UI: shadcn/ui + Tailwind CSS
+- State: TanStack Query
+- Backend: Supabase
+- Real-time: Supabase Realtime
+- Auth: Supabase Auth
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Getting Started
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+### Prerequisites
+- Node.js 18+
+- npm or bun
+- Supabase account
+
+### Installation
+```bash
+# Install dependencies
+npm install
+
+# Set up environment variables
+cp .env.example .env.local
+
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+### Environment Setup
+Configure the following environment variables:
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_TRIPLETEX_API_URL=your_tripletex_api_url
+```
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Development Workflow
+1. All new features start with a prompt in `/docs/prompts`
+2. Follow the PDSD (Prompt-Derived System Design) framework
+3. Maintain modular architecture and clear documentation
+4. Ensure real-world testing with industry scenarios
 
-**Use GitHub Codespaces**
+## Contributing
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request with clear description
+4. Follow the prompt-first design approach
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## License
+Proprietary - All rights reserved
 
-## What technologies are used for this project?
-
-This project is built with .
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/f8e1b9e7-465f-4f45-aeb8-b43ed896805d) and click on Share -> Publish.
-
-## I want to use a custom domain - is that possible?
-
-We don't support custom domains (yet). If you want to deploy your project under your own domain then we recommend using Netlify. Visit our docs for more details: [Custom domains](https://docs.lovable.dev/tips-tricks/custom-domain/)
+## Support
+For support or feature requests, please contact the development team.

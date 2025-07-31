@@ -58,11 +58,8 @@ export const useCalendarEvents = (projectId: string | undefined) => {
   const addEvent = async (date: Date, eventName: string, eventType: EventType, status: CalendarEvent['status'] = 'proposed') => {
     const newEvent = await addEventHandler(date, eventName, eventType, status);
     
-    // The useEventManagement hook already handles query invalidation
-    // but we can optimistically update the cache for immediate UI feedback
-    queryClient.setQueryData(['events', projectId], (old: CalendarEvent[] | undefined) => 
-      old ? [...old, newEvent] : [newEvent]
-    );
+    // No need for optimistic updates since useEventManagement already invalidates queries
+    // This ensures we get the fresh data from the server without duplicates
     
     return newEvent;
   };

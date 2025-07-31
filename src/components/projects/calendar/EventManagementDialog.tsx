@@ -116,13 +116,51 @@ export function EventManagementDialog({
 
         if (error) throw error;
       } else {
+        // Check for crew member conflicts
+        const { data: conflicts } = await supabase
+          .from('project_event_roles')
+          .select(`
+            project_events (
+              id,
+              name,
+              date
+            )
+          `)
+          .eq('crew_member_id', crewMemberId)
+          .eq('project_events.date', event.date)
+          .neq('event_id', event.id);
+
+        if (conflicts?.length > 0) {
+          const conflictingEvents = conflicts.map(c => c.project_events.name).join(", ");
+          toast.error(`Crew member already assigned to: ${conflictingEvents} on this date`);
+          return;
+        }
+
+        // Get crew member details for rate validation
+        const { data: crewMember } = await supabase
+          .from('crew_members')
+          .select('*')
+          .eq('id', crewMemberId)
+          .single();
+
+        // Get role details
+        const { data: role } = await supabase
+          .from('project_roles')
+          .select('*')
+          .eq('project_id', event.project_id)
+          .eq('role_id', roleId)
+          .single();
+
         const { error } = await supabase
           .from('project_event_roles')
           .upsert({
             project_id: event.project_id,
             event_id: event.id,
             role_id: roleId,
-            crew_member_id: crewMemberId
+            crew_member_id: crewMemberId,
+            daily_rate: role?.daily_rate || crewMember?.default_daily_rate,
+            hourly_rate: role?.hourly_rate || crewMember?.default_hourly_rate,
+            hourly_category: role?.hourly_category || crewMember?.default_hourly_category || 'flat'
           });
 
         if (error) throw error;
@@ -137,7 +175,7 @@ export function EventManagementDialog({
         })
       ]);
 
-      toast.success("Crew member assignment updated");
+      toast.success(crewMemberId ? "Crew member assigned successfully" : "Crew member removed successfully");
     } catch (error: any) {
       console.error("Error assigning crew member:", error);
       toast.error(error.message || "Failed to assign crew member");
