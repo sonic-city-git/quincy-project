@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster";
-import { Sidebar } from "@/components/Sidebar";
+import { TopNavigation } from "@/components/Sidebar";
 import { AuthProvider } from "@/components/AuthProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,9 +22,9 @@ function App() {
             path="/*"
             element={
               <ProtectedRoute>
-                <div className="flex h-screen bg-zinc-950 text-white">
-                  <Sidebar />
-                  <main className="flex-1 overflow-auto">
+                <div className="min-h-screen bg-zinc-950 text-white">
+                  <TopNavigation />
+                  <main>
                     <Routes>
                                               <Route path="/" element={<Index />} />
                         <Route path="/projects" element={<ProjectList />} />

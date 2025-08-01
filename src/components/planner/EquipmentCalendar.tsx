@@ -426,8 +426,8 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
         </Card>
       ) : (
         <>
-          {/* Sticky Headers - Stick to main page scroll context */}
-          <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-sm">
+          {/* Sticky Headers - Stick below the navigation bar */}
+          <div className="sticky top-[72px] z-40 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-sm">
                 {/* Equipment Planner Title */}
                 <div className="flex items-center gap-2 py-3 px-4 bg-background">
                   <Package className="h-5 w-5 text-green-500" />
