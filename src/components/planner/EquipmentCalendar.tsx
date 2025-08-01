@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo, memo } from "react";
+import { useState, useEffect, useRef, useMemo, memo, useCallback } from "react";
 import { format, addMonths, addDays, isWeekend, isSameDay } from "date-fns";
 import { Button } from "../ui/button";
 import { Card, CardContent } from "../ui/card";
@@ -145,162 +145,6 @@ const OptimisticDayCard = memo(({
   );
 });
 
-// Virtualized Row Component for different row types
-const VirtualizedRow = memo(({ 
-  rowItem,
-  visibleDates,
-  visibleDateRange,
-  totalDates,
-  getBookingsForEquipment, 
-  getBookingState,
-  updateBookingState,
-  onDateChange,
-  expandedGroups,
-  toggleGroup,
-  style
-}: { 
-  rowItem: any;
-  visibleDates: any[];
-  visibleDateRange: { start: number; end: number };
-  totalDates: number;
-  getBookingsForEquipment: (equipmentId: string, dateStr: string, equipment: any) => any;
-  getBookingState: (equipmentId: string, dateStr: string) => any;
-  updateBookingState: (equipmentId: string, dateStr: string, state: any) => void;
-  onDateChange: (date: Date) => void;
-  expandedGroups: Set<string>;
-  toggleGroup: (groupKey: string) => void;
-  style?: React.CSSProperties;
-}) => {
-  
-  if (rowItem.type === 'folder') {
-    const isExpanded = expandedGroups.has(rowItem.name);
-    return (
-      <div style={style} className="h-[60px] flex items-center border-b border-border bg-muted/30">
-        <div className="w-[260px] flex-shrink-0 px-4">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => toggleGroup(rowItem.name)}
-              className="h-6 w-6 p-0"
-            >
-              {isExpanded ? (
-                <ChevronRight className="h-3 w-3 rotate-90 transition-transform" />
-              ) : (
-                <ChevronRight className="h-3 w-3" />
-              )}
-            </Button>
-            <FolderIcon className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium">{rowItem.name}</span>
-          </div>
-        </div>
-        <div className="flex-1 bg-muted/10" style={{ minWidth: `${totalDates * 50}px` }} />
-      </div>
-    );
-  }
-  
-  if (rowItem.type === 'subfolder') {
-    const subFolderKey = `${rowItem.mainFolder}/${rowItem.name}`;
-    const isExpanded = expandedGroups.has(subFolderKey);
-    return (
-      <div style={style} className="h-[60px] flex items-center border-b border-border bg-muted/15">
-        <div className="w-[260px] flex-shrink-0 px-4">
-          <div className="flex items-center gap-2 pl-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => toggleGroup(subFolderKey)}
-              className="h-6 w-6 p-0"
-            >
-              {isExpanded ? (
-                <ChevronRight className="h-3 w-3 rotate-90 transition-transform" />
-              ) : (
-                <ChevronRight className="h-3 w-3" />
-              )}
-            </Button>
-            <Package className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">{rowItem.name}</span>
-          </div>
-        </div>
-        <div className="flex-1 bg-muted/5" style={{ minWidth: `${totalDates * 50}px` }} />
-      </div>
-    );
-  }
-  
-  if (rowItem.type === 'equipment' && rowItem.equipment) {
-    const equipment = rowItem.equipment;
-    const paddingClass = rowItem.level === 1 ? 'pl-8' : 'pl-12';
-    
-    return (
-      <div style={style} className="h-[60px] flex items-center border-b border-border hover:bg-muted/30 transition-colors">
-        {/* Fixed Equipment Name Column */}
-        <div className="w-[260px] flex-shrink-0 px-4">
-          <div className={`flex items-center gap-3 ${paddingClass}`}>
-            <div className="min-w-0 flex-1">
-              <div className="text-sm font-medium text-foreground truncate">{equipment.name}</div>
-              <div className="text-xs text-muted-foreground">Stock: {equipment.stock}</div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Date Indicators - Virtualized */}
-        <div 
-          className="flex-1 relative overflow-hidden" 
-          style={{ minWidth: `${totalDates * 50}px` }}
-        >
-          {/* Background spacer for full timeline width */}
-          <div style={{ width: `${totalDates * 50}px`, height: '100%', position: 'absolute' }} />
-          
-          {/* Only render visible dates */}
-          <div 
-            className="flex absolute" 
-            style={{ 
-              left: `${visibleDateRange.start * 50}px`,
-              width: `${visibleDates.length * 50}px`
-            }}
-          >
-            {visibleDates.map(dateInfo => (
-              <OptimisticDayCard
-                key={dateInfo.isoString}
-                equipment={equipment}
-                dateInfo={dateInfo}
-                getBookingsForEquipment={getBookingsForEquipment}
-                getBookingState={getBookingState}
-                updateBookingState={updateBookingState}
-                onDateChange={onDateChange}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  return null;
-}, (prevProps, nextProps) => {
-  // Custom memoization for different row types
-  if (prevProps.rowItem.type !== nextProps.rowItem.type) return false;
-  if (prevProps.rowItem.id !== nextProps.rowItem.id) return false;
-  
-  // Check visible date range changes
-  if (prevProps.visibleDateRange.start !== nextProps.visibleDateRange.start ||
-      prevProps.visibleDateRange.end !== nextProps.visibleDateRange.end) return false;
-  
-  if (prevProps.rowItem.type === 'equipment') {
-    return (
-      prevProps.rowItem.equipment?.id === nextProps.rowItem.equipment?.id &&
-      prevProps.rowItem.equipment?.stock === nextProps.rowItem.equipment?.stock &&
-      prevProps.totalDates === nextProps.totalDates
-    );
-  }
-  
-  // For folder/subfolder rows, just check basic props
-  return (
-    prevProps.totalDates === nextProps.totalDates &&
-    prevProps.expandedGroups === nextProps.expandedGroups
-  );
-});
-
 interface EquipmentCalendarProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
@@ -313,8 +157,12 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
   
   const isMonthView = viewMode === 'month';
   
-  // Simplified: Only one master scroll area needed
-  // Remove datesRowRef and isScrollingRef - no longer needed
+  // Ref for timeline header sync
+  const stickyHeadersRef = useRef<HTMLDivElement>(null);
+  
+
+  
+
   
   // Custom hooks
   const {
@@ -325,13 +173,12 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     setIsDragging,
     dragStart,
     setDragStart,
-    equipmentRowsRef, // Only master scroll area
+    equipmentRowsRef,
     loadMoreDates,
   } = useEquipmentTimeline({ selectedDate });
 
-  // Simplified: Use hook's scroll handlers directly - no duplicate logic needed
   const scrollHandlers = useTimelineScroll({
-    equipmentRowsRef, // Only master scroll area needed
+    equipmentRowsRef,
     isDragging,
     setIsDragging,
     dragStart,
@@ -339,6 +186,28 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     loadMoreDates,
     isMonthView,
   });
+
+  // Enhanced scroll handler to sync headers with timeline content
+  const handleTimelineScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    // Handle infinite scroll and drag functionality
+    scrollHandlers.handleEquipmentScroll(e);
+    
+    // Sync timeline headers with content scroll position
+    const scrollLeft = e.currentTarget.scrollLeft;
+    if (stickyHeadersRef.current) {
+      stickyHeadersRef.current.scrollLeft = scrollLeft;
+    }
+  }, [scrollHandlers.handleEquipmentScroll]);
+
+  // Enhanced mouse move handler for drag synchronization
+  const handleTimelineMouseMove = useCallback((e: React.MouseEvent) => {
+    scrollHandlers.handleMouseMove(e);
+    
+    // Sync headers during drag
+    if (isDragging && equipmentRowsRef.current && stickyHeadersRef.current) {
+      stickyHeadersRef.current.scrollLeft = equipmentRowsRef.current.scrollLeft;
+    }
+  }, [scrollHandlers.handleMouseMove, isDragging]);
 
   const {
     mainFolders,
@@ -353,26 +222,9 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
 
   // Ensure mainFolders is properly typed
   const folders = mainFolders || new Map();
-
-  // Virtualization setup (currently disabled for stability)
-  // const { visibleRange, updateTotalRows } = useEquipmentVirtualization(equipmentRowsRef, 60, 5);
-  // const { visibleDateRange, updateTotalColumns } = useHorizontalVirtualization(equipmentRowsRef, 50, 10);
   
   // Granular booking state management for optimistic updates
   const { updateBookingState, getBookingState, batchUpdateBookings, clearStaleStates } = useGranularBookingState();
-
-  // Virtualization structure helpers (disabled for now)
-  // const flattenedEquipment = useMemo(() => {
-  //   return flattenEquipmentStructure(mainFolders);
-  // }, [mainFolders]);
-
-  // const visibleEquipment = useMemo(() => {
-  //   // ... filtering logic disabled for stability
-  // }, [flattenedEquipment, expandedGroups]);
-
-  // useEffect(() => {
-  //   updateTotalRows(visibleEquipment.length);
-  // }, [visibleEquipment.length, updateTotalRows]);
 
   // Cleanup stale booking states periodically
   useEffect(() => {
@@ -390,17 +242,49 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     }
   }, [mainFolders, expandedGroups.size]);
 
-  // Simplified: No complex sync needed with single scroll area
-
   // Group management
-  const toggleGroup = (groupName: string) => {
+  const toggleGroup = (groupName: string, expandAllSubfolders = false) => {
     setExpandedGroups(prev => {
       const newSet = new Set(prev);
-      if (newSet.has(groupName)) {
-        newSet.delete(groupName);
+      
+      if (expandAllSubfolders) {
+        // Cmd+click: Toggle main folder AND all its subfolders
+        const isMainFolderExpanded = newSet.has(groupName);
+        
+        if (isMainFolderExpanded) {
+          // Collapse main folder and all subfolders
+          newSet.delete(groupName);
+          
+          // Find and collapse all subfolders for this main folder
+          const mainFolder = folders.get(groupName);
+          if (mainFolder?.subfolders) {
+            Array.from((mainFolder.subfolders as Map<string, any>).keys()).forEach(subFolderName => {
+              const subFolderKey = `${groupName}/${subFolderName}`;
+              newSet.delete(subFolderKey);
+            });
+          }
+        } else {
+          // Expand main folder and all subfolders
+          newSet.add(groupName);
+          
+          // Find and expand all subfolders for this main folder
+          const mainFolder = folders.get(groupName);
+          if (mainFolder?.subfolders) {
+            Array.from((mainFolder.subfolders as Map<string, any>).keys()).forEach(subFolderName => {
+              const subFolderKey = `${groupName}/${subFolderName}`;
+              newSet.add(subFolderKey);
+            });
+          }
+        }
       } else {
-        newSet.add(groupName);
+        // Normal click: Toggle only the clicked group
+        if (newSet.has(groupName)) {
+          newSet.delete(groupName);
+        } else {
+          newSet.add(groupName);
+        }
       }
+      
       return newSet;
     });
   };
@@ -416,15 +300,6 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
       monthYear: format(date, 'yyyy-MM')
     }));
   }, [timelineDates, selectedDate]);
-
-  // Virtualization column tracking (disabled for now)
-  // useEffect(() => {
-  //   updateTotalColumns(formattedDates.length);
-  // }, [formattedDates.length, updateTotalColumns]);
-
-  // const visibleDates = useMemo(() => {
-  //   return formattedDates.slice(visibleDateRange.start, visibleDateRange.end);
-  // }, [formattedDates, visibleDateRange]);
 
   // Month sections with alternating backgrounds  
   const monthSections = useMemo(() => {
@@ -462,13 +337,6 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     return sections;
   }, [formattedDates]);
 
-  // Month sections are used directly for labels inside scroll area
-
-  // Headers are now inside scroll area - no sync needed
-
-  // Direct booking lookup - getBookingsForEquipment is already O(1) optimized
-  // No need for additional caching layer that slows things down
-
   // Memoized lowest stock calculations - only recalculate when data changes
   const lowestStockCache = useMemo(() => {
     const cache = new Map<string, number>();
@@ -493,7 +361,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
           });
           
           // Also handle subfolders
-          Array.from(mainFolder.subfolders.entries()).forEach(([_, subFolder]) => {
+          Array.from((mainFolder.subfolders as Map<string, any>).entries()).forEach(([_, subFolder]) => {
             Array.from((subFolder.equipment as Map<string, any>).entries()).forEach(([equipmentId, equipment]) => {
               let lowest = equipment.stock;
               
@@ -539,53 +407,131 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
 
   return (
     <div className="space-y-4">
-      {/* Sticky Equipment Planner Header */}
-      <div className="sticky top-0 z-20 bg-background border-b border-border">
-        {/* Main Title */}
-        <div className="flex items-center gap-2 py-3 px-1">
-          <Package className="h-5 w-5 text-green-500" />
-          <h3 className="text-lg font-semibold">Equipment Planner</h3>
-        </div>
-
-
-      </div>
-
-      <Card>
-        <CardContent className="p-0">
-          {!folders || folders.size === 0 ? (
+      {!folders || folders.size === 0 ? (
+        <Card>
+          <CardContent className="p-0">
             <div className="text-center py-8 text-muted-foreground">
               <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
               No equipment bookings found for this week
             </div>
-          ) : (
-            <div className="space-y-6">
-              {/* Timeline Container with proper unified scroll */}
-              <div className="border border-border rounded-lg overflow-hidden bg-background">
-                {/* Three Column Layout */}
-                <div className="flex">
-                  {/* Equipment Names Column - Fixed */}
-                  <div className="w-[240px] flex-shrink-0 equipment-calendar-column">
-                    {/* Names Header */}
-                    <div className="h-12 py-3 px-4 bg-muted/20 border-b border-border/50">
+          </CardContent>
+        </Card>
+      ) : (
+        <>
+          {/* Sticky Headers - Stick to main page scroll context */}
+          <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-sm">
+                {/* Equipment Planner Title */}
+                <div className="flex items-center gap-2 py-3 px-4 bg-background">
+                  <Package className="h-5 w-5 text-green-500" />
+                  <h3 className="text-lg font-semibold">Equipment Planner</h3>
+                </div>
+                
+                {/* Column Headers */}
+                <div className="flex border-b border-border">
+                  {/* Left Header - Equipment Names */}
+                  <div className="w-[240px] flex-shrink-0 bg-muted/90 backdrop-blur-sm border-r border-border">
+                    <div className="h-12 py-3 px-4 border-b border-border/50">
                       <div className="text-sm font-semibold text-foreground">Equipment</div>
                     </div>
-                    <div className="py-3 px-4 bg-muted/10 border-b border-border">
+                    <div className="h-12 py-3 px-4">
                       <div className="text-xs text-muted-foreground">Name / Stock</div>
                     </div>
-                    
-                    {/* Equipment Names */}
+                  </div>
+                  
+                  {/* Middle Header - Timeline */}
+                  <div 
+                    ref={stickyHeadersRef}
+                    className="flex-1 bg-muted/90 backdrop-blur-sm overflow-x-auto scrollbar-hide"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
+                    <div style={{ width: `${formattedDates.length * 50}px` }}>
+                      {/* Month Header */}
+                      <div className="h-12 border-b border-border/50">
+                        <div className="flex">
+                          {monthSections.map((section) => (
+                            <div 
+                              key={`section-${section.monthYear}`}
+                              className={`border-r border-border/30 flex items-center justify-center ${
+                                section.isEven ? 'bg-muted/40' : 'bg-muted/20'
+                              }`}
+                              style={{ width: `${section.width}px`, minWidth: '50px' }}
+                            >
+                              <span className="text-xs font-semibold text-foreground whitespace-nowrap px-2 py-1 bg-background/90 rounded-md shadow-sm border border-border/20">
+                                {format(section.date, 'MMMM yyyy')}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Date Header */}
+                      <div className="h-12 flex py-3">
+                        {formattedDates.map((dateInfo) => (
+                          <div key={dateInfo.isoString} className="w-[50px] px-1">
+                            <div
+                              className={`h-8 flex flex-col items-center justify-center rounded-md text-xs font-medium transition-colors cursor-pointer select-none ${
+                                dateInfo.isSelected 
+                                  ? 'bg-blue-500 text-white shadow-md' 
+                                  : dateInfo.isWeekendDay
+                                  ? 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+                                  : 'text-muted-foreground hover:bg-muted/50'
+                              }`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDateChange(dateInfo.date);
+                              }}
+                              title={format(dateInfo.date, 'EEEE, MMMM d, yyyy')}
+                            >
+                              <div className="text-[10px] leading-none">{format(dateInfo.date, 'EEE')[0]}</div>
+                              <div className="text-xs font-medium leading-none">{format(dateInfo.date, 'd')}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Right Header - Lowest Available */}
+                  <div className="w-[80px] flex-shrink-0 bg-muted/90 backdrop-blur-sm border-l border-border">
+                    <div className="h-12 py-3 px-2 border-b border-border/50">
+                      <div className="text-xs font-semibold text-foreground text-center">Lowest</div>
+                    </div>
+                    <div className="h-12 py-3 px-2">
+                      <div className="text-xs text-muted-foreground text-center">Available</div>
+                    </div>
+                  </div>
+                </div>
+          </div>
+
+          {/* Content Area - Separate from sticky headers */}
+          <div className="border border-border rounded-lg overflow-hidden bg-background">
+            <div className="flex">
+              {/* Left Column - Equipment Names (Fixed during horizontal scroll) */}
+              <div className="w-[240px] flex-shrink-0 border-r border-border">
                     {sortMainFolders(folders).map(([mainFolderName, mainFolder]) => (
-                      <Collapsible key={mainFolderName} open={expandedGroups.has(mainFolderName)} onOpenChange={() => toggleGroup(mainFolderName)}>
-                        <CollapsibleTrigger className="w-full group/folder">
+                      <Collapsible key={mainFolderName} open={expandedGroups.has(mainFolderName)}>
+                        <CollapsibleTrigger 
+                          className="w-full group/folder"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            const isModifierClick = e.metaKey || e.ctrlKey; // Cmd on Mac, Ctrl on Windows/Linux
+                            toggleGroup(mainFolderName, isModifierClick);
+                          }}
+                        >
                           <div className="h-[57px] flex items-center gap-3 px-4 bg-background hover:bg-muted/50 transition-colors border-b border-border">
                             <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-data-[state=open]/folder:rotate-90 transition-transform" />
                             <FolderIcon className="h-4 w-4 text-blue-500" />
-                            <span className="text-sm font-semibold text-foreground">{mainFolderName}</span>
+                            <span className="text-sm font-semibold text-foreground">
+                              {mainFolderName}
+                              {/* Visual hint for cmd+click functionality */}
+                              <span className="ml-2 text-xs text-muted-foreground opacity-0 group-hover/folder:opacity-100 transition-opacity">
+                                {navigator.platform.includes('Mac') ? '⌘+click' : 'Ctrl+click'} for all
+                              </span>
+                            </span>
                           </div>
                         </CollapsibleTrigger>
                         
                         <CollapsibleContent>
-                          {/* Equipment directly in main folder */}
                           {Array.from((mainFolder.equipment as Map<string, any>).entries()).map(([equipmentId, equipment]) => (
                             <div key={equipmentId} className="h-[60px] flex items-center px-2 border-b border-border hover:bg-muted/30 transition-colors">
                               <div className="min-w-0 flex-1 pr-1">
@@ -595,7 +541,6 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
                             </div>
                           ))}
                           
-                          {/* Subfolders */}
                           {sortSubfolders(mainFolder.subfolders, mainFolderName).map(([subFolderName, subFolder]) => {
                             const subFolderKey = `${mainFolderName}/${subFolderName}`;
                             return (
@@ -624,79 +569,23 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
                     ))}
                   </div>
 
-                  {/* Unified Timeline Area - Scrollable */}
+                  {/* Middle Column - Timeline (Horizontally Scrollable) */}
                   <div 
-                    className={`flex-1 overflow-x-auto scrollbar-hide equipment-calendar-column ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
                     ref={equipmentRowsRef}
-                    onScroll={scrollHandlers.handleEquipmentScroll}
+                    className={`flex-1 overflow-x-auto scrollbar-hide ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                    onScroll={handleTimelineScroll}
                     onMouseDown={scrollHandlers.handleMouseDown}
-                    onMouseMove={scrollHandlers.handleMouseMove}
+                    onMouseMove={handleTimelineMouseMove}
                     onMouseUp={scrollHandlers.handleMouseUp}
                     onMouseLeave={scrollHandlers.handleMouseLeave}
                   >
                     <div style={{ minWidth: `${formattedDates.length * 50}px` }}>
-                      {/* Month Header Row */}
-                      <div className="border-b border-border/50 bg-muted/30">
-                        <div className="flex">
-                          {/* Month sections with alternating backgrounds and labels */}
-                          {monthSections.map((section) => (
-                            <div 
-                              key={`section-${section.monthYear}`}
-                              className={`h-12 border-r border-border/30 flex items-center justify-center ${
-                                section.isEven 
-                                  ? 'bg-muted/40' 
-                                  : 'bg-muted/20'
-                              }`}
-                              style={{ 
-                                width: `${section.width}px`,
-                                minWidth: '50px'
-                              }}
-                            >
-                              <span className="text-xs font-semibold text-foreground whitespace-nowrap px-2 py-1 bg-background/90 rounded-md shadow-sm border border-border/20">
-                                {format(section.date, 'MMMM yyyy')}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Date Header Row */}
-                      <div className="border-b border-border bg-muted">
-                        <div className="flex py-3">
-                          {formattedDates.map((dateInfo) => (
-                            <div 
-                              key={dateInfo.isoString} 
-                              className="w-[50px] px-1"
-                            >
-                              <div
-                                className={`h-8 flex flex-col items-center justify-center rounded-md text-xs font-medium transition-colors cursor-pointer select-none ${
-                                  dateInfo.isSelected 
-                                    ? 'bg-blue-500 text-white shadow-md' 
-                                    : dateInfo.isWeekendDay
-                                    ? 'bg-orange-100 text-orange-800 hover:bg-orange-200'
-                                    : 'text-muted-foreground hover:bg-muted/50'
-                                }`}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onDateChange(dateInfo.date);
-                                }}
-                                title={format(dateInfo.date, 'EEEE, MMMM d, yyyy')}
-                              >
-                                <div className="text-[10px] leading-none">{format(dateInfo.date, 'EEE')[0]}</div>
-                                <div className="text-xs font-medium leading-none">{format(dateInfo.date, 'd')}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Equipment Timeline Data */}
+                      {/* Timeline Data Only - Headers are sticky above */}
                       {sortMainFolders(folders).map(([mainFolderName, mainFolder]) => (
                         <Collapsible key={mainFolderName} open={expandedGroups.has(mainFolderName)}>
                           <div className="h-[57px] border-b border-border" />
                           
                           <CollapsibleContent>
-                            {/* Equipment directly in main folder */}
                             {Array.from((mainFolder.equipment as Map<string, any>).entries()).map(([equipmentId, equipment]) => (
                               <div key={equipmentId} className="h-[60px] flex items-center border-b border-border hover:bg-muted/30 transition-colors">
                                 <div className="flex" style={{ minWidth: `${formattedDates.length * 50}px` }}>
@@ -715,7 +604,6 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
                               </div>
                             ))}
                             
-                            {/* Subfolders */}
                             {sortSubfolders(mainFolder.subfolders, mainFolderName).map(([subFolderName, subFolder]) => {
                               const subFolderKey = `${mainFolderName}/${subFolderName}`;
                               return (
@@ -749,23 +637,14 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
                     </div>
                   </div>
 
-                  {/* Lowest Column - Fixed */}
-                  <div className="w-[70px] flex-shrink-0 equipment-calendar-column">
-                    {/* Lowest Header */}
-                    <div className="h-12 py-3 px-4 bg-muted/20 border-b border-border/50">
-                      <div className="text-sm font-semibold text-foreground text-center">Lowest</div>
-                    </div>
-                    <div className="py-3 px-4 bg-muted/10 border-b border-border">
-                      <div className="text-xs text-muted-foreground text-center">Available</div>
-                    </div>
-
-                    {/* Lowest Values */}
+                  {/* Right Column - Lowest Available (Fixed during horizontal scroll) */}
+                  <div className="w-[80px] flex-shrink-0 border-l border-border">
+                    {/* Lowest Values Only - Headers are sticky above */}
                     {sortMainFolders(folders).map(([mainFolderName, mainFolder]) => (
                       <Collapsible key={mainFolderName} open={expandedGroups.has(mainFolderName)}>
                         <div className="h-[57px] border-b border-border" />
                         
                         <CollapsibleContent>
-                          {/* Equipment directly in main folder */}
                           {Array.from((mainFolder.equipment as Map<string, any>).entries()).map(([equipmentId, equipment]) => (
                             <div key={equipmentId} className="h-[60px] flex items-center justify-center border-b border-border">
                               <span className="text-sm font-medium text-muted-foreground">
@@ -774,7 +653,6 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
                             </div>
                           ))}
                           
-                          {/* Subfolders */}
                           {sortSubfolders(mainFolder.subfolders, mainFolderName).map(([subFolderName, subFolder]) => {
                             const subFolderKey = `${mainFolderName}/${subFolderName}`;
                             return (
@@ -796,12 +674,10 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
                       </Collapsible>
                     ))}
                   </div>
-                </div>
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+        </>
+      )}
     </div>
   );
 }
