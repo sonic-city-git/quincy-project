@@ -9,7 +9,9 @@ import { useSyncSubscriptions } from "@/hooks/useSyncSubscriptions";
 import { StatusIcon } from "./header/StatusIcon";
 import { HeaderEquipmentIcon } from "./header/HeaderEquipmentIcon";
 import { HeaderCrewIcon } from "./header/HeaderCrewIcon";
+import { EquipmentSyncOptionsDialog } from "./equipment/EquipmentSyncOptionsDialog";
 import { useEffect, useState } from "react";
+import { useEquipmentSync } from "@/hooks/useEquipmentSync";
 
 interface EventSectionHeaderProps {
   title: string;
@@ -30,6 +32,8 @@ export function EventSectionHeader({
   const sectionSyncStatus = useSectionSyncStatus(events);
   const queryClient = useQueryClient();
   const [hasProjectEquipment, setHasProjectEquipment] = useState(false);
+  const [showSyncDialog, setShowSyncDialog] = useState(false);
+  const { syncEvents, isSyncing } = useEquipmentSync();
   
   // Set up sync subscriptions if we have events
   if (events.length > 0) {
@@ -52,37 +56,66 @@ export function EventSectionHeader({
     checkProjectEquipment();
   }, [events]);
 
-  const handleSyncAllEquipment = async () => {
-    if (!events.length) return;
-
-    try {
-      // Sync equipment for all events in this section
-      for (const event of events) {
-        const { error } = await supabase.rpc('sync_event_equipment', {
-          p_event_id: event.id,
-          p_project_id: event.project_id
-        });
-
-        if (error) {
-          console.error('Error syncing equipment for event:', event.id, error);
-          toast.error(`Failed to sync equipment for event ${event.name}`);
-          return;
-        }
-      }
-
-      // Invalidate queries to refresh the data
-      console.log('🔄 [GROUP-SYNC] Invalidating queries to update event icons...');
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['events', events[0].project_id] }),
-        queryClient.invalidateQueries({ queryKey: ['sync-status'] }), // Critical: update individual event icons
-        queryClient.invalidateQueries({ queryKey: ['project-event-equipment'] })
-      ]);
-      console.log('✅ [GROUP-SYNC] Queries invalidated, event icons should update');
-      toast.success('Equipment synced successfully');
-    } catch (error) {
-      console.error('Error in handleSyncAllEquipment:', error);
-      toast.error('Failed to sync equipment');
+  const handleShowSyncDialog = () => {
+    if (!events || events.length === 0) {
+      toast.error("No events to sync");
+      return;
     }
+    setShowSyncDialog(true);
+  };
+
+  const syncEventsToEquipment = async (eventsToSync: CalendarEvent[], syncType: 'all' | 'future' | 'date-based') => {
+    if (!eventsToSync.length) return;
+
+    // Prevent concurrent sync operations
+    if (isSyncing) {
+      console.log('🚫 [GROUP-SYNC] Sync already in progress, skipping...');
+      return;
+    }
+
+    console.log(`🔄 [GROUP-SYNC] Starting ${syncType} sync for ${eventsToSync.length} events`);
+    
+    // Use unified sync hook
+    const success = await syncEvents(
+      eventsToSync.map(event => ({ id: event.id, project_id: event.project_id }))
+    );
+
+    if (success) {
+      let message = '';
+      switch (syncType) {
+        case 'all':
+          message = `Equipment synced to all ${eventsToSync.length} events`;
+          break;
+        case 'future':
+          message = `Equipment synced to ${eventsToSync.length} future events`;
+          break;
+        case 'date-based':
+          message = `Equipment synced to ${eventsToSync.length} events from selected date`;
+          break;
+      }
+      // Don't show duplicate toast - the hook already shows success message
+      console.log('✅ [GROUP-SYNC]', message);
+    }
+  };
+
+  const handleSyncAllEquipment = async () => {
+    await syncEventsToEquipment(events, 'all');
+  };
+
+  const handleSyncFromDate = async (fromDate: Date) => {
+    const eventsFromDate = events.filter(event => {
+      try {
+        const eventDate = new Date(event.date);
+        eventDate.setHours(0, 0, 0, 0);
+        const compareDate = new Date(fromDate);
+        compareDate.setHours(0, 0, 0, 0);
+        return eventDate >= compareDate;
+      } catch {
+        return false;
+      }
+    });
+    
+    await syncEventsToEquipment(eventsFromDate, 'date-based');
   };
 
   const handleSyncPreferredCrew = async () => {
@@ -144,8 +177,8 @@ export function EventSectionHeader({
         <div className="flex items-center justify-center">
           {!isCancelled && !isInvoiceReady && eventType?.needs_equipment && (
             <HeaderEquipmentIcon 
-              sectionSyncStatus={sectionSyncStatus} 
-              onSyncAllEquipment={handleSyncAllEquipment}
+              sectionSyncStatus={isSyncing ? 'syncing' : sectionSyncStatus} 
+              onSyncAllEquipment={handleShowSyncDialog}
               sectionTitle={title}
               hasProjectEquipment={hasProjectEquipment}
             />
@@ -186,6 +219,16 @@ export function EventSectionHeader({
           Total
         </div>
       </EventSectionHeaderGrid>
+
+      {/* Equipment Sync Options Dialog */}
+      <EquipmentSyncOptionsDialog
+        open={showSyncDialog}
+        onOpenChange={setShowSyncDialog}
+        sectionTitle={title}
+        events={events}
+        onSyncAll={handleSyncAllEquipment}
+        onSyncFromDate={handleSyncFromDate}
+      />
     </div>
   );
 }

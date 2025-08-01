@@ -1,13 +1,16 @@
--- Create sync_event_equipment function
+-- Fix sync function to handle duplicate equipment entries
+-- This prevents "ON CONFLICT DO UPDATE command cannot affect row a second time" error
+
+-- Update sync_event_equipment function with proper deduplication
 CREATE OR REPLACE FUNCTION sync_event_equipment(p_event_id uuid, p_project_id uuid)
 RETURNS void AS $$
 BEGIN
-  -- First, ensure we have a consistent state by using a transaction
   -- Delete existing event equipment for this event
   DELETE FROM project_event_equipment 
   WHERE event_id = p_event_id;
   
-  -- Insert project equipment with conflict resolution
+  -- Insert project equipment with deduplication and conflict resolution
+  -- Use DISTINCT ON to ensure only one row per equipment_id
   INSERT INTO project_event_equipment (
     project_id, 
     event_id, 
@@ -18,7 +21,7 @@ BEGIN
     created_at,
     updated_at
   )
-  SELECT 
+  SELECT DISTINCT ON (equipment_id)
     p_project_id,
     p_event_id,
     equipment_id,
@@ -29,6 +32,7 @@ BEGIN
     NOW()
   FROM project_equipment 
   WHERE project_id = p_project_id
+  ORDER BY equipment_id, updated_at DESC -- Use most recent entry if duplicates exist
   ON CONFLICT (event_id, equipment_id) 
   DO UPDATE SET 
     quantity = EXCLUDED.quantity,
@@ -39,7 +43,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create sync_event_crew function
+-- Update sync_event_crew function with proper deduplication
 CREATE OR REPLACE FUNCTION sync_event_crew(p_event_id uuid, p_project_id uuid)
 RETURNS void AS $$
 BEGIN
@@ -47,7 +51,8 @@ BEGIN
   DELETE FROM project_event_roles 
   WHERE event_id = p_event_id;
   
-  -- Insert project crew roles with conflict resolution
+  -- Insert project crew roles with deduplication and conflict resolution
+  -- Use DISTINCT ON to ensure only one row per role_id
   INSERT INTO project_event_roles (
     project_id,
     event_id, 
@@ -60,7 +65,7 @@ BEGIN
     created_at,
     updated_at
   )
-  SELECT 
+  SELECT DISTINCT ON (role_id)
     p_project_id,
     p_event_id,
     role_id,
@@ -73,6 +78,7 @@ BEGIN
     NOW()
   FROM project_roles 
   WHERE project_id = p_project_id
+  ORDER BY role_id, updated_at DESC -- Use most recent entry if duplicates exist
   ON CONFLICT (event_id, role_id) 
   DO UPDATE SET 
     crew_member_id = EXCLUDED.crew_member_id,
@@ -84,7 +90,3 @@ BEGIN
   
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Grant execute permissions to authenticated users
-GRANT EXECUTE ON FUNCTION sync_event_equipment(uuid, uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION sync_event_crew(uuid, uuid) TO authenticated;

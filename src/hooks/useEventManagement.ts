@@ -74,22 +74,8 @@ export const useEventManagement = (projectId: string) => {
         }
       }
 
-      // Sync equipment if needed
-      if (eventType.needs_equipment) {
-        try {
-          await supabase.rpc('sync_event_equipment', {
-            p_event_id: eventData.id,
-            p_project_id: projectId
-          });
-        } catch (error) {
-          console.error('Error syncing equipment:', error);
-          toast({
-            title: "Warning",
-            description: "Event created but equipment could not be synced. Please sync manually.",
-            variant: "warning"
-          });
-        }
-      }
+      // Note: Equipment sync is now handled in eventQueries.ts using unified function
+      // This ensures consistent sync behavior across all event creation methods
 
       // Invalidate and refetch all related queries to ensure UI updates
       await Promise.all([

@@ -20,6 +20,7 @@ interface BaseEquipmentIconProps {
   syncLabel?: string;
   isUnsynced?: boolean;
   hasProjectEquipment?: boolean;
+  isSyncing?: boolean;
 }
 
 export function BaseEquipmentIcon({
@@ -29,7 +30,8 @@ export function BaseEquipmentIcon({
   onSync,
   syncLabel = "Sync equipment",
   isUnsynced = false,
-  hasProjectEquipment = false
+  hasProjectEquipment = false,
+  isSyncing = false
 }: BaseEquipmentIconProps) {
   // If no project equipment, don't show anything
   if (!hasProjectEquipment) {
@@ -63,12 +65,12 @@ export function BaseEquipmentIcon({
               className="h-10 w-10 p-0"
               disabled={isDisabled}
             >
-              <Package className="text-blue-500" />
+              <Package className={`${isSyncing ? 'text-orange-500 animate-pulse' : 'text-blue-500'}`} />
             </Button>
           </DropdownMenuTrigger>
         </TooltipTrigger>
         <TooltipContent>
-          <p>{isUnsynced ? "No equipment" : "Equipment out of sync"}</p>
+          <p>{isSyncing ? "Syncing equipment..." : isUnsynced ? "No equipment" : "Equipment out of sync"}</p>
         </TooltipContent>
       </Tooltip>
       <DropdownMenuContent align="start">

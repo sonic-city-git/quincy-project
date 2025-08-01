@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { BaseEquipmentIcon } from "./equipment/BaseEquipmentIcon";
 import { EquipmentDifferenceDialog } from "./equipment/EquipmentDifferenceDialog";
-import { useSyncEquipment } from "@/hooks/useSyncEquipment";
+import { useEquipmentSync } from "@/hooks/useEquipmentSync";
 
 interface Equipment {
   name: string;
@@ -60,18 +60,11 @@ export function EquipmentIcon({
     changed: []
   });
 
-  const { syncEquipment } = useSyncEquipment(eventId, projectId);
+  const { syncEvent, isSyncing: isSyncingEquipment } = useEquipmentSync();
   
   const handleSync = async () => {
-    console.log('🎯 handleSync called for event:', eventId, 'date:', eventDate);
-    try {
-      // Convert date to YYYY-MM-DD string format
-      const dateString = typeof eventDate === 'string' ? eventDate : new Date(eventDate).toISOString().split('T')[0];
-      const result = await syncEquipment(dateString);
-      console.log('🎯 handleSync result:', result);
-    } catch (error) {
-      console.error('🎯 handleSync error:', error);
-    }
+    console.log('🎯 handleSync called for event:', eventId);
+    await syncEvent(eventId, projectId);
   };
 
   const fetchDifferences = async () => {
@@ -167,6 +160,7 @@ export function EquipmentIcon({
       <BaseEquipmentIcon
         isSynced={isSynced}
         isDisabled={isEditingDisabled || isChecking}
+        isSyncing={isSyncingEquipment}
         onViewDifferences={handleViewDifferences}
         onSync={handleSync}
         hasProjectEquipment={hasProjectEquipment}
