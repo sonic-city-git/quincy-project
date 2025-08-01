@@ -14,7 +14,7 @@ import { format, addDays } from "date-fns";
 
 const Planner = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedView, setSelectedView] = useState<'month' | 'week' | 'day'>('month');
+  const [selectedView, setSelectedView] = useState<'month' | 'week'>('month');
   const [selectedOwner, setSelectedOwner] = useState<string>('');
   const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | undefined>();
   const [activeTab, setActiveTab] = useState<'equipment' | 'crew'>('equipment');
@@ -120,13 +120,6 @@ const Planner = () => {
               onClick={() => setSelectedView('week')}
             >
               Week
-            </Button>
-            <Button
-              variant={selectedView === 'day' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setSelectedView('day')}
-            >
-              Day
             </Button>
           </div>
         </div>
