@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { supabase } from '../../../integrations/supabase/client';
@@ -13,6 +13,7 @@ import {
   sortEquipmentInGroup
 } from '../types';
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/utils/folderSort';
+import { usePersistentExpandedGroups } from '@/hooks/usePersistentExpandedGroups';
 
 interface UseOptimizedEquipmentDataProps {
   periodStart: Date;
@@ -25,8 +26,12 @@ export function useOptimizedEquipmentData({
   periodEnd, 
   selectedOwner 
 }: UseOptimizedEquipmentDataProps) {
-  // Expansion state management
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  // Persistent expansion state management
+  const { 
+    expandedGroups, 
+    toggleGroup: toggleGroupPersistent, 
+    initializeDefaultExpansion 
+  } = usePersistentExpandedGroups();
 
   // Fetch equipment structure with optimized transformation
   const { data: equipmentData, isLoading: isLoadingEquipment } = useQuery({
@@ -251,48 +256,29 @@ export function useOptimizedEquipmentData({
     return Math.max(0, lowest);
   }, [equipmentData?.equipmentById, bookingsData]);
 
-  // Group management functions
+  // Group management functions with persistent state
   const toggleGroup = useCallback((groupKey: string, expandAllSubfolders = false) => {
-    setExpandedGroups(prev => {
-      const newSet = new Set(prev);
+    if (expandAllSubfolders && !groupKey.includes('/')) {
+      // Main folder with modifier key: get all subfolder keys for this group
+      const group = equipmentGroups.find(g => g.mainFolder === groupKey);
+      const subFolderKeys = group?.subFolders.map(subFolder => 
+        `${groupKey}/${subFolder.name}`
+      ) || [];
       
-      if (expandAllSubfolders && !groupKey.includes('/')) {
-        // Main folder with modifier key: toggle main folder and all subfolders
-        const group = equipmentGroups.find(g => g.mainFolder === groupKey);
-        const isMainExpanded = newSet.has(groupKey);
-        
-        if (isMainExpanded) {
-          // Collapse main folder and all subfolders
-          newSet.delete(groupKey);
-          group?.subFolders.forEach(subFolder => {
-            newSet.delete(`${groupKey}/${subFolder.name}`);
-          });
-        } else {
-          // Expand main folder and all subfolders
-          newSet.add(groupKey);
-          group?.subFolders.forEach(subFolder => {
-            newSet.add(`${groupKey}/${subFolder.name}`);
-          });
-        }
-      } else {
-        // Normal toggle
-        if (newSet.has(groupKey)) {
-          newSet.delete(groupKey);
-        } else {
-          newSet.add(groupKey);
-        }
-      }
-      
-      return newSet;
-    });
-  }, [equipmentGroups]);
-
-  // Initialize expanded state
-  useEffect(() => {
-    if (equipmentGroups.length > 0 && expandedGroups.size === 0) {
-      setExpandedGroups(new Set(equipmentGroups.map(g => g.mainFolder)));
+      toggleGroupPersistent(groupKey, expandAllSubfolders, subFolderKeys);
+    } else {
+      // Normal toggle
+      toggleGroupPersistent(groupKey, false);
     }
-  }, [equipmentGroups, expandedGroups.size]);
+  }, [equipmentGroups, toggleGroupPersistent]);
+
+  // Initialize default expanded state for new installations/first load
+  useEffect(() => {
+    if (equipmentGroups.length > 0) {
+      const mainFolders = equipmentGroups.map(g => g.mainFolder);
+      initializeDefaultExpansion(mainFolders);
+    }
+  }, [equipmentGroups, initializeDefaultExpansion]);
 
   const isLoading = isLoadingEquipment || isLoadingBookings;
 

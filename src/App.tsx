@@ -1,9 +1,8 @@
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
-import { Toaster } from "@/components/ui/toaster";
-import { TopNavigation } from "@/components/Sidebar";
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from "@/components/AuthProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AppLayout } from "@/components/layouts/AppLayout";
 import Auth from "@/pages/Auth";
 import Index from "@/pages/Index";
 import ProjectList from "@/pages/ProjectList";
@@ -19,28 +18,67 @@ function App() {
         <Routes>
           <Route path="/auth" element={<Auth />} />
           <Route
-            path="/*"
+            path="/"
             element={
               <ProtectedRoute>
-                <div className="min-h-screen bg-zinc-950 text-white">
-                  <TopNavigation />
-                  <main>
-                    <Routes>
-                                              <Route path="/" element={<Index />} />
-                        <Route path="/projects" element={<ProjectList />} />
-                        <Route path="/projects/:id" element={<ProjectDetail />} />
-                        <Route path="/planner" element={<Planner />} />
-                        <Route path="/crew" element={<CrewList />} />
-                        <Route path="/equipment" element={<EquipmentList />} />
-                      {/* Preserve URL parameters when handling refresh */}
-                      <Route path="*" element={<Navigate to={window.location.pathname} replace state={{ from: window.location }} />} />
-                    </Routes>
-                  </main>
-                  <Toaster />
-                </div>
+                <AppLayout>
+                  <Index />
+                </AppLayout>
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/projects"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectList />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/projects/:id"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <ProjectDetail />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/planner"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Planner />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/crew"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <CrewList />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/equipment"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <EquipmentList />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          {/* Fallback for unknown routes */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </TooltipProvider>
     </AuthProvider>
