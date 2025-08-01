@@ -209,6 +209,14 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     }
   }, [scrollHandlers.handleMouseMove, isDragging]);
 
+  // Handle header scroll - sync back to timeline content (two-way sync)
+  const handleHeaderScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const scrollLeft = e.currentTarget.scrollLeft;
+    if (equipmentRowsRef.current) {
+      equipmentRowsRef.current.scrollLeft = scrollLeft;
+    }
+  }, []);
+
   const {
     mainFolders,
     isLoading,
@@ -443,6 +451,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
                     ref={stickyHeadersRef}
                     className="flex-1 bg-muted/90 backdrop-blur-sm overflow-x-auto scrollbar-hide"
                     style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    onScroll={handleHeaderScroll}
                   >
                     <div style={{ width: `${formattedDates.length * 50}px` }}>
                       {/* Month Header */}
