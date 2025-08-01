@@ -108,18 +108,7 @@ export function EquipmentCalendarHeader({
           </div>
         </div>
         
-        {/* Right Header - Lowest Available */}
-        <div 
-          className="flex-shrink-0 bg-muted/90 backdrop-blur-sm border-l border-border"
-          style={{ width: LAYOUT.LOWEST_AVAILABLE_WIDTH }}
-        >
-          <div className="h-12 py-3 px-2 border-b border-border/50">
-            <div className="text-xs font-semibold text-foreground text-center">Lowest</div>
-          </div>
-          <div className="h-12 py-3 px-2">
-            <div className="text-xs text-muted-foreground text-center">Available</div>
-          </div>
-        </div>
+
       </div>
     </div>
   );

@@ -2,6 +2,46 @@ import { memo } from "react";
 import { AlertTriangle } from "lucide-react";
 import { VISUAL } from '../constants';
 
+// Simplified heatmap color calculation (no green shading)
+const getHeatmapColor = (available: number, stock: number, totalUsed: number) => {
+  const { HEATMAP } = VISUAL;
+  
+  // If overbooked (negative available), use red scale - check this FIRST even if stock is 0
+  if (available < 0) {
+    // Use base red color for overbooked, regardless of stock amount
+    return {
+      backgroundColor: HEATMAP.COLORS.OVERBOOKED_BASE,
+      color: HEATMAP.TEXT_COLORS.WHITE
+    };
+  }
+  
+  // Handle edge case: no stock (but not overbooked)
+  if (stock === 0) {
+    return {
+      backgroundColor: HEATMAP.COLORS.NORMAL_DARK_GREY,
+      color: HEATMAP.TEXT_COLORS.LIGHT_GREY
+    };
+  }
+  
+  // Calculate utilization percentage (how much is used)
+  const utilizationRatio = totalUsed / stock;
+  
+  // Simplified color scheme based on utilization percentage
+  if (utilizationRatio < 0.75) {
+    // 0-74% utilized - dark grey (normal usage)
+    return {
+      backgroundColor: HEATMAP.COLORS.NORMAL_DARK_GREY,
+      color: HEATMAP.TEXT_COLORS.LIGHT_GREY
+    };
+  } else {
+    // 75-100% utilized - orange warning (getting low or empty)
+    return {
+      backgroundColor: HEATMAP.COLORS.WARNING_ORANGE,
+      color: HEATMAP.TEXT_COLORS.WHITE
+    };
+  }
+};
+
 interface EquipmentDayCellProps {
   equipment: any;
   dateInfo: {
@@ -29,6 +69,14 @@ const EquipmentDayCellComponent = ({
   // Use optimistic data if available, otherwise fallback to main data
   const booking = bookingState.data || getBookingsForEquipment(equipment.id, dateInfo.dateStr, equipment);
   
+  // Calculate availability
+  const stock = equipment.stock || 0;
+  const totalUsed = booking?.total_used || 0;
+  const available = stock - totalUsed;
+  
+  // Get heatmap styling - always use heatmap colors, never gray/white
+  const heatmapStyle = getHeatmapColor(available, stock, totalUsed);
+  
   // Handle click with optimistic update
   const handleClick = () => {
     onDateChange(dateInfo.date);
@@ -41,7 +89,7 @@ const EquipmentDayCellComponent = ({
     <div 
       className={`px-1 relative ${
         dateInfo.isSelected ? 'z-10' : ''
-      } ${dateInfo.isWeekendDay ? 'bg-gradient-to-b from-orange-50 to-orange-100 opacity-60' : ''}`}
+      }`}
       style={{ width: '50px' }}
     >
       {dateInfo.isSelected && (
@@ -49,35 +97,31 @@ const EquipmentDayCellComponent = ({
       )}
       
       <div
-        className="h-6 cursor-pointer transition-all duration-200 relative"
+        className="h-6 cursor-pointer transition-all duration-200 relative rounded-md border border-gray-200/50"
         onClick={handleClick}
         title={booking ? 
-          `${equipment.name} - ${booking.total_used}/${equipment.stock} used${booking.is_overbooked ? ' (OVERBOOKED)' : ''}` : 
-          `${equipment.name} - Available`
+          `${equipment.name}\nStock: ${stock}\nUsed: ${totalUsed}\nAvailable: ${available}${available < 0 ? ' (OVERBOOKED)' : ''}` : 
+          `${equipment.name}\nStock: ${stock}\nAvailable: ${stock}`
         }
+        style={heatmapStyle}
       >
         {/* Show loading state if actively updating */}
         {bookingState.isLoading ? (
-          <div className="h-full w-full rounded-md bg-blue-200 animate-pulse" />
-        ) : booking ? (
-          <div 
-            className={`h-full w-full rounded-md shadow-sm ${
-              booking.is_overbooked 
-                ? 'bg-red-500 hover:bg-red-600' 
-                : 'bg-green-500 hover:bg-green-600'
-            }`}
-            style={{ 
-              opacity: Math.min(booking.total_used / equipment.stock, 1) * VISUAL.BOOKING_OPACITY_RANGE + VISUAL.MIN_BOOKING_OPACITY
-            }}
-          >
-            {booking.is_overbooked && (
-              <div className="flex items-center justify-center h-full">
-                <AlertTriangle className="h-3 w-3 text-white" />
-              </div>
-            )}
+          <div className="h-full w-full rounded-md bg-blue-200 animate-pulse flex items-center justify-center">
+            <div className="text-xs font-medium text-blue-800">...</div>
           </div>
         ) : (
-          <div className="h-full w-full rounded-md bg-muted hover:bg-muted/70 transition-colors" />
+          <div className="h-full w-full flex items-center justify-center relative">
+            {/* Available count */}
+            <span className="text-xs font-medium leading-none">
+              {available}
+            </span>
+            
+            {/* Overbooked indicator */}
+            {available < 0 && (
+              <AlertTriangle className="absolute top-0 right-0 h-2 w-2 text-white opacity-80" />
+            )}
+          </div>
         )}
         
         {/* Error indicator */}

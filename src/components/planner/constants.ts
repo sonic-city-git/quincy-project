@@ -8,7 +8,6 @@
 export const LAYOUT = {
   // Column widths
   EQUIPMENT_NAME_WIDTH: 240,
-  LOWEST_AVAILABLE_WIDTH: 80,
   DAY_CELL_WIDTH: 50,
   
   // Row heights
@@ -52,10 +51,28 @@ export const PERFORMANCE = {
 
 // Visual settings
 export const VISUAL = {
-  // Opacity ranges for booking indicators
+  // Opacity ranges for booking indicators (legacy - now using heatmap colors)
   MIN_BOOKING_OPACITY: 0.3,
   MAX_BOOKING_OPACITY: 1.0,
   BOOKING_OPACITY_RANGE: 0.7,
+  
+  // Simplified heatmap colors for equipment utilization (no green)
+  HEATMAP: {
+    // Color scheme:
+    // Dark grey = 0-74% utilized (normal usage)
+    // Orange = 75-100% utilized (getting low/empty)
+    // Red = overbooked
+    UTILIZATION_THRESHOLDS: [0.75, 1.0],
+    COLORS: {
+      NORMAL_DARK_GREY: '#374151',  // gray-700 - 0-74% utilized (dark grey for normal usage)
+      WARNING_ORANGE: '#f97316',    // orange-500 - 75-100% utilized (warning/getting low)
+      OVERBOOKED_BASE: '#dc2626',   // red-600 - overbooked (red)
+    },
+    TEXT_COLORS: {
+      LIGHT_GREY: '#d1d5db',  // gray-300 - for dark backgrounds
+      WHITE: '#ffffff',       // white for high contrast on dark colors
+    }
+  },
   
   // Drag sensitivity
   DRAG_SENSITIVITY: 2,

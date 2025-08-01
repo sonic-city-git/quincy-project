@@ -2,7 +2,6 @@ import { Package } from "lucide-react";
 import { Card, CardContent } from "../../ui/card";
 import { EquipmentFolderSection } from "./EquipmentFolderSection";
 import { EquipmentTimelineSection } from "./EquipmentTimelineSection";
-import { EquipmentStockSection } from "./EquipmentStockSection";
 import { LAYOUT } from '../constants';
 import { EquipmentGroup } from '../types';
 
@@ -108,17 +107,7 @@ export function EquipmentCalendarContent({
           </div>
         </div>
 
-        {/* Right Column - Lowest Available (Fixed during horizontal scroll) */}
-        <div className="flex-shrink-0 border-l border-border" style={{ width: LAYOUT.LOWEST_AVAILABLE_WIDTH }}>
-          {equipmentGroups.map((group) => (
-            <EquipmentStockSection
-              key={`stock-${group.mainFolder}`}
-              equipmentGroup={group}
-              expandedGroups={expandedGroups}
-              getLowestAvailable={getLowestAvailable}
-            />
-          ))}
-        </div>
+
       </div>
     </div>
   );
