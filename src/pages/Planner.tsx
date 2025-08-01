@@ -16,7 +16,6 @@ const Planner = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedView, setSelectedView] = useState<'month' | 'week'>('month');
   const [selectedOwner, setSelectedOwner] = useState<string>('');
-  const [dateRange, setDateRange] = useState<{ from: Date; to: Date } | undefined>();
   const [activeTab, setActiveTab] = useState<'equipment' | 'crew'>('equipment');
 
   // Stats queries
@@ -102,8 +101,6 @@ const Planner = () => {
           <PlannerFilters
             selectedOwner={selectedOwner}
             onOwnerChange={setSelectedOwner}
-            dateRange={dateRange}
-            onDateRangeChange={setDateRange}
             activeTab={activeTab}
           />
           <div className="flex bg-muted rounded-lg p-1">

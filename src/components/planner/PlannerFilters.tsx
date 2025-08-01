@@ -3,29 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar/Calendar";
 import { Badge } from "@/components/ui/badge";
-import { Filter, Calendar as CalendarIcon, X, Users, Package } from "lucide-react";
-import { format } from "date-fns";
+import { Filter, X, Users, Package } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 interface PlannerFiltersProps {
   selectedOwner: string;
   onOwnerChange: (owner: string) => void;
-  dateRange?: {
-    from: Date;
-    to: Date;
-  };
-  onDateRangeChange: (range: { from: Date; to: Date } | undefined) => void;
   activeTab: 'equipment' | 'crew';
 }
 
 export function PlannerFilters({ 
   selectedOwner, 
   onOwnerChange, 
-  dateRange, 
-  onDateRangeChange,
   activeTab 
 }: PlannerFiltersProps) {
   const [showFilters, setShowFilters] = useState(false);
@@ -64,11 +55,10 @@ export function PlannerFilters({
     }
   });
 
-  const hasActiveFilters = selectedOwner || dateRange;
+  const hasActiveFilters = selectedOwner;
 
   const clearAllFilters = () => {
     onOwnerChange('');
-    onDateRangeChange(undefined);
   };
 
   return (
@@ -80,7 +70,7 @@ export function PlannerFilters({
             Filters
             {hasActiveFilters && (
               <Badge variant="destructive" className="ml-2 px-1.5 py-0.5 text-xs">
-                {[selectedOwner, dateRange].filter(Boolean).length}
+                1
               </Badge>
             )}
           </Button>
@@ -120,55 +110,7 @@ export function PlannerFilters({
                 </Select>
               </div>
 
-              {/* Date Range Filter */}
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Date Range</label>
-                <div className="flex gap-2">
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button variant="outline" className="w-full justify-start text-left font-normal">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
-                        {dateRange?.from ? (
-                          dateRange.to ? (
-                            <>
-                              {format(dateRange.from, "MMM dd")} - {format(dateRange.to, "MMM dd")}
-                            </>
-                          ) : (
-                            format(dateRange.from, "MMM dd, yyyy")
-                          )
-                        ) : (
-                          <span>Select dates</span>
-                        )}
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <Calendar
-                        mode="range"
-                        selectedDates={dateRange ? [dateRange.from, dateRange.to] : []}
-                        onDayClick={(day) => {
-                          if (!dateRange?.from) {
-                            onDateRangeChange({ from: day, to: day });
-                          } else if (!dateRange.to && day > dateRange.from) {
-                            onDateRangeChange({ from: dateRange.from, to: day });
-                          } else {
-                            onDateRangeChange({ from: day, to: day });
-                          }
-                        }}
-                        numberOfMonths={2}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  {dateRange && (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => onDateRangeChange(undefined)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
+
 
               {/* Tab-specific filters */}
               {activeTab === 'equipment' && (
@@ -219,19 +161,7 @@ export function PlannerFilters({
               </Button>
             </Badge>
           )}
-          {dateRange && (
-            <Badge variant="secondary" className="flex items-center gap-1">
-              {format(dateRange.from, "MMM dd")} - {format(dateRange.to, "MMM dd")}
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-auto p-0 ml-1 hover:bg-transparent"
-                onClick={() => onDateRangeChange(undefined)}
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </Badge>
-          )}
+
         </div>
       )}
     </div>
