@@ -1,7 +1,7 @@
 import { BaseEquipmentIcon } from "../equipment/BaseEquipmentIcon";
 
 interface HeaderEquipmentIconProps {
-  sectionSyncStatus: 'synced' | 'not-synced' | 'no-equipment';
+  sectionSyncStatus: 'synced' | 'not-synced' | 'no-equipment' | 'syncing';
   onSyncAllEquipment: () => void;
   sectionTitle?: string;
   hasProjectEquipment: boolean;
@@ -26,6 +26,8 @@ export function HeaderEquipmentIcon({
       onSync={onSyncAllEquipment}
       syncLabel={syncLabel}
       isUnsynced={sectionSyncStatus === 'no-equipment'}
+      isDisabled={sectionSyncStatus === 'syncing'}
+      isSyncing={sectionSyncStatus === 'syncing'}
       hasProjectEquipment={hasProjectEquipment}
     />
   );

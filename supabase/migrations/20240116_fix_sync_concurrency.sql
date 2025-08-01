@@ -1,8 +1,10 @@
--- Create sync_event_equipment function
+-- Fix sync function concurrency issues by adding conflict resolution
+-- This prevents duplicate key errors when multiple sync operations happen simultaneously
+
+-- Update sync_event_equipment function with conflict resolution
 CREATE OR REPLACE FUNCTION sync_event_equipment(p_event_id uuid, p_project_id uuid)
 RETURNS void AS $$
 BEGIN
-  -- First, ensure we have a consistent state by using a transaction
   -- Delete existing event equipment for this event
   DELETE FROM project_event_equipment 
   WHERE event_id = p_event_id;
@@ -39,7 +41,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Create sync_event_crew function
+-- Update sync_event_crew function with conflict resolution
 CREATE OR REPLACE FUNCTION sync_event_crew(p_event_id uuid, p_project_id uuid)
 RETURNS void AS $$
 BEGIN
@@ -84,7 +86,3 @@ BEGIN
   
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
-
--- Grant execute permissions to authenticated users
-GRANT EXECUTE ON FUNCTION sync_event_equipment(uuid, uuid) TO authenticated;
-GRANT EXECUTE ON FUNCTION sync_event_crew(uuid, uuid) TO authenticated;

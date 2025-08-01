@@ -49,12 +49,11 @@ export function useSyncStatus(event: CalendarEvent | null) {
       const projectMap = new Map(projectEquipment.map(item => [item.equipment_id, item.quantity]));
       const eventMap = new Map(eventEquipment.map(item => [item.equipment_id, { quantity: item.quantity, is_synced: item.is_synced }]));
 
-      // Check if all project equipment is synced to the event with correct quantities
+      // Check if all project equipment exists in event and is synced
+      // Note: Simplified to align with section sync logic - only check is_synced flag
       const isSynced = projectEquipment.every(projectItem => {
         const eventItem = eventMap.get(projectItem.equipment_id);
-        return eventItem && 
-               eventItem.is_synced && 
-               eventItem.quantity === projectItem.quantity;
+        return eventItem && eventItem.is_synced;
       });
 
       return {

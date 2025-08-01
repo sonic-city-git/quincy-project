@@ -93,34 +93,14 @@ export const createEvent = async (
     console.log('Created event:', eventData);
 
     if (eventType.needs_equipment) {
-      // Get project equipment
-      const { data: projectEquipment } = await supabase
-        .from('project_equipment')
-        .select('equipment_id, quantity, group_id')
-        .eq('project_id', projectId);
+      // Use unified sync function for consistent behavior and pricing
+      const { error: equipmentError } = await supabase.rpc('sync_event_equipment_unified', {
+        p_event_id: eventData.id,
+        p_project_id: projectId
+      });
 
-      if (projectEquipment && projectEquipment.length > 0) {
-        // Use upsert instead of insert to handle duplicates
-        const { error: equipmentError } = await supabase
-          .from('project_event_equipment')
-          .upsert(
-            projectEquipment.map(item => ({
-              project_id: projectId,
-              event_id: eventData.id,
-              equipment_id: item.equipment_id,
-              quantity: item.quantity,
-              group_id: item.group_id,
-              is_synced: true
-            })),
-            { 
-              onConflict: 'event_id,equipment_id',
-              ignoreDuplicates: true 
-            }
-          );
-
-        if (equipmentError) {
-          console.error('Error syncing equipment:', equipmentError);
-        }
+      if (equipmentError) {
+        console.error('Error syncing equipment:', equipmentError);
       }
     }
 

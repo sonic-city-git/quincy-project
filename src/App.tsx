@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Auth from "@/pages/Auth";
 import Index from "@/pages/Index";
 import ProjectList from "@/pages/ProjectList";
+import Planner from "@/pages/Planner";
 import CrewList from "@/pages/CrewList";
 import ProjectDetail from "@/pages/ProjectDetail";
 import EquipmentList from "@/pages/EquipmentList";
@@ -25,11 +26,12 @@ function App() {
                   <Sidebar />
                   <main className="flex-1 overflow-auto">
                     <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/projects" element={<ProjectList />} />
-                      <Route path="/projects/:id" element={<ProjectDetail />} />
-                      <Route path="/crew" element={<CrewList />} />
-                      <Route path="/equipment" element={<EquipmentList />} />
+                                              <Route path="/" element={<Index />} />
+                        <Route path="/projects" element={<ProjectList />} />
+                        <Route path="/projects/:id" element={<ProjectDetail />} />
+                        <Route path="/planner" element={<Planner />} />
+                        <Route path="/crew" element={<CrewList />} />
+                        <Route path="/equipment" element={<EquipmentList />} />
                       {/* Preserve URL parameters when handling refresh */}
                       <Route path="*" element={<Navigate to={window.location.pathname} replace state={{ from: window.location }} />} />
                     </Routes>

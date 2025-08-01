@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { UserX } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDisplayDate } from "@/utils/dateFormatters";
 
 interface EmptyRole {
   id: string;
@@ -79,7 +80,7 @@ export function EmptyCrewRoles({ ownerId }: EmptyCrewRolesProps) {
           <UserX className="h-4 w-4" />
           <AlertDescription>
             Empty {role.crew_roles?.name} role on{' '}
-            {new Date(role.event?.date || '').toLocaleDateString()} in project{' '}
+            {formatDisplayDate(new Date(role.event?.date || ''))} in project{' '}
             {role.event?.project?.name}
           </AlertDescription>
         </Alert>
