@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CalendarDays, Users, Package, LogOut } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Calendar, Users, Package, LogOut } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -52,6 +52,14 @@ export function Sidebar() {
       isActive: isActive("/projects"),
       bgColor: "hover:bg-[#7E69AB]/10",
       onClick: handleProjectsClick
+    },
+    { 
+      href: "/planner", 
+      label: "Planner", 
+      icon: Calendar,
+      isActive: isActive("/planner"),
+      bgColor: "hover:bg-[#0ea5e9]/10",
+      onClick: () => {}
     },
     { 
       href: "/crew", 
