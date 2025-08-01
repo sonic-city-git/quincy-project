@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDisplayDate } from "@/utils/dateFormatters";
 
 interface EquipmentConflict {
   equipmentId: string;
@@ -135,7 +136,7 @@ export function EquipmentConflicts({ ownerId }: EquipmentConflictsProps) {
           <AlertDescription>
             <div className="space-y-1">
               <div className="font-medium">
-                {conflict.equipmentName} - {new Date(conflict.date).toLocaleDateString()}
+                {conflict.equipmentName} - {formatDisplayDate(new Date(conflict.date))}
               </div>
               <div className="text-sm">
                 Overbooked by {conflict.overbooked} (Stock: {conflict.totalStock}, Used: {conflict.totalUsed})

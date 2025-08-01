@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { supabase } from '../../../integrations/supabase/client';
@@ -7,6 +8,217 @@ interface UseEquipmentDataProps {
   periodStart: Date;
   periodEnd: Date;
   selectedOwner?: string;
+}
+
+// Virtualization hook for equipment rows
+export function useEquipmentVirtualization(containerRef: React.RefObject<HTMLElement>, rowHeight: number = 60, buffer: number = 5) {
+  const [visibleRange, setVisibleRange] = useState({ start: 0, end: 10 });
+  const [totalRows, setTotalRows] = useState(0);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateVisibleRange = () => {
+      const scrollTop = container.scrollTop;
+      const containerHeight = container.clientHeight;
+      
+      const start = Math.max(0, Math.floor(scrollTop / rowHeight) - buffer);
+      const visibleCount = Math.ceil(containerHeight / rowHeight);
+      const end = Math.min(totalRows, start + visibleCount + buffer * 2);
+      
+      setVisibleRange({ start, end });
+    };
+
+    updateVisibleRange();
+    container.addEventListener('scroll', updateVisibleRange, { passive: true });
+    
+    return () => container.removeEventListener('scroll', updateVisibleRange);
+  }, [containerRef, rowHeight, buffer, totalRows]);
+
+  const updateTotalRows = (count: number) => setTotalRows(count);
+
+  return { visibleRange, updateTotalRows };
+}
+
+// Horizontal virtualization hook for date columns
+export function useHorizontalVirtualization(containerRef: React.RefObject<HTMLElement>, columnWidth: number = 50, buffer: number = 10) {
+  const [visibleDateRange, setVisibleDateRange] = useState({ start: 0, end: 20 });
+  const [totalColumns, setTotalColumns] = useState(0);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateVisibleDateRange = () => {
+      const scrollLeft = container.scrollLeft;
+      const containerWidth = container.clientWidth;
+      
+      const start = Math.max(0, Math.floor(scrollLeft / columnWidth) - buffer);
+      const visibleCount = Math.ceil(containerWidth / columnWidth);
+      const end = Math.min(totalColumns, start + visibleCount + buffer * 2);
+      
+      setVisibleDateRange({ start, end });
+    };
+
+    updateVisibleDateRange();
+    container.addEventListener('scroll', updateVisibleDateRange, { passive: true });
+    
+    return () => container.removeEventListener('scroll', updateVisibleDateRange);
+  }, [containerRef, columnWidth, buffer, totalColumns]);
+
+  const updateTotalColumns = (count: number) => setTotalColumns(count);
+
+  return { visibleDateRange, updateTotalColumns };
+}
+
+// Granular booking state management hook
+export function useGranularBookingState() {
+  const [bookingStates, setBookingStates] = useState<Map<string, { 
+    isLoading: boolean; 
+    data: any; 
+    lastUpdated: number;
+    error?: string;
+  }>>(new Map());
+
+  // Update a specific equipment-date booking
+  const updateBookingState = useCallback((equipmentId: string, dateStr: string, state: {
+    isLoading?: boolean;
+    data?: any;
+    error?: string;
+  }) => {
+    const key = `${equipmentId}-${dateStr}`;
+    setBookingStates(prev => {
+      const newMap = new Map(prev);
+      const existing = newMap.get(key) || { isLoading: false, data: null, lastUpdated: 0 };
+      newMap.set(key, {
+        ...existing,
+        ...state,
+        lastUpdated: Date.now()
+      });
+      return newMap;
+    });
+  }, []);
+
+  // Get booking state for specific equipment-date
+  const getBookingState = useCallback((equipmentId: string, dateStr: string) => {
+    const key = `${equipmentId}-${dateStr}`;
+    return bookingStates.get(key) || { isLoading: false, data: null, lastUpdated: 0 };
+  }, [bookingStates]);
+
+  // Batch update multiple bookings
+  const batchUpdateBookings = useCallback((updates: Array<{
+    equipmentId: string;
+    dateStr: string;
+    state: { isLoading?: boolean; data?: any; error?: string; };
+  }>) => {
+    setBookingStates(prev => {
+      const newMap = new Map(prev);
+      updates.forEach(({ equipmentId, dateStr, state }) => {
+        const key = `${equipmentId}-${dateStr}`;
+        const existing = newMap.get(key) || { isLoading: false, data: null, lastUpdated: 0 };
+        newMap.set(key, {
+          ...existing,
+          ...state,
+          lastUpdated: Date.now()
+        });
+      });
+      return newMap;
+    });
+  }, []);
+
+  // Clear old cached states (older than 5 minutes)
+  const clearStaleStates = useCallback(() => {
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    setBookingStates(prev => {
+      const newMap = new Map();
+      prev.forEach((value, key) => {
+        if (value.lastUpdated > fiveMinutesAgo) {
+          newMap.set(key, value);
+        }
+      });
+      return newMap;
+    });
+  }, []);
+
+  return {
+    updateBookingState,
+    getBookingState,
+    batchUpdateBookings,
+    clearStaleStates
+  };
+}
+
+// Helper to flatten equipment structure for virtualization
+export function flattenEquipmentStructure(mainFolders: Map<string, MainFolder> | undefined) {
+  const flattened: Array<{
+    type: 'folder' | 'subfolder' | 'equipment';
+    id: string;
+    name: string;
+    equipment?: EquipmentItem;
+    mainFolder?: string;
+    subFolder?: string;
+    level: number;
+  }> = [];
+
+  if (!mainFolders) return flattened;
+
+  let index = 0;
+  mainFolders.forEach((mainFolder, mainFolderName) => {
+    // Add main folder header
+    flattened.push({
+      type: 'folder',
+      id: `folder-${mainFolderName}`,
+      name: mainFolderName,
+      level: 0
+    });
+
+    // Add equipment directly in main folder
+    if (mainFolder.equipment) {
+      mainFolder.equipment.forEach((equipment) => {
+        flattened.push({
+          type: 'equipment',
+          id: `equipment-${equipment.id}`,
+          name: equipment.name,
+          equipment,
+          mainFolder: mainFolderName,
+          level: 1
+        });
+      });
+    }
+
+    // Add subfolders and their equipment
+    if (mainFolder.subfolders) {
+      mainFolder.subfolders.forEach((subFolder, subFolderName) => {
+        // Add subfolder header
+        flattened.push({
+          type: 'subfolder',
+          id: `subfolder-${mainFolderName}-${subFolderName}`,
+          name: subFolderName,
+          mainFolder: mainFolderName,
+          subFolder: subFolderName,
+          level: 1
+        });
+
+        // Add equipment in subfolder
+        if (subFolder.equipment) {
+          subFolder.equipment.forEach((equipment) => {
+            flattened.push({
+              type: 'equipment',
+              id: `equipment-${equipment.id}`,
+              name: equipment.name,
+              equipment,
+              mainFolder: mainFolderName,
+              subFolder: subFolderName,
+              level: 2
+            });
+          });
+        }
+      });
+    }
+  });
+
+  return flattened;
 }
 
 export function useEquipmentData({ periodStart, periodEnd, selectedOwner }: UseEquipmentDataProps) {
@@ -93,67 +305,71 @@ export function useEquipmentData({ periodStart, periodEnd, selectedOwner }: UseE
     }
   });
 
-  // Fetch booking data only for the timeline range
+  // Optimized booking data fetching with incremental loading
   const { data: bookingsData } = useQuery({
     queryKey: ['equipment-bookings', format(periodStart, 'yyyy-MM-dd'), format(periodEnd, 'yyyy-MM-dd'), selectedOwner],
     queryFn: async () => {
-      let query = supabase
-        .from('project_event_equipment')
+      // Optimized query: Reduce join complexity by querying project_events first
+      let baseQuery = supabase
+        .from('project_events')
         .select(`
-          equipment_id,
-          quantity,
-          project_events!inner (
-            date,
+          date,
+          name,
+          id,
+          project:projects!inner (
             name,
-            project:projects!inner (
-              name,
-              owner_id
-            )
+            owner_id
+          ),
+          project_event_equipment!inner (
+            equipment_id,
+            quantity
           )
         `)
-        .gte('project_events.date', format(periodStart, 'yyyy-MM-dd'))
-        .lte('project_events.date', format(periodEnd, 'yyyy-MM-dd'));
+        .gte('date', format(periodStart, 'yyyy-MM-dd'))
+        .lte('date', format(periodEnd, 'yyyy-MM-dd'));
 
       if (selectedOwner) {
-        query = query.eq('project_events.project.owner_id', selectedOwner);
+        baseQuery = baseQuery.eq('project.owner_id', selectedOwner);
       }
 
-      const { data: bookings, error } = await query;
+      const { data: eventData, error } = await baseQuery;
       if (error) throw error;
 
-      // Group bookings by equipment and date
+      // Process optimized data structure - flatten equipment bookings from events
       const bookingsByEquipment = new Map<string, Map<string, EquipmentBooking>>();
       
-      bookings?.forEach(booking => {
-        const equipmentId = booking.equipment_id;
-        const date = booking.project_events.date;
+      eventData?.forEach(event => {
+        event.project_event_equipment?.forEach(equipmentBooking => {
+          const equipmentId = equipmentBooking.equipment_id;
+          const date = event.date;
         
         if (!bookingsByEquipment.has(equipmentId)) {
           bookingsByEquipment.set(equipmentId, new Map());
         }
         
-        const equipmentBookings = bookingsByEquipment.get(equipmentId)!;
-        
-        if (!equipmentBookings.has(date)) {
-          equipmentBookings.set(date, {
-            equipment_id: equipmentId,
-            equipment_name: '', // Will be filled from equipment structure
-            stock: 0, // Will be filled from equipment structure
-            date,
-            folder_name: '',
-            bookings: [],
-            total_used: 0,
-            is_overbooked: false
+          const equipmentBookings = bookingsByEquipment.get(equipmentId)!;
+          
+          if (!equipmentBookings.has(date)) {
+            equipmentBookings.set(date, {
+              equipment_id: equipmentId,
+              equipment_name: '', // Will be filled from equipment structure
+              stock: 0, // Will be filled from equipment structure
+              date,
+              folder_name: '',
+              bookings: [],
+              total_used: 0,
+              is_overbooked: false
+            });
+          }
+          
+          const dateBooking = equipmentBookings.get(date)!;
+          dateBooking.bookings.push({
+            quantity: equipmentBooking.quantity || 0,
+            project_name: event.project.name,
+            event_name: event.name
           });
-        }
-        
-        const dateBooking = equipmentBookings.get(date)!;
-        dateBooking.bookings.push({
-          quantity: booking.quantity || 0,
-          project_name: booking.project_events.project.name,
-          event_name: booking.project_events.name
+          dateBooking.total_used += equipmentBooking.quantity || 0;
         });
-        dateBooking.total_used += booking.quantity || 0;
       });
 
       return bookingsByEquipment;
@@ -161,23 +377,29 @@ export function useEquipmentData({ periodStart, periodEnd, selectedOwner }: UseE
     enabled: !!equipmentStructure
   });
 
-  // Helper function to get bookings for equipment
-  const getBookingsForEquipment = (equipmentId: string, date: Date, equipment: EquipmentItem) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
-    
+  // Optimized helper function - takes pre-formatted date string to avoid repeated format() calls
+  const getBookingsForEquipment = (equipmentId: string, dateStr: string, equipment: EquipmentItem) => {
     // Get booking from the separate bookings data
     const equipmentBookings = bookingsData?.get(equipmentId);
     const booking = equipmentBookings?.get(dateStr);
     
     if (booking) {
-      // Fill in equipment details
-      booking.equipment_name = equipment.name;
-      booking.stock = equipment.stock;
-      booking.is_overbooked = booking.total_used > equipment.stock;
-      return booking;
+      // Return enriched booking without mutating original object
+      return {
+        ...booking,
+        equipment_name: equipment.name,
+        stock: equipment.stock,
+        is_overbooked: booking.total_used > equipment.stock
+      };
     }
     
     return undefined;
+  };
+
+  // Legacy function for backward compatibility (converts Date to string)
+  const getBookingsForEquipmentWithDate = (equipmentId: string, date: Date, equipment: EquipmentItem) => {
+    const dateStr = format(date, 'yyyy-MM-dd');
+    return getBookingsForEquipment(equipmentId, dateStr, equipment);
   };
 
   return {
@@ -185,5 +407,6 @@ export function useEquipmentData({ periodStart, periodEnd, selectedOwner }: UseE
     bookingsData,
     isLoading: isLoadingStructure,
     getBookingsForEquipment,
+    getBookingsForEquipmentWithDate,
   };
 }

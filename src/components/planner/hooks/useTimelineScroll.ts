@@ -1,8 +1,8 @@
 import { RefObject, useCallback, useEffect, useRef } from 'react';
 
 interface UseTimelineScrollProps {
-  timelineRef: RefObject<HTMLDivElement>;
-  equipmentRowsRef: RefObject<HTMLDivElement>;
+  timelineRef?: RefObject<HTMLDivElement>; // Now optional - for static headers
+  equipmentRowsRef: RefObject<HTMLDivElement>; // Master scroll area
   isDragging: boolean;
   setIsDragging: (dragging: boolean) => void;
   dragStart: { x: number; scrollLeft: number };
@@ -24,78 +24,57 @@ export function useTimelineScroll({
   
   // Debounced scroll state
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Pre-calculate threshold to avoid repeated calculations
+  const threshold = 0.3;
 
-  // Scroll handlers
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const element = e.currentTarget;
-    const { scrollLeft, scrollWidth, clientWidth } = element;
-    
-    // Sync master equipment scroll area when timeline header scrolls
-    if (element === timelineRef.current && equipmentRowsRef.current) {
-      equipmentRowsRef.current.scrollLeft = scrollLeft;
-    }
-    
-    // Debounced loading check for performance
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-    
-    scrollTimeoutRef.current = setTimeout(() => {
-      // More aggressive threshold for smaller timeline
-      const threshold = 0.2;
-      
-      if (scrollLeft < scrollWidth * threshold) {
-        loadMoreDates('start');
-      } else if (scrollLeft > scrollWidth * (1 - threshold) - clientWidth) {
-        loadMoreDates('end');
-      }
-    }, 50); // 50ms debounce for smooth scrolling
-  }, [timelineRef, equipmentRowsRef, loadMoreDates]);
-
-  // Sync timeline header when master equipment scroll area scrolls
+  // Simplified: Single master scroll handler
   const handleEquipmentScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;
     const { scrollLeft, scrollWidth, clientWidth } = element;
     
-    // Immediate sync with timeline header
-    if (timelineRef.current && timelineRef.current.scrollLeft !== scrollLeft) {
-      timelineRef.current.scrollLeft = scrollLeft;
-    }
-    
     // Debounced loading check for performance
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
     
     scrollTimeoutRef.current = setTimeout(() => {
-      // More aggressive threshold for smaller timeline
-      const threshold = 0.2;
+      // Pre-calculated threshold values for better performance
+      const startThreshold = scrollWidth * threshold;
+      const endThreshold = scrollWidth * (1 - threshold) - clientWidth;
       
-      if (scrollLeft < scrollWidth * threshold) {
+      if (scrollLeft < startThreshold) {
         loadMoreDates('start');
-      } else if (scrollLeft > scrollWidth * (1 - threshold) - clientWidth) {
+      } else if (scrollLeft > endThreshold) {
         loadMoreDates('end');
       }
-    }, 50); // 50ms debounce for smooth scrolling
-  }, [timelineRef, loadMoreDates]);
+    }, 100); // Smooth infinite loading
+  }, [loadMoreDates, threshold]);
 
-  // Mouse drag handlers
+  // Simplified: Mouse drag handlers for master scroll area
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!timelineRef.current) return;
+    if (!equipmentRowsRef.current) return;
     setIsDragging(true);
     setDragStart({
-      x: e.pageX - timelineRef.current.offsetLeft,
-      scrollLeft: timelineRef.current.scrollLeft,
+      x: e.pageX - equipmentRowsRef.current.offsetLeft,
+      scrollLeft: equipmentRowsRef.current.scrollLeft,
     });
-  }, [timelineRef, setIsDragging, setDragStart]);
+  }, [equipmentRowsRef, setIsDragging, setDragStart]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDragging || !timelineRef.current) return;
+    if (!isDragging || !equipmentRowsRef.current) return;
     e.preventDefault();
-    const x = e.pageX - timelineRef.current.offsetLeft;
-    const walk = (x - dragStart.x) * 2;
-    timelineRef.current.scrollLeft = dragStart.scrollLeft - walk;
-  }, [isDragging, timelineRef, dragStart]);
+    
+    // Use requestAnimationFrame to throttle mouse move updates for smooth dragging
+    requestAnimationFrame(() => {
+      if (!equipmentRowsRef.current || !isDragging) return;
+      
+      const x = e.pageX - equipmentRowsRef.current.offsetLeft;
+      const walk = (x - dragStart.x) * 2;
+      // Natural scroll direction: drag right to see future, drag left to see past
+      equipmentRowsRef.current.scrollLeft = dragStart.scrollLeft - walk;
+    });
+  }, [isDragging, equipmentRowsRef, dragStart]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
@@ -105,32 +84,32 @@ export function useTimelineScroll({
     setIsDragging(false);
   }, [setIsDragging]);
 
-  // Navigation functions
+  // Simplified: Navigation functions for master scroll area
   const navigatePeriod = useCallback((direction: 'prev' | 'next') => {
-    if (!timelineRef.current) return;
+    if (!equipmentRowsRef.current) return;
     
     const daysToMove = isMonthView ? 30 : 7;
     const dayWidth = 50;
     const scrollAmount = dayWidth * daysToMove;
     
-    timelineRef.current.scrollBy({
+    equipmentRowsRef.current.scrollBy({
       left: direction === 'next' ? scrollAmount : -scrollAmount,
       behavior: 'smooth'
     });
-  }, [timelineRef, isMonthView]);
+  }, [equipmentRowsRef, isMonthView]);
 
   const navigateDays = useCallback((direction: 'prev' | 'next') => {
-    if (!timelineRef.current) return;
+    if (!equipmentRowsRef.current) return;
     
     const daysToMove = isMonthView ? 7 : 1;
     const dayWidth = 50;
     const scrollAmount = dayWidth * daysToMove;
     
-    timelineRef.current.scrollBy({
+    equipmentRowsRef.current.scrollBy({
       left: direction === 'next' ? scrollAmount : -scrollAmount,
       behavior: 'smooth'
     });
-  }, [timelineRef, isMonthView]);
+  }, [equipmentRowsRef, isMonthView]);
 
   // Cursor management
   useEffect(() => {
@@ -158,8 +137,7 @@ export function useTimelineScroll({
   }, []);
 
   return {
-    handleScroll,
-    handleEquipmentScroll,
+    handleEquipmentScroll, // Single master scroll handler
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,

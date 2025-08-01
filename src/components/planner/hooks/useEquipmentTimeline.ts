@@ -6,14 +6,13 @@ interface UseEquipmentTimelineProps {
 }
 
 export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps) {
-  // Smart rendering: Start with just 2 months total (1 before + 1 after)
-  const [timelineStart, setTimelineStart] = useState(() => addDays(selectedDate, -30));
-  const [timelineEnd, setTimelineEnd] = useState(() => addDays(selectedDate, 30));
+  // Day-based infinite scrolling: Larger buffer to reduce fetch frequency
+  const [timelineStart, setTimelineStart] = useState(() => addDays(selectedDate, -35));
+  const [timelineEnd, setTimelineEnd] = useState(() => addDays(selectedDate, 35));
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, scrollLeft: 0 });
   
-  const timelineRef = useRef<HTMLDivElement>(null);
-  const equipmentRowsRef = useRef<HTMLDivElement>(null);
+  const equipmentRowsRef = useRef<HTMLDivElement>(null); // Master scroll area
   const loadingRef = useRef(false);
   const hasInitializedScroll = useRef(false);
 
@@ -28,29 +27,29 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
     return dates;
   }, [timelineStart, timelineEnd]);
 
-  // Smart loading: Add 1 month at a time when needed
+  // Seamless day-by-day loading: Add small chunks frequently
   const loadMoreDates = useCallback((direction: 'start' | 'end') => {
     if (loadingRef.current) return;
     loadingRef.current = true;
 
     if (direction === 'start') {
-      setTimelineStart(prev => addDays(prev, -30)); // Add 1 month before
+      setTimelineStart(prev => addDays(prev, -14)); // Add 2 weeks before
     } else {
-      setTimelineEnd(prev => addDays(prev, 30)); // Add 1 month after
+      setTimelineEnd(prev => addDays(prev, 14)); // Add 2 weeks after
     }
     
     setTimeout(() => {
       loadingRef.current = false;
-    }, 100);
+    }, 100); // Reasonable loading reset to prevent excessive triggers
   }, []);
 
-  // Center today's date
+  // Center today's date in master scroll area
   useEffect(() => {
-    if (!timelineRef.current || !equipmentRowsRef.current || hasInitializedScroll.current) return;
+    if (!equipmentRowsRef.current || hasInitializedScroll.current) return;
     
     // Use requestAnimationFrame for smooth initialization
     requestAnimationFrame(() => {
-      if (!timelineRef.current || !equipmentRowsRef.current) return;
+      if (!equipmentRowsRef.current) return;
       
       const today = new Date();
       const todayDateStr = format(today, 'yyyy-MM-dd');
@@ -61,15 +60,12 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
       
       if (todayIndex !== -1) {
         const dayWidth = 50;
-        const containerWidth = timelineRef.current.clientWidth;
+        const containerWidth = equipmentRowsRef.current.clientWidth;
         const todayPosition = todayIndex * dayWidth;
         const centerOffset = containerWidth / 2 - dayWidth / 2;
         const scrollLeft = Math.max(0, todayPosition - centerOffset);
         
-        // Set scroll position for timeline header
-        timelineRef.current.scrollLeft = scrollLeft;
-        
-        // Set scroll position for master equipment scroll area
+        // Set scroll position for master scroll area only
         equipmentRowsRef.current.scrollLeft = scrollLeft;
         
         hasInitializedScroll.current = true;
@@ -90,8 +86,7 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
     setIsDragging,
     dragStart,
     setDragStart,
-    timelineRef,
-    equipmentRowsRef,
+    equipmentRowsRef, // Only master scroll area
     loadMoreDates,
   };
 }
