@@ -61,7 +61,7 @@ export function useEquipmentHub({
     expandedGroups,
     toggleGroup: toggleGroupPersistent,
     initializeDefaultExpansion
-  } = usePersistentExpandedGroups();
+  } = usePersistentExpandedGroups('equipmentPlannerExpandedGroups');
 
   // Equipment-level expansion state management
   const [expandedEquipment, setExpandedEquipment] = useState<Set<string>>(new Set());

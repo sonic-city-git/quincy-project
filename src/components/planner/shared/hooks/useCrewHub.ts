@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../../../integrations/supabase/client';
+import { usePersistentExpandedGroups } from '../../../../hooks/usePersistentExpandedGroups';
 import { 
   CrewGroup, 
   CrewMember, 
@@ -52,17 +53,12 @@ export function useCrewHub({
   selectedOwner
 }: UseCrewHubProps): CrewHubReturn {
   
-  // Expansion state management - Sonic folder always open
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['Sonic']));
-  
-  // Ensure Sonic is always expanded - add it if missing
-  useEffect(() => {
-    setExpandedGroups(prev => {
-      const updated = new Set(prev);
-      updated.add('Sonic');
-      return updated;
-    });
-  }, []);
+  // Persistent expansion state management for crew
+  const {
+    expandedGroups,
+    toggleGroup: toggleGroupPersistent,
+    initializeDefaultExpansion
+  } = usePersistentExpandedGroups('crewPlannerExpandedGroups');
   const [expandedEquipment, setExpandedEquipment] = useState<Set<string>>(new Set());
   const [conflicts, setConflicts] = useState<CrewConflict[]>([]);
   const [resolutionInProgress, setResolutionInProgress] = useState(false);
@@ -430,17 +426,27 @@ export function useCrewHub({
     return hasAnyAssignments ? 0 : 1; // 0 = busy, 1 = available
   }, [crewById, assignmentsData?.assignments]);
 
+  // Enhanced toggle group with subfolder support (similar to equipment)
   const toggleGroup = useCallback((groupName: string, expandAllSubRoles?: boolean) => {
-    setExpandedGroups(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(groupName)) {
-        newSet.delete(groupName);
-      } else {
-        newSet.add(groupName);
-      }
-      return newSet;
-    });
-  }, []);
+    if (expandAllSubRoles) {
+      const group = crewGroups.find(g => g.mainFolder === groupName);
+      const subFolderKeys = group?.subFolders?.map(
+        (subFolder) => `${groupName}/${subFolder.name}`
+      ) || [];
+      
+      toggleGroupPersistent(groupName, expandAllSubRoles, subFolderKeys);
+    } else {
+      toggleGroupPersistent(groupName, false);
+    }
+  }, [crewGroups, toggleGroupPersistent]);
+
+  // Initialize default expanded state for crew folders
+  useEffect(() => {
+    if (crewGroups.length > 0) {
+      const mainFolders = crewGroups.map(g => g.mainFolder);
+      initializeDefaultExpansion(mainFolders);
+    }
+  }, [crewGroups, initializeDefaultExpansion]);
 
   const toggleEquipmentExpansion = useCallback((crewMemberId: string) => {
     setExpandedEquipment(prev => {

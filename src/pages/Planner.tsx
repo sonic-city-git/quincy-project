@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EquipmentCalendar } from "@/components/planner/EquipmentCalendar";
-import { CrewCalendar } from "@/components/planner/CrewCalendar";
+import { UnifiedCalendar } from "@/components/planner/UnifiedCalendar";
 import { PlannerFilters } from "@/components/planner/PlannerFilters";
+import { useSharedTimeline } from "@/components/planner/shared/hooks/useSharedTimeline";
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +17,9 @@ const Planner = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedOwner, setSelectedOwner] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'equipment' | 'crew'>('equipment');
+
+  // Shared timeline state for both planners
+  const sharedTimeline = useSharedTimeline({ selectedDate });
 
   // Stats queries
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -86,40 +89,13 @@ const Planner = () => {
   return (
     <div className="container max-w-[1600px] p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Calendar className="h-8 w-8 text-blue-500" />
-          <div>
-            <h1 className="text-3xl font-bold">Planner</h1>
-            <p className="text-muted-foreground">
-              Global resource availability and scheduling across all projects
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex bg-muted rounded-lg p-1">
-          <Button
-            variant={activeTab === 'equipment' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab('equipment')}
-            className={`flex items-center gap-2 ${
-              activeTab === 'equipment' ? 'bg-green-100 text-green-700' : ''
-            }`}
-          >
-            <Package className="h-4 w-4" />
-            Equipment
-          </Button>
-          <Button
-            variant={activeTab === 'crew' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => setActiveTab('crew')}
-            className={`flex items-center gap-2 ${
-              activeTab === 'crew' ? 'bg-orange-100 text-orange-700' : ''
-            }`}
-          >
-            <Users className="h-4 w-4" />
-            Crew
-          </Button>
+      <div className="flex items-center gap-4 mb-8">
+        <Calendar className="h-8 w-8 text-blue-500" />
+        <div>
+          <h1 className="text-3xl font-bold">Planner</h1>
+          <p className="text-muted-foreground">
+            Global resource availability and scheduling across all projects
+          </p>
         </div>
       </div>
 
@@ -134,19 +110,15 @@ const Planner = () => {
 
       {/* Main Content */}
       <div className="space-y-6">
-        {activeTab === 'equipment' ? (
-          <EquipmentCalendar 
-            selectedDate={selectedDate} 
-            onDateChange={setSelectedDate}
-            selectedOwner={selectedOwner}
-          />
-        ) : (
-          <CrewCalendar 
-            selectedDate={selectedDate} 
-            onDateChange={setSelectedDate}
-            selectedOwner={selectedOwner}
-          />
-        )}
+        <UnifiedCalendar 
+          selectedDate={selectedDate} 
+          onDateChange={setSelectedDate}
+          selectedOwner={selectedOwner}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          sharedTimeline={sharedTimeline}
+          resourceType={activeTab}
+        />
       </div>
 
       {/* Tab-Specific Stats */}

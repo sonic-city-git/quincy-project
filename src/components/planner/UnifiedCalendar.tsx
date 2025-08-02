@@ -2,37 +2,43 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { format, isWeekend, isSameDay } from "date-fns";
 import { Skeleton } from "../ui/skeleton";
 
-import { useEquipmentTimeline } from './shared/hooks/useEquipmentTimeline';
 import { useEquipmentHub } from './shared/hooks/useEquipmentHub';
+import { useCrewHub } from './shared/hooks/useCrewHub';
 import { useTimelineScroll } from './shared/hooks/useTimelineScroll';
 import { LAYOUT, PERFORMANCE } from './shared/constants';
 
 // Shared timeline components
 import { TimelineHeader } from './shared/components/TimelineHeader';
 import { TimelineContent } from './shared/components/TimelineContent';
+import { SharedTimeline } from './shared/types/timeline';
 
-
-
-interface EquipmentCalendarProps {
+interface UnifiedCalendarProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   selectedOwner?: string;
   viewMode?: 'week' | 'month';
+  activeTab?: 'equipment' | 'crew';
+  onTabChange?: (tab: 'equipment' | 'crew') => void;
+  sharedTimeline: SharedTimeline;
+  resourceType: 'equipment' | 'crew';
 }
 
-export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, viewMode = 'week' }: EquipmentCalendarProps) {
+export function UnifiedCalendar({ 
+  selectedDate, 
+  onDateChange, 
+  selectedOwner, 
+  viewMode = 'week', 
+  activeTab, 
+  onTabChange, 
+  sharedTimeline,
+  resourceType 
+}: UnifiedCalendarProps) {
   const isMonthView = viewMode === 'month';
-  
-
   
   // Ref for timeline header sync
   const stickyHeadersRef = useRef<HTMLDivElement>(null);
   
-
-  
-
-  
-  // Custom hooks
+  // Use shared timeline state
   const {
     timelineStart,
     timelineEnd,
@@ -44,7 +50,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     equipmentRowsRef,
     loadMoreDates,
     scrollToDate,
-  } = useEquipmentTimeline({ selectedDate });
+  } = sharedTimeline;
 
   const scrollHandlers = useTimelineScroll({
     equipmentRowsRef,
@@ -56,26 +62,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     isMonthView,
   });
 
-  // Simple: scroll to today on page load, animate to selected date when it changes
-  useEffect(() => {
-    // On page load, scroll to today instantly (no animation)
-    const today = new Date();
-    setTimeout(() => scrollToDate(today, false), 300); // false = no animation
-  }, []); // Only on mount
-  
-  // Track the last selected date to prevent unnecessary animations
-  const lastSelectedDateRef = useRef<string>('');
-  
-  useEffect(() => {
-    // When date selection changes, animate to it smoothly
-    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-    
-    // Only animate if the date actually changed (prevent automatic triggers)
-    if (selectedDateStr !== lastSelectedDateRef.current) {
-      lastSelectedDateRef.current = selectedDateStr;
-      scrollToDate(selectedDate, true); // true = animate
-    }
-  }, [selectedDate, scrollToDate]);
+  // Note: Scroll logic is now simple - just scroll to center selected date
 
   // Enhanced scroll handler to sync headers with timeline content
   const handleTimelineScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -140,7 +127,22 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     }
   }, [timelineStart, timelineEnd]);
 
-  // Use unified equipment hub with all data services
+  // Always call both hooks to avoid violating Rules of Hooks
+  const equipmentHub = useEquipmentHub({
+    periodStart: stableDataRange.start,
+    periodEnd: stableDataRange.end,
+    selectedOwner,
+  });
+  
+  const crewHub = useCrewHub({
+    periodStart: stableDataRange.start,
+    periodEnd: stableDataRange.end,
+    selectedOwner,
+  });
+  
+  // Use the appropriate hub data based on resource type
+  const currentHub = resourceType === 'equipment' ? equipmentHub : crewHub;
+  
   const {
     equipmentGroups,
     equipmentById,
@@ -163,15 +165,10 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     batchUpdateBookings,
     clearStaleStates,
     resolveConflict,
-  } = useEquipmentHub({
-    periodStart: stableDataRange.start,
-    periodEnd: stableDataRange.end,
-    selectedOwner,
-  });
+  } = currentHub;
 
   // More sophisticated loading state management
-  // Show skeleton only when we have no equipment data at all
-  // If equipment is ready but bookings are loading, show equipment with loading indicators
+  // Show skeleton only when we have no data at all
   const [hasInitialData, setHasInitialData] = useState(false);
   
   useEffect(() => {
@@ -183,9 +180,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
   // Only show skeleton loading when we have absolutely no data
   const shouldShowLoading = !isEquipmentReady && !hasInitialData;
   
-  // Granular booking state now integrated into useEquipmentHub
-
-  // Cleanup stale booking states periodically - use ref to avoid dependency on clearStaleStates
+  // Cleanup stale states periodically
   const clearStaleStatesRef = useRef(clearStaleStates);
   clearStaleStatesRef.current = clearStaleStates;
   
@@ -195,11 +190,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     }, PERFORMANCE.CACHE_CLEANUP_INTERVAL);
 
     return () => clearInterval(interval);
-  }, []); // No dependencies - interval runs for component lifetime
-
-
-
-
+  }, []);
 
   // Pre-format dates for performance - avoid repeated format() calls
   const baseDates = useMemo(() => {
@@ -210,7 +201,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
       isWeekendDay: isWeekend(date),
       monthYear: format(date, 'yyyy-MM')
     }));
-  }, [timelineDates]); // Use timelineDates directly as dependency
+  }, [timelineDates]);
 
   const formattedDates = useMemo(() => {
     const today = new Date();
@@ -265,29 +256,44 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     return sections;
   }, [baseDates]);
 
-  // Simple booking lookup - let React Query handle updates naturally
-  const getBookingsForEquipment = useCallback((equipmentId: string, dateStr: string, equipment: any) => {
-    const booking = getBookingForEquipment(equipmentId, dateStr);
+  // Resource-specific booking lookup
+  const getBookingsForEquipment = useCallback((resourceId: string, dateStr: string, resource: any) => {
+    const booking = getBookingForEquipment(resourceId, dateStr);
     if (!booking) return undefined;
     
-    return {
-      equipment_id: booking.equipmentId,
-      equipment_name: booking.equipmentName,
-      stock: booking.stock,
-      date: booking.date,
-      folder_name: booking.folderPath,
-      bookings: booking.bookings,
-      total_used: booking.totalUsed,
-      is_overbooked: booking.isOverbooked,
-    };
-  }, [getBookingForEquipment]); // Update when underlying function changes
+    if (resourceType === 'crew') {
+      // Crew-specific mapping
+      return {
+        equipment_id: booking.crewMemberId || booking.equipmentId,
+        equipment_name: booking.crewMemberName || booking.equipmentName,
+        stock: 1, // Crew members have availability, not stock
+        date: booking.date,
+        folder_name: booking.department || booking.folderPath,
+        bookings: booking.assignments || booking.bookings,
+        total_used: booking.totalAssignments || booking.totalUsed,
+        is_overbooked: booking.isOverbooked,
+      };
+    } else {
+      // Equipment-specific mapping
+      return {
+        equipment_id: booking.equipmentId,
+        equipment_name: booking.equipmentName,
+        stock: booking.stock,
+        date: booking.date,
+        folder_name: booking.folderPath,
+        bookings: booking.bookings,
+        total_used: booking.totalUsed,
+        is_overbooked: booking.isOverbooked,
+      };
+    }
+  }, [getBookingForEquipment, resourceType]);
 
-  // Optimized lowest available calculation - memoize date strings from stable baseDates
+  // Optimized availability calculation
   const dateStrings = useMemo(() => baseDates.map(d => d.dateStr), [baseDates]);
   
-  const getLowestAvailableForEquipment = useCallback((equipmentId: string) => {
-    return getLowestAvailable(equipmentId, dateStrings);
-  }, [dateStrings]); // dateStrings dependency needed, but getLowestAvailable is stable
+  const getLowestAvailableForEquipment = useCallback((resourceId: string) => {
+    return getLowestAvailable(resourceId, dateStrings);
+  }, [getLowestAvailable, dateStrings]);
 
   if (shouldShowLoading) {
     return (
@@ -310,6 +316,9 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
         onDateChange={onDateChange}
         onHeaderScroll={handleHeaderScroll}
         stickyHeadersRef={stickyHeadersRef}
+        resourceType={resourceType}
+        activeTab={activeTab}
+        onTabChange={onTabChange}
       />
 
       <TimelineContent
@@ -331,6 +340,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
         getBookingState={getBookingState}
         updateBookingState={updateBookingState}
         getLowestAvailable={getLowestAvailableForEquipment}
+        resourceType={resourceType}
       />
     </div>
   );

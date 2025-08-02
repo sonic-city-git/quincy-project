@@ -1,5 +1,6 @@
 import { format } from "date-fns";
-import { Package } from "lucide-react";
+import { Package, Users } from "lucide-react";
+import { Button } from "../../../ui/button";
 import { LAYOUT } from '../constants';
 
 interface MonthSection {
@@ -23,6 +24,9 @@ interface TimelineHeaderProps {
   onDateChange: (date: Date) => void;
   onHeaderScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   stickyHeadersRef: React.RefObject<HTMLDivElement>;
+  resourceType?: 'equipment' | 'crew';
+  activeTab?: 'equipment' | 'crew';
+  onTabChange?: (tab: 'equipment' | 'crew') => void;
 }
 
 export function TimelineHeader({
@@ -30,28 +34,69 @@ export function TimelineHeader({
   monthSections,
   onDateChange,
   onHeaderScroll,
-  stickyHeadersRef
+  stickyHeadersRef,
+  resourceType = 'equipment',
+  activeTab,
+  onTabChange
 }: TimelineHeaderProps) {
+  // Dynamic content based on resource type
+  const isCrewPlanner = resourceType === 'crew';
+  const title = isCrewPlanner ? 'Crew Planner' : 'Equipment Planner';
+  const icon = isCrewPlanner ? Users : Package;
+  const IconComponent = icon;
+  const iconColor = isCrewPlanner ? 'text-orange-500' : 'text-green-500';
+  const resourceLabel = isCrewPlanner ? 'Crew' : 'Equipment';
+  const resourceSubtitle = isCrewPlanner ? 'Name / Role' : 'Name / Stock';
   return (
     <div className="sticky top-[72px] z-40 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-sm">
-      {/* Equipment Planner Title */}
-      <div className="flex items-center gap-2 py-3 px-4 bg-background">
-        <Package className="h-5 w-5 text-green-500" />
-        <h3 className="text-lg font-semibold">Equipment Planner</h3>
+      {/* Dynamic Planner Title */}
+      <div className="flex items-center justify-between py-3 px-4 bg-background">
+        <div className="flex items-center gap-2">
+          <IconComponent className={`h-5 w-5 ${iconColor}`} />
+          <h3 className="text-lg font-semibold">{title}</h3>
+        </div>
+        
+        {/* Tab Toggle - only show if both activeTab and onTabChange are provided */}
+        {activeTab && onTabChange && (
+          <div className="flex bg-muted rounded-lg p-1">
+            <Button
+              variant={activeTab === 'equipment' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onTabChange('equipment')}
+              className={`flex items-center gap-2 ${
+                activeTab === 'equipment' ? 'bg-green-100 text-green-700' : ''
+              }`}
+            >
+              <Package className="h-4 w-4" />
+              Equipment
+            </Button>
+            <Button
+              variant={activeTab === 'crew' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onTabChange('crew')}
+              className={`flex items-center gap-2 ${
+                activeTab === 'crew' ? 'bg-orange-100 text-orange-700' : ''
+              }`}
+            >
+              <Users className="h-4 w-4" />
+              Crew
+            </Button>
+          </div>
+        )}
       </div>
       
       {/* Column Headers */}
       <div className="flex border-b border-border">
-        {/* Left Header - Equipment Names */}
+        {/* Left Header - Resource Names */}
         <div 
           className="flex-shrink-0 bg-muted/90 backdrop-blur-sm border-r border-border"
           style={{ width: LAYOUT.EQUIPMENT_NAME_WIDTH }}
         >
           <div className="h-12 py-3 px-4 border-b border-border/50">
-            <div className="text-sm font-semibold text-foreground">Equipment</div>
+            <div className="text-sm font-semibold text-foreground">{resourceLabel}</div>
           </div>
           <div className="h-12 py-3 px-4">
-            <div className="text-xs text-muted-foreground">Name / Stock</div>
+            <div className="text-xs text-muted-foreground">{resourceSubtitle}</div>
           </div>
         </div>
         
