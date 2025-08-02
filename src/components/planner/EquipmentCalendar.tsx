@@ -23,8 +23,7 @@ interface EquipmentCalendarProps {
 export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, viewMode = 'week' }: EquipmentCalendarProps) {
   const isMonthView = viewMode === 'month';
   
-  // Feature flag for testing unified hook (safe default: false)
-  const USE_UNIFIED_HOOK = false; // TODO: Set to true for testing consolidated implementation
+
   
   // Ref for timeline header sync
   const stickyHeadersRef = useRef<HTMLDivElement>(null);

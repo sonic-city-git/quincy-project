@@ -71,22 +71,10 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
     if (direction === 'start') {
       const newStart = addDays(currentStart, -35); // Add 5 weeks (more buffer for smoother scrolling)
       const yearInfo = getYearBoundaryInfo(newStart, currentEnd);
-      
-      // Log year boundary crossing for debugging
-      if (yearInfo.crossesYears) {
-        console.log(`Timeline expansion crosses years: ${yearInfo.startYear}-${yearInfo.endYear} (start expansion)`);
-      }
-      
       setTimelineStart(newStart);
     } else {
       const newEnd = addDays(currentEnd, 35); // Add 5 weeks (more buffer for smoother scrolling)
       const yearInfo = getYearBoundaryInfo(currentStart, newEnd);
-      
-      // Log year boundary crossing for debugging
-      if (yearInfo.crossesYears) {
-        console.log(`Timeline expansion crosses years: ${yearInfo.startYear}-${yearInfo.endYear} (end expansion)`);
-      }
-      
       setTimelineEnd(newEnd);
     }
     
@@ -123,7 +111,7 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
         const distance = targetScrollLeft - startScrollLeft;
         
         if (Math.abs(distance) > 200) {
-          console.log(`🎯 Animating to ${targetDateStr} (${Math.abs(distance)}px)`);
+  
         }
         
         // Custom smooth scroll with easing
@@ -132,7 +120,6 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
         
         const animateScroll = (currentTime: number) => {
           if (!equipmentRowsRef.current) {
-            console.log('Animation stopped - no ref');
             return;
           }
           
@@ -150,7 +137,7 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
           } else {
             // Only log completion for significant animations
             if (Math.abs(distance) > 200) {
-              console.log(`✅ Animation completed in ${elapsed.toFixed(0)}ms`);
+  
             }
             animationRef.current = null;
           }
@@ -162,7 +149,7 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
         equipmentRowsRef.current.scrollLeft = targetScrollLeft;
       }
     } else {
-      console.log(`Date ${targetDateStr} not found in timeline`);
+
     }
   }, [timelineDates]);
   
@@ -177,7 +164,7 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
       const isInCurrentRange = selectedDate >= timelineStart && selectedDate <= timelineEnd;
       
       if (!isInCurrentRange) {
-        console.log(`Timeline range updating for ${selectedDateStr} (outside current range)`);
+  
         
         const newTimelineStart = addDays(selectedDate, -35);
         const newTimelineEnd = addDays(selectedDate, 35);
@@ -185,7 +172,7 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
         setTimelineStart(newTimelineStart);
         setTimelineEnd(newTimelineEnd);
       } else {
-        console.log(`Date ${selectedDateStr} already in range - no timeline update needed`);
+
       }
       
       // Update our tracking ref

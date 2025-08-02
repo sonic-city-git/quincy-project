@@ -1,11 +1,6 @@
 import { memo, useMemo } from "react";
 import { LAYOUT } from '../constants';
-
-interface ProjectQuantityCell {
-  date: string;
-  quantity: number;
-  eventName?: string;
-}
+import { ProjectQuantityCell } from '../types';
 
 interface ProjectRowProps {
   projectName: string;

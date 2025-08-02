@@ -14,12 +14,6 @@
   will-change: auto; /* Let browser decide when to optimize */
 }
 
-/* GPU acceleration for large timeline containers */
-.equipment-timeline-container {
-  contain: layout style; /* Aggressive containment */
-  transform: translateZ(0); /* Force GPU layer */
-}
-
 /* Project rows performance - no animations */
 .project-rows-expanded {
   contain: layout; /* Isolate layout changes */
@@ -36,7 +30,3 @@
   will-change: auto;
 }
 
-/* Memory optimization for large lists */
-.equipment-row:not(.visible) {
-  content-visibility: auto; /* Only render visible items */
-}
