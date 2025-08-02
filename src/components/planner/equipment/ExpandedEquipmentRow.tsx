@@ -41,11 +41,15 @@ const ExpandedEquipmentRowComponent = ({
 }: ExpandedEquipmentRowProps) => {
   
   // OPTIMIZATION 1: Pre-calculate styles to avoid repeated inline calculations
-  const rowStyles = useMemo(() => ({
-    timelineWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
-    equipmentHeight: LAYOUT.EQUIPMENT_ROW_HEIGHT,
-    projectHeight: LAYOUT.PROJECT_ROW_HEIGHT
-  }), [formattedDates.length]);
+  const rowStyles = useMemo(() => {
+    const width = `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`;
+    console.log(`🔧 Timeline width calculation: ${formattedDates.length} dates × ${LAYOUT.DAY_CELL_WIDTH}px = ${width}`);
+    return {
+      timelineWidth: width,
+      equipmentHeight: LAYOUT.EQUIPMENT_ROW_HEIGHT,
+      projectHeight: LAYOUT.PROJECT_ROW_HEIGHT
+    };
+  }, [formattedDates.length]);
 
   // TEMPORARY: Simplified project rows for debugging
   const projectRows = equipmentUsage?.projectNames.map((projectName) => (
@@ -72,7 +76,9 @@ const ExpandedEquipmentRowComponent = ({
           className="flex items-center" 
           style={{ 
             minWidth: rowStyles.timelineWidth,
-            height: '100%'
+            height: '100%',
+            backgroundColor: 'yellow', // DEBUG: Make timeline container visible
+            border: '2px solid red' // DEBUG: Make timeline container obvious
           }}
         >
           {formattedDates.map((dateInfo, index) => (

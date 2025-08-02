@@ -66,6 +66,11 @@ const EquipmentDayCellComponent = ({
   onToggleExpansion,
   isFirstCell = false
 }: EquipmentDayCellProps) => {
+  // Debug: Check if day cells are being called
+  if (equipment.name === 'Literack 2U' && dateInfo.dateStr.includes('2025-08-01')) {
+    console.log('🔧 EquipmentDayCell rendering for:', equipment.name, dateInfo.dateStr);
+  }
+  
   // Use optimized function instead of direct Map access
   const booking = getBookingForEquipment(equipment.id, dateInfo.dateStr);
   
