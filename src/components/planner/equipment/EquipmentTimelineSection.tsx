@@ -15,15 +15,13 @@ interface EquipmentTimelineSectionProps {
     isWeekendDay: boolean;
   }>;
   getBookingForEquipment: (equipmentId: string, dateStr: string) => any;
-  onDateChange: (date: Date) => void;
 }
 
 const EquipmentTimelineSectionComponent = ({
   equipmentGroup,
   expandedGroups,
   formattedDates,
-  getBookingForEquipment,
-  onDateChange
+  getBookingForEquipment
 }: EquipmentTimelineSectionProps) => {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
   const isExpanded = expandedGroups.has(mainFolder);
@@ -47,7 +45,6 @@ const EquipmentTimelineSectionComponent = ({
                   equipment={equipment}
                   dateInfo={dateInfo}
                   getBookingForEquipment={getBookingForEquipment}
-                  onDateChange={onDateChange}
                 />
               ))}
             </div>
@@ -76,7 +73,6 @@ const EquipmentTimelineSectionComponent = ({
                           equipment={equipment}
                           dateInfo={dateInfo}
                           getBookingForEquipment={getBookingForEquipment}
-                          onDateChange={onDateChange}
                         />
                       ))}
                     </div>
@@ -112,12 +108,19 @@ export const EquipmentTimelineSection = memo(EquipmentTimelineSectionComponent, 
   const prevDates = prevProps.formattedDates;
   const nextDates = nextProps.formattedDates;
   
-  // If array length is the same, just check first and last dates
+  // If array length is the same, check first/last dates AND selected date changes
   if (prevDates.length === nextDates.length) {
-    return (
+    const firstLastSame = (
       prevDates[0]?.dateStr === nextDates[0]?.dateStr &&
       prevDates[prevDates.length - 1]?.dateStr === nextDates[nextDates.length - 1]?.dateStr
     );
+    
+    // Also check if selected date has changed within the range
+    const prevSelectedIndex = prevDates.findIndex(d => d.isSelected);
+    const nextSelectedIndex = nextDates.findIndex(d => d.isSelected);
+    const selectedChanged = prevSelectedIndex !== nextSelectedIndex;
+    
+    return firstLastSame && !selectedChanged;
   }
   
   // If next array is longer (expansion), always re-render to show new dates

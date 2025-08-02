@@ -1,6 +1,5 @@
 import { ChevronRightIcon, FolderIcon } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../ui/collapsible";
-import { EquipmentDayCell } from "./EquipmentDayCell";
 import { LAYOUT } from '../constants';
 import { EquipmentGroup } from '../types';
 
@@ -16,7 +15,6 @@ interface EquipmentFolderSectionProps {
     isWeekendDay: boolean;
   }>;
   bookingsData: Map<string, any> | undefined;
-  onDateChange: (date: Date) => void;
 }
 
 export function EquipmentFolderSection({
@@ -24,8 +22,7 @@ export function EquipmentFolderSection({
   expandedGroups,
   toggleGroup,
   formattedDates,
-  bookingsData,
-  onDateChange
+  bookingsData
 }: EquipmentFolderSectionProps) {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
   const isExpanded = expandedGroups.has(mainFolder);

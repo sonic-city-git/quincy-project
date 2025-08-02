@@ -18,7 +18,6 @@ interface EquipmentCalendarContentProps {
     isWeekendDay: boolean;
   }>;
   getBookingForEquipment: (equipmentId: string, dateStr: string) => any; // Optimized function for day cells
-  onDateChange: (date: Date) => void;
   equipmentRowsRef: React.RefObject<HTMLDivElement>;
   handleTimelineScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   handleTimelineMouseMove: (e: React.MouseEvent) => void;
@@ -40,7 +39,6 @@ const EquipmentCalendarContentComponent = ({
   toggleGroup,
   formattedDates,
   getBookingForEquipment,
-  onDateChange,
   equipmentRowsRef,
   handleTimelineScroll,
   handleTimelineMouseMove,
@@ -76,11 +74,7 @@ const EquipmentCalendarContentComponent = ({
               expandedGroups={expandedGroups}
               toggleGroup={toggleGroup}
               formattedDates={formattedDates}
-              getBookingsForEquipment={getBookingsForEquipment}
-              getBookingState={getBookingState}
-              updateBookingState={updateBookingState}
-              onDateChange={onDateChange}
-              getLowestAvailable={getLowestAvailable}
+              bookingsData={undefined}
             />
           ))}
         </div>
@@ -103,7 +97,6 @@ const EquipmentCalendarContentComponent = ({
                 expandedGroups={expandedGroups}
                 formattedDates={formattedDates}
                 getBookingForEquipment={getBookingForEquipment}
-                onDateChange={onDateChange}
               />
             ))}
           </div>
@@ -135,12 +128,19 @@ export const EquipmentCalendarContent = memo(EquipmentCalendarContentComponent, 
   const prevDates = prevProps.formattedDates;
   const nextDates = nextProps.formattedDates;
   
-  // If lengths are equal, check if content is the same
+  // If lengths are equal, check if content is the same AND selected date hasn't changed
   if (prevDates.length === nextDates.length) {
-    return (
+    const firstLastSame = (
       prevDates[0]?.dateStr === nextDates[0]?.dateStr &&
       prevDates[prevDates.length - 1]?.dateStr === nextDates[nextDates.length - 1]?.dateStr
     );
+    
+    // Also check if selected date has changed within the range
+    const prevSelectedIndex = prevDates.findIndex(d => d.isSelected);
+    const nextSelectedIndex = nextDates.findIndex(d => d.isSelected);
+    const selectedChanged = prevSelectedIndex !== nextSelectedIndex;
+    
+    return firstLastSame && !selectedChanged;
   }
   
   // Timeline expansion detected - force re-render to show new dates

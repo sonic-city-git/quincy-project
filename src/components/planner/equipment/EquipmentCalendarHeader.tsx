@@ -133,7 +133,15 @@ export function EquipmentCalendarHeader({
                         e.stopPropagation();
                         onDateChange(dateInfo.date);
                       }}
-                      title={`${format(dateInfo.date, 'EEEE, MMMM d, yyyy')}${dateInfo.isToday ? ' (Today)' : ''}${dateInfo.isSelected ? ' (Selected)' : ''}`}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        // Only handle double-click if this day is already selected
+                        if (dateInfo.isSelected) {
+                          const today = new Date();
+                          onDateChange(today);
+                        }
+                      }}
+                      title={`${format(dateInfo.date, 'EEEE, MMMM d, yyyy')}${dateInfo.isToday ? ' (Today)' : ''}${dateInfo.isSelected ? ' (Selected - Double-click to go to Today)' : ''}`}
                     >
                       <div className="text-[10px] leading-none">{format(dateInfo.date, 'EEE')[0]}</div>
                       <div className="text-xs font-medium leading-none">

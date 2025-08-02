@@ -52,14 +52,12 @@ interface EquipmentDayCellProps {
     isWeekendDay: boolean;
   };
   getBookingForEquipment: (equipmentId: string, dateStr: string) => any; // Optimized function
-  onDateChange: (date: Date) => void;
 }
 
 const EquipmentDayCellComponent = ({ 
   equipment, 
   dateInfo, 
-  getBookingForEquipment,
-  onDateChange
+  getBookingForEquipment
 }: EquipmentDayCellProps) => {
   // Use optimized function instead of direct Map access
   const booking = getBookingForEquipment(equipment.id, dateInfo.dateStr);
@@ -78,9 +76,7 @@ const EquipmentDayCellComponent = ({
   // Get heatmap styling - always use heatmap colors, never gray/white
   const heatmapStyle = getHeatmapColor(available, stock, totalUsed);
   
-  const handleClick = () => {
-    onDateChange(dateInfo.date);
-  };
+  // Equipment cells are for display and future functionality, not date selection
 
   return (
     <div 
@@ -99,8 +95,7 @@ const EquipmentDayCellComponent = ({
       )}
       
       <div
-        className="h-6 cursor-pointer transition-all duration-200 relative rounded-md border border-gray-200/50"
-        onClick={handleClick}
+        className="h-6 transition-all duration-200 relative rounded-md border border-gray-200/50"
         title={`${booking ? 
           `${equipment.name}\nStock: ${stock}\nUsed: ${totalUsed}\nAvailable: ${available}${available < 0 ? ' (OVERBOOKED)' : ''}` : 
           `${equipment.name}\nStock: ${stock}\nAvailable: ${stock}`

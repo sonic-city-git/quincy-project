@@ -74,7 +74,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
       lastSelectedDateRef.current = selectedDateStr;
       scrollToDate(selectedDate, true); // true = animate
     }
-  }, [selectedDate]); // Remove scrollToDate from dependencies to prevent automatic triggers
+  }, [selectedDate, scrollToDate]);
 
   // Enhanced scroll handler to sync headers with timeline content
   const handleTimelineScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -86,7 +86,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     if (stickyHeadersRef.current) {
       stickyHeadersRef.current.scrollLeft = scrollLeft;
     }
-  }, [scrollHandlers.handleEquipmentScroll]);
+  }, [scrollHandlers]);
 
   // Enhanced mouse move handler for drag synchronization
   const handleTimelineMouseMove = useCallback((e: React.MouseEvent) => {
@@ -106,22 +106,37 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     }
   }, []);
 
-  // Debounced data range to prevent constant refetching during infinite scroll
+  // Immediate data range updates for responsive highlighting
+  // Only debounce during rapid timeline expansion, not during date selection
   const [stableDataRange, setStableDataRange] = useState({
     start: timelineStart,
     end: timelineEnd
   });
   
-  // Faster data range updates for better prefetching
+  const lastTimelineChangeRef = useRef(Date.now());
+  
   useEffect(() => {
-    const debounceTimer = setTimeout(() => {
+    const now = Date.now();
+    const timeSinceLastChange = now - lastTimelineChangeRef.current;
+    lastTimelineChangeRef.current = now;
+    
+    // If timeline changed recently (< 100ms), it's likely rapid expansion - debounce it
+    // Otherwise, update immediately for responsive date selection
+    if (timeSinceLastChange < 100) {
+      const debounceTimer = setTimeout(() => {
+        setStableDataRange({
+          start: timelineStart,
+          end: timelineEnd
+        });
+      }, 50);
+      return () => clearTimeout(debounceTimer);
+    } else {
+      // Immediate update for single date changes
       setStableDataRange({
         start: timelineStart,
         end: timelineEnd
       });
-    }, 50); // Reduced to 50ms for faster data fetching
-
-    return () => clearTimeout(debounceTimer);
+    }
   }, [timelineStart, timelineEnd]);
 
   // Use optimized data hook with stable range
@@ -292,7 +307,6 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
         toggleGroup={toggleGroup}
         formattedDates={formattedDates}
         getBookingForEquipment={getBookingForEquipment}
-        onDateChange={onDateChange}
         equipmentRowsRef={equipmentRowsRef}
         handleTimelineScroll={handleTimelineScroll}
         handleTimelineMouseMove={handleTimelineMouseMove}
