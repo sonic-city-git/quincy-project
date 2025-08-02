@@ -23,6 +23,8 @@ interface EquipmentCalendarProps {
 export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, viewMode = 'week' }: EquipmentCalendarProps) {
   const isMonthView = viewMode === 'month';
   
+
+  
   // Ref for timeline header sync
   const stickyHeadersRef = useRef<HTMLDivElement>(null);
   

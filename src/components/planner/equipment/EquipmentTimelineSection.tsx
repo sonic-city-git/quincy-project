@@ -1,8 +1,9 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Collapsible, CollapsibleContent } from "../../ui/collapsible";
 import { EquipmentDayCell } from "./EquipmentDayCell";
 import { ProjectRow } from "./ProjectRow";
 import { LAYOUT } from '../constants';
+import './equipment-expansion.css';
 import { EquipmentGroup, EquipmentProjectUsage, ProjectQuantityCell } from '../types';
 
 interface EquipmentTimelineSectionProps {
@@ -34,32 +35,34 @@ const EquipmentTimelineSectionComponent = ({
 }: EquipmentTimelineSectionProps) => {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
   const isExpanded = expandedGroups.has(mainFolder);
+  
+  // PERFORMANCE: Pre-calculate timeline width once for all equipment
+  const timelineWidthPx = useMemo(() => 
+    formattedDates.length * LAYOUT.DAY_CELL_WIDTH, 
+    [formattedDates.length]
+  );
 
   return (
     <Collapsible open={isExpanded}>
       <div style={{ height: LAYOUT.MAIN_FOLDER_HEIGHT }} className="border-b border-border" />
       
       <CollapsibleContent>
-        {/* Main folder equipment timeline */}
+        {/* Main folder equipment timeline - OPTIMIZED */}
         {mainEquipment.map((equipment) => {
           const isEquipmentExpanded = expandedEquipment.has(equipment.id);
           const equipmentUsage = equipmentProjectUsage.get(equipment.id);
-          const projectCount = equipmentUsage?.projectNames.length || 0;
-          const rowHeight = isEquipmentExpanded && projectCount > 0 
-            ? LAYOUT.EQUIPMENT_ROW_HEIGHT + (projectCount * LAYOUT.PROJECT_ROW_HEIGHT)
-            : LAYOUT.EQUIPMENT_ROW_HEIGHT;
           
           return (
             <div key={equipment.id}>
               {/* Main equipment row */}
               <div 
-                className="flex items-center border-b border-border hover:bg-muted/30 transition-colors"
+                className="equipment-row flex items-center border-b border-border hover:bg-muted/30 transition-colors"
                 style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
               >
                 <div 
                   className="flex items-center" 
                   style={{ 
-                    minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
+                    minWidth: `${timelineWidthPx}px`,
                     height: '100%'
                   }}
                 >
@@ -107,19 +110,18 @@ const EquipmentTimelineSectionComponent = ({
                 {subFolder.equipment.map((equipment) => {
                   const isEquipmentExpanded = expandedEquipment.has(equipment.id);
                   const equipmentUsage = equipmentProjectUsage.get(equipment.id);
-                  const projectCount = equipmentUsage?.projectNames.length || 0;
                   
                   return (
                     <div key={equipment.id}>
                       {/* Main equipment row */}
                       <div 
-                        className="flex items-center border-b border-border hover:bg-muted/30 transition-colors"
+                        className="equipment-row flex items-center border-b border-border hover:bg-muted/30 transition-colors"
                         style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
                       >
                         <div 
                           className="flex items-center" 
                           style={{ 
-                            minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
+                            minWidth: `${timelineWidthPx}px`,
                             height: '100%'
                           }}
                         >
@@ -139,7 +141,7 @@ const EquipmentTimelineSectionComponent = ({
                       
                       {/* Project breakdown rows when expanded */}
                       {isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
-                        <div>
+                        <div className="project-rows-expanded">
                           {equipmentUsage.projectNames.map((projectName) => (
                             <ProjectRow
                               key={`${equipment.id}-${projectName}`}

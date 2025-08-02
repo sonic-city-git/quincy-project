@@ -74,11 +74,7 @@ const EquipmentDayCellComponent = ({
   const totalUsed = booking?.totalUsed || 0;
   const available = stock - totalUsed;
   
-  // Debug: Track renders and data availability
-  if (equipment.name.includes('Camera') && dateInfo.dateStr.includes('2025-08-01')) {
-    console.log(`📱 ${equipment.name}: ${available}/${stock} available, booking:`, booking);
-    console.log(`📱 Function returned:`, booking ? 'BOOKING DATA' : 'NO BOOKING');
-  }
+
   
   // Get heatmap styling - always use heatmap colors, never gray/white
   const heatmapStyle = getHeatmapColor(available, stock, totalUsed);
@@ -87,7 +83,7 @@ const EquipmentDayCellComponent = ({
 
   return (
     <div 
-      className={`px-1 relative ${
+      className={`equipment-day-cell px-1 relative ${
         dateInfo.isSelected || dateInfo.isToday ? 'z-10' : ''
       } flex items-center justify-center`}
       style={{ width: '50px' }}
