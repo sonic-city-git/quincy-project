@@ -1,16 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const STORAGE_KEY = 'equipmentPlannerExpandedGroups';
-
 /**
- * Custom hook for managing persistent folder expansion state in equipment planner
+ * Custom hook for managing persistent folder expansion state
  * Stores expansion state in localStorage and restores it on mount
+ * Can be used for both equipment and crew planners with different storage keys
  */
-export function usePersistentExpandedGroups() {
+export function usePersistentExpandedGroups(storageKey: string = 'equipmentPlannerExpandedGroups') {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
     // Initialize from localStorage if available
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const stored = localStorage.getItem(storageKey);
       if (stored) {
         const parsedGroups = JSON.parse(stored);
         return new Set(Array.isArray(parsedGroups) ? parsedGroups : []);
@@ -25,11 +24,11 @@ export function usePersistentExpandedGroups() {
   useEffect(() => {
     try {
       const groupsArray = Array.from(expandedGroups);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(groupsArray));
+      localStorage.setItem(storageKey, JSON.stringify(groupsArray));
     } catch (error) {
       console.warn('Failed to save expanded groups to localStorage:', error);
     }
-  }, [expandedGroups]);
+  }, [expandedGroups, storageKey]);
 
   // Toggle group expansion with support for expand all subfolders
   const toggleGroup = useCallback((groupKey: string, expandAllSubfolders = false, availableSubfolders: string[] = []) => {

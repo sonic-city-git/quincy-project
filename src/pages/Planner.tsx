@@ -1,22 +1,66 @@
 import { useState } from "react";
-import { Calendar, Package, Users, Filter } from "lucide-react";
+import { Calendar, Package, Users, Filter, AlertTriangle, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { EquipmentCalendar } from "@/components/planner/EquipmentCalendar";
-import { CrewCalendar } from "@/components/planner/CrewCalendar";
-import { PlannerFilters } from "@/components/planner/PlannerFilters";
+import { UnifiedCalendar } from "@/components/planner/UnifiedCalendar";
+import { useSharedTimeline } from "@/components/planner/shared/hooks/useSharedTimeline";
+import { TimelineHeader, PlannerFilters } from "@/components/planner/shared/components/TimelineHeader";
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format, addDays } from "date-fns";
 
 const Planner = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedView, setSelectedView] = useState<'month' | 'week'>('month');
-  const [selectedOwner, setSelectedOwner] = useState<string>('');
   const [activeTab, setActiveTab] = useState<'equipment' | 'crew'>('equipment');
+  
+  // Filter state
+  const [filters, setFilters] = useState<PlannerFilters>({
+    search: '',
+    selectedOwner: '',
+    equipmentType: '',
+    crewRole: ''
+  });
+
+  // Shared timeline state for both planners
+  const sharedTimeline = useSharedTimeline({ selectedDate });
+
+  // Get owners for filtering
+  const { data: owners } = useQuery({
+    queryKey: ['project-owners'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('projects')
+        .select(`
+          owner_id,
+          owner:crew_members!projects_owner_id_fkey (
+            id,
+            name,
+            email
+          )
+        `)
+        .not('owner_id', 'is', null);
+      
+      if (error) throw error;
+      
+      // Get unique owners
+      const ownerMap = new Map();
+      data?.forEach(project => {
+        if (project.owner_id && !ownerMap.has(project.owner_id)) {
+          ownerMap.set(project.owner_id, {
+            id: project.owner_id,
+            name: project.owner?.name || 'Unknown',
+            email: project.owner?.email
+          });
+        }
+      });
+      
+      return Array.from(ownerMap.values());
+    }
+  });
 
   // Stats queries
   const today = format(new Date(), 'yyyy-MM-dd');
@@ -86,143 +130,177 @@ const Planner = () => {
   return (
     <div className="container max-w-[1600px] p-8">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-4">
-          <Calendar className="h-8 w-8 text-blue-500" />
-          <div>
-            <h1 className="text-3xl font-bold">Planner</h1>
-            <p className="text-muted-foreground">
-              Global resource availability and scheduling across all projects
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <PlannerFilters
-            selectedOwner={selectedOwner}
-            onOwnerChange={setSelectedOwner}
-            activeTab={activeTab}
-          />
-          <div className="flex bg-muted rounded-lg p-1">
-            <Button
-              variant={selectedView === 'month' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setSelectedView('month')}
-            >
-              Month
-            </Button>
-            <Button
-              variant={selectedView === 'week' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => setSelectedView('week')}
-            >
-              Week
-            </Button>
-          </div>
+      <div className="flex items-center gap-4 mb-8">
+        <Calendar className="h-8 w-8 text-blue-500" />
+        <div>
+          <h1 className="text-3xl font-bold">Planner</h1>
+          <p className="text-muted-foreground">
+            Global resource availability and scheduling across all projects
+          </p>
         </div>
       </div>
 
       {/* Main Content */}
-      <Tabs defaultValue="equipment" className="space-y-6" onValueChange={(value) => setActiveTab(value as 'equipment' | 'crew')}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="equipment" className="flex items-center gap-2">
-            <Package className="h-4 w-4" />
-            Equipment Planner
-          </TabsTrigger>
-          <TabsTrigger value="crew" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Crew Planner
-          </TabsTrigger>
-        </TabsList>
+      <div className="space-y-4">
+        {/* Timeline Header - Outside calendar for better performance */}
+        <TimelineHeader
+          formattedDates={sharedTimeline.formattedDates}
+          monthSections={sharedTimeline.monthSections}
+          onDateChange={setSelectedDate}
+          onHeaderScroll={(e) => {
+            // Sync with timeline content scroll
+            if (sharedTimeline.equipmentRowsRef.current) {
+              sharedTimeline.equipmentRowsRef.current.scrollLeft = e.currentTarget.scrollLeft;
+            }
+          }}
+          stickyHeadersRef={sharedTimeline.stickyHeadersRef}
+          resourceType={activeTab}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          filters={filters}
+          onFiltersChange={setFilters}
+        />
+        
+        {/* Calendar Content */}
+        <UnifiedCalendar 
+          selectedDate={selectedDate} 
+          onDateChange={setSelectedDate}
+          selectedOwner={filters.selectedOwner}
+          sharedTimeline={sharedTimeline}
+          resourceType={activeTab}
+          filters={filters}
+        />
+      </div>
 
-        <TabsContent value="equipment" className="space-y-6">
-          <EquipmentCalendar 
-            selectedDate={selectedDate} 
-            onDateChange={setSelectedDate}
-            selectedOwner={selectedOwner}
-            viewMode={selectedView}
-          />
-        </TabsContent>
-
-        <TabsContent value="crew" className="space-y-6">
-          <CrewCalendar 
-            selectedDate={selectedDate} 
-            onDateChange={setSelectedDate}
-            selectedOwner={selectedOwner}
-            viewMode={selectedView}
-          />
-        </TabsContent>
-      </Tabs>
-
-      {/* Quick Stats */}
+      {/* Tab-Specific Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Package className="h-4 w-4 text-green-500" />
-                <div>
-                  <p className="text-sm font-medium">Equipment Utilization</p>
-                  <p className="text-xs text-muted-foreground">Today</p>
+        {activeTab === 'equipment' ? (
+          <>
+            <Card className="border-green-200/50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Package className="h-4 w-4 text-green-600" />
+                    <div>
+                      <p className="text-sm font-medium">Equipment Utilization</p>
+                      <p className="text-xs text-muted-foreground">Today</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    {equipmentStats ? (
+                      <>
+                        <p className="text-lg font-bold text-green-600">{equipmentStats.utilization}%</p>
+                        <p className="text-xs text-muted-foreground">
+                          {equipmentStats.inUse}/{equipmentStats.total} items
+                        </p>
+                      </>
+                    ) : (
+                      <Skeleton className="h-8 w-12" />
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-                {equipmentStats ? (
-                  <>
-                    <p className="text-lg font-bold text-green-500">{equipmentStats.utilization}%</p>
-                    <p className="text-xs text-muted-foreground">
-                      {equipmentStats.inUse}/{equipmentStats.total} items
-                    </p>
-                  </>
-                ) : (
-                  <Skeleton className="h-8 w-12" />
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-orange-500" />
-                <div>
-                  <p className="text-sm font-medium">Crew Assignments</p>
-                  <p className="text-xs text-muted-foreground">Active roles today</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-green-200/50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                    <div>
+                      <p className="text-sm font-medium">Equipment Conflicts</p>
+                      <p className="text-xs text-muted-foreground">This week</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-amber-500">0</p>
+                    <p className="text-xs text-muted-foreground">No conflicts</p>
+                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-                {crewStats !== undefined ? (
-                  <p className="text-lg font-bold text-orange-500">{crewStats}</p>
-                ) : (
-                  <Skeleton className="h-8 w-8" />
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-blue-500" />
-                <div>
-                  <p className="text-sm font-medium">Upcoming Events</p>
-                  <p className="text-xs text-muted-foreground">Next 7 days</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-green-200/50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Settings className="h-4 w-4 text-green-600" />
+                    <div>
+                      <p className="text-sm font-medium">Equipment Categories</p>
+                      <p className="text-xs text-muted-foreground">Total active</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-green-600">8</p>
+                    <p className="text-xs text-muted-foreground">Categories</p>
+                  </div>
                 </div>
-              </div>
-              <div className="text-right">
-                {upcomingEvents !== undefined ? (
-                  <p className="text-lg font-bold text-blue-500">{upcomingEvents}</p>
-                ) : (
-                  <Skeleton className="h-8 w-8" />
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </>
+        ) : (
+          <>
+            <Card className="border-orange-200/50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-orange-600" />
+                    <div>
+                      <p className="text-sm font-medium">Active Crew</p>
+                      <p className="text-xs text-muted-foreground">Today</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    {crewStats !== undefined ? (
+                      <>
+                        <p className="text-lg font-bold text-orange-600">{crewStats}</p>
+                        <p className="text-xs text-muted-foreground">Assignments</p>
+                      </>
+                    ) : (
+                      <Skeleton className="h-8 w-8" />
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-orange-200/50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-500" />
+                    <div>
+                      <p className="text-sm font-medium">Unassigned Roles</p>
+                      <p className="text-xs text-muted-foreground">This week</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-amber-500">3</p>
+                    <p className="text-xs text-muted-foreground">Open positions</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-orange-200/50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-orange-600" />
+                    <div>
+                      <p className="text-sm font-medium">Crew Utilization</p>
+                      <p className="text-xs text-muted-foreground">This week</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-lg font-bold text-orange-600">75%</p>
+                    <p className="text-xs text-muted-foreground">Average</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );
