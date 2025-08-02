@@ -331,6 +331,7 @@ export function CrewCalendar({ selectedDate, onDateChange, selectedOwner, viewMo
         getBookingState={getBookingState}
         updateBookingState={updateBookingState}
         getLowestAvailable={getLowestAvailableForEquipment}
+        resourceType="crew"
       />
           </div>
   );

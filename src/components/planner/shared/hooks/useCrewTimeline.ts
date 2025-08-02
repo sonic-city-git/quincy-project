@@ -42,7 +42,7 @@ export function useCrewTimeline({ selectedDate }: UseCrewTimelineProps) {
     }
   }, []);
 
-  // Smooth scroll to specific date
+  // Smooth scroll to specific date with proper centering
   const scrollToDate = useCallback((targetDate: Date, animate: boolean = true) => {
     if (!crewRowsRef.current) return;
 
@@ -54,19 +54,22 @@ export function useCrewTimeline({ selectedDate }: UseCrewTimelineProps) {
     if (targetIndex === -1) return;
 
     const dayWidth = 50; // LAYOUT.DAY_CELL_WIDTH
-    const scrollLeft = targetIndex * dayWidth;
+    const containerWidth = crewRowsRef.current.clientWidth;
+    const targetPosition = targetIndex * dayWidth;
+    const centerOffset = containerWidth / 2 - dayWidth / 2;
+    const targetScrollLeft = Math.max(0, targetPosition - centerOffset);
     
     if (animate) {
       crewRowsRef.current.scrollTo({
-        left: scrollLeft,
+        left: targetScrollLeft,
         behavior: 'smooth'
       });
     } else {
-      crewRowsRef.current.scrollLeft = scrollLeft;
+      crewRowsRef.current.scrollLeft = targetScrollLeft;
     }
   }, [timelineDates]);
 
-  // Auto-scroll to selected date when timeline range changes
+  // Auto-scroll to selected date when timeline range changes (not when selectedDate changes)
   useEffect(() => {
     // Small delay to ensure DOM is updated
     const timer = setTimeout(() => {
@@ -74,7 +77,7 @@ export function useCrewTimeline({ selectedDate }: UseCrewTimelineProps) {
     }, 50);
     
     return () => clearTimeout(timer);
-  }, [timelineStart, timelineEnd, scrollToDate, selectedDate]);
+  }, [timelineStart, timelineEnd, scrollToDate]); // Removed selectedDate to prevent constant re-scrolling
 
   return {
     timelineStart,

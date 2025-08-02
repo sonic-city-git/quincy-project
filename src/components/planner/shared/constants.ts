@@ -58,17 +58,23 @@ export const VISUAL = {
   MAX_BOOKING_OPACITY: 1.0,
   BOOKING_OPACITY_RANGE: 0.7,
   
-  // Simplified heatmap colors for equipment utilization (no green)
+  // Heatmap colors for equipment and crew
   HEATMAP: {
-    // Color scheme:
-    // Dark grey = 0-74% utilized (normal usage)
-    // Orange = 75-100% utilized (getting low/empty)
-    // Red = overbooked
-    UTILIZATION_THRESHOLDS: [0.75, 1.0],
+    // Equipment color scheme:
+    // Dark grey = normal usage (some availability remaining)
+    // Orange = empty (all stock used)
+    // Red = overbooked (more used than available)
+    // 
+    // Crew color scheme:
+    // Subtle grey = available (no assignments)
+    // Event colors = assigned (follows event type colors)
+    // Red = conflict (multiple assignments)
+    UTILIZATION_THRESHOLDS: [0.75, 1.0], // Legacy - no longer used
     COLORS: {
-      NORMAL_DARK_GREY: '#374151',  // gray-700 - 0-74% utilized (dark grey for normal usage)
-      WARNING_ORANGE: '#f97316',    // orange-500 - 75-100% utilized (warning/getting low)
-      OVERBOOKED_BASE: '#dc2626',   // red-600 - overbooked (red)
+      NORMAL_DARK_GREY: '#374151',  // gray-700 - normal usage
+      WARNING_ORANGE: '#f97316',    // orange-500 - empty equipment
+      OVERBOOKED_BASE: '#dc2626',   // red-600 - overbooked equipment
+      AVAILABLE_BASE: '#1f2937',    // gray-800 - very dark grey, barely visible on black
     },
     TEXT_COLORS: {
       LIGHT_GREY: '#d1d5db',  // gray-300 - for dark backgrounds

@@ -35,6 +35,7 @@ interface TimelineContentProps {
   getBookingState: (equipmentId: string, dateStr: string) => any;
   updateBookingState: (equipmentId: string, dateStr: string, state: any) => void;
   getLowestAvailable: (equipmentId: string) => number;
+  resourceType?: 'equipment' | 'crew'; // Added prop to indicate resource type
 }
 
 const TimelineContentComponent = ({
@@ -55,7 +56,8 @@ const TimelineContentComponent = ({
   getBookingsForEquipment,
   getBookingState,
   updateBookingState,
-  getLowestAvailable
+  getLowestAvailable,
+  resourceType = 'equipment'
 }: TimelineContentProps) => {
   if (!equipmentGroups || equipmentGroups.length === 0) {
     return (
@@ -111,6 +113,7 @@ const TimelineContentComponent = ({
                 getBookingForEquipment={getBookingForEquipment}
                 getProjectQuantityForDate={getProjectQuantityForDate}
                 onToggleEquipmentExpansion={toggleEquipmentExpansion}
+                resourceType={resourceType}
               />
             ))}
           </div>

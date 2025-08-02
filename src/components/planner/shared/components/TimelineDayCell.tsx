@@ -3,44 +3,84 @@ import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 import { VISUAL, LAYOUT } from '../constants';
 import { EquipmentBookingFlat } from '../types';
 
-// Simplified heatmap color calculation (no green shading)
-const getHeatmapColor = (available: number, stock: number, totalUsed: number) => {
+// Crew availability color calculation (binary + event type colors)
+const getCrewAvailabilityColor = (booking: any, isCrew: boolean = false) => {
   const { HEATMAP } = VISUAL;
   
-  // If overbooked (negative available), use red scale - check this FIRST even if stock is 0
+  // Use explicit isCrew flag only - no automatic detection
+  const isCrewData = isCrew;
+  
+  if (isCrewData) {
+    // Crew-specific display logic
+    const assignments = booking?.bookings || [];
+    
+    if (assignments.length === 0) {
+      // Available crew member - subtle grey
+      return {
+        backgroundColor: HEATMAP.COLORS.AVAILABLE_BASE,
+        color: HEATMAP.TEXT_COLORS.LIGHT_GREY // light text on dark background
+      };
+    }
+    
+    if (assignments.length > 1) {
+      // Conflict - crew member assigned to multiple events
+      return {
+        backgroundColor: HEATMAP.COLORS.OVERBOOKED_BASE,
+        color: HEATMAP.TEXT_COLORS.WHITE
+      };
+    }
+    
+    // Single assignment - use event type color
+    const assignment = assignments[0];
+    const eventTypeColor = assignment.eventTypeColor || '#6B7280';
+    
+    return {
+      backgroundColor: eventTypeColor,
+      color: HEATMAP.TEXT_COLORS.WHITE
+    };
+  }
+  
+  // Equipment-specific display logic
+  const stock = booking?.stock || 0;
+  const totalUsed = booking?.totalUsed || 0;
+  const available = stock - totalUsed; // Always calculate properly, even when stock is 0
+  
+  // CRITICAL: Check overbooked first, regardless of stock level
+  // This handles cases where stock is 0 but totalUsed > 0
   if (available < 0) {
-    // Use base red color for overbooked, regardless of stock amount
+    console.log('🔴 Equipment overbooked - applying red color:', {
+      stock,
+      totalUsed,
+      available,
+      booking
+    });
     return {
       backgroundColor: HEATMAP.COLORS.OVERBOOKED_BASE,
       color: HEATMAP.TEXT_COLORS.WHITE
     };
   }
   
-  // Handle edge case: no stock (but not overbooked)
-  if (stock === 0) {
+  // Handle edge case: no stock and no usage
+  if (stock === 0 && totalUsed === 0) {
     return {
       backgroundColor: HEATMAP.COLORS.NORMAL_DARK_GREY,
       color: HEATMAP.TEXT_COLORS.LIGHT_GREY
     };
   }
   
-  // Calculate utilization percentage (how much is used)
-  const utilizationRatio = totalUsed / stock;
-  
-  // Simplified color scheme based on utilization percentage
-  if (utilizationRatio < 0.75) {
-    // 0-74% utilized - dark grey (normal usage)
-    return {
-      backgroundColor: HEATMAP.COLORS.NORMAL_DARK_GREY,
-      color: HEATMAP.TEXT_COLORS.LIGHT_GREY
-    };
-  } else {
-    // 75-100% utilized - orange warning (getting low or empty)
+  // If empty (all stock used but not overbooked), use orange
+  if (stock > 0 && totalUsed === stock) {
     return {
       backgroundColor: HEATMAP.COLORS.WARNING_ORANGE,
       color: HEATMAP.TEXT_COLORS.WHITE
     };
   }
+  
+  // Normal usage (some availability remaining) - dark grey
+  return {
+    backgroundColor: HEATMAP.COLORS.NORMAL_DARK_GREY,
+    color: HEATMAP.TEXT_COLORS.LIGHT_GREY
+  };
 };
 
 interface TimelineDayCellProps {
@@ -56,6 +96,7 @@ interface TimelineDayCellProps {
   isExpanded: boolean;
   onToggleExpansion: (equipmentId: string) => void;
   isFirstCell?: boolean; // Used to show expansion indicator on first cell
+  isCrew?: boolean; // Flag to indicate this is crew data vs equipment
 }
 
 const TimelineDayCellComponent = ({ 
@@ -64,20 +105,35 @@ const TimelineDayCellComponent = ({
   getBookingForEquipment,
   isExpanded,
   onToggleExpansion,
-  isFirstCell = false
+  isFirstCell = false,
+  isCrew = false
 }: TimelineDayCellProps) => {
   // Use optimized function instead of direct Map access
   const booking = getBookingForEquipment(equipment.id, dateInfo.dateStr);
   
-  // Calculate availability
-  const stock = equipment.stock || 0;
-  const totalUsed = booking?.totalUsed || 0;
-  const available = stock - totalUsed;
+  // Debug crew assignments reaching timeline cells
+  if (isCrew && booking?.bookings?.length > 0) {
+    console.log('🎨 Crew assignment in timeline cell:', {
+      crewMember: equipment.name,
+      date: dateInfo.dateStr,
+      assignments: booking.bookings.length,
+      firstAssignment: booking.bookings[0],
+      eventType: booking.bookings[0]?.eventType,
+      eventColor: booking.bookings[0]?.eventTypeColor
+    });
+  }
   
-
+  // Calculate styling based on crew vs equipment
+  const heatmapStyle = getCrewAvailabilityColor(booking, isCrew);
   
-  // Get heatmap styling - always use heatmap colors, never gray/white
-  const heatmapStyle = getHeatmapColor(available, stock, totalUsed);
+  // Get display values based on crew vs equipment
+  const displayValue = isCrew 
+    ? (booking?.bookings?.length > 0 ? booking.bookings.length : '') 
+    : (booking ? booking.stock - booking.totalUsed : equipment.stock || 0);
+    
+  const isConflict = isCrew 
+    ? (booking?.bookings?.length > 1) 
+    : (booking ? booking.stock - booking.totalUsed < 0 : false);
   
   // Equipment cells are for display and future functionality, not date selection
 
@@ -100,10 +156,16 @@ const TimelineDayCellComponent = ({
       {/* Main availability cell - clickable for expansion */}
       <div
         className="h-6 w-full transition-all duration-200 relative rounded-md border border-gray-200/50 cursor-pointer hover:border-gray-300"
-        title={`${booking ? 
-          `${equipment.name}\nStock: ${stock}\nUsed: ${totalUsed}\nAvailable: ${available}${available < 0 ? ' (OVERBOOKED)' : ''}` : 
-          `${equipment.name}\nStock: ${stock}\nAvailable: ${stock}`
-        }${dateInfo.isToday ? '\n(Today)' : ''}${dateInfo.isSelected ? '\n(Selected)' : ''}\n\nClick to ${isExpanded ? 'collapse' : 'expand'} project breakdown`}
+                  title={isCrew ? 
+            `${equipment.name}\n${booking?.bookings?.length > 0 ? 
+              `Assigned to: ${booking.bookings.map(b => b.eventName).join(', ')}` : 
+              'Available'
+            }${isConflict ? '\n⚠️ CONFLICT: Multiple assignments!' : ''}` :
+            `${booking ? 
+              `${equipment.name}\nStock: ${booking.stock}\nUsed: ${booking.totalUsed}\nAvailable: ${displayValue}${displayValue < 0 ? ' (OVERBOOKED)' : ''}` : 
+              `${equipment.name}\nStock: ${equipment.stock || 0}\nAvailable: ${equipment.stock || 0}`
+            }`
+          }
         style={heatmapStyle}
         onClick={() => {
           onToggleExpansion(equipment.id);
@@ -114,7 +176,10 @@ const TimelineDayCellComponent = ({
           {isFirstCell && (
             <div
               className="absolute -left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gray-600 flex items-center justify-center z-10"
-              title={isExpanded ? 'Collapse project breakdown' : 'Expand to see project breakdown'}
+              title={isExpanded ? 
+                `Collapse ${isCrew ? 'assignment' : 'project'} breakdown` : 
+                `Expand to see ${isCrew ? 'assignment' : 'project'} breakdown`
+              }
             >
               {isExpanded ? 
                 <ChevronDown className="h-2 w-2 text-white" /> : 
@@ -123,13 +188,19 @@ const TimelineDayCellComponent = ({
             </div>
           )}
           
-          {/* Available count */}
+          {/* Display content based on crew vs equipment */}
           <span className="text-xs font-medium leading-none">
-            {available}
+            {isCrew ? (
+              // Crew: show assignment count or nothing if available
+              booking?.bookings?.length > 0 ? booking.bookings.length : ''
+            ) : (
+              // Equipment: show available stock
+              displayValue
+            )}
           </span>
           
-          {/* Overbooked indicator */}
-          {available < 0 && (
+          {/* Conflict/Overbooked indicator */}
+          {isConflict && (
             <AlertTriangle className="absolute top-0 right-0 h-2 w-2 text-white opacity-80" />
           )}
         </div>

@@ -36,10 +36,12 @@ export interface CrewAssignment {
   date: string; // yyyy-MM-dd format
   startTime?: string; // HH:mm format
   endTime?: string; // HH:mm format
-  status: 'scheduled' | 'confirmed' | 'declined' | 'completed' | 'cancelled';
+  status: 'confirmed' | 'declined' | 'completed' | 'cancelled'; // Removed 'scheduled' - crew is either assigned or not
   notes?: string;
   isOvertime?: boolean;
   dailyRate?: number; // Override for this specific assignment
+  eventType?: string; // Type of event (Studio, Live, Corporate, etc.)
+  eventTypeColor?: string; // Color to display for this event type
 }
 
 // Crew availability for a specific date

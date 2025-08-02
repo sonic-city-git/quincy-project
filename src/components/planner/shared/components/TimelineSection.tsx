@@ -21,6 +21,7 @@ interface TimelineSectionProps {
   getBookingForEquipment: (equipmentId: string, dateStr: string) => any;
   getProjectQuantityForDate: (projectName: string, equipmentId: string, dateStr: string) => ProjectQuantityCell | undefined;
   onToggleEquipmentExpansion: (equipmentId: string) => void; // New: handle equipment expansion
+  resourceType?: 'equipment' | 'crew'; // Added prop to indicate resource type
 }
 
 const TimelineSectionComponent = ({
@@ -31,7 +32,8 @@ const TimelineSectionComponent = ({
   formattedDates,
   getBookingForEquipment,
   getProjectQuantityForDate,
-  onToggleEquipmentExpansion
+  onToggleEquipmentExpansion,
+  resourceType = 'equipment'
 }: TimelineSectionProps) => {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
   const isExpanded = expandedGroups.has(mainFolder);
@@ -75,6 +77,7 @@ const TimelineSectionComponent = ({
                       isExpanded={isEquipmentExpanded}
                       onToggleExpansion={onToggleEquipmentExpansion}
                       isFirstCell={index === 0} // Only show toggle on first cell
+                      isCrew={resourceType === 'crew'}
                     />
                   ))}
                 </div>

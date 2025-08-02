@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, useRef } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../../../integrations/supabase/client';
 import { 
@@ -52,8 +52,17 @@ export function useCrewHub({
   selectedOwner
 }: UseCrewHubProps): CrewHubReturn {
   
-  // Expansion state management
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  // Expansion state management - Sonic folder always open
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(['Sonic']));
+  
+  // Ensure Sonic is always expanded - add it if missing
+  useEffect(() => {
+    setExpandedGroups(prev => {
+      const updated = new Set(prev);
+      updated.add('Sonic');
+      return updated;
+    });
+  }, []);
   const [expandedEquipment, setExpandedEquipment] = useState<Set<string>>(new Set());
   const [conflicts, setConflicts] = useState<CrewConflict[]>([]);
   const [resolutionInProgress, setResolutionInProgress] = useState(false);
@@ -64,33 +73,43 @@ export function useCrewHub({
     queryFn: async () => {
       console.log('🎬 Fetching crew data from Supabase...');
       
-      // Fetch crew members with their folders (simplified query)
+      // Simplified crew query to debug issues
+      console.log('🔍 Fetching crew members...');
       const { data: crewMembers, error: crewError } = await supabase
         .from('crew_members')
-        .select(`
-          id,
-          name,
-          email,
-          phone,
-          folder_id,
-          crew_folders(name)
-        `);
+        .select('id, name, email, phone, folder_id');
 
       if (crewError) {
         console.error('Error fetching crew:', crewError);
         throw crewError;
       }
 
+      // Get folder names if needed
+      const folderIds = [...new Set(crewMembers?.map(c => c.folder_id).filter(Boolean) || [])];
+      let folderMap = new Map();
+      
+      if (folderIds.length > 0) {
+        console.log('🔍 Fetching crew folders...');
+        const { data: folders } = await supabase
+          .from('crew_folders')
+          .select('id, name')
+          .in('id', folderIds);
+        
+        folders?.forEach(folder => {
+          folderMap.set(folder.id, folder.name);
+        });
+      }
+
       // Transform database crew to our crew format
       const transformedCrew: CrewMember[] = (crewMembers || []).map(dbCrew => ({
         id: dbCrew.id,
         name: dbCrew.name,
-        role: 'Crew Member', // Default role - you could fetch from crew_member_roles separately
-        department: dbCrew.crew_folders?.name || 'Unassigned',
-        level: 'mid' as const, // Default level - you could add this to your DB
-        availability: 'available' as const, // Default - you could add this to your DB
-        hourlyRate: 75, // Default rate - you could add this to your DB
-        skills: [], // You could add a skills table/field
+        role: 'Crew Member', // Default role
+        department: folderMap.get(dbCrew.folder_id) || 'Sonic', // Default to Sonic
+        level: 'mid' as const,
+        availability: 'available' as const,
+        hourlyRate: 75,
+        skills: [],
         contactInfo: {
           email: dbCrew.email || undefined,
           phone: dbCrew.phone || undefined
@@ -110,7 +129,33 @@ export function useCrewHub({
     queryFn: async () => {
       console.log('📅 Fetching crew assignments from Supabase...');
       
-      // Fetch crew assignments from project_event_roles table (simplified)
+      // Debug: Let's see what data exists
+      console.log('🔍 Debug: Checking project_event_roles table...');
+      
+      // First, let's see if there's ANY data in project_event_roles
+      const { data: allRoles, error: allRolesError } = await supabase
+        .from('project_event_roles')
+        .select('id, crew_member_id, role_id, event_id, project_id')
+        .limit(10);
+        
+      console.log('📊 Found project_event_roles:', allRoles?.length || 0, allRoles);
+      
+      if (allRolesError) {
+        console.error('❌ Error querying project_event_roles:', allRolesError);
+      }
+      
+      // Also check what project_events exist for our date range
+      const { data: allEvents, error: eventsError } = await supabase
+        .from('project_events')
+        .select('id, name, date, project_id')
+        .gte('date', periodStart.toISOString().split('T')[0])
+        .lte('date', periodEnd.toISOString().split('T')[0])
+        .limit(10);
+        
+      console.log('📅 Found project_events in date range:', allEvents?.length || 0, allEvents);
+      
+      // Now try a query with event types to get real colors
+      console.log('📅 Fetching crew assignments for period:', periodStart.toISOString().split('T')[0], 'to', periodEnd.toISOString().split('T')[0]);
       const { data: eventRoles, error: assignmentsError } = await supabase
         .from('project_event_roles')
         .select(`
@@ -122,22 +167,50 @@ export function useCrewHub({
           project_events(
             name,
             date,
-            projects(name)
+            event_type_id,
+            projects(name),
+            event_types(name, color)
           ),
           crew_members(name),
           crew_roles(name)
-        `)
-        .gte('project_events.date', periodStart.toISOString().split('T')[0])
-        .lte('project_events.date', periodEnd.toISOString().split('T')[0]);
+        `);
 
       if (assignmentsError) {
-        console.error('Error fetching assignments:', assignmentsError);
+        console.error('❌ Error fetching assignments:', assignmentsError);
         // Return empty assignments if error, don't throw
         return { assignments: [] };
       }
 
-      // Transform database assignments to our format
-      const transformedAssignments: CrewAssignment[] = (eventRoles || []).map(dbRole => ({
+      console.log('📊 Raw event roles data:', eventRoles?.length || 0, eventRoles);
+      
+      // Debug: Check if event types are being fetched
+      if (eventRoles && eventRoles.length > 0) {
+        const firstRole = eventRoles[0];
+        console.log('🔍 Sample role structure:', {
+          id: firstRole.id,
+          crew_member_id: firstRole.crew_member_id,
+          project_events: firstRole.project_events,
+          hasEventTypes: !!firstRole.project_events?.event_types,
+          eventTypeName: firstRole.project_events?.event_types?.name,
+          eventTypeColor: firstRole.project_events?.event_types?.color
+        });
+      }
+      
+      // Filter for our date range after fetching
+      const filteredRoles = (eventRoles || []).filter(role => {
+        const eventDate = role.project_events?.date;
+        if (!eventDate) return false;
+        
+        const startDate = periodStart.toISOString().split('T')[0];
+        const endDate = periodEnd.toISOString().split('T')[0];
+        
+        return eventDate >= startDate && eventDate <= endDate;
+      });
+      
+      console.log('📅 Filtered roles for date range:', filteredRoles.length);
+
+      // Transform database assignments to our format with event type info
+      const transformedAssignments: CrewAssignment[] = filteredRoles.map(dbRole => ({
         id: dbRole.id,
         crewMemberId: dbRole.crew_member_id || '',
         crewMemberName: dbRole.crew_members?.name || 'Unknown',
@@ -146,11 +219,70 @@ export function useCrewHub({
         projectName: dbRole.project_events?.projects?.name || 'Unknown Project',
         eventName: dbRole.project_events?.name || 'Unknown Event',
         date: dbRole.project_events?.date || '',
-        status: 'scheduled' as const, // You could add status to your DB
-        dailyRate: dbRole.daily_rate || undefined
+        status: 'confirmed' as const, // People are either assigned or not - no "scheduled" state
+        dailyRate: dbRole.daily_rate || undefined,
+        eventType: dbRole.project_events?.event_types?.name || 'Unknown Type',
+        eventTypeColor: dbRole.project_events?.event_types?.color || '#6B7280' // Use real event color or default gray
       }));
 
-      console.log('📋 Found crew assignments:', transformedAssignments.length);
+      console.log('✅ Final transformed assignments:', transformedAssignments.length, transformedAssignments);
+      
+      // Debug: Show event type colors
+      if (transformedAssignments.length > 0) {
+        const uniqueEventTypes = [...new Set(transformedAssignments.map(a => `${a.eventType}: ${a.eventTypeColor}`))];
+        console.log('🎨 Event types and colors found:', uniqueEventTypes);
+        
+        // Show first assignment details
+        const firstAssignment = transformedAssignments[0];
+        console.log('🔍 First assignment details:', {
+          eventName: firstAssignment.eventName,
+          eventType: firstAssignment.eventType,
+          eventTypeColor: firstAssignment.eventTypeColor,
+          crewMemberName: firstAssignment.crewMemberName
+        });
+      }
+      
+      // FOR TESTING: If no real assignments, create some mock data
+      if (transformedAssignments.length === 0 && crewData?.crewMembers?.length > 0) {
+        console.log('🧪 No real assignments found, creating mock data for testing...');
+        
+        // Get first crew member for testing  
+        const testCrewMember = crewData.crewMembers[0];
+        if (testCrewMember) {
+          const mockAssignments: CrewAssignment[] = [
+            {
+              id: 'mock-1',
+              crewMemberId: testCrewMember.id,
+              crewMemberName: testCrewMember.name,
+              role: 'Sound Engineer',
+              department: testCrewMember.department,
+              projectName: 'Test Studio Session',
+              eventName: 'Recording Day 1',
+              date: periodStart.toISOString().split('T')[0], // Today
+              status: 'confirmed',
+              eventType: 'Studio Recording',
+              eventTypeColor: '#3B82F6'
+            },
+            {
+              id: 'mock-2', 
+              crewMemberId: testCrewMember.id,
+              crewMemberName: testCrewMember.name,
+              role: 'Sound Engineer',
+              department: testCrewMember.department,
+              projectName: 'Test Live Show',
+              eventName: 'Concert Setup',
+              date: new Date(periodStart.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Tomorrow
+              status: 'confirmed',
+              eventType: 'Live Performance',
+              eventTypeColor: '#EF4444'
+            }
+          ];
+          
+          console.log('🧪 Created mock assignments:', mockAssignments);
+          return { assignments: mockAssignments };
+        }
+      }
+      
       return { assignments: transformedAssignments };
     },
     staleTime: 15 * 1000,
@@ -199,47 +331,7 @@ export function useCrewHub({
     return map;
   }, [crewData?.crewMembers]);
 
-  // Transform assignments into availability data
-  const availabilityData = useMemo(() => {
-    if (!assignmentsData?.assignments || !crewData?.crewMembers) return undefined;
-
-    const availabilityMap = new Map<string, CrewAvailability>();
-    
-    // Group assignments by crew member and date
-    const assignmentsByCrewAndDate = new Map<string, CrewAssignment[]>();
-    
-    assignmentsData.assignments.forEach(assignment => {
-      const key = `${assignment.crewMemberId}-${assignment.date}`;
-      if (!assignmentsByCrewAndDate.has(key)) {
-        assignmentsByCrewAndDate.set(key, []);
-      }
-      assignmentsByCrewAndDate.get(key)!.push(assignment);
-    });
-
-    // Create availability entries
-    assignmentsByCrewAndDate.forEach((assignments, key) => {
-      const [crewMemberId, date] = key.split('-');
-      const crewMember = crewById.get(crewMemberId);
-      
-      if (crewMember) {
-        const availability: CrewAvailability = {
-          crewMemberId,
-          crewMemberName: crewMember.name,
-          date,
-          department: crewMember.department,
-          role: crewMember.role,
-          assignments,
-          totalAssignments: assignments.length,
-          isOverbooked: assignments.length > 1, // Simple overbooking detection
-          availability: assignments.length > 0 ? 'busy' : 'available'
-        };
-        
-        availabilityMap.set(key, availability);
-      }
-    });
-
-    return availabilityMap;
-  }, [assignmentsData?.assignments, crewData?.crewMembers, crewById]);
+  // Remove complex availability map - we'll query directly like equipment does
 
   // Generate project usage data for expanded crew member view
   const crewProjectUsage = useMemo(() => {
@@ -268,11 +360,44 @@ export function useCrewHub({
     return usageMap;
   }, [assignmentsData?.assignments]);
 
-  // Functions compatible with shared components
+  // Direct database query approach - like equipment does it
   const getBookingForEquipment = useCallback((crewMemberId: string, dateStr: string) => {
-    const key = `${crewMemberId}-${dateStr}`;
-    return availabilityData?.get(key);
-  }, [availabilityData]);
+    if (!assignmentsData?.assignments) return undefined;
+    
+    // Find assignments for this crew member on this date - direct lookup
+    const crewAssignments = assignmentsData.assignments.filter(
+      assignment => assignment.crewMemberId === crewMemberId && assignment.date === dateStr
+    );
+    
+    if (crewAssignments.length === 0) return undefined;
+    
+    // Get crew member info
+    const crewMember = crewById.get(crewMemberId);
+    if (!crewMember) return undefined;
+    
+    console.log('🎨 Found crew assignments for timeline:', {
+      crewMember: crewMember.name,
+      date: dateStr,
+      assignmentCount: crewAssignments.length,
+      assignments: crewAssignments.map(a => ({
+        eventName: a.eventName,
+        eventType: a.eventType,
+        eventTypeColor: a.eventTypeColor
+      }))
+    });
+    
+    // Return in equipment-compatible format
+    return {
+      equipmentId: crewMemberId,
+      equipmentName: crewMember.name,
+      stock: 1, // Crew members have availability, not stock
+      date: dateStr,
+      folderPath: crewMember.department,
+      bookings: crewAssignments, // Contains the assignments with event colors
+      totalUsed: crewAssignments.length,
+      isOverbooked: crewAssignments.length > 1, // Crew conflict
+    };
+  }, [assignmentsData?.assignments, crewById]);
 
   const getProjectQuantityForDate = useCallback((projectName: string, crewMemberId: string, dateStr: string) => {
     const projectAssignments = crewProjectUsage.get(crewMemberId) || [];
@@ -282,19 +407,28 @@ export function useCrewHub({
   }, [crewProjectUsage]);
 
   const getLowestAvailable = useCallback((crewMemberId: string, dateStrings?: string[]) => {
-    // For crew, this could represent availability score or assignment count
-    // Simple implementation: return availability status as number
-    const crewMember = crewById.get(crewMemberId);
-    if (!crewMember) return 0;
-    
-    switch (crewMember.availability) {
-      case 'available': return 1;
-      case 'busy': return 0;
-      case 'unavailable': return -1;
-      case 'vacation': return -2;
-      default: return 0;
+    // For crew, return binary availability: 1 = available, 0 = busy
+    // Check if crew member has any assignments in the given date range
+    if (!dateStrings || dateStrings.length === 0) {
+      const crewMember = crewById.get(crewMemberId);
+      if (!crewMember) return 0;
+      return crewMember.availability === 'available' ? 1 : 0;
     }
-  }, [crewById]);
+    
+    // Check specific dates for assignments using direct query approach
+    const hasAnyAssignments = dateStrings.some(dateStr => {
+      if (!assignmentsData?.assignments) return false;
+      
+      // Find assignments for this crew member on this date
+      const crewAssignments = assignmentsData.assignments.filter(
+        assignment => assignment.crewMemberId === crewMemberId && assignment.date === dateStr
+      );
+      
+      return crewAssignments.length > 0;
+    });
+    
+    return hasAnyAssignments ? 0 : 1; // 0 = busy, 1 = available
+  }, [crewById, assignmentsData?.assignments]);
 
   const toggleGroup = useCallback((groupName: string, expandAllSubRoles?: boolean) => {
     setExpandedGroups(prev => {
@@ -353,7 +487,7 @@ export function useCrewHub({
     // Rename for compatibility with shared components
     equipmentGroups: crewGroups,
     equipmentById: crewById,
-    bookingsData: availabilityData,
+    bookingsData: undefined, // Not needed with direct query approach
     conflicts,
     expandedGroups,
     expandedEquipment,
