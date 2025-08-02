@@ -15,11 +15,8 @@ interface EquipmentFolderSectionProps {
     isSelected: boolean;
     isWeekendDay: boolean;
   }>;
-  getBookingsForEquipment: (equipmentId: string, dateStr: string, equipment: any) => any;
-  getBookingState: (equipmentId: string, dateStr: string) => any;
-  updateBookingState: (equipmentId: string, dateStr: string, state: any) => void;
+  bookingsData: Map<string, any> | undefined;
   onDateChange: (date: Date) => void;
-  getLowestAvailable: (equipmentId: string) => number;
 }
 
 export function EquipmentFolderSection({
@@ -27,11 +24,8 @@ export function EquipmentFolderSection({
   expandedGroups,
   toggleGroup,
   formattedDates,
-  getBookingsForEquipment,
-  getBookingState,
-  updateBookingState,
-  onDateChange,
-  getLowestAvailable
+  bookingsData,
+  onDateChange
 }: EquipmentFolderSectionProps) {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
   const isExpanded = expandedGroups.has(mainFolder);

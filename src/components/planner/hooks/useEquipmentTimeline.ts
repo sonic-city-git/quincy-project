@@ -118,15 +118,17 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
       const targetScrollLeft = Math.max(0, targetPosition - centerOffset);
       
       if (animate) {
-        console.log(`Starting animation to ${targetDateStr} (${targetScrollLeft}px)`);
-        
-        // Custom smooth scroll with easing
+        // Only log significant animations (distance > 200px) to reduce noise
         const startScrollLeft = equipmentRowsRef.current.scrollLeft;
         const distance = targetScrollLeft - startScrollLeft;
+        
+        if (Math.abs(distance) > 200) {
+          console.log(`🎯 Animating to ${targetDateStr} (${Math.abs(distance)}px)`);
+        }
+        
+        // Custom smooth scroll with easing
         const duration = 900; // 900ms animation
         const startTime = performance.now();
-        
-        console.log(`Animation: start=${startScrollLeft}, target=${targetScrollLeft}, distance=${distance}`);
         
         const animateScroll = (currentTime: number) => {
           if (!equipmentRowsRef.current) {
@@ -146,7 +148,10 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
           if (progress < 1) {
             animationRef.current = requestAnimationFrame(animateScroll);
           } else {
-            console.log(`Animation completed in ${elapsed}ms`);
+            // Only log completion for significant animations
+            if (Math.abs(distance) > 200) {
+              console.log(`✅ Animation completed in ${elapsed.toFixed(0)}ms`);
+            }
             animationRef.current = null;
           }
         };
