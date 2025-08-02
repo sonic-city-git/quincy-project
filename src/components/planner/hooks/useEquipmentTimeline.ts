@@ -14,8 +14,8 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
   
   const equipmentRowsRef = useRef<HTMLDivElement>(null); // Master scroll area
   const loadingRef = useRef(false);
-  const hasInitializedScroll = useRef(false);
   const lastSelectedDate = useRef(selectedDate);
+  const animationRef = useRef<number | null>(null); // Track animation frame
 
   // Generate timeline dates - memoized for performance
   const timelineDates = useMemo(() => {
@@ -95,58 +95,107 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
     }, 200); // Reduced timeout
   }, [getYearBoundaryInfo]); // Removed stale dependencies
 
-  // Handle external selectedDate changes (not from infinite scroll)
+  // Custom smooth scroll animation with proper cancellation
+  const scrollToDate = useCallback((targetDate: Date, animate = true) => {
+    if (!equipmentRowsRef.current) return;
+    
+    // Cancel any existing animation
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+      animationRef.current = null;
+    }
+    
+    const targetDateStr = format(targetDate, 'yyyy-MM-dd');
+    const targetIndex = timelineDates.findIndex(date => 
+      format(date, 'yyyy-MM-dd') === targetDateStr
+    );
+    
+    if (targetIndex !== -1) {
+      const dayWidth = 50;
+      const containerWidth = equipmentRowsRef.current.clientWidth;
+      const targetPosition = targetIndex * dayWidth;
+      const centerOffset = containerWidth / 2 - dayWidth / 2;
+      const targetScrollLeft = Math.max(0, targetPosition - centerOffset);
+      
+      if (animate) {
+        console.log(`Starting animation to ${targetDateStr} (${targetScrollLeft}px)`);
+        
+        // Custom smooth scroll with easing
+        const startScrollLeft = equipmentRowsRef.current.scrollLeft;
+        const distance = targetScrollLeft - startScrollLeft;
+        const duration = 900; // 900ms animation
+        const startTime = performance.now();
+        
+        console.log(`Animation: start=${startScrollLeft}, target=${targetScrollLeft}, distance=${distance}`);
+        
+        const animateScroll = (currentTime: number) => {
+          if (!equipmentRowsRef.current) {
+            console.log('Animation stopped - no ref');
+            return;
+          }
+          
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          
+          // Ease out cubic for smooth deceleration
+          const easeOutCubic = 1 - Math.pow(1 - progress, 3);
+          
+          const currentScrollLeft = startScrollLeft + (distance * easeOutCubic);
+          equipmentRowsRef.current.scrollLeft = currentScrollLeft;
+          
+          if (progress < 1) {
+            animationRef.current = requestAnimationFrame(animateScroll);
+          } else {
+            console.log(`Animation completed in ${elapsed}ms`);
+            animationRef.current = null;
+          }
+        };
+        
+        animationRef.current = requestAnimationFrame(animateScroll);
+      } else {
+        // Instant scroll (for page load)
+        equipmentRowsRef.current.scrollLeft = targetScrollLeft;
+      }
+    } else {
+      console.log(`Date ${targetDateStr} not found in timeline`);
+    }
+  }, [timelineDates]);
+  
+  // Handle selectedDate changes (for timeline range updates only)
   useEffect(() => {
     const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
     const lastSelectedDateStr = format(lastSelectedDate.current, 'yyyy-MM-dd');
     
-    // Only update timeline if selectedDate actually changed externally
+    // Only update timeline range if selectedDate actually changed
     if (selectedDateStr !== lastSelectedDateStr) {
-      const newTimelineStart = addDays(selectedDate, -35);
-      const newTimelineEnd = addDays(selectedDate, 35);
+      // Check if selected date is already in current timeline range
+      const isInCurrentRange = selectedDate >= timelineStart && selectedDate <= timelineEnd;
       
-      setTimelineStart(newTimelineStart);
-      setTimelineEnd(newTimelineEnd);
-      
-      // Reset scroll initialization so the new date gets centered
-      hasInitializedScroll.current = false;
+      if (!isInCurrentRange) {
+        console.log(`Timeline range updating for ${selectedDateStr} (outside current range)`);
+        
+        const newTimelineStart = addDays(selectedDate, -35);
+        const newTimelineEnd = addDays(selectedDate, 35);
+        
+        setTimelineStart(newTimelineStart);
+        setTimelineEnd(newTimelineEnd);
+      } else {
+        console.log(`Date ${selectedDateStr} already in range - no timeline update needed`);
+      }
       
       // Update our tracking ref
       lastSelectedDate.current = selectedDate;
     }
-  }, [selectedDate]);
+  }, [selectedDate, timelineStart, timelineEnd]);
 
-  // Center today's date in master scroll area
+  // Cleanup animation on unmount
   useEffect(() => {
-    if (!equipmentRowsRef.current || hasInitializedScroll.current) return;
-    
-    // Use requestAnimationFrame for smooth initialization
-    requestAnimationFrame(() => {
-      if (!equipmentRowsRef.current) return;
-      
-      const today = new Date();
-      const todayDateStr = format(today, 'yyyy-MM-dd');
-      
-      const todayIndex = timelineDates.findIndex(date => 
-        format(date, 'yyyy-MM-dd') === todayDateStr
-      );
-      
-      if (todayIndex !== -1) {
-        const dayWidth = 50;
-        const containerWidth = equipmentRowsRef.current.clientWidth;
-        const todayPosition = todayIndex * dayWidth;
-        const centerOffset = containerWidth / 2 - dayWidth / 2;
-        const scrollLeft = Math.max(0, todayPosition - centerOffset);
-        
-        // Set scroll position for master scroll area only
-        equipmentRowsRef.current.scrollLeft = scrollLeft;
-        
-        hasInitializedScroll.current = true;
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
       }
-    });
-  }, [timelineDates, timelineStart, timelineEnd]);
-
-  // Note: Scroll reset is now handled in the selectedDate change effect above
+    };
+  }, []);
 
   return {
     timelineStart,
@@ -158,5 +207,6 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
     setDragStart,
     equipmentRowsRef, // Only master scroll area
     loadMoreDates,
+    scrollToDate,
   };
 }

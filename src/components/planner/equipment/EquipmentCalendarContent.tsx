@@ -13,6 +13,7 @@ interface EquipmentCalendarContentProps {
   formattedDates: Array<{
     date: Date;
     dateStr: string;
+    isToday: boolean;
     isSelected: boolean;
     isWeekendDay: boolean;
   }>;

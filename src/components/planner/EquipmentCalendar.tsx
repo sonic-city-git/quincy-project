@@ -42,6 +42,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     setDragStart,
     equipmentRowsRef,
     loadMoreDates,
+    scrollToDate,
   } = useEquipmentTimeline({ selectedDate });
 
   const scrollHandlers = useTimelineScroll({
@@ -53,6 +54,20 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     loadMoreDates,
     isMonthView,
   });
+
+  // Simple: scroll to today on page load, animate to selected date when it changes
+  useEffect(() => {
+    // On page load, scroll to today instantly (no animation)
+    const today = new Date();
+    setTimeout(() => scrollToDate(today, false), 300); // false = no animation
+  }, []); // Only on mount
+  
+  useEffect(() => {
+    // When date selection changes, animate to it smoothly
+    if (selectedDate) {
+      scrollToDate(selectedDate, true); // true = animate, no delay for immediate response
+    }
+  }, [selectedDate, scrollToDate]);
 
   // Enhanced scroll handler to sync headers with timeline content
   const handleTimelineScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -161,9 +176,13 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
   }, [timelineDates]); // Use timelineDates directly as dependency
 
   const formattedDates = useMemo(() => {
+    const today = new Date();
+    const todayStr = format(today, 'yyyy-MM-dd');
     const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+    
     return baseDates.map(baseDate => ({
       ...baseDate,
+      isToday: baseDate.dateStr === todayStr,
       isSelected: baseDate.dateStr === selectedDateStr
     }));
   }, [baseDates, selectedDate]);

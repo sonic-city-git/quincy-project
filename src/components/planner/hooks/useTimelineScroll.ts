@@ -51,10 +51,6 @@ export function useTimelineScroll({
       // Predictive data fetching (loads data well before user reaches edge)
       if (scrollLeft < startDataThreshold || scrollLeft > endDataThreshold) {
         const direction = scrollLeft < startDataThreshold ? 'start' : 'end';
-        const daysFromEdge = direction === 'start' ? 
-          Math.floor(scrollLeft / 50) : 
-          Math.floor((scrollWidth - clientWidth - scrollLeft) / 50);
-        console.log(`🚀 Prefetching ${direction} data (${daysFromEdge} days from edge)`);
         loadMoreDates(direction);
       }
     }, 50); // Very responsive for early prefetching

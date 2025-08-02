@@ -47,6 +47,7 @@ interface EquipmentDayCellProps {
   dateInfo: {
     date: Date;
     dateStr: string;
+    isToday: boolean;
     isSelected: boolean;
     isWeekendDay: boolean;
   };
@@ -88,21 +89,26 @@ const EquipmentDayCellComponent = ({
   return (
     <div 
       className={`px-1 relative ${
-        dateInfo.isSelected ? 'z-10' : ''
+        dateInfo.isSelected || dateInfo.isToday ? 'z-10' : ''
       }`}
       style={{ width: '50px' }}
     >
+      {/* Today indicator - solid blue background */}
+      {dateInfo.isToday && (
+        <div className="absolute inset-0 bg-blue-100/80 rounded pointer-events-none" />
+      )}
+      {/* Selected indicator - solid border overlay */}
       {dateInfo.isSelected && (
-        <div className="absolute inset-0 bg-blue-50/50 rounded pointer-events-none" />
+        <div className="absolute inset-0 border-2 border-blue-300 rounded pointer-events-none" />
       )}
       
       <div
         className="h-6 cursor-pointer transition-all duration-200 relative rounded-md border border-gray-200/50"
         onClick={handleClick}
-        title={booking ? 
+        title={`${booking ? 
           `${equipment.name}\nStock: ${stock}\nUsed: ${totalUsed}\nAvailable: ${available}${available < 0 ? ' (OVERBOOKED)' : ''}` : 
           `${equipment.name}\nStock: ${stock}\nAvailable: ${stock}`
-        }
+        }${dateInfo.isToday ? '\n(Today)' : ''}${dateInfo.isSelected ? '\n(Selected)' : ''}`}
         style={heatmapStyle}
       >
         {/* Show loading state if actively updating */}
@@ -139,7 +145,8 @@ export const EquipmentDayCell = memo(EquipmentDayCellComponent, (prevProps, next
   if (
     prevProps.equipment.id !== nextProps.equipment.id ||
     prevProps.dateInfo.dateStr !== nextProps.dateInfo.dateStr ||
-    prevProps.dateInfo.isSelected !== nextProps.dateInfo.isSelected
+    prevProps.dateInfo.isSelected !== nextProps.dateInfo.isSelected ||
+    prevProps.dateInfo.isToday !== nextProps.dateInfo.isToday
   ) {
     return false; // Props changed, need to re-render
   }

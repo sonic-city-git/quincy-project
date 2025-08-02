@@ -10,6 +10,7 @@ interface EquipmentTimelineSectionProps {
   formattedDates: Array<{
     date: Date;
     dateStr: string;
+    isToday: boolean;
     isSelected: boolean;
     isWeekendDay: boolean;
   }>;
