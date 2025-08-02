@@ -4,8 +4,7 @@ import { Skeleton } from "../ui/skeleton";
 
 import { useEquipmentTimeline } from './hooks/useEquipmentTimeline';
 import { useTimelineScroll } from './hooks/useTimelineScroll';
-import { useGranularBookingState } from './hooks/useEquipmentData';
-import { useOptimizedEquipmentData } from './hooks/useOptimizedEquipmentData';
+import { useEquipmentHub } from './hooks/useEquipmentHub';
 import { LAYOUT, PERFORMANCE } from './constants';
 
 // New modular components
@@ -139,23 +138,30 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     }
   }, [timelineStart, timelineEnd]);
 
-  // Use optimized data hook with stable range
+  // Use unified equipment hub with all data services
   const {
     equipmentGroups,
     equipmentById,
     bookingsData,
+    conflicts,
     expandedGroups,
     expandedEquipment,
     equipmentProjectUsage,
     isLoading,
     isEquipmentReady,
     isBookingsReady,
+    resolutionInProgress,
     getBookingForEquipment,
     getProjectQuantityForDate,
     getLowestAvailable,
     toggleGroup,
     toggleEquipmentExpansion,
-  } = useOptimizedEquipmentData({
+    updateBookingState,
+    getBookingState,
+    batchUpdateBookings,
+    clearStaleStates,
+    resolveConflict,
+  } = useEquipmentHub({
     periodStart: stableDataRange.start,
     periodEnd: stableDataRange.end,
     selectedOwner,
@@ -175,8 +181,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
   // Only show skeleton loading when we have absolutely no data
   const shouldShowLoading = !isEquipmentReady && !hasInitialData;
   
-  // Granular booking state management for optimistic updates
-  const { updateBookingState, getBookingState, batchUpdateBookings, clearStaleStates } = useGranularBookingState();
+  // Granular booking state now integrated into useEquipmentHub
 
   // Cleanup stale booking states periodically - use ref to avoid dependency on clearStaleStates
   const clearStaleStatesRef = useRef(clearStaleStates);
