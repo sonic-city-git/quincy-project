@@ -24,10 +24,65 @@ export interface EquipmentBookingFlat {
     quantity: number;
     projectName: string;
     eventName: string;
+    // Future: serialNumbers: string[] when implementing serial number tracking
+    eventId?: string; // Future: for linking to specific events
+    projectId?: string; // Future: for linking to specific projects
   }>;
   totalUsed: number;
   isOverbooked: boolean;
   folderPath: string;
+}
+
+// Project-specific quantity data for equipment expansion
+export interface ProjectQuantityCell {
+  date: string;
+  quantity: number;
+  eventName: string;
+  projectName: string;
+}
+
+// Equipment project usage aggregation
+export interface EquipmentProjectUsage {
+  equipmentId: string;
+  projectNames: string[]; // List of projects using this equipment
+  projectQuantities: Map<string, Map<string, ProjectQuantityCell>>; // projectName -> date -> quantity
+}
+
+// Future: Serial number tracking structures
+export interface EquipmentSerialNumber {
+  id: string;
+  equipmentId: string;
+  serialNumber: string;
+  condition: 'excellent' | 'good' | 'fair' | 'needs_repair' | 'out_of_service';
+  location?: string;
+  notes?: string;
+  lastMaintenance?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SerialNumberBooking {
+  id: string;
+  eventId: string;
+  projectId: string;
+  equipmentId: string;
+  serialNumberId: string;
+  dateStart: string; // yyyy-MM-dd
+  dateEnd: string; // yyyy-MM-dd
+  status: 'reserved' | 'checked_out' | 'checked_in' | 'damaged' | 'lost';
+  checkedOutBy?: string;
+  checkedOutAt?: Date;
+  checkedInBy?: string;
+  checkedInAt?: Date;
+  notes?: string;
+}
+
+// Equipment expansion state
+export interface EquipmentExpansionState {
+  // Track which equipment items are expanded to show project details
+  expandedEquipment: Set<string>; // equipment IDs
+  // Track which folder groups are expanded (existing functionality)
+  expandedGroups: Set<string>; // folder paths
 }
 
 export interface EquipmentGroup {

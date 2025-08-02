@@ -9,7 +9,10 @@ import { EquipmentGroup } from '../types';
 interface EquipmentCalendarContentProps {
   equipmentGroups: EquipmentGroup[];
   expandedGroups: Set<string>;
+  expandedEquipment: Set<string>; // New: equipment-level expansion
+  equipmentProjectUsage: Map<string, any>; // New: project usage data
   toggleGroup: (groupName: string, expandAllSubfolders?: boolean) => void;
+  toggleEquipmentExpansion: (equipmentId: string) => void; // New: equipment expansion toggle
   formattedDates: Array<{
     date: Date;
     dateStr: string;
@@ -18,6 +21,7 @@ interface EquipmentCalendarContentProps {
     isWeekendDay: boolean;
   }>;
   getBookingForEquipment: (equipmentId: string, dateStr: string) => any; // Optimized function for day cells
+  getProjectQuantityForDate: (projectName: string, equipmentId: string, dateStr: string) => any; // New: project quantity function
   equipmentRowsRef: React.RefObject<HTMLDivElement>;
   handleTimelineScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   handleTimelineMouseMove: (e: React.MouseEvent) => void;
@@ -36,9 +40,13 @@ interface EquipmentCalendarContentProps {
 const EquipmentCalendarContentComponent = ({
   equipmentGroups,
   expandedGroups,
+  expandedEquipment,
+  equipmentProjectUsage,
   toggleGroup,
+  toggleEquipmentExpansion,
   formattedDates,
   getBookingForEquipment,
+  getProjectQuantityForDate,
   equipmentRowsRef,
   handleTimelineScroll,
   handleTimelineMouseMove,
@@ -72,6 +80,8 @@ const EquipmentCalendarContentComponent = ({
               key={group.mainFolder}
               equipmentGroup={group}
               expandedGroups={expandedGroups}
+              expandedEquipment={expandedEquipment}
+              equipmentProjectUsage={equipmentProjectUsage}
               toggleGroup={toggleGroup}
               formattedDates={formattedDates}
               bookingsData={undefined}
@@ -95,8 +105,12 @@ const EquipmentCalendarContentComponent = ({
                 key={`timeline-${group.mainFolder}`}
                 equipmentGroup={group}
                 expandedGroups={expandedGroups}
+                expandedEquipment={expandedEquipment}
+                equipmentProjectUsage={equipmentProjectUsage}
                 formattedDates={formattedDates}
                 getBookingForEquipment={getBookingForEquipment}
+                getProjectQuantityForDate={getProjectQuantityForDate}
+                onToggleEquipmentExpansion={toggleEquipmentExpansion}
               />
             ))}
           </div>
@@ -114,8 +128,16 @@ export const EquipmentCalendarContent = memo(EquipmentCalendarContentComponent, 
   if (
     prevProps.equipmentGroups.length !== nextProps.equipmentGroups.length ||
     prevProps.expandedGroups !== nextProps.expandedGroups ||
+    prevProps.expandedEquipment !== nextProps.expandedEquipment ||
     prevProps.isDragging !== nextProps.isDragging
   ) {
+    return false;
+  }
+  
+  // Function references that should be stable
+  if (prevProps.toggleGroup !== nextProps.toggleGroup ||
+      prevProps.toggleEquipmentExpansion !== nextProps.toggleEquipmentExpansion ||
+      prevProps.getProjectQuantityForDate !== nextProps.getProjectQuantityForDate) {
     return false;
   }
   

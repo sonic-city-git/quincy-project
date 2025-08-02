@@ -10,7 +10,9 @@ import {
   EquipmentPlannerData,
   getBookingKey,
   sortEquipmentGroups,
-  sortEquipmentInGroup
+  sortEquipmentInGroup,
+  ProjectQuantityCell,
+  EquipmentProjectUsage
 } from '../types';
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/utils/folderSort';
 import { usePersistentExpandedGroups } from '@/hooks/usePersistentExpandedGroups';
@@ -32,6 +34,22 @@ export function useOptimizedEquipmentData({
     toggleGroup: toggleGroupPersistent, 
     initializeDefaultExpansion 
   } = usePersistentExpandedGroups();
+
+  // Equipment-level expansion state management
+  const [expandedEquipment, setExpandedEquipment] = useState<Set<string>>(new Set());
+  
+  // Toggle individual equipment expansion
+  const toggleEquipmentExpansion = useCallback((equipmentId: string) => {
+    setExpandedEquipment(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(equipmentId)) {
+        newSet.delete(equipmentId);
+      } else {
+        newSet.add(equipmentId);
+      }
+      return newSet;
+    });
+  }, []);
 
   // SLIDING WINDOW: Limit data fetching to reasonable range even with infinite scroll
   const stableDataRange = useMemo(() => {
@@ -422,6 +440,76 @@ export function useOptimizedEquipmentData({
     return Math.max(0, lowest);
   }, []); // No dependencies - function never changes reference
 
+  // Generate project usage data for expanded equipment view
+  const equipmentProjectUsage = useMemo(() => {
+    if (!bookingsData) return new Map<string, EquipmentProjectUsage>();
+    
+    const usage = new Map<string, EquipmentProjectUsage>();
+    
+    // Aggregate project usage per equipment
+    bookingsData.forEach((booking) => {
+      const { equipmentId } = booking;
+      
+      if (!usage.has(equipmentId)) {
+        usage.set(equipmentId, {
+          equipmentId,
+          projectNames: [],
+          projectQuantities: new Map()
+        });
+      }
+      
+      const equipmentUsage = usage.get(equipmentId)!;
+      
+      // Process each booking for this equipment/date
+      booking.bookings.forEach((projectBooking) => {
+        const { projectName, eventName, quantity } = projectBooking;
+        
+        // Add project to list if not already there
+        if (!equipmentUsage.projectNames.includes(projectName)) {
+          equipmentUsage.projectNames.push(projectName);
+        }
+        
+        // Initialize project quantities map if needed
+        if (!equipmentUsage.projectQuantities.has(projectName)) {
+          equipmentUsage.projectQuantities.set(projectName, new Map());
+        }
+        
+        const projectQuantities = equipmentUsage.projectQuantities.get(projectName)!;
+        
+        // Add or accumulate quantity for this date
+        const existingQuantity = projectQuantities.get(booking.date);
+        if (existingQuantity) {
+          existingQuantity.quantity += quantity;
+        } else {
+          projectQuantities.set(booking.date, {
+            date: booking.date,
+            quantity,
+            eventName,
+            projectName
+          });
+        }
+      });
+    });
+    
+    // Sort project names for consistent ordering
+    usage.forEach((equipmentUsage) => {
+      equipmentUsage.projectNames.sort();
+    });
+    
+    return usage;
+  }, [bookingsData]);
+
+  // Helper function to get project quantity for specific equipment/project/date
+  const getProjectQuantityForDate = useCallback((projectName: string, equipmentId: string, dateStr: string): ProjectQuantityCell | undefined => {
+    const equipmentUsage = equipmentProjectUsage.get(equipmentId);
+    if (!equipmentUsage) return undefined;
+    
+    const projectQuantities = equipmentUsage.projectQuantities.get(projectName);
+    if (!projectQuantities) return undefined;
+    
+    return projectQuantities.get(dateStr);
+  }, [equipmentProjectUsage]);
+
   // Group management functions with persistent state
   const toggleGroup = useCallback((groupKey: string, expandAllSubfolders = false) => {
     if (expandAllSubfolders && !groupKey.includes('/')) {
@@ -457,12 +545,16 @@ export function useOptimizedEquipmentData({
     equipmentById: equipmentData?.equipmentById || new Map(),
     bookingsData: bookingsData || new Map(),
     expandedGroups,
+    expandedEquipment, // New: equipment-level expansion state
+    equipmentProjectUsage, // New: project usage aggregation
     isLoading,
     isEquipmentReady,
     isBookingsReady,
     getBookingForEquipment,
+    getProjectQuantityForDate, // New: get project quantity for specific date
     getLowestAvailable,
     toggleGroup,
+    toggleEquipmentExpansion, // New: equipment expansion toggle function
     // Remove complex version tracking
   };
 }

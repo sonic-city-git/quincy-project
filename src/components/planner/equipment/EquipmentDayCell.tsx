@@ -1,6 +1,7 @@
 import { memo } from "react";
-import { AlertTriangle } from "lucide-react";
-import { VISUAL } from '../constants';
+import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
+import { VISUAL, LAYOUT } from '../constants';
+import { EquipmentBookingFlat } from '../types';
 
 // Simplified heatmap color calculation (no green shading)
 const getHeatmapColor = (available: number, stock: number, totalUsed: number) => {
@@ -51,13 +52,19 @@ interface EquipmentDayCellProps {
     isSelected: boolean;
     isWeekendDay: boolean;
   };
-  getBookingForEquipment: (equipmentId: string, dateStr: string) => any; // Optimized function
+  getBookingForEquipment: (equipmentId: string, dateStr: string) => EquipmentBookingFlat | undefined;
+  isExpanded: boolean;
+  onToggleExpansion: (equipmentId: string) => void;
+  isFirstCell?: boolean; // Used to show expansion indicator on first cell
 }
 
 const EquipmentDayCellComponent = ({ 
   equipment, 
   dateInfo, 
-  getBookingForEquipment
+  getBookingForEquipment,
+  isExpanded,
+  onToggleExpansion,
+  isFirstCell = false
 }: EquipmentDayCellProps) => {
   // Use optimized function instead of direct Map access
   const booking = getBookingForEquipment(equipment.id, dateInfo.dateStr);
@@ -82,7 +89,7 @@ const EquipmentDayCellComponent = ({
     <div 
       className={`px-1 relative ${
         dateInfo.isSelected || dateInfo.isToday ? 'z-10' : ''
-      }`}
+      } flex items-center justify-center`}
       style={{ width: '50px' }}
     >
       {/* Today indicator - solid blue background */}
@@ -94,15 +101,32 @@ const EquipmentDayCellComponent = ({
         <div className="absolute inset-0 border-2 border-blue-300 rounded pointer-events-none" />
       )}
       
+      {/* Main availability cell - clickable for expansion */}
       <div
-        className="h-6 transition-all duration-200 relative rounded-md border border-gray-200/50"
+        className="h-6 w-full transition-all duration-200 relative rounded-md border border-gray-200/50 cursor-pointer hover:border-gray-300"
         title={`${booking ? 
           `${equipment.name}\nStock: ${stock}\nUsed: ${totalUsed}\nAvailable: ${available}${available < 0 ? ' (OVERBOOKED)' : ''}` : 
           `${equipment.name}\nStock: ${stock}\nAvailable: ${stock}`
-        }${dateInfo.isToday ? '\n(Today)' : ''}${dateInfo.isSelected ? '\n(Selected)' : ''}`}
+        }${dateInfo.isToday ? '\n(Today)' : ''}${dateInfo.isSelected ? '\n(Selected)' : ''}\n\nClick to ${isExpanded ? 'collapse' : 'expand'} project breakdown`}
         style={heatmapStyle}
+        onClick={() => {
+          onToggleExpansion(equipment.id);
+        }}
       >
         <div className="h-full w-full flex items-center justify-center relative">
+          {/* Expansion indicator - only show on first cell */}
+          {isFirstCell && (
+            <div
+              className="absolute -left-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gray-600 flex items-center justify-center z-10"
+              title={isExpanded ? 'Collapse project breakdown' : 'Expand to see project breakdown'}
+            >
+              {isExpanded ? 
+                <ChevronDown className="h-2 w-2 text-white" /> : 
+                <ChevronRight className="h-2 w-2 text-white" />
+              }
+            </div>
+          )}
+          
           {/* Available count */}
           <span className="text-xs font-medium leading-none">
             {available}
@@ -127,6 +151,21 @@ export const EquipmentDayCell = memo(EquipmentDayCellComponent, (prevProps, next
   
   // Re-render if equipment changes
   if (prevProps.equipment.id !== nextProps.equipment.id || prevProps.equipment.stock !== nextProps.equipment.stock) {
+    return false;
+  }
+  
+  // Re-render if expansion state changes
+  if (prevProps.isExpanded !== nextProps.isExpanded) {
+    return false;
+  }
+  
+  // Re-render if expansion toggle function changes
+  if (prevProps.onToggleExpansion !== nextProps.onToggleExpansion) {
+    return false;
+  }
+  
+  // Re-render if first cell status changes
+  if (prevProps.isFirstCell !== nextProps.isFirstCell) {
     return false;
   }
   

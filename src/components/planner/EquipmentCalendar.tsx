@@ -145,12 +145,16 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     equipmentById,
     bookingsData,
     expandedGroups,
+    expandedEquipment,
+    equipmentProjectUsage,
     isLoading,
     isEquipmentReady,
     isBookingsReady,
     getBookingForEquipment,
+    getProjectQuantityForDate,
     getLowestAvailable,
     toggleGroup,
+    toggleEquipmentExpansion,
   } = useOptimizedEquipmentData({
     periodStart: stableDataRange.start,
     periodEnd: stableDataRange.end,
@@ -304,9 +308,13 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
       <EquipmentCalendarContent
         equipmentGroups={equipmentGroups}
         expandedGroups={expandedGroups}
+        expandedEquipment={expandedEquipment}
+        equipmentProjectUsage={equipmentProjectUsage}
         toggleGroup={toggleGroup}
+        toggleEquipmentExpansion={toggleEquipmentExpansion}
         formattedDates={formattedDates}
         getBookingForEquipment={getBookingForEquipment}
+        getProjectQuantityForDate={getProjectQuantityForDate}
         equipmentRowsRef={equipmentRowsRef}
         handleTimelineScroll={handleTimelineScroll}
         handleTimelineMouseMove={handleTimelineMouseMove}
