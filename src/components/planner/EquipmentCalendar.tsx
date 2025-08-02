@@ -62,12 +62,19 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     setTimeout(() => scrollToDate(today, false), 300); // false = no animation
   }, []); // Only on mount
   
+  // Track the last selected date to prevent unnecessary animations
+  const lastSelectedDateRef = useRef<string>('');
+  
   useEffect(() => {
     // When date selection changes, animate to it smoothly
-    if (selectedDate) {
-      scrollToDate(selectedDate, true); // true = animate, no delay for immediate response
+    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+    
+    // Only animate if the date actually changed (prevent automatic triggers)
+    if (selectedDateStr !== lastSelectedDateRef.current) {
+      lastSelectedDateRef.current = selectedDateStr;
+      scrollToDate(selectedDate, true); // true = animate
     }
-  }, [selectedDate, scrollToDate]);
+  }, [selectedDate]); // Remove scrollToDate from dependencies to prevent automatic triggers
 
   // Enhanced scroll handler to sync headers with timeline content
   const handleTimelineScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
@@ -124,6 +131,8 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     bookingsData,
     expandedGroups,
     isLoading,
+    isEquipmentReady,
+    isBookingsReady,
     getBookingForEquipment,
     getLowestAvailable,
     toggleGroup,
@@ -133,8 +142,9 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     selectedOwner,
   });
 
-  // Prevent re-renders from loading states during timeline expansion
-  // Only show loading for initial load, not during expansions
+  // More sophisticated loading state management
+  // Show skeleton only when we have no equipment data at all
+  // If equipment is ready but bookings are loading, show equipment with loading indicators
   const [hasInitialData, setHasInitialData] = useState(false);
   
   useEffect(() => {
@@ -143,7 +153,8 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     }
   }, [equipmentGroups.length, hasInitialData]);
 
-  const shouldShowLoading = isLoading && !hasInitialData;
+  // Only show skeleton loading when we have absolutely no data
+  const shouldShowLoading = !isEquipmentReady && !hasInitialData;
   
   // Granular booking state management for optimistic updates
   const { updateBookingState, getBookingState, batchUpdateBookings, clearStaleStates } = useGranularBookingState();
@@ -228,7 +239,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     return sections;
   }, [baseDates]);
 
-  // Stabilized booking lookup function - no dependencies since underlying function is stable
+  // Simple booking lookup - let React Query handle updates naturally
   const getBookingsForEquipment = useCallback((equipmentId: string, dateStr: string, equipment: any) => {
     const booking = getBookingForEquipment(equipmentId, dateStr);
     if (!booking) return undefined;
@@ -243,7 +254,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
       total_used: booking.totalUsed,
       is_overbooked: booking.isOverbooked,
     };
-  }, []); // No dependencies - underlying function is stable
+  }, [getBookingForEquipment]); // Update when underlying function changes
 
   // Optimized lowest available calculation - memoize date strings from stable baseDates
   const dateStrings = useMemo(() => baseDates.map(d => d.dateStr), [baseDates]);
@@ -280,16 +291,17 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
         expandedGroups={expandedGroups}
         toggleGroup={toggleGroup}
         formattedDates={formattedDates}
-        getBookingsForEquipment={getBookingsForEquipment}
-        getBookingState={getBookingState}
-        updateBookingState={updateBookingState}
+        getBookingForEquipment={getBookingForEquipment}
         onDateChange={onDateChange}
-        getLowestAvailable={getLowestAvailableForEquipment}
         equipmentRowsRef={equipmentRowsRef}
         handleTimelineScroll={handleTimelineScroll}
         handleTimelineMouseMove={handleTimelineMouseMove}
         scrollHandlers={scrollHandlers}
         isDragging={isDragging}
+        getBookingsForEquipment={getBookingsForEquipment}
+        getBookingState={getBookingState}
+        updateBookingState={updateBookingState}
+        getLowestAvailable={getLowestAvailableForEquipment}
       />
     </div>
   );

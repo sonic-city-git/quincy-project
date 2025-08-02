@@ -17,11 +17,8 @@ interface EquipmentCalendarContentProps {
     isSelected: boolean;
     isWeekendDay: boolean;
   }>;
-  getBookingsForEquipment: (equipmentId: string, dateStr: string, equipment: any) => any;
-  getBookingState: (equipmentId: string, dateStr: string) => any;
-  updateBookingState: (equipmentId: string, dateStr: string, state: any) => void;
+  getBookingForEquipment: (equipmentId: string, dateStr: string) => any; // Optimized function for day cells
   onDateChange: (date: Date) => void;
-  getLowestAvailable: (equipmentId: string) => number;
   equipmentRowsRef: React.RefObject<HTMLDivElement>;
   handleTimelineScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   handleTimelineMouseMove: (e: React.MouseEvent) => void;
@@ -31,6 +28,10 @@ interface EquipmentCalendarContentProps {
     handleMouseLeave: () => void;
   };
   isDragging: boolean;
+  getBookingsForEquipment: (equipmentId: string, dateStr: string, equipment: any) => any; // Legacy function for folder section
+  getBookingState: (equipmentId: string, dateStr: string) => any;
+  updateBookingState: (equipmentId: string, dateStr: string, state: any) => void;
+  getLowestAvailable: (equipmentId: string) => number;
 }
 
 const EquipmentCalendarContentComponent = ({
@@ -38,16 +39,17 @@ const EquipmentCalendarContentComponent = ({
   expandedGroups,
   toggleGroup,
   formattedDates,
-  getBookingsForEquipment,
-  getBookingState,
-  updateBookingState,
+  getBookingForEquipment,
   onDateChange,
-  getLowestAvailable,
   equipmentRowsRef,
   handleTimelineScroll,
   handleTimelineMouseMove,
   scrollHandlers,
-  isDragging
+  isDragging,
+  getBookingsForEquipment,
+  getBookingState,
+  updateBookingState,
+  getLowestAvailable
 }: EquipmentCalendarContentProps) => {
   if (!equipmentGroups || equipmentGroups.length === 0) {
     return (
@@ -100,9 +102,7 @@ const EquipmentCalendarContentComponent = ({
                 equipmentGroup={group}
                 expandedGroups={expandedGroups}
                 formattedDates={formattedDates}
-                getBookingsForEquipment={getBookingsForEquipment}
-                getBookingState={getBookingState}
-                updateBookingState={updateBookingState}
+                getBookingForEquipment={getBookingForEquipment}
                 onDateChange={onDateChange}
               />
             ))}
@@ -124,6 +124,11 @@ export const EquipmentCalendarContent = memo(EquipmentCalendarContentComponent, 
     prevProps.isDragging !== nextProps.isDragging
   ) {
     return false;
+  }
+  
+  // CRITICAL: Check if booking function changed - this ensures timeline sections get updated data
+  if (prevProps.getBookingForEquipment !== nextProps.getBookingForEquipment) {
+    return false; // Force re-render when booking function changes
   }
   
   // Smart date comparison for timeline expansion

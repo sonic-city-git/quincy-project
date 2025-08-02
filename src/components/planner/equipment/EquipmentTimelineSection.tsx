@@ -14,9 +14,7 @@ interface EquipmentTimelineSectionProps {
     isSelected: boolean;
     isWeekendDay: boolean;
   }>;
-  getBookingsForEquipment: (equipmentId: string, dateStr: string, equipment: any) => any;
-  getBookingState: (equipmentId: string, dateStr: string) => any;
-  updateBookingState: (equipmentId: string, dateStr: string, state: any) => void;
+  getBookingForEquipment: (equipmentId: string, dateStr: string) => any;
   onDateChange: (date: Date) => void;
 }
 
@@ -24,9 +22,7 @@ const EquipmentTimelineSectionComponent = ({
   equipmentGroup,
   expandedGroups,
   formattedDates,
-  getBookingsForEquipment,
-  getBookingState,
-  updateBookingState,
+  getBookingForEquipment,
   onDateChange
 }: EquipmentTimelineSectionProps) => {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
@@ -50,9 +46,7 @@ const EquipmentTimelineSectionComponent = ({
                   key={dateInfo.date.toISOString()}
                   equipment={equipment}
                   dateInfo={dateInfo}
-                  getBookingsForEquipment={getBookingsForEquipment}
-                  getBookingState={getBookingState}
-                  updateBookingState={updateBookingState}
+                  getBookingForEquipment={getBookingForEquipment}
                   onDateChange={onDateChange}
                 />
               ))}
@@ -81,9 +75,7 @@ const EquipmentTimelineSectionComponent = ({
                           key={dateInfo.date.toISOString()}
                           equipment={equipment}
                           dateInfo={dateInfo}
-                          getBookingsForEquipment={getBookingsForEquipment}
-                          getBookingState={getBookingState}
-                          updateBookingState={updateBookingState}
+                          getBookingForEquipment={getBookingForEquipment}
                           onDateChange={onDateChange}
                         />
                       ))}
@@ -109,6 +101,11 @@ export const EquipmentTimelineSection = memo(EquipmentTimelineSectionComponent, 
   // Expanded state must be the same
   if (prevProps.expandedGroups !== nextProps.expandedGroups) {
     return false;
+  }
+  
+  // CRITICAL: Check if booking function changed - this ensures day cells update with new data
+  if (prevProps.getBookingForEquipment !== nextProps.getBookingForEquipment) {
+    return false; // Force re-render when booking function changes
   }
   
   // Smart date comparison - allow expansion but not complete replacement
