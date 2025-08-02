@@ -133,18 +133,30 @@ const EquipmentDayCellComponent = ({
   );
 };
 
-// Memoize for performance - only re-render if booking data or loading state changes
+// Optimized memoization - functions are now stable, so only check data changes
 export const EquipmentDayCell = memo(EquipmentDayCellComponent, (prevProps, nextProps) => {
+  // Quick checks first for performance
+  if (
+    prevProps.equipment.id !== nextProps.equipment.id ||
+    prevProps.dateInfo.dateStr !== nextProps.dateInfo.dateStr ||
+    prevProps.dateInfo.isSelected !== nextProps.dateInfo.isSelected
+  ) {
+    return false; // Props changed, need to re-render
+  }
+  
+  // Now check booking state changes
   const prevState = prevProps.getBookingState(prevProps.equipment.id, prevProps.dateInfo.dateStr);
   const nextState = nextProps.getBookingState(nextProps.equipment.id, nextProps.dateInfo.dateStr);
   
+  // Check if booking data actually changed
+  const prevBooking = prevState.data || prevProps.getBookingsForEquipment(prevProps.equipment.id, prevProps.dateInfo.dateStr, prevProps.equipment);
+  const nextBooking = nextState.data || nextProps.getBookingsForEquipment(nextProps.equipment.id, nextProps.dateInfo.dateStr, nextProps.equipment);
+  
   return (
-    prevProps.equipment.id === nextProps.equipment.id &&
-    prevProps.dateInfo.dateStr === nextProps.dateInfo.dateStr &&
-    prevProps.dateInfo.isSelected === nextProps.dateInfo.isSelected &&
     prevState.isLoading === nextState.isLoading &&
-    prevState.data === nextState.data &&
-    prevState.error === nextState.error
+    prevState.error === nextState.error &&
+    prevBooking?.total_used === nextBooking?.total_used && // Only re-render if the actual usage changed
+    prevBooking?.is_overbooked === nextBooking?.is_overbooked
   );
 });
 

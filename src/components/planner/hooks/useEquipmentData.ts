@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { supabase } from '../../../integrations/supabase/client';
@@ -100,11 +100,14 @@ export function useGranularBookingState() {
     });
   }, []);
 
-  // Get booking state for specific equipment-date
+  // Get booking state for specific equipment-date - use ref to avoid recreating function
+  const bookingStatesRef = useRef(bookingStates);
+  bookingStatesRef.current = bookingStates;
+  
   const getBookingState = useCallback((equipmentId: string, dateStr: string) => {
     const key = `${equipmentId}-${dateStr}`;
-    return bookingStates.get(key) || { isLoading: false, data: null, lastUpdated: 0 };
-  }, [bookingStates]);
+    return bookingStatesRef.current.get(key) || { isLoading: false, data: null, lastUpdated: 0 };
+  }, []); // No dependencies - function never changes
 
   // Batch update multiple bookings
   const batchUpdateBookings = useCallback((updates: Array<{

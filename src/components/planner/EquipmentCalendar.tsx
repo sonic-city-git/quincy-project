@@ -84,7 +84,25 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     }
   }, []);
 
-  // Use optimized data hook
+  // Debounced data range to prevent constant refetching during infinite scroll
+  const [stableDataRange, setStableDataRange] = useState({
+    start: timelineStart,
+    end: timelineEnd
+  });
+  
+  // Faster data range updates for better prefetching
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      setStableDataRange({
+        start: timelineStart,
+        end: timelineEnd
+      });
+    }, 50); // Reduced to 50ms for faster data fetching
+
+    return () => clearTimeout(debounceTimer);
+  }, [timelineStart, timelineEnd]);
+
+  // Use optimized data hook with stable range
   const {
     equipmentGroups,
     equipmentById,
@@ -95,45 +113,67 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
     getLowestAvailable,
     toggleGroup,
   } = useOptimizedEquipmentData({
-    periodStart: timelineStart,
-    periodEnd: timelineEnd,
+    periodStart: stableDataRange.start,
+    periodEnd: stableDataRange.end,
     selectedOwner,
   });
+
+  // Prevent re-renders from loading states during timeline expansion
+  // Only show loading for initial load, not during expansions
+  const [hasInitialData, setHasInitialData] = useState(false);
+  
+  useEffect(() => {
+    if (equipmentGroups.length > 0 && !hasInitialData) {
+      setHasInitialData(true);
+    }
+  }, [equipmentGroups.length, hasInitialData]);
+
+  const shouldShowLoading = isLoading && !hasInitialData;
   
   // Granular booking state management for optimistic updates
   const { updateBookingState, getBookingState, batchUpdateBookings, clearStaleStates } = useGranularBookingState();
 
-  // Cleanup stale booking states periodically
+  // Cleanup stale booking states periodically - use ref to avoid dependency on clearStaleStates
+  const clearStaleStatesRef = useRef(clearStaleStates);
+  clearStaleStatesRef.current = clearStaleStates;
+  
   useEffect(() => {
     const interval = setInterval(() => {
-      clearStaleStates();
+      clearStaleStatesRef.current();
     }, PERFORMANCE.CACHE_CLEANUP_INTERVAL);
 
     return () => clearInterval(interval);
-  }, [clearStaleStates]);
+  }, []); // No dependencies - interval runs for component lifetime
 
 
 
 
 
   // Pre-format dates for performance - avoid repeated format() calls
-  const formattedDates = useMemo(() => {
+  const baseDates = useMemo(() => {
     return timelineDates.map(date => ({
       date,
       dateStr: format(date, 'yyyy-MM-dd'),
       isoString: date.toISOString(),
       isWeekendDay: isWeekend(date),
-      isSelected: isSameDay(date, selectedDate),
       monthYear: format(date, 'yyyy-MM')
     }));
-  }, [timelineDates, selectedDate]);
+  }, [timelineDates]); // Use timelineDates directly as dependency
 
-  // Month sections with alternating backgrounds  
+  const formattedDates = useMemo(() => {
+    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+    return baseDates.map(baseDate => ({
+      ...baseDate,
+      isSelected: baseDate.dateStr === selectedDateStr
+    }));
+  }, [baseDates, selectedDate]);
+
+  // Month sections with alternating backgrounds - enhanced for year transitions
   const monthSections = useMemo(() => {
     const sections = [];
     let currentSection = null;
     
-    formattedDates.forEach((dateInfo, index) => {
+    baseDates.forEach((dateInfo, index) => {
       if (!currentSection || currentSection.monthYear !== dateInfo.monthYear) {
         // Finish previous section
         if (currentSection) {
@@ -142,6 +182,10 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
           sections.push(currentSection);
         }
         
+        // Check if this is a new year for enhanced styling
+        const isNewYear = sections.length > 0 && 
+          dateInfo.date.getFullYear() !== sections[sections.length - 1].date.getFullYear();
+        
         // Start new section
         currentSection = {
           monthYear: dateInfo.monthYear,
@@ -149,22 +193,23 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
           startIndex: index,
           endIndex: index,
           width: 0,
-          isEven: sections.length % 2 === 0
+          isEven: sections.length % 2 === 0,
+          isNewYear
         };
       }
     });
     
     // Don't forget the last section
     if (currentSection) {
-      currentSection.endIndex = formattedDates.length - 1;
+      currentSection.endIndex = baseDates.length - 1;
       currentSection.width = (currentSection.endIndex - currentSection.startIndex + 1) * 50;
       sections.push(currentSection);
     }
     
     return sections;
-  }, [formattedDates]);
+  }, [baseDates]);
 
-  // Optimized booking lookup function using new data structure
+  // Stabilized booking lookup function - no dependencies since underlying function is stable
   const getBookingsForEquipment = useCallback((equipmentId: string, dateStr: string, equipment: any) => {
     const booking = getBookingForEquipment(equipmentId, dateStr);
     if (!booking) return undefined;
@@ -179,15 +224,16 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
       total_used: booking.totalUsed,
       is_overbooked: booking.isOverbooked,
     };
-  }, [getBookingForEquipment]);
+  }, []); // No dependencies - underlying function is stable
 
-  // Optimized lowest available calculation
+  // Optimized lowest available calculation - memoize date strings from stable baseDates
+  const dateStrings = useMemo(() => baseDates.map(d => d.dateStr), [baseDates]);
+  
   const getLowestAvailableForEquipment = useCallback((equipmentId: string) => {
-    const dates = formattedDates.map(d => d.dateStr);
-    return getLowestAvailable(equipmentId, dates);
-  }, [getLowestAvailable, formattedDates]);
+    return getLowestAvailable(equipmentId, dateStrings);
+  }, [dateStrings]); // dateStrings dependency needed, but getLowestAvailable is stable
 
-  if (isLoading) {
+  if (shouldShowLoading) {
     return (
       <div className="space-y-4">
         <Skeleton className="h-16 w-full" />

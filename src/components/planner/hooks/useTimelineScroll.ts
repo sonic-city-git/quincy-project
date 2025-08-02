@@ -1,4 +1,4 @@
-import { RefObject, useCallback, useEffect, useRef } from 'react';
+import { RefObject, useCallback, useEffect, useRef, useMemo } from 'react';
 
 interface UseTimelineScrollProps {
   timelineRef?: RefObject<HTMLDivElement>; // Now optional - for static headers
@@ -28,28 +28,37 @@ export function useTimelineScroll({
   // Pre-calculate threshold to avoid repeated calculations
   const threshold = 0.3;
 
-  // Simplified: Single master scroll handler
+  // More responsive infinite scroll handler
   const handleEquipmentScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;
     const { scrollLeft, scrollWidth, clientWidth } = element;
     
-    // Debounced loading check for performance
+    // Reduced debounce for better responsiveness
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
     
     scrollTimeoutRef.current = setTimeout(() => {
-      // Pre-calculated threshold values for better performance
-      const startThreshold = scrollWidth * threshold;
-      const endThreshold = scrollWidth * (1 - threshold) - clientWidth;
+      // Predictive data fetching strategy:
+      // - Trigger expansion when user is within 1000px (20 days) of edge
+      // - This gives time for data to load before user actually reaches the end
+      // - Each expansion adds 35 days (5 weeks) of buffer in that direction
+      const dataFetchThreshold = 1000; // Start prefetching when within 20 days of edge
       
-      if (scrollLeft < startThreshold) {
-        loadMoreDates('start');
-      } else if (scrollLeft > endThreshold) {
-        loadMoreDates('end');
+      const startDataThreshold = dataFetchThreshold;
+      const endDataThreshold = scrollWidth - clientWidth - dataFetchThreshold;
+      
+      // Predictive data fetching (loads data well before user reaches edge)
+      if (scrollLeft < startDataThreshold || scrollLeft > endDataThreshold) {
+        const direction = scrollLeft < startDataThreshold ? 'start' : 'end';
+        const daysFromEdge = direction === 'start' ? 
+          Math.floor(scrollLeft / 50) : 
+          Math.floor((scrollWidth - clientWidth - scrollLeft) / 50);
+        console.log(`🚀 Prefetching ${direction} data (${daysFromEdge} days from edge)`);
+        loadMoreDates(direction);
       }
-    }, 100); // Smooth infinite loading
-  }, [loadMoreDates, threshold]);
+    }, 50); // Very responsive for early prefetching
+  }, [loadMoreDates]);
 
   // Simplified: Mouse drag handlers for master scroll area
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
@@ -136,7 +145,8 @@ export function useTimelineScroll({
     };
   }, []);
 
-  return {
+  // Memoize the returned object to prevent unnecessary re-renders of components using these handlers
+  return useMemo(() => ({
     handleEquipmentScroll, // Single master scroll handler
     handleMouseDown,
     handleMouseMove,
@@ -144,5 +154,5 @@ export function useTimelineScroll({
     handleMouseLeave,
     navigatePeriod,
     navigateDays,
-  };
+  }), [loadMoreDates]); // Simplified dependencies - only track core dependencies
 }

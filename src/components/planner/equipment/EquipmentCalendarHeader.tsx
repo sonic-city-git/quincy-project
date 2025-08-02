@@ -65,45 +65,85 @@ export function EquipmentCalendarHeader({
             {/* Month Header */}
             <div className="h-12 border-b border-border/50">
               <div className="flex">
-                {monthSections.map((section) => (
-                  <div 
-                    key={`section-${section.monthYear}`}
-                    className={`border-r border-border/30 flex items-center justify-center ${
-                      section.isEven ? 'bg-muted/40' : 'bg-muted/20'
-                    }`}
-                    style={{ width: `${section.width}px`, minWidth: `${LAYOUT.DAY_CELL_WIDTH}px` }}
-                  >
-                    <span className="text-xs font-semibold text-foreground whitespace-nowrap px-2 py-1 bg-background/90 rounded-md shadow-sm border border-border/20">
-                      {format(section.date, 'MMMM yyyy')}
-                    </span>
-                  </div>
-                ))}
+                {monthSections.map((section, index) => {
+                  // Check if this is a year transition (different year from previous section)
+                  const prevSection = index > 0 ? monthSections[index - 1] : null;
+                  const isYearTransition = prevSection && 
+                    section.date.getFullYear() !== prevSection.date.getFullYear();
+                  
+                  return (
+                    <div 
+                      key={`section-${section.monthYear}`}
+                      className={`border-r border-border/30 flex items-center justify-center relative ${
+                        section.isEven ? 'bg-muted/40' : 'bg-muted/20'
+                      }`}
+                      style={{ width: `${section.width}px`, minWidth: `${LAYOUT.DAY_CELL_WIDTH}px` }}
+                    >
+                      {/* Year transition indicator */}
+                      {isYearTransition && (
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l"></div>
+                      )}
+                      
+                      <span className={`text-xs font-semibold whitespace-nowrap px-2 py-1 rounded-md shadow-sm border ${
+                        isYearTransition 
+                          ? 'bg-blue-50 text-blue-800 border-blue-200' 
+                          : 'bg-background/90 text-foreground border-border/20'
+                      }`}>
+                        {format(section.date, 'MMMM yyyy')}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
             
             {/* Date Header */}
             <div className="h-12 flex py-3">
-              {formattedDates.map((dateInfo) => (
-                <div key={dateInfo.date.toISOString()} className="px-1" style={{ width: LAYOUT.DAY_CELL_WIDTH }}>
-                  <div
-                    className={`h-8 flex flex-col items-center justify-center rounded-md text-xs font-medium transition-colors cursor-pointer select-none ${
-                      dateInfo.isSelected 
-                        ? 'bg-blue-500 text-white shadow-md' 
-                        : dateInfo.isWeekendDay
-                        ? 'bg-orange-100 text-orange-800 hover:bg-orange-200'
-                        : 'text-muted-foreground hover:bg-muted/50'
-                    }`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDateChange(dateInfo.date);
-                    }}
-                    title={format(dateInfo.date, 'EEEE, MMMM d, yyyy')}
-                  >
-                    <div className="text-[10px] leading-none">{format(dateInfo.date, 'EEE')[0]}</div>
-                    <div className="text-xs font-medium leading-none">{format(dateInfo.date, 'd')}</div>
+              {formattedDates.map((dateInfo, index) => {
+                // Check if this is the first day of a new year
+                const prevDate = index > 0 ? formattedDates[index - 1] : null;
+                const isNewYear = prevDate && 
+                  dateInfo.date.getFullYear() !== prevDate.date.getFullYear();
+                const isNewMonth = prevDate && 
+                  (dateInfo.date.getMonth() !== prevDate.date.getMonth() || isNewYear);
+                
+                return (
+                  <div key={dateInfo.date.toISOString()} className="px-1 relative" style={{ width: LAYOUT.DAY_CELL_WIDTH }}>
+                    {/* Year transition indicator for date cells */}
+                    {isNewYear && (
+                      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-blue-500 rounded"></div>
+                    )}
+                    
+                    <div
+                      className={`h-8 flex flex-col items-center justify-center rounded-md text-xs font-medium transition-colors cursor-pointer select-none relative ${
+                        dateInfo.isSelected 
+                          ? 'bg-blue-500 text-white shadow-md' 
+                          : isNewYear
+                          ? 'bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200'
+                          : dateInfo.isWeekendDay
+                          ? 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+                          : 'text-muted-foreground hover:bg-muted/50'
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onDateChange(dateInfo.date);
+                      }}
+                      title={format(dateInfo.date, 'EEEE, MMMM d, yyyy')}
+                    >
+                      <div className="text-[10px] leading-none">{format(dateInfo.date, 'EEE')[0]}</div>
+                      <div className="text-xs font-medium leading-none">
+                        {format(dateInfo.date, 'd')}
+                        {/* Show year on first day of year */}
+                        {isNewYear && (
+                          <div className="text-[8px] text-blue-600 font-bold leading-none">
+                            {format(dateInfo.date, 'yy')}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
