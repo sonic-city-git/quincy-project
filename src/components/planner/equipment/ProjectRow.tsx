@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { LAYOUT } from '../constants';
 
 interface ProjectQuantityCell {
@@ -26,9 +26,21 @@ const ProjectRowComponent = ({
   formattedDates,
   getProjectQuantityForDate
 }: ProjectRowProps) => {
+  // PERFORMANCE: Pre-calculate ALL quantities in one go instead of 71 individual calls
+  const quantitiesMap = useMemo(() => {
+    const map = new Map<string, ProjectQuantityCell>();
+    formattedDates.forEach(dateInfo => {
+      const quantityCell = getProjectQuantityForDate(projectName, equipmentId, dateInfo.dateStr);
+      if (quantityCell) {
+        map.set(dateInfo.dateStr, quantityCell);
+      }
+    });
+    return map;
+  }, [projectName, equipmentId, formattedDates, getProjectQuantityForDate]);
+
   return (
     <div 
-      className="flex items-center border-b border-gray-300 bg-gray-700"
+      className="project-row flex items-center border-b border-gray-300 bg-gray-700"
       style={{ height: LAYOUT.PROJECT_ROW_HEIGHT }}
     >
       {/* Timeline quantity cells only - minimal, clean design */}
@@ -40,7 +52,7 @@ const ProjectRowComponent = ({
         }}
       >
         {formattedDates.map(dateInfo => {
-          const quantityCell = getProjectQuantityForDate(projectName, equipmentId, dateInfo.dateStr);
+          const quantityCell = quantitiesMap.get(dateInfo.dateStr);
           const quantity = quantityCell?.quantity || 0;
           
           return (

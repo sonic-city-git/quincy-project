@@ -1,117 +1,42 @@
 /**
- * OPTIMIZED EXPANSION ANIMATIONS - GPU-accelerated & smooth
+ * PERFORMANCE OPTIMIZATIONS - No animations, just speed
  * 
- * Key optimizations:
- * 1. Transform-based animations (GPU-accelerated)
- * 2. Will-change hints for better performance
- * 3. Contain: layout for isolated reflows
- * 4. Reduced motion support
+ * Focus on:
+ * 1. GPU layers for repaints
+ * 2. Layout containment 
+ * 3. Memory efficiency
+ * 4. Instant responsiveness
  */
 
-/* Equipment row container with performance optimizations */
-.equipment-row-container {
+/* Performance optimizations for equipment rows */
+.equipment-row {
   contain: layout; /* Isolate layout calculations */
-  will-change: transform; /* Hint to GPU */
+  will-change: auto; /* Let browser decide when to optimize */
 }
 
-/* Project rows container with smooth expansion */
-.project-rows-container {
-  transform-origin: top;
-  backface-visibility: hidden; /* GPU optimization */
-  will-change: height, opacity, transform;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Smooth opacity and transform transitions */
-.project-rows-container.expanding {
-  animation: expandRows 0.2s ease-out forwards;
-}
-
-.project-rows-container.collapsing {
-  animation: collapseRows 0.2s ease-in forwards;
-}
-
-/* GPU-accelerated animations */
-@keyframes expandRows {
-  from {
-    opacity: 0;
-    transform: translateY(-8px) scaleY(0.95);
-    height: 0;
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scaleY(1);
-    height: var(--expanded-height);
-  }
-}
-
-@keyframes collapseRows {
-  from {
-    opacity: 1;
-    transform: translateY(0) scaleY(1);
-    height: var(--expanded-height);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-8px) scaleY(0.95);
-    height: 0;
-  }
-}
-
-/* Hover optimizations */
-.equipment-row-container:hover {
+/* GPU acceleration for large timeline containers */
+.equipment-timeline-container {
+  contain: layout style; /* Aggressive containment */
   transform: translateZ(0); /* Force GPU layer */
 }
 
-/* Performance-optimized expansion states */
-.equipment-row-expanded {
-  contain: layout style;
+/* Project rows performance - no animations */
+.project-rows-expanded {
+  contain: layout; /* Isolate layout changes */
 }
 
-.equipment-row-collapsed {
-  contain: layout;
+.project-row {
+  contain: layout; /* Prevent layout thrashing */
+  backface-visibility: hidden; /* GPU optimization */
 }
 
-/* Virtual scrolling optimizations */
-.virtualized-container {
-  transform: translateZ(0); /* GPU layer */
-  contain: strict; /* Aggressive containment */
+/* Day cell performance optimization */
+.equipment-day-cell {
+  contain: layout style; /* Maximum containment */
+  will-change: auto;
 }
 
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  .project-rows-container,
-  .equipment-row-container {
-    transition: none;
-    animation: none;
-  }
-  
-  .project-rows-container.expanding,
-  .project-rows-container.collapsing {
-    animation: none;
-  }
-}
-
-/* High refresh rate optimizations */
-@media (min-resolution: 120dpi) {
-  .project-rows-container {
-    transition-duration: 0.15s; /* Faster on high-refresh displays */
-  }
-}
-
-/* Performance hints for browsers */
-.equipment-timeline {
-  contain: layout;
-  will-change: scroll-position;
-}
-
-/* Batch expansion performance */
-.batch-expanding .project-rows-container {
-  transition-delay: calc(var(--expansion-index) * 0.02s); /* Staggered animations */
-}
-
-/* Memory optimizations for large lists */
-.equipment-row-container:not(.visible) {
-  contain: strict;
-  content-visibility: auto;
+/* Memory optimization for large lists */
+.equipment-row:not(.visible) {
+  content-visibility: auto; /* Only render visible items */
 }
