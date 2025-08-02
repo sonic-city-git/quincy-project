@@ -288,7 +288,11 @@ export function useEquipmentHub({
 
   // Transform flattened equipment into grouped structure
   const equipmentGroups: EquipmentGroup[] = useMemo(() => {
-    if (!equipmentData?.flattenedEquipment) return [];
+    if (!equipmentData?.flattenedEquipment) {
+      console.log('🔧 useEquipmentHub: No flattened equipment data');
+      return [];
+    }
+    console.log('🔧 useEquipmentHub: Processing equipment data:', equipmentData.flattenedEquipment.length, 'items');
 
     const groupsMap = new Map<string, EquipmentGroup>();
     
