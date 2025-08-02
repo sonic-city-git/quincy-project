@@ -8,7 +8,7 @@ import { useTimelineScroll } from './shared/hooks/useTimelineScroll';
 import { LAYOUT, PERFORMANCE } from './shared/constants';
 
 // Shared timeline components
-import { TimelineHeader } from './shared/components/TimelineHeader';
+import { PlannerFilters } from './shared/components/TimelineHeader';
 import { TimelineContent } from './shared/components/TimelineContent';
 import { SharedTimeline } from './shared/types/timeline';
 
@@ -16,40 +16,37 @@ interface UnifiedCalendarProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   selectedOwner?: string;
-  viewMode?: 'week' | 'month';
-  activeTab?: 'equipment' | 'crew';
-  onTabChange?: (tab: 'equipment' | 'crew') => void;
   sharedTimeline: SharedTimeline;
   resourceType: 'equipment' | 'crew';
+  filters?: PlannerFilters;
 }
 
 export function UnifiedCalendar({ 
   selectedDate, 
   onDateChange, 
   selectedOwner, 
-  viewMode = 'week', 
-  activeTab, 
-  onTabChange, 
   sharedTimeline,
-  resourceType 
+  resourceType,
+  filters
 }: UnifiedCalendarProps) {
-  const isMonthView = viewMode === 'month';
-  
-  // Ref for timeline header sync
-  const stickyHeadersRef = useRef<HTMLDivElement>(null);
   
   // Use shared timeline state
   const {
     timelineStart,
     timelineEnd,
     timelineDates,
+    formattedDates,
+    monthSections,
     isDragging,
     setIsDragging,
     dragStart,
     setDragStart,
     equipmentRowsRef,
+    stickyHeadersRef,
     loadMoreDates,
     scrollToDate,
+    visibleTimelineStart,
+    visibleTimelineEnd,
   } = sharedTimeline;
 
   const scrollHandlers = useTimelineScroll({
@@ -59,7 +56,7 @@ export function UnifiedCalendar({
     dragStart,
     setDragStart,
     loadMoreDates,
-    isMonthView,
+    isMonthView: false, // Removed viewMode prop
   });
 
   // Note: Scroll logic is now simple - just scroll to center selected date
@@ -86,13 +83,7 @@ export function UnifiedCalendar({
     }
   }, [scrollHandlers.handleMouseMove, isDragging]);
 
-  // Handle header scroll - sync back to timeline content (two-way sync)
-  const handleHeaderScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const scrollLeft = e.currentTarget.scrollLeft;
-    if (equipmentRowsRef.current) {
-      equipmentRowsRef.current.scrollLeft = scrollLeft;
-    }
-  }, []);
+  // Note: Header scroll is now handled in Planner.tsx
 
   // Immediate data range updates for responsive highlighting
   // Only debounce during rapid timeline expansion, not during date selection
@@ -132,12 +123,18 @@ export function UnifiedCalendar({
     periodStart: stableDataRange.start,
     periodEnd: stableDataRange.end,
     selectedOwner,
+    // Pass visible timeline boundaries for project filtering
+    visibleTimelineStart,
+    visibleTimelineEnd,
   });
   
   const crewHub = useCrewHub({
     periodStart: stableDataRange.start,
     periodEnd: stableDataRange.end,
     selectedOwner,
+    // Pass visible timeline boundaries for project filtering
+    visibleTimelineStart,
+    visibleTimelineEnd,
   });
   
   // Use the appropriate hub data based on resource type
@@ -192,69 +189,7 @@ export function UnifiedCalendar({
     return () => clearInterval(interval);
   }, []);
 
-  // Pre-format dates for performance - avoid repeated format() calls
-  const baseDates = useMemo(() => {
-    return timelineDates.map(date => ({
-      date,
-      dateStr: format(date, 'yyyy-MM-dd'),
-      isoString: date.toISOString(),
-      isWeekendDay: isWeekend(date),
-      monthYear: format(date, 'yyyy-MM')
-    }));
-  }, [timelineDates]);
-
-  const formattedDates = useMemo(() => {
-    const today = new Date();
-    const todayStr = format(today, 'yyyy-MM-dd');
-    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-    
-    return baseDates.map(baseDate => ({
-      ...baseDate,
-      isToday: baseDate.dateStr === todayStr,
-      isSelected: baseDate.dateStr === selectedDateStr
-    }));
-  }, [baseDates, selectedDate]);
-
-  // Month sections with alternating backgrounds - enhanced for year transitions
-  const monthSections = useMemo(() => {
-    const sections = [];
-    let currentSection = null;
-    
-    baseDates.forEach((dateInfo, index) => {
-      if (!currentSection || currentSection.monthYear !== dateInfo.monthYear) {
-        // Finish previous section
-        if (currentSection) {
-          currentSection.endIndex = index - 1;
-          currentSection.width = (currentSection.endIndex - currentSection.startIndex + 1) * 50;
-          sections.push(currentSection);
-        }
-        
-        // Check if this is a new year for enhanced styling
-        const isNewYear = sections.length > 0 && 
-          dateInfo.date.getFullYear() !== sections[sections.length - 1].date.getFullYear();
-        
-        // Start new section
-        currentSection = {
-          monthYear: dateInfo.monthYear,
-          date: dateInfo.date,
-          startIndex: index,
-          endIndex: index,
-          width: 0,
-          isEven: sections.length % 2 === 0,
-          isNewYear
-        };
-      }
-    });
-    
-    // Don't forget the last section
-    if (currentSection) {
-      currentSection.endIndex = baseDates.length - 1;
-      currentSection.width = (currentSection.endIndex - currentSection.startIndex + 1) * 50;
-      sections.push(currentSection);
-    }
-    
-    return sections;
-  }, [baseDates]);
+  // Note: formattedDates and monthSections are now provided by useSharedTimeline
 
   // Resource-specific booking lookup
   const getBookingsForEquipment = useCallback((resourceId: string, dateStr: string, resource: any) => {
@@ -289,7 +224,7 @@ export function UnifiedCalendar({
   }, [getBookingForEquipment, resourceType]);
 
   // Optimized availability calculation
-  const dateStrings = useMemo(() => baseDates.map(d => d.dateStr), [baseDates]);
+  const dateStrings = useMemo(() => formattedDates.map(d => d.dateStr), [formattedDates]);
   
   const getLowestAvailableForEquipment = useCallback((resourceId: string) => {
     return getLowestAvailable(resourceId, dateStrings);
@@ -309,39 +244,27 @@ export function UnifiedCalendar({
   }
 
   return (
-    <div className="space-y-4">
-      <TimelineHeader
-        formattedDates={formattedDates}
-        monthSections={monthSections}
-        onDateChange={onDateChange}
-        onHeaderScroll={handleHeaderScroll}
-        stickyHeadersRef={stickyHeadersRef}
-        resourceType={resourceType}
-        activeTab={activeTab}
-        onTabChange={onTabChange}
-      />
-
-      <TimelineContent
-        equipmentGroups={equipmentGroups}
-        expandedGroups={expandedGroups}
-        expandedEquipment={expandedEquipment}
-        equipmentProjectUsage={equipmentProjectUsage}
-        toggleGroup={toggleGroup}
-        toggleEquipmentExpansion={toggleEquipmentExpansion}
-        formattedDates={formattedDates}
-        getBookingForEquipment={getBookingForEquipment}
-        getProjectQuantityForDate={getProjectQuantityForDate}
-        equipmentRowsRef={equipmentRowsRef}
-        handleTimelineScroll={handleTimelineScroll}
-        handleTimelineMouseMove={handleTimelineMouseMove}
-        scrollHandlers={scrollHandlers}
-        isDragging={isDragging}
-        getBookingsForEquipment={getBookingsForEquipment}
-        getBookingState={getBookingState}
-        updateBookingState={updateBookingState}
-        getLowestAvailable={getLowestAvailableForEquipment}
-        resourceType={resourceType}
-      />
-    </div>
+    <TimelineContent
+      equipmentGroups={equipmentGroups}
+      expandedGroups={expandedGroups}
+      expandedEquipment={expandedEquipment}
+      equipmentProjectUsage={equipmentProjectUsage}
+      toggleGroup={toggleGroup}
+      toggleEquipmentExpansion={toggleEquipmentExpansion}
+      formattedDates={formattedDates}
+      getBookingForEquipment={getBookingForEquipment}
+      getProjectQuantityForDate={getProjectQuantityForDate}
+      equipmentRowsRef={equipmentRowsRef}
+      handleTimelineScroll={handleTimelineScroll}
+      handleTimelineMouseMove={handleTimelineMouseMove}
+      scrollHandlers={scrollHandlers}
+      isDragging={isDragging}
+      getBookingsForEquipment={getBookingsForEquipment}
+      getBookingState={getBookingState}
+      updateBookingState={updateBookingState}
+      getLowestAvailable={getLowestAvailableForEquipment}
+      resourceType={resourceType}
+      filters={filters}
+    />
   );
 }

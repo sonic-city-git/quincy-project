@@ -1,7 +1,13 @@
 import { format } from "date-fns";
-import { Package, Users } from "lucide-react";
+import { Package, Users, Search, Filter, X } from "lucide-react";
 import { Button } from "../../../ui/button";
+import { Input } from "../../../ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../ui/select";
+import { Badge } from "../../../ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "../../../ui/popover";
 import { LAYOUT } from '../constants';
+import { FOLDER_ORDER } from '../../../../types/equipment';
+import { useState, useEffect, useCallback } from "react";
 
 interface MonthSection {
   monthYear: string;
@@ -10,6 +16,13 @@ interface MonthSection {
   endIndex: number;
   width: number;
   isEven: boolean;
+}
+
+// Filter types
+export interface PlannerFilters {
+  search: string;
+  equipmentType: string;
+  crewRole: string;
 }
 
 interface TimelineHeaderProps {
@@ -27,6 +40,8 @@ interface TimelineHeaderProps {
   resourceType?: 'equipment' | 'crew';
   activeTab?: 'equipment' | 'crew';
   onTabChange?: (tab: 'equipment' | 'crew') => void;
+  filters?: PlannerFilters;
+  onFiltersChange?: (filters: PlannerFilters) => void;
 }
 
 export function TimelineHeader({
@@ -37,7 +52,9 @@ export function TimelineHeader({
   stickyHeadersRef,
   resourceType = 'equipment',
   activeTab,
-  onTabChange
+  onTabChange,
+  filters,
+  onFiltersChange
 }: TimelineHeaderProps) {
   // Dynamic content based on resource type
   const isCrewPlanner = resourceType === 'crew';
@@ -47,13 +64,194 @@ export function TimelineHeader({
   const iconColor = isCrewPlanner ? 'text-orange-500' : 'text-green-500';
   const resourceLabel = isCrewPlanner ? 'Crew' : 'Equipment';
   const resourceSubtitle = isCrewPlanner ? 'Name / Role' : 'Name / Stock';
+
+  // Predefined filters
+  const equipmentTypes = FOLDER_ORDER;
+  const crewRoles = ['Sound Engineer', 'Lighting Technician', 'Camera Operator', 'Stage Manager', 'Production Assistant', 'Director', 'Producer'];
+
+  // Local search state for immediate UI feedback
+  const [localSearchValue, setLocalSearchValue] = useState(filters?.search || '');
+
+  // Stable updateFilters function
+  const updateFilters = useCallback((updates: Partial<PlannerFilters>) => {
+    if (filters && onFiltersChange) {
+      // Convert "all" values to empty strings for internal state
+      const normalizedUpdates = Object.entries(updates).reduce((acc, [key, value]) => {
+        acc[key as keyof PlannerFilters] = value === 'all' ? '' : value;
+        return acc;
+      }, {} as Partial<PlannerFilters>);
+      
+      onFiltersChange({ ...filters, ...normalizedUpdates });
+    }
+  }, [filters, onFiltersChange]);
+
+  // Update local search when external filters change
+  useEffect(() => {
+    setLocalSearchValue(filters?.search || '');
+  }, [filters?.search]);
+
+  // Debounced search to prevent lag
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (localSearchValue !== filters?.search) {
+        updateFilters({ search: localSearchValue });
+      }
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [localSearchValue, filters?.search, updateFilters]);
+
+  // Filter helpers
+  const hasActiveFilters = filters && (
+    filters.search || 
+    (filters.equipmentType && filters.equipmentType !== 'all') || 
+    (filters.crewRole && filters.crewRole !== 'all')
+  );
+
+  const clearAllFilters = () => {
+    setLocalSearchValue(''); // Clear local search state too
+    if (onFiltersChange) {
+      onFiltersChange({
+        search: '',
+        equipmentType: '',
+        crewRole: ''
+      });
+    }
+  };
   return (
     <div className="sticky top-[72px] z-40 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-sm">
-      {/* Dynamic Planner Title */}
-      <div className="flex items-center justify-between py-3 px-4 bg-background">
-        <div className="flex items-center gap-2">
-          <IconComponent className={`h-5 w-5 ${iconColor}`} />
-          <h3 className="text-lg font-semibold">{title}</h3>
+      {/* Header with Title, Filters, and Tab Toggle */}
+      <div className="flex items-center justify-between py-3 px-4 bg-background border-b border-border/30">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <IconComponent className={`h-5 w-5 ${iconColor}`} />
+            <h3 className="text-lg font-semibold">{title}</h3>
+          </div>
+          
+          {/* Search and Filters - only show if filters are provided */}
+          {filters && onFiltersChange && (
+            <div className="flex items-center gap-2">
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={`Search ${isCrewPlanner ? 'crew' : 'equipment'}...`}
+                  value={localSearchValue}
+                  onChange={(e) => setLocalSearchValue(e.target.value)}
+                  className="pl-9 w-64 h-8"
+                />
+              </div>
+
+              {/* Quick Filters */}
+              <div className="flex items-center gap-1">
+                {isCrewPlanner ? (
+                  <Select value={filters.crewRole || 'all'} onValueChange={(value) => updateFilters({ crewRole: value })}>
+                    <SelectTrigger className="w-auto h-8 text-xs">
+                      <SelectValue placeholder="Role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All roles</SelectItem>
+                      {crewRoles.map(role => (
+                        <SelectItem key={role} value={role}>{role}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Select value={filters.equipmentType || 'all'} onValueChange={(value) => updateFilters({ equipmentType: value })}>
+                    <SelectTrigger className="w-auto h-8 text-xs">
+                      <SelectValue placeholder="Type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All types</SelectItem>
+                      {equipmentTypes.map(type => (
+                        <SelectItem key={type} value={type}>{type}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+
+                {/* More Filters Button */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" size="sm" className="h-8 px-2 relative">
+                      <Filter className="h-4 w-4" />
+                      {hasActiveFilters && (
+                        <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 p-0 text-xs flex items-center justify-center">
+                          !
+                        </Badge>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-64" align="end">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium text-sm">Advanced Filters</h4>
+                        {hasActiveFilters && (
+                          <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-auto p-1 text-xs">
+                            Clear all
+                          </Button>
+                        )}
+                      </div>
+                      
+                      {/* Advanced filters can be added here */}
+                      <div className="text-sm text-muted-foreground">
+                        More filter options coming soon...
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Active Filters Display */}
+              {hasActiveFilters && (
+                <div className="flex items-center gap-1">
+                  {filters.search && (
+                    <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+                      Search: {filters.search.slice(0, 10)}{filters.search.length > 10 ? '...' : ''}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-auto p-0 ml-1 hover:bg-transparent"
+                        onClick={() => {
+                          setLocalSearchValue('');
+                          updateFilters({ search: '' });
+                        }}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  )}
+
+                  {filters.equipmentType && filters.equipmentType !== 'all' && (
+                    <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+                      {filters.equipmentType}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-auto p-0 ml-1 hover:bg-transparent"
+                        onClick={() => updateFilters({ equipmentType: '' })}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  )}
+                  {filters.crewRole && filters.crewRole !== 'all' && (
+                    <Badge variant="secondary" className="flex items-center gap-1 text-xs">
+                      {filters.crewRole}
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-auto p-0 ml-1 hover:bg-transparent"
+                        onClick={() => updateFilters({ crewRole: '' })}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
         
         {/* Tab Toggle - only show if both activeTab and onTabChange are provided */}

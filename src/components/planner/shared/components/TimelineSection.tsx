@@ -22,6 +22,7 @@ interface TimelineSectionProps {
   getProjectQuantityForDate: (projectName: string, equipmentId: string, dateStr: string) => ProjectQuantityCell | undefined;
   onToggleEquipmentExpansion: (equipmentId: string) => void; // New: handle equipment expansion
   resourceType?: 'equipment' | 'crew'; // Added prop to indicate resource type
+  filters?: any; // Add filters to detect when filtering is active
 }
 
 const TimelineSectionComponent = ({
@@ -33,10 +34,16 @@ const TimelineSectionComponent = ({
   getBookingForEquipment,
   getProjectQuantityForDate,
   onToggleEquipmentExpansion,
-  resourceType = 'equipment'
+  resourceType = 'equipment',
+  filters
 }: TimelineSectionProps) => {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
-  const isExpanded = expandedGroups.has(mainFolder);
+  
+  // Only use forced expansion when filters are active, otherwise use normal expansion logic
+  const hasActiveFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
+  const isExpanded = hasActiveFilters && equipmentGroup.isExpanded !== undefined 
+    ? equipmentGroup.isExpanded 
+    : expandedGroups.has(mainFolder);
   
   // PERFORMANCE: Pre-calculate timeline width once for all equipment
   const timelineWidthPx = useMemo(() => 
@@ -83,18 +90,35 @@ const TimelineSectionComponent = ({
                 </div>
               </div>
               
-              {/* Project breakdown rows when expanded */}
-              {isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
+              {/* Project breakdown rows when expanded - always show, even if no projects */}
+              {isEquipmentExpanded && (
                 <div>
-                  {equipmentUsage.projectNames.map((projectName) => (
-                    <ProjectRow
-                      key={`${equipment.id}-${projectName}`}
-                      projectName={projectName}
-                      equipmentId={equipment.id}
-                      formattedDates={formattedDates}
-                      getProjectQuantityForDate={getProjectQuantityForDate}
-                    />
-                  ))}
+                  {equipmentUsage && equipmentUsage.projectNames.length > 0 ? (
+                    equipmentUsage.projectNames.map((projectName) => (
+                      <ProjectRow
+                        key={`${equipment.id}-${projectName}`}
+                        projectName={projectName}
+                        equipmentId={equipment.id}
+                        formattedDates={formattedDates}
+                        getProjectQuantityForDate={getProjectQuantityForDate}
+                      />
+                    ))
+                  ) : (
+                    <div 
+                      className="project-row flex items-center border-b border-gray-300 bg-gray-500"
+                      style={{ height: LAYOUT.PROJECT_ROW_HEIGHT / 2 }}
+                    >
+                      <div 
+                        className="flex items-center justify-center text-gray-400 text-sm"
+                        style={{ 
+                          minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
+                          height: '100%'
+                        }}
+                      >
+                        No project assignments
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -104,7 +128,10 @@ const TimelineSectionComponent = ({
         {/* Subfolders timeline */}
         {subFolders.map((subFolder) => {
           const subFolderKey = `${mainFolder}/${subFolder.name}`;
-          const isSubfolderExpanded = expandedGroups.has(subFolderKey);
+          // Only use forced expansion when filters are active, otherwise use normal expansion logic
+          const isSubfolderExpanded = hasActiveFilters && subFolder.isExpanded !== undefined 
+            ? subFolder.isExpanded 
+            : expandedGroups.has(subFolderKey);
           
           return (
             <Collapsible key={subFolder.name} open={isSubfolderExpanded}>
@@ -142,18 +169,35 @@ const TimelineSectionComponent = ({
                         </div>
                       </div>
                       
-                      {/* Project breakdown rows when expanded */}
-                      {isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
+                      {/* Project breakdown rows when expanded - always show, even if no projects */}
+                      {isEquipmentExpanded && (
                         <div className="project-rows-expanded">
-                          {equipmentUsage.projectNames.map((projectName) => (
-                            <ProjectRow
-                              key={`${equipment.id}-${projectName}`}
-                              projectName={projectName}
-                              equipmentId={equipment.id}
-                              formattedDates={formattedDates}
-                              getProjectQuantityForDate={getProjectQuantityForDate}
-                            />
-                          ))}
+                          {equipmentUsage && equipmentUsage.projectNames.length > 0 ? (
+                            equipmentUsage.projectNames.map((projectName) => (
+                              <ProjectRow
+                                key={`${equipment.id}-${projectName}`}
+                                projectName={projectName}
+                                equipmentId={equipment.id}
+                                formattedDates={formattedDates}
+                                getProjectQuantityForDate={getProjectQuantityForDate}
+                              />
+                            ))
+                          ) : (
+                            <div 
+                              className="project-row flex items-center border-b border-gray-300 bg-gray-500"
+                              style={{ height: LAYOUT.PROJECT_ROW_HEIGHT / 2 }}
+                            >
+                              <div 
+                                className="flex items-center justify-center text-gray-400 text-sm"
+                                style={{ 
+                                  minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
+                                  height: '100%'
+                                }}
+                              >
+                                No project assignments
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -168,67 +212,5 @@ const TimelineSectionComponent = ({
   );
 };
 
-// Smart memoization that handles timeline expansion gracefully
-export const TimelineSection = memo(TimelineSectionComponent, (prevProps, nextProps) => {
-  // Equipment group must be the same
-  if (prevProps.equipmentGroup.mainFolder !== nextProps.equipmentGroup.mainFolder) {
-    return false;
-  }
-  
-  // Expanded state must be the same (folder-level)
-  if (prevProps.expandedGroups !== nextProps.expandedGroups) {
-    return false;
-  }
-  
-  // Equipment expansion state must be the same
-  if (prevProps.expandedEquipment !== nextProps.expandedEquipment) {
-    return false;
-  }
-  
-  // Equipment project usage data must be the same
-  if (prevProps.equipmentProjectUsage !== nextProps.equipmentProjectUsage) {
-    return false;
-  }
-  
-  // Equipment expansion toggle function must be the same
-  if (prevProps.onToggleEquipmentExpansion !== nextProps.onToggleEquipmentExpansion) {
-    return false;
-  }
-  
-  // Project quantity function must be the same
-  if (prevProps.getProjectQuantityForDate !== nextProps.getProjectQuantityForDate) {
-    return false;
-  }
-  
-  // CRITICAL: Check if booking function changed - this ensures day cells update with new data
-  if (prevProps.getBookingForEquipment !== nextProps.getBookingForEquipment) {
-    return false; // Force re-render when booking function changes
-  }
-  
-  // Smart date comparison - allow expansion but not complete replacement
-  const prevDates = prevProps.formattedDates;
-  const nextDates = nextProps.formattedDates;
-  
-  // If array length is the same, check first/last dates AND selected date changes
-  if (prevDates.length === nextDates.length) {
-    const firstLastSame = (
-      prevDates[0]?.dateStr === nextDates[0]?.dateStr &&
-      prevDates[prevDates.length - 1]?.dateStr === nextDates[nextDates.length - 1]?.dateStr
-    );
-    
-    // Also check if selected date has changed within the range
-    const prevSelectedIndex = prevDates.findIndex(d => d.isSelected);
-    const nextSelectedIndex = nextDates.findIndex(d => d.isSelected);
-    const selectedChanged = prevSelectedIndex !== nextSelectedIndex;
-    
-    return firstLastSame && !selectedChanged;
-  }
-  
-  // If next array is longer (expansion), always re-render to show new dates
-  if (nextDates.length > prevDates.length) {
-    return false; // Force re-render when timeline expands
-  }
-  
-  // Array got smaller or completely different - need re-render
-  return false;
-});
+// Much simpler memoization - let React handle most optimizations
+export const TimelineSection = memo(TimelineSectionComponent);

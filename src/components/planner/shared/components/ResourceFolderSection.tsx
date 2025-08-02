@@ -16,7 +16,8 @@ interface ResourceFolderSectionProps {
     isSelected: boolean;
     isWeekendDay: boolean;
   }>;
-  bookingsData: Map<string, any> | undefined;
+  getBookingsForEquipment: (equipmentId: string, dateStr: string, equipment: any) => any;
+  filters?: any; // Add filters to detect when filtering is active
 }
 
 export function ResourceFolderSection({
@@ -26,10 +27,16 @@ export function ResourceFolderSection({
   equipmentProjectUsage,
   toggleGroup,
   formattedDates,
-  bookingsData
+  getBookingsForEquipment,
+  filters
 }: ResourceFolderSectionProps) {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
-  const isExpanded = expandedGroups.has(mainFolder);
+  
+  // Only use forced expansion when filters are active, otherwise use normal expansion logic
+  const hasActiveFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
+  const isExpanded = hasActiveFilters && equipmentGroup.isExpanded !== undefined 
+    ? equipmentGroup.isExpanded 
+    : expandedGroups.has(mainFolder);
 
   return (
     <Collapsible open={isExpanded}>
@@ -101,7 +108,10 @@ export function ResourceFolderSection({
         {/* Subfolders */}
         {subFolders.map((subFolder) => {
           const subFolderKey = `${mainFolder}/${subFolder.name}`;
-          const isSubfolderExpanded = expandedGroups.has(subFolderKey);
+          // Only use forced expansion when filters are active, otherwise use normal expansion logic
+          const isSubfolderExpanded = hasActiveFilters && subFolder.isExpanded !== undefined 
+            ? subFolder.isExpanded 
+            : expandedGroups.has(subFolderKey);
           
           return (
             <Collapsible key={subFolder.name} open={isSubfolderExpanded}>

@@ -17,7 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { usePersistentExpandedGroups } from '@/hooks/usePersistentExpandedGroups';
-import { FOLDER_ORDER } from '@/utils/folderSort';
+import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/utils/folderSort';
 import { 
   FlattenedEquipment, 
   EquipmentBookingFlat, 
@@ -31,6 +31,9 @@ interface UseEquipmentHubProps {
   periodStart: Date;
   periodEnd: Date;
   selectedOwner?: string;
+  // Visible timeline boundaries for UI filtering
+  visibleTimelineStart?: Date;
+  visibleTimelineEnd?: Date;
 }
 
 // Helper functions for data processing
@@ -44,7 +47,9 @@ const getBookingKey = (equipmentId: string, date: string) => `${equipmentId}-${d
 export function useEquipmentHub({
   periodStart,
   periodEnd,
-  selectedOwner
+  selectedOwner,
+  visibleTimelineStart,
+  visibleTimelineEnd
 }: UseEquipmentHubProps) {
   
   // Stable date range to prevent unnecessary re-fetches during infinite scroll
@@ -195,7 +200,7 @@ export function useEquipmentHub({
       const dateRangeEnd = format(stableDataRange.end, 'yyyy-MM-dd');
       
       const dayRange = Math.ceil((stableDataRange.end.getTime() - stableDataRange.start.getTime()) / (1000 * 60 * 60 * 24));
-      console.log(`📊 Unified booking query: ${dateRangeStart} to ${dateRangeEnd} (${dayRange} days)`);
+      // Unified booking query for date range
       const queryStart = Date.now();
       
       // Query 1: Get events in date range with project info
@@ -273,7 +278,7 @@ export function useEquipmentHub({
       });
 
       const queryTime = Date.now() - queryStart;
-      console.log(`⚡ Unified booking query completed in ${queryTime}ms for ${dayRange} days (${bookingsByKey.size} bookings)`);
+      // Query completed successfully
 
       return bookingsByKey;
     },
@@ -324,10 +329,38 @@ export function useEquipmentHub({
     });
 
     const groups = Array.from(groupsMap.values());
-    const sortedGroups = sortEquipmentGroups(groups, FOLDER_ORDER);
     
+    // Sort main folders according to FOLDER_ORDER (same as equipment page)
+    const sortedGroups = groups.sort((a, b) => {
+      const indexA = FOLDER_ORDER.indexOf(a.mainFolder);
+      const indexB = FOLDER_ORDER.indexOf(b.mainFolder);
+      
+      if (indexA === -1 && indexB === -1) return a.mainFolder.localeCompare(b.mainFolder);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      
+      return indexA - indexB;
+    });
+    
+    // Sort equipment and subfolders within each group (same as equipment page)
     sortedGroups.forEach(group => {
+      // Sort equipment within main folder alphabetically
       group.equipment = group.equipment.sort((a, b) => a.name.localeCompare(b.name));
+      
+      // Sort subfolders according to SUBFOLDER_ORDER, then equipment within subfolders
+      group.subFolders = group.subFolders.sort((a, b) => {
+        const orderArray = SUBFOLDER_ORDER[group.mainFolder] || [];
+        const indexA = orderArray.indexOf(a.name);
+        const indexB = orderArray.indexOf(b.name);
+        
+        if (indexA === -1 && indexB === -1) return a.name.localeCompare(b.name);
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        
+        return indexA - indexB;
+      });
+      
+      // Sort equipment within each subfolder alphabetically
       group.subFolders.forEach(subFolder => {
         subFolder.equipment = subFolder.equipment.sort((a, b) => a.name.localeCompare(b.name));
       });
@@ -336,58 +369,87 @@ export function useEquipmentHub({
     return sortedGroups;
   }, [equipmentData?.flattenedEquipment, expandedGroups]);
 
-  // Generate project usage data for expanded equipment view
+  // Smart project usage - only shows projects within visible timeline range
   const equipmentProjectUsage = useMemo(() => {
-    if (!bookingsData) return new Map<string, EquipmentProjectUsage>();
+    if (!bookingsData || !(bookingsData instanceof Map)) return new Map<string, EquipmentProjectUsage>();
 
-    const usage = new Map<string, EquipmentProjectUsage>();
+    // Use visible timeline boundaries if provided, otherwise fall back to data boundaries
+    const timelineStart = visibleTimelineStart 
+      ? visibleTimelineStart.toISOString().split('T')[0]
+      : stableDataRange.start.toISOString().split('T')[0];
+    const timelineEnd = visibleTimelineEnd 
+      ? visibleTimelineEnd.toISOString().split('T')[0]
+      : stableDataRange.end.toISOString().split('T')[0];
 
-    bookingsData.forEach((booking) => {
+    // Convert Map to array and filter by visible timeline range
+    const filteredBookings = Array.from(bookingsData.values()).filter(booking => 
+      booking.date >= timelineStart && booking.date <= timelineEnd
+    );
+
+    const projectsByEquipment = new Map<string, Set<string>>();
+    
+    // First pass: collect unique project names per equipment within visible timeline range
+    filteredBookings.forEach((booking) => {
+      
       const { equipmentId } = booking;
-
-      if (!usage.has(equipmentId)) {
-        usage.set(equipmentId, {
-          equipmentId,
-          projectNames: [],
-          projectQuantities: new Map()
-        });
+      if (!projectsByEquipment.has(equipmentId)) {
+        projectsByEquipment.set(equipmentId, new Set());
       }
-
-      const equipmentUsage = usage.get(equipmentId)!;
-
+      
       booking.bookings.forEach((projectBooking) => {
-        const { projectName, eventName, quantity } = projectBooking;
-
-        if (!equipmentUsage.projectNames.includes(projectName)) {
-          equipmentUsage.projectNames.push(projectName);
-        }
-
-        if (!equipmentUsage.projectQuantities.has(projectName)) {
-          equipmentUsage.projectQuantities.set(projectName, new Map());
-        }
-
-        const projectQuantities = equipmentUsage.projectQuantities.get(projectName)!;
-
-        const existingQuantity = projectQuantities.get(booking.date);
-        if (existingQuantity) {
-          existingQuantity.quantity += quantity;
-        } else {
-          projectQuantities.set(booking.date, {
-            date: booking.date,
-            quantity,
-            eventName,
-            projectName
-          });
-        }
+        projectsByEquipment.get(equipmentId)!.add(projectBooking.projectName);
       });
     });
 
-    usage.forEach((equipmentUsage) => {
-      equipmentUsage.projectNames.sort();
+    const usage = new Map<string, EquipmentProjectUsage>();
+
+    // Second pass: build detailed data only for equipment with projects in visible timeline
+    projectsByEquipment.forEach((projects, equipmentId) => {
+      const equipmentUsage: EquipmentProjectUsage = {
+        equipmentId,
+        projectNames: Array.from(projects).sort(),
+        projectQuantities: new Map()
+      };
+
+      // Build project quantities for this equipment within visible timeline
+      bookingsData.forEach((booking) => {
+        if (booking.equipmentId !== equipmentId) return;
+        if (booking.date < timelineStart || booking.date > timelineEnd) return;
+
+        booking.bookings.forEach((projectBooking) => {
+          const { projectName, eventName, quantity } = projectBooking;
+
+          if (!equipmentUsage.projectQuantities.has(projectName)) {
+            equipmentUsage.projectQuantities.set(projectName, new Map());
+          }
+
+          const projectQuantities = equipmentUsage.projectQuantities.get(projectName)!;
+          const existingQuantity = projectQuantities.get(booking.date);
+          
+          if (existingQuantity) {
+            existingQuantity.quantity += quantity;
+          } else {
+            projectQuantities.set(booking.date, {
+              date: booking.date,
+              quantity,
+              eventName,
+              projectName
+            });
+          }
+        });
+      });
+
+      usage.set(equipmentId, equipmentUsage);
     });
 
     return usage;
-  }, [bookingsData]);
+  }, [
+    bookingsData,
+    visibleTimelineStart?.getTime(), // Use timestamp for more stable dependency
+    visibleTimelineEnd?.getTime(),
+    stableDataRange.start.getTime(),
+    stableDataRange.end.getTime()
+  ]);
 
   // FIXED: Direct data access for real-time updates (no refs!)
   const getBookingForEquipment = useCallback((equipmentId: string, dateStr: string): EquipmentBookingFlat | undefined => {

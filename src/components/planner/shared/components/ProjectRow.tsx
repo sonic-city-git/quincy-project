@@ -21,7 +21,7 @@ const ProjectRowComponent = ({
   formattedDates,
   getProjectQuantityForDate
 }: ProjectRowProps) => {
-  // PERFORMANCE: Pre-calculate ALL quantities in one go instead of 71 individual calls
+  // PERFORMANCE: Pre-calculate quantities with stable memoization
   const quantitiesMap = useMemo(() => {
     const map = new Map<string, ProjectQuantityCell>();
     formattedDates.forEach(dateInfo => {
@@ -31,7 +31,13 @@ const ProjectRowComponent = ({
       }
     });
     return map;
-  }, [projectName, equipmentId, formattedDates, getProjectQuantityForDate]);
+  }, [
+    projectName, 
+    equipmentId, 
+    // More stable dependency - only recompute if date range changes
+    formattedDates.length > 0 ? `${formattedDates[0].dateStr}-${formattedDates[formattedDates.length - 1].dateStr}` : '',
+    getProjectQuantityForDate
+  ]);
 
   return (
     <div 

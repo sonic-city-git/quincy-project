@@ -48,12 +48,6 @@ const getCrewAvailabilityColor = (booking: any, isCrew: boolean = false) => {
   // CRITICAL: Check overbooked first, regardless of stock level
   // This handles cases where stock is 0 but totalUsed > 0
   if (available < 0) {
-    console.log('🔴 Equipment overbooked - applying red color:', {
-      stock,
-      totalUsed,
-      available,
-      booking
-    });
     return {
       backgroundColor: HEATMAP.COLORS.OVERBOOKED_BASE,
       color: HEATMAP.TEXT_COLORS.WHITE
@@ -111,17 +105,7 @@ const TimelineDayCellComponent = ({
   // Use optimized function instead of direct Map access
   const booking = getBookingForEquipment(equipment.id, dateInfo.dateStr);
   
-  // Debug crew assignments reaching timeline cells
-  if (isCrew && booking?.bookings?.length > 0) {
-    console.log('🎨 Crew assignment in timeline cell:', {
-      crewMember: equipment.name,
-      date: dateInfo.dateStr,
-      assignments: booking.bookings.length,
-      firstAssignment: booking.bookings[0],
-      eventType: booking.bookings[0]?.eventType,
-      eventColor: booking.bookings[0]?.eventTypeColor
-    });
-  }
+  // Crew assignments data available for rendering
   
   // Calculate styling based on crew vs equipment
   const heatmapStyle = getCrewAvailabilityColor(booking, isCrew);

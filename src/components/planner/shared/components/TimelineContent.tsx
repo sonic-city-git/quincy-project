@@ -1,10 +1,11 @@
-import { memo } from "react";
+import React, { memo, useMemo } from "react";
 import { Package } from "lucide-react";
 import { Card, CardContent } from "../../../ui/card";
 import { ResourceFolderSection } from "./ResourceFolderSection";
 import { TimelineSection } from "./TimelineSection";
 import { LAYOUT } from '../constants';
 import { EquipmentGroup } from '../types';
+import { PlannerFilters } from './TimelineHeader';
 
 interface TimelineContentProps {
   equipmentGroups: EquipmentGroup[];
@@ -36,6 +37,7 @@ interface TimelineContentProps {
   updateBookingState: (equipmentId: string, dateStr: string, state: any) => void;
   getLowestAvailable: (equipmentId: string) => number;
   resourceType?: 'equipment' | 'crew'; // Added prop to indicate resource type
+  filters?: PlannerFilters; // Add filters prop
 }
 
 const TimelineContentComponent = ({
@@ -57,15 +59,99 @@ const TimelineContentComponent = ({
   getBookingState,
   updateBookingState,
   getLowestAvailable,
-  resourceType = 'equipment'
+  resourceType = 'equipment',
+  filters
 }: TimelineContentProps) => {
-  if (!equipmentGroups || equipmentGroups.length === 0) {
+  
+  // Apply UI-level filtering to equipment groups with smart expansion
+  const { filteredEquipmentGroups, shouldExpand } = useMemo(() => {
+    // Check if filters are actually active
+    const hasActiveFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
+    if (!hasActiveFilters) return { filteredEquipmentGroups: equipmentGroups, shouldExpand: new Set<string>() };
+    
+    const { search, equipmentType, crewRole } = filters;
+    const isCrewMode = resourceType === 'crew';
+    const shouldExpand = new Set<string>();
+    
+    const filtered = equipmentGroups.map(group => {
+      // Filter by equipment type/crew role (folder/department name)
+      const typeFilter = isCrewMode ? crewRole : equipmentType;
+      if (typeFilter && group.mainFolder !== typeFilter) {
+        return null; // Hide entire group
+      }
+      
+      // Filter equipment/crew members by search term
+      const filteredEquipment = group.equipment.filter(item => {
+        if (search && !item.name.toLowerCase().includes(search.toLowerCase())) {
+          return false;
+        }
+        return true;
+      });
+      
+      // Filter subfolders if they exist
+      const filteredSubFolders = group.subFolders?.map(subFolder => {
+        const filteredSubEquipment = subFolder.equipment.filter(item => {
+          if (search && !item.name.toLowerCase().includes(search.toLowerCase())) {
+            return false;
+          }
+          return true;
+        });
+        
+        // Only return subfolder if it has matching equipment
+        if (filteredSubEquipment.length > 0) {
+          // Mark this subfolder for expansion since it has results
+          shouldExpand.add(`${group.mainFolder}/${subFolder.name}`);
+          return {
+            ...subFolder,
+            equipment: filteredSubEquipment,
+            isExpanded: true // Force expansion for filtered results
+          };
+        }
+        return null;
+      }).filter(Boolean) || [];
+      
+      // Only return group if it has matching equipment or subfolders
+      if (filteredEquipment.length > 0 || filteredSubFolders.length > 0) {
+        // Mark this main folder for expansion since it has results
+        shouldExpand.add(group.mainFolder);
+        
+        return {
+          ...group,
+          equipment: filteredEquipment,
+          subFolders: filteredSubFolders,
+          isExpanded: true // Force expansion for filtered results
+        };
+      }
+      
+      return null;
+    }).filter(Boolean) as EquipmentGroup[];
+    
+    return { filteredEquipmentGroups: filtered, shouldExpand };
+  }, [equipmentGroups, filters, resourceType]);
+  
+  // Auto-expand folders that contain filtered results (only when filters are active)
+  React.useEffect(() => {
+    const hasActiveFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
+    if (hasActiveFilters && shouldExpand.size > 0) {
+      shouldExpand.forEach(groupKey => {
+        if (!expandedGroups.has(groupKey)) {
+          toggleGroup(groupKey, false);
+        }
+      });
+    }
+  }, [shouldExpand, expandedGroups, toggleGroup, filters]);
+  if (!filteredEquipmentGroups || filteredEquipmentGroups.length === 0) {
+    const hasFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
+    const emptyMessage = hasFilters 
+      ? `No ${resourceType === 'crew' ? 'crew members' : 'equipment'} match your current filters`
+      : `No ${resourceType === 'crew' ? 'crew assignments' : 'equipment bookings'} found for this week`;
+    
     return (
       <Card>
         <CardContent className="p-0">
           <div className="text-center py-8 text-muted-foreground">
             <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            No equipment bookings found for this week
+            {emptyMessage}
           </div>
         </CardContent>
       </Card>
@@ -77,7 +163,7 @@ const TimelineContentComponent = ({
       <div className="flex">
         {/* Left Column - Equipment Names (Fixed during horizontal scroll) */}
         <div className="flex-shrink-0 border-r border-border" style={{ width: LAYOUT.EQUIPMENT_NAME_WIDTH }}>
-          {equipmentGroups.map((group) => (
+          {filteredEquipmentGroups.map((group) => (
             <ResourceFolderSection
               key={group.mainFolder}
               equipmentGroup={group}
@@ -87,6 +173,7 @@ const TimelineContentComponent = ({
               toggleGroup={toggleGroup}
               formattedDates={formattedDates}
               getBookingsForEquipment={getBookingsForEquipment}
+              filters={filters}
             />
           ))}
         </div>
@@ -102,7 +189,7 @@ const TimelineContentComponent = ({
           onMouseLeave={scrollHandlers.handleMouseLeave}
         >
           <div style={{ minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px` }}>
-            {equipmentGroups.map((group) => (
+            {filteredEquipmentGroups.map((group) => (
               <TimelineSection
                 key={`timeline-${group.mainFolder}`}
                 equipmentGroup={group}
@@ -114,6 +201,7 @@ const TimelineContentComponent = ({
                 getProjectQuantityForDate={getProjectQuantityForDate}
                 onToggleEquipmentExpansion={toggleEquipmentExpansion}
                 resourceType={resourceType}
+                filters={filters}
               />
             ))}
           </div>
@@ -132,14 +220,15 @@ export const TimelineContent = memo(TimelineContentComponent, (prevProps, nextPr
     prevProps.equipmentGroups.length !== nextProps.equipmentGroups.length ||
     prevProps.expandedGroups !== nextProps.expandedGroups ||
     prevProps.expandedEquipment !== nextProps.expandedEquipment ||
-    prevProps.isDragging !== nextProps.isDragging
+    prevProps.isDragging !== nextProps.isDragging ||
+    prevProps.filters !== nextProps.filters ||
+    prevProps.toggleGroup !== nextProps.toggleGroup
   ) {
     return false;
   }
   
   // Function references that should be stable
-  if (prevProps.toggleGroup !== nextProps.toggleGroup ||
-      prevProps.toggleEquipmentExpansion !== nextProps.toggleEquipmentExpansion ||
+  if (prevProps.toggleEquipmentExpansion !== nextProps.toggleEquipmentExpansion ||
       prevProps.getProjectQuantityForDate !== nextProps.getProjectQuantityForDate) {
     return false;
   }

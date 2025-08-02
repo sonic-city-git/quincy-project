@@ -134,13 +134,14 @@ export const DEPARTMENT_ORDER = [
 
 export function sortCrewGroups(groups: CrewGroup[], departmentOrder: string[]): CrewGroup[] {
   return groups.sort((a, b) => {
-    const aIndex = departmentOrder.indexOf(a.mainDepartment);
-    const bIndex = departmentOrder.indexOf(b.mainDepartment);
+    const aIndex = departmentOrder.indexOf(a.mainFolder); // Fixed: use mainFolder for compatibility
+    const bIndex = departmentOrder.indexOf(b.mainFolder); // Fixed: use mainFolder for compatibility
     
-    // If not found in order, put at end
-    const aPos = aIndex === -1 ? departmentOrder.length : aIndex;
-    const bPos = bIndex === -1 ? departmentOrder.length : bIndex;
+    // If not found in order, put at end alphabetically
+    if (aIndex === -1 && bIndex === -1) return a.mainFolder.localeCompare(b.mainFolder);
+    if (aIndex === -1) return 1;
+    if (bIndex === -1) return -1;
     
-    return aPos - bPos;
+    return aIndex - bIndex;
   });
 }

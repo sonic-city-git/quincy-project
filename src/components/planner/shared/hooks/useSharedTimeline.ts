@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { addDays, format } from 'date-fns';
+import { addDays, format, isWeekend } from 'date-fns';
+import { LAYOUT } from '../constants';
 
 interface UseSharedTimelineProps {
   selectedDate: Date;
@@ -14,6 +15,7 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
   
   // Shared scroll container ref for both Equipment and Crew planners
   const timelineRowsRef = useRef<HTMLDivElement>(null);
+  const stickyHeadersRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef(false);
   const lastSelectedDate = useRef(selectedDate);
   const animationRef = useRef<number | null>(null);
@@ -189,6 +191,70 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     }
   }, [selectedDate, timelineStart, timelineEnd, scrollToDate]);
 
+  // Pre-format dates for performance - avoid repeated format() calls
+  const baseDates = useMemo(() => {
+    return timelineDates.map(date => ({
+      date,
+      dateStr: format(date, 'yyyy-MM-dd'),
+      isoString: date.toISOString(),
+      isWeekendDay: isWeekend(date),
+      monthYear: format(date, 'yyyy-MM')
+    }));
+  }, [timelineDates]);
+
+  const formattedDates = useMemo(() => {
+    const today = new Date();
+    const todayStr = format(today, 'yyyy-MM-dd');
+    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+    
+    return baseDates.map(baseDate => ({
+      ...baseDate,
+      isToday: baseDate.dateStr === todayStr,
+      isSelected: baseDate.dateStr === selectedDateStr
+    }));
+  }, [baseDates, selectedDate]);
+
+  // Month sections with alternating backgrounds - enhanced for year transitions
+  const monthSections = useMemo(() => {
+    const sections = [];
+    let currentSection = null;
+    
+    baseDates.forEach((dateInfo, index) => {
+      if (!currentSection || currentSection.monthYear !== dateInfo.monthYear) {
+        // Finish previous section
+        if (currentSection) {
+          currentSection.endIndex = index - 1;
+          currentSection.width = (currentSection.endIndex - currentSection.startIndex + 1) * 50;
+          sections.push(currentSection);
+        }
+        
+        // Check if this is a new year for enhanced styling
+        const isNewYear = sections.length > 0 && 
+          dateInfo.date.getFullYear() !== sections[sections.length - 1].date.getFullYear();
+        
+        // Start new section
+        currentSection = {
+          monthYear: dateInfo.monthYear,
+          date: dateInfo.date,
+          startIndex: index,
+          endIndex: index,
+          width: 0,
+          isEven: sections.length % 2 === 0,
+          isNewYear
+        };
+      }
+    });
+    
+    // Don't forget the last section
+    if (currentSection) {
+      currentSection.endIndex = baseDates.length - 1;
+      currentSection.width = (currentSection.endIndex - currentSection.startIndex + 1) * 50;
+      sections.push(currentSection);
+    }
+    
+    return sections;
+  }, [baseDates]);
+
   // Cleanup animation on unmount
   useEffect(() => {
     return () => {
@@ -198,16 +264,83 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     };
   }, []);
 
+  // Calculate visible date range based on scroll position and viewport
+  const [visibleDateRange, setVisibleDateRange] = useState<{start: Date, end: Date}>({
+    start: timelineStart,
+    end: timelineEnd
+  });
+
+  // Function to calculate visible dates from scroll position
+  const updateVisibleRange = useCallback(() => {
+    if (!timelineRowsRef.current) return;
+    
+    const scrollContainer = timelineRowsRef.current;
+    const scrollLeft = scrollContainer.scrollLeft;
+    const containerWidth = scrollContainer.clientWidth;
+    
+    const dayWidth = LAYOUT.DAY_CELL_WIDTH;
+    const visibleStartIndex = Math.floor(scrollLeft / dayWidth);
+    const visibleEndIndex = Math.ceil((scrollLeft + containerWidth) / dayWidth);
+    
+    // Reasonable buffer for smooth transitions
+    const bufferDays = 3;
+    const startIndex = Math.max(0, visibleStartIndex - bufferDays);
+    const endIndex = Math.min(timelineDates.length - 1, visibleEndIndex + bufferDays);
+    
+    if (timelineDates[startIndex] && timelineDates[endIndex]) {
+      const newStart = timelineDates[startIndex];
+      const newEnd = timelineDates[endIndex];
+      
+      // Only update if the dates actually changed
+      if (newStart.getTime() !== visibleDateRange.start.getTime() || 
+          newEnd.getTime() !== visibleDateRange.end.getTime()) {
+        setVisibleDateRange({ start: newStart, end: newEnd });
+      }
+    }
+  }, [timelineDates, visibleDateRange.start, visibleDateRange.end]);
+
+  // Update visible range on scroll with proper debouncing
+  useEffect(() => {
+    const scrollContainer = timelineRowsRef.current;
+    if (!scrollContainer) return;
+
+    let timeoutId: NodeJS.Timeout;
+    
+    const handleScroll = () => {
+      // Simple debounce - update after scroll stops
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        updateVisibleRange();
+      }, 100);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
+    
+    // Initial calculation
+    updateVisibleRange();
+    
+    return () => {
+      scrollContainer.removeEventListener('scroll', handleScroll);
+      clearTimeout(timeoutId);
+    };
+  }, [updateVisibleRange]);
+
   return {
     timelineStart,
     timelineEnd,
     timelineDates,
+    formattedDates,
+    monthSections,
     isDragging,
     setIsDragging,
     dragStart,
     setDragStart,
     equipmentRowsRef: timelineRowsRef, // Use shared ref for both planners
+    stickyHeadersRef,
     loadMoreDates,
     scrollToDate,
+    // Visible date range for project filtering
+    visibleTimelineStart: visibleDateRange.start,
+    visibleTimelineEnd: visibleDateRange.end,
   };
 }
