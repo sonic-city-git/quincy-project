@@ -2,6 +2,7 @@ import { memo } from "react";
 import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 import { VISUAL, LAYOUT } from '../constants';
 import { EquipmentBookingFlat } from '../types';
+import { formatPlannerTooltip } from '../../../../utils/tooltipFormatters';
 
 // Crew availability color calculation (binary + event type colors)
 const getCrewAvailabilityColor = (booking: any, isCrew: boolean = false) => {
@@ -119,6 +120,29 @@ const TimelineDayCellComponent = ({
     ? (booking?.bookings?.length > 1) 
     : (booking ? booking.stock - booking.totalUsed < 0 : false);
   
+  // Generate simple tooltip
+  const tooltipText = formatPlannerTooltip({
+    resourceName: equipment.name,
+    date: dateInfo.dateStr,
+    // Crew-specific data
+    ...(isCrew && {
+      assignments: booking?.bookings?.map((assignment: any) => ({
+        eventName: assignment.eventName,
+        projectName: assignment.projectName,
+        role: assignment.role,
+        location: assignment.location
+      })) || [],
+      isAvailable: !booking?.bookings || booking.bookings.length === 0,
+      isConflict: isConflict
+    }),
+    // Equipment-specific data
+    ...(!isCrew && {
+      stock: booking?.stock || equipment.stock || 0,
+      used: booking?.totalUsed || 0,
+      available: displayValue
+    })
+  });
+  
   // Equipment cells are for display and future functionality, not date selection
 
   return (
@@ -140,16 +164,7 @@ const TimelineDayCellComponent = ({
       {/* Main availability cell - clickable for expansion */}
       <div
         className="h-6 w-full transition-all duration-200 relative rounded-md border border-gray-200/50 cursor-pointer hover:border-gray-300"
-                  title={isCrew ? 
-            `${equipment.name}\n${booking?.bookings?.length > 0 ? 
-              `Assigned to: ${booking.bookings.map(b => b.eventName).join(', ')}` : 
-              'Available'
-            }${isConflict ? '\n⚠️ CONFLICT: Multiple assignments!' : ''}` :
-            `${booking ? 
-              `${equipment.name}\nStock: ${booking.stock}\nUsed: ${booking.totalUsed}\nAvailable: ${displayValue}${displayValue < 0 ? ' (OVERBOOKED)' : ''}` : 
-              `${equipment.name}\nStock: ${equipment.stock || 0}\nAvailable: ${equipment.stock || 0}`
-            }`
-          }
+        title={tooltipText}
         style={heatmapStyle}
         onClick={() => {
           onToggleExpansion(equipment.id);
@@ -175,16 +190,16 @@ const TimelineDayCellComponent = ({
           {/* Display content based on crew vs equipment */}
           <span className="text-xs font-medium leading-none">
             {isCrew ? (
-              // Crew: show assignment count or nothing if available
-              booking?.bookings?.length > 0 ? booking.bookings.length : ''
+              // Crew: no counters, just color
+              ''
             ) : (
               // Equipment: show available stock
               displayValue
             )}
           </span>
           
-          {/* Conflict/Overbooked indicator */}
-          {isConflict && (
+          {/* Conflict/Overbooked indicator - only for equipment */}
+          {isConflict && !isCrew && (
             <AlertTriangle className="absolute top-0 right-0 h-2 w-2 text-white opacity-80" />
           )}
         </div>

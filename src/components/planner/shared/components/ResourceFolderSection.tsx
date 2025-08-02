@@ -1,5 +1,7 @@
 import { ChevronRightIcon, FolderIcon } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../../ui/collapsible";
+import { Avatar, AvatarFallback, AvatarImage } from "../../../ui/avatar";
+import { getInitials } from "../../../../utils/stringUtils";
 import { LAYOUT } from '../constants';
 import { EquipmentGroup, EquipmentProjectUsage } from '../types';
 
@@ -18,6 +20,7 @@ interface ResourceFolderSectionProps {
   }>;
   getBookingsForEquipment: (equipmentId: string, dateStr: string, equipment: any) => any;
   filters?: any; // Add filters to detect when filtering is active
+  resourceType?: 'equipment' | 'crew'; // Add resource type to hide stock for crew
 }
 
 export function ResourceFolderSection({
@@ -28,9 +31,21 @@ export function ResourceFolderSection({
   toggleGroup,
   formattedDates,
   getBookingsForEquipment,
-  filters
+  filters,
+  resourceType = 'equipment'
 }: ResourceFolderSectionProps) {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
+  
+  // URL validation utility (same as project components)
+  const isValidUrl = (url: string | null | undefined): boolean => {
+    if (!url) return false;
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
   
   // Only use forced expansion when filters are active, otherwise use normal expansion logic
   const hasActiveFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
@@ -76,9 +91,38 @@ export function ResourceFolderSection({
                 className="flex items-center px-2 border-b border-border hover:bg-muted/30 transition-colors"
                 style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
               >
-                <div className="min-w-0 flex-1 pr-1">
-                  <div className="text-xs font-medium truncate" title={equipment.name}>{equipment.name}</div>
-                  <div className="text-xs text-muted-foreground mt-0.5">Stock: {equipment.stock}</div>
+                <div className="min-w-0 flex-1 pr-1 flex items-center gap-2">
+                  {/* Avatar for crew members */}
+                  {resourceType === 'crew' && (
+                    <Avatar className="h-6 w-6 flex-shrink-0">
+                      {isValidUrl(equipment.avatarUrl) ? (
+                        <AvatarImage 
+                          src={equipment.avatarUrl} 
+                          alt={equipment.name}
+                          onError={(e) => {
+                            console.error('Avatar image failed to load:', e);
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <AvatarFallback className={`text-[10px] font-semibold ${
+                          equipment.department === 'Unfilled Roles' 
+                            ? 'bg-red-800 text-red-100' 
+                            : 'bg-zinc-800 text-zinc-400'
+                        }`}>
+                          {equipment.department === 'Unfilled Roles' ? '?' : getInitials(equipment.name)}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                  )}
+                  
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-medium truncate" title={equipment.name}>{equipment.name}</div>
+                    {resourceType === 'equipment' && (
+                      <div className="text-xs text-muted-foreground mt-0.5">Stock: {equipment.stock}</div>
+                    )}
+                  </div>
                 </div>
               </div>
               
@@ -139,9 +183,38 @@ export function ResourceFolderSection({
                         className="flex items-center px-4 border-b border-border hover:bg-muted/30 transition-colors"
                         style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
                       >
-                        <div className="min-w-0 flex-1 pr-1">
-                          <div className="text-xs font-medium truncate" title={equipment.name}>{equipment.name}</div>
-                          <div className="text-xs text-muted-foreground mt-0.5">Stock: {equipment.stock}</div>
+                        <div className="min-w-0 flex-1 pr-1 flex items-center gap-2">
+                          {/* Avatar for crew members */}
+                          {resourceType === 'crew' && (
+                            <Avatar className="h-6 w-6 flex-shrink-0">
+                              {isValidUrl(equipment.avatarUrl) ? (
+                                <AvatarImage 
+                                  src={equipment.avatarUrl} 
+                                  alt={equipment.name}
+                                  onError={(e) => {
+                                    console.error('Avatar image failed to load:', e);
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                  }}
+                                />
+                              ) : (
+                                <AvatarFallback className={`text-[10px] font-semibold ${
+                                  equipment.department === 'Unfilled Roles' 
+                                    ? 'bg-red-800 text-red-100' 
+                                    : 'bg-zinc-800 text-zinc-400'
+                                }`}>
+                                  {equipment.department === 'Unfilled Roles' ? '?' : getInitials(equipment.name)}
+                                </AvatarFallback>
+                              )}
+                            </Avatar>
+                          )}
+                          
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs font-medium truncate" title={equipment.name}>{equipment.name}</div>
+                            {resourceType === 'equipment' && (
+                              <div className="text-xs text-muted-foreground mt-0.5">Stock: {equipment.stock}</div>
+                            )}
+                          </div>
                         </div>
                       </div>
                       

@@ -1,10 +1,22 @@
 import { memo, useMemo } from "react";
 import { LAYOUT } from '../constants';
 import { ProjectQuantityCell } from '../types';
+import { formatPlannerTooltip } from '../../../../utils/tooltipFormatters';
+
+// Crew role assignment data for project rows
+export interface CrewRoleCell {
+  date: string;
+  role: string;
+  eventName: string;
+  projectName: string;
+  location?: string;
+  eventType?: string;
+}
 
 interface ProjectRowProps {
   projectName: string;
-  equipmentId: string;
+  equipmentId: string; // In crew mode, this is actually crewMemberId
+  resourceName: string; // Equipment name or crew member name
   formattedDates: Array<{
     date: Date;
     dateStr: string;
@@ -12,31 +24,46 @@ interface ProjectRowProps {
     isSelected: boolean;
     isWeekendDay: boolean;
   }>;
-  getProjectQuantityForDate: (projectName: string, equipmentId: string, dateStr: string) => ProjectQuantityCell | undefined;
+  getProjectQuantityForDate?: (projectName: string, equipmentId: string, dateStr: string) => ProjectQuantityCell | undefined;
+  getCrewRoleForDate?: (projectName: string, crewMemberId: string, dateStr: string) => CrewRoleCell | undefined;
+  isCrew?: boolean; // Flag to indicate crew mode vs equipment mode
 }
 
 const ProjectRowComponent = ({
   projectName,
   equipmentId,
+  resourceName,
   formattedDates,
-  getProjectQuantityForDate
+  getProjectQuantityForDate,
+  getCrewRoleForDate,
+  isCrew = false
 }: ProjectRowProps) => {
-  // PERFORMANCE: Pre-calculate quantities with stable memoization
-  const quantitiesMap = useMemo(() => {
-    const map = new Map<string, ProjectQuantityCell>();
+  // PERFORMANCE: Pre-calculate data with stable memoization
+  const dataMap = useMemo(() => {
+    const map = new Map<string, ProjectQuantityCell | CrewRoleCell>();
     formattedDates.forEach(dateInfo => {
-      const quantityCell = getProjectQuantityForDate(projectName, equipmentId, dateInfo.dateStr);
-      if (quantityCell) {
-        map.set(dateInfo.dateStr, quantityCell);
+      if (isCrew && getCrewRoleForDate) {
+        const roleCell = getCrewRoleForDate(projectName, equipmentId, dateInfo.dateStr);
+        if (roleCell) {
+          map.set(dateInfo.dateStr, roleCell);
+        }
+      } else if (!isCrew && getProjectQuantityForDate) {
+        const quantityCell = getProjectQuantityForDate(projectName, equipmentId, dateInfo.dateStr);
+        if (quantityCell) {
+          map.set(dateInfo.dateStr, quantityCell);
+        }
       }
     });
     return map;
   }, [
     projectName, 
     equipmentId, 
+    resourceName,
+    isCrew,
     // More stable dependency - only recompute if date range changes
     formattedDates.length > 0 ? `${formattedDates[0].dateStr}-${formattedDates[formattedDates.length - 1].dateStr}` : '',
-    getProjectQuantityForDate
+    getProjectQuantityForDate,
+    getCrewRoleForDate
   ]);
 
   return (
@@ -53,8 +80,12 @@ const ProjectRowComponent = ({
         }}
       >
         {formattedDates.map(dateInfo => {
-          const quantityCell = quantitiesMap.get(dateInfo.dateStr);
-          const quantity = quantityCell?.quantity || 0;
+          const dataCell = dataMap.get(dateInfo.dateStr);
+          
+          // Extract values based on mode
+          const quantity = (!isCrew && dataCell && 'quantity' in dataCell) ? dataCell.quantity : 0;
+          const role = (isCrew && dataCell && 'role' in dataCell) ? dataCell.role : '';
+          const hasData = isCrew ? !!role : quantity > 0;
           
           return (
             <div 
@@ -73,14 +104,31 @@ const ProjectRowComponent = ({
                 <div className="absolute inset-0 border border-gray-300 rounded-sm pointer-events-none" />
               )}
               
-              {/* Quantity indicator */}
-              {quantity > 0 && (
+              {/* Data indicator - quantity for equipment, role for crew */}
+              {hasData && (
                 <div
-                  className="min-w-[16px] h-4 px-1 rounded-full bg-gray-900 flex items-center justify-center"
-                  title={`${projectName}\n${quantityCell?.eventName || 'Event'}: ${quantity} units\nDate: ${dateInfo.dateStr}`}
+                  className="min-w-[20px] h-5 px-2 rounded-full bg-gray-900 flex items-center justify-center"
+                  title={formatPlannerTooltip({
+                    resourceName: resourceName,
+                    date: dateInfo.dateStr,
+                    // Crew project row data
+                    ...(isCrew && dataCell && 'role' in dataCell && {
+                      eventName: dataCell.eventName,
+                      projectName: dataCell.projectName,
+                      role: dataCell.role,
+                      location: dataCell.location
+                    }),
+                    // Equipment project row data
+                    ...(!isCrew && {
+                      eventName: dataCell?.eventName || 'Event',
+                      projectName: projectName,
+                      // For equipment, show quantity as additional info
+                      stock: quantity
+                    })
+                  })}
                 >
-                  <span className="text-[9px] font-bold text-white leading-none">
-                    {quantity}
+                  <span className="text-[10px] font-bold text-white leading-none">
+                    {isCrew ? role : quantity}
                   </span>
                 </div>
               )}
@@ -93,13 +141,17 @@ const ProjectRowComponent = ({
 };
 
 export const ProjectRow = memo(ProjectRowComponent, (prevProps, nextProps) => {
-  // Re-render if project name changes
-  if (prevProps.projectName !== nextProps.projectName || prevProps.equipmentId !== nextProps.equipmentId) {
+  // Re-render if project name, equipment/crew ID, resource name, or mode changes
+  if (prevProps.projectName !== nextProps.projectName || 
+      prevProps.equipmentId !== nextProps.equipmentId ||
+      prevProps.resourceName !== nextProps.resourceName ||
+      prevProps.isCrew !== nextProps.isCrew) {
     return false;
   }
   
-  // Re-render if quantity function changes
-  if (prevProps.getProjectQuantityForDate !== nextProps.getProjectQuantityForDate) {
+  // Re-render if data functions change
+  if (prevProps.getProjectQuantityForDate !== nextProps.getProjectQuantityForDate ||
+      prevProps.getCrewRoleForDate !== nextProps.getCrewRoleForDate) {
     return false;
   }
   

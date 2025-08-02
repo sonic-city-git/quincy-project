@@ -1,7 +1,7 @@
 import { memo, useMemo } from "react";
 import { Collapsible, CollapsibleContent } from "../../../ui/collapsible";
 import { TimelineDayCell } from "./TimelineDayCell";
-import { ProjectRow } from "./ProjectRow";
+import { ProjectRow, CrewRoleCell } from "./ProjectRow";
 import { LAYOUT } from '../constants';
 import '../timeline-optimization.css';
 import { EquipmentGroup, EquipmentProjectUsage, ProjectQuantityCell } from '../types';
@@ -20,6 +20,7 @@ interface TimelineSectionProps {
   }>;
   getBookingForEquipment: (equipmentId: string, dateStr: string) => any;
   getProjectQuantityForDate: (projectName: string, equipmentId: string, dateStr: string) => ProjectQuantityCell | undefined;
+  getCrewRoleForDate?: (projectName: string, crewMemberId: string, dateStr: string) => CrewRoleCell | undefined;
   onToggleEquipmentExpansion: (equipmentId: string) => void; // New: handle equipment expansion
   resourceType?: 'equipment' | 'crew'; // Added prop to indicate resource type
   filters?: any; // Add filters to detect when filtering is active
@@ -33,6 +34,7 @@ const TimelineSectionComponent = ({
   formattedDates,
   getBookingForEquipment,
   getProjectQuantityForDate,
+  getCrewRoleForDate,
   onToggleEquipmentExpansion,
   resourceType = 'equipment',
   filters
@@ -99,8 +101,11 @@ const TimelineSectionComponent = ({
                         key={`${equipment.id}-${projectName}`}
                         projectName={projectName}
                         equipmentId={equipment.id}
+                        resourceName={equipment.name}
                         formattedDates={formattedDates}
-                        getProjectQuantityForDate={getProjectQuantityForDate}
+                        getProjectQuantityForDate={resourceType === 'equipment' ? getProjectQuantityForDate : undefined}
+                        getCrewRoleForDate={resourceType === 'crew' ? getCrewRoleForDate : undefined}
+                        isCrew={resourceType === 'crew'}
                       />
                     ))
                   ) : (
@@ -178,8 +183,11 @@ const TimelineSectionComponent = ({
                                 key={`${equipment.id}-${projectName}`}
                                 projectName={projectName}
                                 equipmentId={equipment.id}
+                                resourceName={equipment.name}
                                 formattedDates={formattedDates}
-                                getProjectQuantityForDate={getProjectQuantityForDate}
+                                getProjectQuantityForDate={resourceType === 'equipment' ? getProjectQuantityForDate : undefined}
+                                getCrewRoleForDate={resourceType === 'crew' ? getCrewRoleForDate : undefined}
+                                isCrew={resourceType === 'crew'}
                               />
                             ))
                           ) : (

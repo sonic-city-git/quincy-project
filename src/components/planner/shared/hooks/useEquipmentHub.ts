@@ -34,6 +34,8 @@ interface UseEquipmentHubProps {
   // Visible timeline boundaries for UI filtering
   visibleTimelineStart?: Date;
   visibleTimelineEnd?: Date;
+  // Enable/disable flag to respect Rules of Hooks
+  enabled?: boolean;
 }
 
 // Helper functions for data processing
@@ -49,7 +51,8 @@ export function useEquipmentHub({
   periodEnd,
   selectedOwner,
   visibleTimelineStart,
-  visibleTimelineEnd
+  visibleTimelineEnd,
+  enabled = true
 }: UseEquipmentHubProps) {
   
   // Stable date range to prevent unnecessary re-fetches during infinite scroll
@@ -122,6 +125,7 @@ export function useEquipmentHub({
       
       return await fetchFreshEquipmentData(cacheKey);
     },
+    enabled, // Only fetch when enabled
     staleTime: 30 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -282,7 +286,7 @@ export function useEquipmentHub({
 
       return bookingsByKey;
     },
-    enabled: !!equipmentData,
+    enabled: enabled && !!equipmentData, // Only fetch when enabled and equipment data is available
     staleTime: 15 * 1000,
     gcTime: 5 * 60 * 1000,
     keepPreviousData: true,

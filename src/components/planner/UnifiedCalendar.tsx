@@ -4,6 +4,7 @@ import { Skeleton } from "../ui/skeleton";
 
 import { useEquipmentHub } from './shared/hooks/useEquipmentHub';
 import { useCrewHub } from './shared/hooks/useCrewHub';
+
 import { useTimelineScroll } from './shared/hooks/useTimelineScroll';
 import { LAYOUT, PERFORMANCE } from './shared/constants';
 
@@ -21,6 +22,27 @@ interface UnifiedCalendarProps {
   filters?: PlannerFilters;
 }
 
+// Performance metrics for monitoring
+interface PlannerMetrics {
+  dataLoadTime: number;
+  renderTime: number;
+  activeResourceType: 'equipment' | 'crew';
+  totalResources: number;
+  visibleDateRange: number; // days
+}
+
+/**
+ * UnifiedCalendar - Clean Architecture Implementation
+ * 
+ * A unified resource planner that supports both equipment and crew scheduling
+ * with type-safe interfaces and performance optimizations.
+ * 
+ * Key improvements:
+ * - Conditional data loading (only active resource type)
+ * - Proper generic typing (no forced equipment/crew compatibility)
+ * - Performance monitoring capabilities
+ * - Clean separation of concerns
+ */
 export function UnifiedCalendar({ 
   selectedDate, 
   onDateChange, 
@@ -29,6 +51,10 @@ export function UnifiedCalendar({
   resourceType,
   filters
 }: UnifiedCalendarProps) {
+  
+  // Performance tracking
+  const loadStartTime = useRef(performance.now());
+  const renderStartTime = useRef(performance.now());
   
   // Use shared timeline state
   const {
@@ -85,22 +111,31 @@ export function UnifiedCalendar({
 
   // Note: Header scroll is now handled in Planner.tsx
 
-  // Immediate data range updates for responsive highlighting
-  // Only debounce during rapid timeline expansion, not during date selection
+  // STABLE data range - no debouncing on initial load to prevent "pop" effect
   const [stableDataRange, setStableDataRange] = useState({
     start: timelineStart,
     end: timelineEnd
   });
   
   const lastTimelineChangeRef = useRef(Date.now());
+  const isInitialLoad = useRef(true);
   
   useEffect(() => {
     const now = Date.now();
     const timeSinceLastChange = now - lastTimelineChangeRef.current;
     lastTimelineChangeRef.current = now;
     
-    // If timeline changed recently (< 100ms), it's likely rapid expansion - debounce it
-    // Otherwise, update immediately for responsive date selection
+    // On initial load, update immediately to prevent pop effect
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      setStableDataRange({
+        start: timelineStart,
+        end: timelineEnd
+      });
+      return;
+    }
+    
+    // For subsequent changes, only debounce rapid expansions
     if (timeSinceLastChange < 100) {
       const debounceTimer = setTimeout(() => {
         setStableDataRange({
@@ -118,26 +153,24 @@ export function UnifiedCalendar({
     }
   }, [timelineStart, timelineEnd]);
 
-  // Always call both hooks to avoid violating Rules of Hooks
-  const equipmentHub = useEquipmentHub({
+  // Always call both hooks but with enabled/disabled flag to respect Rules of Hooks
+  const hubConfig = {
     periodStart: stableDataRange.start,
     periodEnd: stableDataRange.end,
     selectedOwner,
-    // Pass visible timeline boundaries for project filtering
     visibleTimelineStart,
     visibleTimelineEnd,
-  });
+    enabled: true, // Add enabled flag
+  };
+
+  const equipmentHubConfig = { ...hubConfig, enabled: resourceType === 'equipment' };
+  const crewHubConfig = { ...hubConfig, enabled: resourceType === 'crew' };
+
+  // Always call both hooks to maintain hook call order
+  const equipmentHub = useEquipmentHub(equipmentHubConfig);
+  const crewHub = useCrewHub(crewHubConfig);
   
-  const crewHub = useCrewHub({
-    periodStart: stableDataRange.start,
-    periodEnd: stableDataRange.end,
-    selectedOwner,
-    // Pass visible timeline boundaries for project filtering
-    visibleTimelineStart,
-    visibleTimelineEnd,
-  });
-  
-  // Use the appropriate hub data based on resource type
+  // Get the current active hub
   const currentHub = resourceType === 'equipment' ? equipmentHub : crewHub;
   
   const {
@@ -154,6 +187,7 @@ export function UnifiedCalendar({
     resolutionInProgress,
     getBookingForEquipment,
     getProjectQuantityForDate,
+    getCrewRoleForDate,
     getLowestAvailable,
     toggleGroup,
     toggleEquipmentExpansion,
@@ -164,18 +198,47 @@ export function UnifiedCalendar({
     resolveConflict,
   } = currentHub;
 
-  // More sophisticated loading state management
-  // Show skeleton only when we have no data at all
-  const [hasInitialData, setHasInitialData] = useState(false);
-  
+  // Log performance metrics in development
   useEffect(() => {
-    if (equipmentGroups.length > 0 && !hasInitialData) {
-      setHasInitialData(true);
+    if (process.env.NODE_ENV === 'development' && equipmentGroups.length > 0) {
+      const loadTime = performance.now() - loadStartTime.current;
+      const metrics: PlannerMetrics = {
+        dataLoadTime: Math.round(loadTime),
+        renderTime: Math.round(performance.now() - renderStartTime.current),
+        activeResourceType: resourceType,
+        totalResources: equipmentGroups.reduce((sum, group) => sum + group.equipment.length, 0),
+        visibleDateRange: Math.ceil((timelineEnd.getTime() - timelineStart.getTime()) / (1000 * 60 * 60 * 24))
+      };
+      console.debug('🔧 Planner Performance Metrics:', metrics);
     }
-  }, [equipmentGroups.length, hasInitialData]);
+  }, [equipmentGroups, resourceType, timelineStart, timelineEnd]);
 
-  // Only show skeleton loading when we have absolutely no data
-  const shouldShowLoading = !isEquipmentReady && !hasInitialData;
+  // Track resource type changes for instant loading
+  const prevResourceTypeRef = useRef(resourceType);
+  const [hasInitialData, setHasInitialData] = useState(false);
+  const [isLoadingResourceSwitch, setIsLoadingResourceSwitch] = useState(false);
+  
+  // Detect resource type changes and manage loading state
+  useEffect(() => {
+    const hasResourceTypeChanged = prevResourceTypeRef.current !== resourceType;
+    
+    if (hasResourceTypeChanged) {
+      prevResourceTypeRef.current = resourceType;
+      setIsLoadingResourceSwitch(true);
+      setHasInitialData(false);
+    }
+  }, [resourceType]);
+
+  // Mark loading as complete when data is ready
+  useEffect(() => {
+    if (isEquipmentReady && equipmentGroups.length > 0) {
+      setHasInitialData(true);
+      setIsLoadingResourceSwitch(false);
+    }
+  }, [isEquipmentReady, equipmentGroups.length]);
+
+  // Show loading screen while data loads OR when switching resource types
+  const shouldShowLoading = !isEquipmentReady || !hasInitialData || isLoadingResourceSwitch;
   
   // Cleanup stale states periodically
   const clearStaleStatesRef = useRef(clearStaleStates);
@@ -191,53 +254,53 @@ export function UnifiedCalendar({
 
   // Note: formattedDates and monthSections are now provided by useSharedTimeline
 
-  // Resource-specific booking lookup
-  const getBookingsForEquipment = useCallback((resourceId: string, dateStr: string, resource: any) => {
+  // Resource-agnostic booking lookup with proper typing
+  const getBookingsForResource = useCallback((resourceId: string, dateStr: string, resource: any) => {
     const booking = getBookingForEquipment(resourceId, dateStr);
     if (!booking) return undefined;
     
-    if (resourceType === 'crew') {
-      // Crew-specific mapping
-      return {
-        equipment_id: booking.crewMemberId || booking.equipmentId,
-        equipment_name: booking.crewMemberName || booking.equipmentName,
-        stock: 1, // Crew members have availability, not stock
-        date: booking.date,
-        folder_name: booking.department || booking.folderPath,
-        bookings: booking.assignments || booking.bookings,
-        total_used: booking.totalAssignments || booking.totalUsed,
-        is_overbooked: booking.isOverbooked,
-      };
-    } else {
-      // Equipment-specific mapping
-      return {
-        equipment_id: booking.equipmentId,
-        equipment_name: booking.equipmentName,
-        stock: booking.stock,
-        date: booking.date,
-        folder_name: booking.folderPath,
-        bookings: booking.bookings,
-        total_used: booking.totalUsed,
-        is_overbooked: booking.isOverbooked,
-      };
-    }
+    // Return a standardized interface that works for both resource types
+    return {
+      resourceId: booking.equipmentId || booking.crewMemberId || resourceId,
+      resourceName: booking.equipmentName || booking.crewMemberName || resource?.name,
+      capacity: resourceType === 'crew' ? 1 : (booking.stock || resource?.stock || 1),
+      date: booking.date,
+      folder: booking.folderPath || booking.department || resource?.folder,
+      assignments: booking.bookings || booking.assignments || [],
+      totalUsed: booking.totalUsed || booking.totalAssignments || 0,
+      isOverbooked: booking.isOverbooked || false,
+      resourceType,
+    };
   }, [getBookingForEquipment, resourceType]);
 
   // Optimized availability calculation
   const dateStrings = useMemo(() => formattedDates.map(d => d.dateStr), [formattedDates]);
   
-  const getLowestAvailableForEquipment = useCallback((resourceId: string) => {
+  const getAvailableCapacityForResource = useCallback((resourceId: string) => {
     return getLowestAvailable(resourceId, dateStrings);
   }, [getLowestAvailable, dateStrings]);
 
   if (shouldShowLoading) {
+    const loadingMessage = isLoadingResourceSwitch 
+      ? `Switching to ${resourceType}...` 
+      : `Loading ${resourceType} timeline...`;
+    
+    const subMessage = isLoadingResourceSwitch
+      ? `Loading ${resourceType} data and availability...`
+      : `Loading booking data and availability...`;
+
     return (
-      <div className="space-y-4">
-        <Skeleton className="h-16 w-full" />
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
-          ))}
+      <div className="border border-border rounded-lg overflow-hidden bg-background">
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center space-y-4">
+            <div className="inline-flex items-center gap-2 text-lg font-medium">
+              <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
+              {loadingMessage}
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {subMessage}
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -254,15 +317,16 @@ export function UnifiedCalendar({
       formattedDates={formattedDates}
       getBookingForEquipment={getBookingForEquipment}
       getProjectQuantityForDate={getProjectQuantityForDate}
+      getCrewRoleForDate={getCrewRoleForDate}
       equipmentRowsRef={equipmentRowsRef}
       handleTimelineScroll={handleTimelineScroll}
       handleTimelineMouseMove={handleTimelineMouseMove}
       scrollHandlers={scrollHandlers}
       isDragging={isDragging}
-      getBookingsForEquipment={getBookingsForEquipment}
+      getBookingsForEquipment={getBookingsForResource}
       getBookingState={getBookingState}
       updateBookingState={updateBookingState}
-      getLowestAvailable={getLowestAvailableForEquipment}
+      getLowestAvailable={getAvailableCapacityForResource}
       resourceType={resourceType}
       filters={filters}
     />

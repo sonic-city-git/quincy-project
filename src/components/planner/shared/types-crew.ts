@@ -20,6 +20,8 @@ export interface CrewMember {
     phone?: string;
     email?: string;
   };
+  // Avatar support
+  avatarUrl?: string; // URL to avatar image from Google Auth
 }
 
 // Crew assignment for a specific project/event
@@ -42,6 +44,7 @@ export interface CrewAssignment {
   dailyRate?: number; // Override for this specific assignment
   eventType?: string; // Type of event (Studio, Live, Corporate, etc.)
   eventTypeColor?: string; // Color to display for this event type
+  location?: string; // Event location
 }
 
 // Crew availability for a specific date
@@ -117,7 +120,11 @@ export type ResourceMember = CrewMember; // Can be either crew member or equipme
 export type ResourceAssignment = CrewAssignment; // Can be either crew assignment or equipment booking
 
 // Helper function to sort crew groups by department priority
+// Custom order: Sonic City first, then Associates, then Freelancers, then other departments
 export const DEPARTMENT_ORDER = [
+  'Sonic City',
+  'Associates', 
+  'Freelancers',
   'Production',
   'Director', 
   'Camera',

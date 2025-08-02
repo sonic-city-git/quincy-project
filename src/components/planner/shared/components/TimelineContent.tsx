@@ -23,6 +23,7 @@ interface TimelineContentProps {
   }>;
   getBookingForEquipment: (equipmentId: string, dateStr: string) => any; // Optimized function for day cells
   getProjectQuantityForDate: (projectName: string, equipmentId: string, dateStr: string) => any; // New: project quantity function
+  getCrewRoleForDate?: (projectName: string, crewMemberId: string, dateStr: string) => any; // New: crew role function
   equipmentRowsRef: React.RefObject<HTMLDivElement>;
   handleTimelineScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   handleTimelineMouseMove: (e: React.MouseEvent) => void;
@@ -50,6 +51,7 @@ const TimelineContentComponent = ({
   formattedDates,
   getBookingForEquipment,
   getProjectQuantityForDate,
+  getCrewRoleForDate,
   equipmentRowsRef,
   handleTimelineScroll,
   handleTimelineMouseMove,
@@ -174,6 +176,7 @@ const TimelineContentComponent = ({
               formattedDates={formattedDates}
               getBookingsForEquipment={getBookingsForEquipment}
               filters={filters}
+              resourceType={resourceType}
             />
           ))}
         </div>
@@ -199,6 +202,7 @@ const TimelineContentComponent = ({
                 formattedDates={formattedDates}
                 getBookingForEquipment={getBookingForEquipment}
                 getProjectQuantityForDate={getProjectQuantityForDate}
+                getCrewRoleForDate={getCrewRoleForDate}
                 onToggleEquipmentExpansion={toggleEquipmentExpansion}
                 resourceType={resourceType}
                 filters={filters}
@@ -229,7 +233,8 @@ export const TimelineContent = memo(TimelineContentComponent, (prevProps, nextPr
   
   // Function references that should be stable
   if (prevProps.toggleEquipmentExpansion !== nextProps.toggleEquipmentExpansion ||
-      prevProps.getProjectQuantityForDate !== nextProps.getProjectQuantityForDate) {
+      prevProps.getProjectQuantityForDate !== nextProps.getProjectQuantityForDate ||
+      prevProps.getCrewRoleForDate !== nextProps.getCrewRoleForDate) {
     return false;
   }
   
