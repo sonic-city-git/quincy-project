@@ -1,6 +1,6 @@
-import { useEffect, useCallback, useMemo } from 'react';
+import { useEffect, useCallback, useMemo, useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { supabase } from '../../../integrations/supabase/client';
 import { 
   FlattenedEquipment, 
@@ -32,6 +32,21 @@ export function useOptimizedEquipmentData({
     toggleGroup: toggleGroupPersistent, 
     initializeDefaultExpansion 
   } = usePersistentExpandedGroups();
+
+  // Use actual period dates with minimal buffering for infinite scroll
+  const stableDataRange = useMemo(() => {
+    // Add small buffer for smoother scrolling (3 days on each side)
+    const bufferedStart = addDays(periodStart, -3);
+    const bufferedEnd = addDays(periodEnd, 3);
+    
+    return {
+      start: bufferedStart,
+      end: bufferedEnd
+    };
+  }, [
+    format(periodStart, 'yyyy-MM-dd'),
+    format(periodEnd, 'yyyy-MM-dd')
+  ]); // Track actual date changes, not just month
 
   // Fetch equipment structure with optimized transformation
   const { data: equipmentData, isLoading: isLoadingEquipment } = useQuery({
@@ -89,13 +104,14 @@ export function useOptimizedEquipmentData({
     staleTime: 5 * 60 * 1000, // 5 minutes - equipment doesn't change often
   });
 
-  // Fetch booking data with optimized structure
+  // Fetch booking data with keepPreviousData to prevent loading states during expansion
   const { data: bookingsData, isLoading: isLoadingBookings } = useQuery({
     queryKey: [
       'optimized-equipment-bookings', 
-      format(periodStart, 'yyyy-MM-dd'), 
-      format(periodEnd, 'yyyy-MM-dd'), 
-      selectedOwner
+      format(stableDataRange.start, 'yyyy-MM-dd'), // Use actual dates for infinite scroll
+      format(stableDataRange.end, 'yyyy-MM-dd'),   // This tracks timeline expansions
+      selectedOwner,
+      'v4' // Version key updated for new date tracking
     ],
     queryFn: async (): Promise<Map<string, EquipmentBookingFlat>> => {
       let baseQuery = supabase
@@ -112,8 +128,8 @@ export function useOptimizedEquipmentData({
             quantity
           )
         `)
-        .gte('date', format(periodStart, 'yyyy-MM-dd'))
-        .lte('date', format(periodEnd, 'yyyy-MM-dd'));
+        .gte('date', format(stableDataRange.start, 'yyyy-MM-dd'))
+        .lte('date', format(stableDataRange.end, 'yyyy-MM-dd'));
 
       if (selectedOwner) {
         baseQuery = baseQuery.eq('project.owner_id', selectedOwner);
@@ -159,7 +175,9 @@ export function useOptimizedEquipmentData({
       return bookingsByKey;
     },
     enabled: !!equipmentData,
-    staleTime: 30 * 1000, // 30 seconds - bookings change more frequently
+    staleTime: 5 * 60 * 1000, // 5 minutes - longer for year transitions
+    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    keepPreviousData: true, // Prevent loading states during timeline expansion
   });
 
   // Transform flattened equipment into grouped structure
@@ -228,25 +246,50 @@ export function useOptimizedEquipmentData({
     return sortedGroups;
   }, [equipmentData?.flattenedEquipment, expandedGroups]);
 
-  // Optimized booking lookup function
+  // Stabilize booking lookup function to prevent cascade re-renders
+  const bookingsDataRef = useRef(bookingsData);
+  bookingsDataRef.current = bookingsData;
+  
+  const periodStartRef = useRef(periodStart);
+  periodStartRef.current = periodStart;
+  
+  const periodEndRef = useRef(periodEnd);
+  periodEndRef.current = periodEnd;
+  
   const getBookingForEquipment = useCallback((equipmentId: string, dateStr: string): EquipmentBookingFlat | undefined => {
-    if (!bookingsData) return undefined;
-    return bookingsData.get(getBookingKey(equipmentId, dateStr));
-  }, [bookingsData]);
-
-  // Calculate lowest stock efficiently
-  const getLowestAvailable = useCallback((equipmentId: string, dates: string[]): number => {
-    if (!equipmentData?.equipmentById || !bookingsData) {
-      return equipmentData?.equipmentById.get(equipmentId)?.stock || 0;
+    if (!bookingsDataRef.current) return undefined;
+    
+    // Filter to only return data within the actual period range (not the full month range)
+    const requestDate = new Date(dateStr);
+    if (requestDate < periodStartRef.current || requestDate > periodEndRef.current) {
+      return undefined;
     }
     
-    const equipment = equipmentData.equipmentById.get(equipmentId);
+    return bookingsDataRef.current.get(getBookingKey(equipmentId, dateStr));
+  }, []); // No dependencies - function never changes reference
+
+  // Stabilize lowest available calculation to prevent cascade re-renders
+  const equipmentDataRef = useRef(equipmentData);
+  equipmentDataRef.current = equipmentData;
+  
+  const getLowestAvailable = useCallback((equipmentId: string, dates: string[]): number => {
+    if (!equipmentDataRef.current?.equipmentById || !bookingsDataRef.current) {
+      return equipmentDataRef.current?.equipmentById.get(equipmentId)?.stock || 0;
+    }
+    
+    const equipment = equipmentDataRef.current.equipmentById.get(equipmentId);
     if (!equipment) return 0;
     
     let lowest = equipment.stock;
     
-    dates.forEach(dateStr => {
-      const booking = bookingsData.get(getBookingKey(equipmentId, dateStr));
+    // Filter dates to only those within the actual period range
+    const filteredDates = dates.filter(dateStr => {
+      const requestDate = new Date(dateStr);
+      return requestDate >= periodStartRef.current && requestDate <= periodEndRef.current;
+    });
+    
+    filteredDates.forEach(dateStr => {
+      const booking = bookingsDataRef.current!.get(getBookingKey(equipmentId, dateStr));
       if (booking) {
         const available = equipment.stock - booking.totalUsed;
         lowest = Math.min(lowest, available);
@@ -254,7 +297,7 @@ export function useOptimizedEquipmentData({
     });
     
     return Math.max(0, lowest);
-  }, [equipmentData?.equipmentById, bookingsData]);
+  }, []); // No dependencies - function never changes reference
 
   // Group management functions with persistent state
   const toggleGroup = useCallback((groupKey: string, expandAllSubfolders = false) => {

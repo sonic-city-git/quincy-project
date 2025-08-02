@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Package } from "lucide-react";
 import { Card, CardContent } from "../../ui/card";
 import { EquipmentFolderSection } from "./EquipmentFolderSection";
@@ -31,7 +32,7 @@ interface EquipmentCalendarContentProps {
   isDragging: boolean;
 }
 
-export function EquipmentCalendarContent({
+const EquipmentCalendarContentComponent = ({
   equipmentGroups,
   expandedGroups,
   toggleGroup,
@@ -46,7 +47,7 @@ export function EquipmentCalendarContent({
   handleTimelineMouseMove,
   scrollHandlers,
   isDragging
-}: EquipmentCalendarContentProps) {
+}: EquipmentCalendarContentProps) => {
   if (!equipmentGroups || equipmentGroups.length === 0) {
     return (
       <Card>
@@ -111,4 +112,36 @@ export function EquipmentCalendarContent({
       </div>
     </div>
   );
-}
+};
+
+// Smart memoization for content component with expansion handling
+export const EquipmentCalendarContent = memo(EquipmentCalendarContentComponent, (prevProps, nextProps) => {
+  // Basic props that must match
+  if (
+    prevProps.equipmentGroups.length !== nextProps.equipmentGroups.length ||
+    prevProps.expandedGroups !== nextProps.expandedGroups ||
+    prevProps.isDragging !== nextProps.isDragging
+  ) {
+    return false;
+  }
+  
+  // Smart date comparison for timeline expansion
+  const prevDates = prevProps.formattedDates;
+  const nextDates = nextProps.formattedDates;
+  
+  // If lengths are equal, check if content is the same
+  if (prevDates.length === nextDates.length) {
+    return (
+      prevDates[0]?.dateStr === nextDates[0]?.dateStr &&
+      prevDates[prevDates.length - 1]?.dateStr === nextDates[nextDates.length - 1]?.dateStr
+    );
+  }
+  
+  // Timeline expansion detected - force re-render to show new dates
+  if (nextDates.length > prevDates.length) {
+    return false; // Force re-render when timeline expands
+  }
+  
+  // Array got smaller or completely different - need re-render
+  return false;
+});
