@@ -24,10 +24,115 @@ export interface EquipmentBookingFlat {
     quantity: number;
     projectName: string;
     eventName: string;
+    eventId?: string; // For linking to specific events
+    projectId?: string; // For linking to specific projects
+    serialNumbers?: string[]; // Serial numbers assigned to this booking
+    priority?: 'low' | 'medium' | 'high' | 'critical'; // For conflict resolution
   }>;
   totalUsed: number;
   isOverbooked: boolean;
+  conflict?: EquipmentConflict; // Enhanced conflict information
   folderPath: string;
+}
+
+// Project-specific quantity data for equipment expansion
+export interface ProjectQuantityCell {
+  date: string;
+  quantity: number;
+  eventName: string;
+  projectName: string;
+}
+
+// Enhanced conflict detection and resolution system
+export interface EquipmentConflict {
+  equipmentId: string;
+  date: string;
+  severity: 'warning' | 'critical' | 'resolved';
+  totalDemand: number;
+  availableStock: number;
+  shortage: number; // totalDemand - availableStock
+  conflictingProjects: ConflictingProject[];
+  resolutionStrategies: ResolutionStrategy[];
+  autoResolveOptions: AutoResolveOption[];
+  createdAt: Date;
+  resolvedAt?: Date;
+  resolvedBy?: string;
+}
+
+export interface ConflictingProject {
+  projectId: string;
+  projectName: string;
+  eventId: string;
+  eventName: string;
+  requestedQuantity: number;
+  priority: 'low' | 'medium' | 'high' | 'critical';
+  canReduce?: boolean; // Can this project reduce their quantity?
+  canReschedule?: boolean; // Can this project reschedule?
+  alternativeEquipment?: string[]; // Alternative equipment IDs this project could use
+}
+
+export interface ResolutionStrategy {
+  id: string;
+  type: 'reduce_quantities' | 'reschedule_events' | 'substitute_equipment' | 'increase_stock' | 'serial_reallocation';
+  title: string;
+  description: string;
+  impact: 'minor' | 'moderate' | 'major';
+  feasibility: 'easy' | 'moderate' | 'difficult';
+  affectedProjects: string[]; // Project IDs that would be affected
+  estimatedResolutionTime: number; // Minutes
+  requiresApproval: boolean;
+}
+
+export interface AutoResolveOption {
+  strategyId: string;
+  canAutoResolve: boolean;
+  confidence: number; // 0-100
+  reasoning: string;
+  wouldRequireNotification: boolean;
+}
+
+// Equipment project usage aggregation
+export interface EquipmentProjectUsage {
+  equipmentId: string;
+  projectNames: string[]; // List of projects using this equipment
+  projectQuantities: Map<string, Map<string, ProjectQuantityCell>>; // projectName -> date -> quantity
+}
+
+// Future: Serial number tracking structures
+export interface EquipmentSerialNumber {
+  id: string;
+  equipmentId: string;
+  serialNumber: string;
+  condition: 'excellent' | 'good' | 'fair' | 'needs_repair' | 'out_of_service';
+  location?: string;
+  notes?: string;
+  lastMaintenance?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SerialNumberBooking {
+  id: string;
+  eventId: string;
+  projectId: string;
+  equipmentId: string;
+  serialNumberId: string;
+  dateStart: string; // yyyy-MM-dd
+  dateEnd: string; // yyyy-MM-dd
+  status: 'reserved' | 'checked_out' | 'checked_in' | 'damaged' | 'lost';
+  checkedOutBy?: string;
+  checkedOutAt?: Date;
+  checkedInBy?: string;
+  checkedInAt?: Date;
+  notes?: string;
+}
+
+// Equipment expansion state
+export interface EquipmentExpansionState {
+  // Track which equipment items are expanded to show project details
+  expandedEquipment: Set<string>; // equipment IDs
+  // Track which folder groups are expanded (existing functionality)
+  expandedGroups: Set<string>; // folder paths
 }
 
 export interface EquipmentGroup {

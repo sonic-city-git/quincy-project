@@ -1,32 +1,36 @@
 import { memo } from "react";
 import { Collapsible, CollapsibleContent } from "../../ui/collapsible";
 import { EquipmentDayCell } from "./EquipmentDayCell";
+import { ProjectRow } from "./ProjectRow";
 import { LAYOUT } from '../constants';
-import { EquipmentGroup } from '../types';
+import { EquipmentGroup, EquipmentProjectUsage, ProjectQuantityCell } from '../types';
 
 interface EquipmentTimelineSectionProps {
   equipmentGroup: EquipmentGroup;
   expandedGroups: Set<string>;
+  expandedEquipment: Set<string>; // New: track equipment-level expansion
+  equipmentProjectUsage: Map<string, EquipmentProjectUsage>; // New: project usage data
   formattedDates: Array<{
     date: Date;
     dateStr: string;
+    isToday: boolean;
     isSelected: boolean;
     isWeekendDay: boolean;
   }>;
-  getBookingsForEquipment: (equipmentId: string, dateStr: string, equipment: any) => any;
-  getBookingState: (equipmentId: string, dateStr: string) => any;
-  updateBookingState: (equipmentId: string, dateStr: string, state: any) => void;
-  onDateChange: (date: Date) => void;
+  getBookingForEquipment: (equipmentId: string, dateStr: string) => any;
+  getProjectQuantityForDate: (projectName: string, equipmentId: string, dateStr: string) => ProjectQuantityCell | undefined;
+  onToggleEquipmentExpansion: (equipmentId: string) => void; // New: handle equipment expansion
 }
 
 const EquipmentTimelineSectionComponent = ({
   equipmentGroup,
   expandedGroups,
+  expandedEquipment,
+  equipmentProjectUsage,
   formattedDates,
-  getBookingsForEquipment,
-  getBookingState,
-  updateBookingState,
-  onDateChange
+  getBookingForEquipment,
+  getProjectQuantityForDate,
+  onToggleEquipmentExpansion
 }: EquipmentTimelineSectionProps) => {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
   const isExpanded = expandedGroups.has(mainFolder);
@@ -37,27 +41,59 @@ const EquipmentTimelineSectionComponent = ({
       
       <CollapsibleContent>
         {/* Main folder equipment timeline */}
-        {mainEquipment.map((equipment) => (
-          <div 
-            key={equipment.id} 
-            className="flex items-center border-b border-border hover:bg-muted/30 transition-colors"
-            style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
-          >
-            <div className="flex" style={{ minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px` }}>
-              {formattedDates.map(dateInfo => (
-                <EquipmentDayCell
-                  key={dateInfo.date.toISOString()}
-                  equipment={equipment}
-                  dateInfo={dateInfo}
-                  getBookingsForEquipment={getBookingsForEquipment}
-                  getBookingState={getBookingState}
-                  updateBookingState={updateBookingState}
-                  onDateChange={onDateChange}
-                />
-              ))}
+        {mainEquipment.map((equipment) => {
+          const isEquipmentExpanded = expandedEquipment.has(equipment.id);
+          const equipmentUsage = equipmentProjectUsage.get(equipment.id);
+          const projectCount = equipmentUsage?.projectNames.length || 0;
+          const rowHeight = isEquipmentExpanded && projectCount > 0 
+            ? LAYOUT.EQUIPMENT_ROW_HEIGHT + (projectCount * LAYOUT.PROJECT_ROW_HEIGHT)
+            : LAYOUT.EQUIPMENT_ROW_HEIGHT;
+          
+          return (
+            <div key={equipment.id}>
+              {/* Main equipment row */}
+              <div 
+                className="flex items-center border-b border-border hover:bg-muted/30 transition-colors"
+                style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
+              >
+                <div 
+                  className="flex items-center" 
+                  style={{ 
+                    minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
+                    height: '100%'
+                  }}
+                >
+                  {formattedDates.map((dateInfo, index) => (
+                    <EquipmentDayCell
+                      key={dateInfo.date.toISOString()}
+                      equipment={equipment}
+                      dateInfo={dateInfo}
+                      getBookingForEquipment={getBookingForEquipment}
+                      isExpanded={isEquipmentExpanded}
+                      onToggleExpansion={onToggleEquipmentExpansion}
+                      isFirstCell={index === 0} // Only show toggle on first cell
+                    />
+                  ))}
+                </div>
+              </div>
+              
+              {/* Project breakdown rows when expanded */}
+              {isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
+                <div>
+                  {equipmentUsage.projectNames.map((projectName) => (
+                    <ProjectRow
+                      key={`${equipment.id}-${projectName}`}
+                      projectName={projectName}
+                      equipmentId={equipment.id}
+                      formattedDates={formattedDates}
+                      getProjectQuantityForDate={getProjectQuantityForDate}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
         
         {/* Subfolders timeline */}
         {subFolders.map((subFolder) => {
@@ -68,27 +104,56 @@ const EquipmentTimelineSectionComponent = ({
             <Collapsible key={subFolder.name} open={isSubfolderExpanded}>
               <div style={{ height: LAYOUT.SUBFOLDER_HEIGHT }} className="border-t border-border" />
               <CollapsibleContent>
-                {subFolder.equipment.map((equipment) => (
-                  <div 
-                    key={equipment.id} 
-                    className="flex items-center border-b border-border hover:bg-muted/30 transition-colors"
-                    style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
-                  >
-                    <div className="flex" style={{ minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px` }}>
-                      {formattedDates.map(dateInfo => (
-                        <EquipmentDayCell
-                          key={dateInfo.date.toISOString()}
-                          equipment={equipment}
-                          dateInfo={dateInfo}
-                          getBookingsForEquipment={getBookingsForEquipment}
-                          getBookingState={getBookingState}
-                          updateBookingState={updateBookingState}
-                          onDateChange={onDateChange}
-                        />
-                      ))}
+                {subFolder.equipment.map((equipment) => {
+                  const isEquipmentExpanded = expandedEquipment.has(equipment.id);
+                  const equipmentUsage = equipmentProjectUsage.get(equipment.id);
+                  const projectCount = equipmentUsage?.projectNames.length || 0;
+                  
+                  return (
+                    <div key={equipment.id}>
+                      {/* Main equipment row */}
+                      <div 
+                        className="flex items-center border-b border-border hover:bg-muted/30 transition-colors"
+                        style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
+                      >
+                        <div 
+                          className="flex items-center" 
+                          style={{ 
+                            minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
+                            height: '100%'
+                          }}
+                        >
+                          {formattedDates.map((dateInfo, index) => (
+                            <EquipmentDayCell
+                              key={dateInfo.date.toISOString()}
+                              equipment={equipment}
+                              dateInfo={dateInfo}
+                              getBookingForEquipment={getBookingForEquipment}
+                              isExpanded={isEquipmentExpanded}
+                              onToggleExpansion={onToggleEquipmentExpansion}
+                              isFirstCell={index === 0} // Only show toggle on first cell
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Project breakdown rows when expanded */}
+                      {isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
+                        <div>
+                          {equipmentUsage.projectNames.map((projectName) => (
+                            <ProjectRow
+                              key={`${equipment.id}-${projectName}`}
+                              projectName={projectName}
+                              equipmentId={equipment.id}
+                              formattedDates={formattedDates}
+                              getProjectQuantityForDate={getProjectQuantityForDate}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </CollapsibleContent>
             </Collapsible>
           );
@@ -105,21 +170,53 @@ export const EquipmentTimelineSection = memo(EquipmentTimelineSectionComponent, 
     return false;
   }
   
-  // Expanded state must be the same
+  // Expanded state must be the same (folder-level)
   if (prevProps.expandedGroups !== nextProps.expandedGroups) {
     return false;
+  }
+  
+  // Equipment expansion state must be the same
+  if (prevProps.expandedEquipment !== nextProps.expandedEquipment) {
+    return false;
+  }
+  
+  // Equipment project usage data must be the same
+  if (prevProps.equipmentProjectUsage !== nextProps.equipmentProjectUsage) {
+    return false;
+  }
+  
+  // Equipment expansion toggle function must be the same
+  if (prevProps.onToggleEquipmentExpansion !== nextProps.onToggleEquipmentExpansion) {
+    return false;
+  }
+  
+  // Project quantity function must be the same
+  if (prevProps.getProjectQuantityForDate !== nextProps.getProjectQuantityForDate) {
+    return false;
+  }
+  
+  // CRITICAL: Check if booking function changed - this ensures day cells update with new data
+  if (prevProps.getBookingForEquipment !== nextProps.getBookingForEquipment) {
+    return false; // Force re-render when booking function changes
   }
   
   // Smart date comparison - allow expansion but not complete replacement
   const prevDates = prevProps.formattedDates;
   const nextDates = nextProps.formattedDates;
   
-  // If array length is the same, just check first and last dates
+  // If array length is the same, check first/last dates AND selected date changes
   if (prevDates.length === nextDates.length) {
-    return (
+    const firstLastSame = (
       prevDates[0]?.dateStr === nextDates[0]?.dateStr &&
       prevDates[prevDates.length - 1]?.dateStr === nextDates[nextDates.length - 1]?.dateStr
     );
+    
+    // Also check if selected date has changed within the range
+    const prevSelectedIndex = prevDates.findIndex(d => d.isSelected);
+    const nextSelectedIndex = nextDates.findIndex(d => d.isSelected);
+    const selectedChanged = prevSelectedIndex !== nextSelectedIndex;
+    
+    return firstLastSame && !selectedChanged;
   }
   
   // If next array is longer (expansion), always re-render to show new dates

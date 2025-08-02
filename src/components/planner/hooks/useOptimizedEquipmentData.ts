@@ -10,7 +10,9 @@ import {
   EquipmentPlannerData,
   getBookingKey,
   sortEquipmentGroups,
-  sortEquipmentInGroup
+  sortEquipmentInGroup,
+  ProjectQuantityCell,
+  EquipmentProjectUsage
 } from '../types';
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/utils/folderSort';
 import { usePersistentExpandedGroups } from '@/hooks/usePersistentExpandedGroups';
@@ -33,151 +35,265 @@ export function useOptimizedEquipmentData({
     initializeDefaultExpansion 
   } = usePersistentExpandedGroups();
 
-  // Use actual period dates with minimal buffering for infinite scroll
+  // Equipment-level expansion state management
+  const [expandedEquipment, setExpandedEquipment] = useState<Set<string>>(new Set());
+  
+  // Toggle individual equipment expansion
+  const toggleEquipmentExpansion = useCallback((equipmentId: string) => {
+    setExpandedEquipment(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(equipmentId)) {
+        newSet.delete(equipmentId);
+      } else {
+        newSet.add(equipmentId);
+      }
+      return newSet;
+    });
+  }, []);
+
+  // SLIDING WINDOW: Limit data fetching to reasonable range even with infinite scroll
   const stableDataRange = useMemo(() => {
-    // Add small buffer for smoother scrolling (3 days on each side)
-    const bufferedStart = addDays(periodStart, -3);
-    const bufferedEnd = addDays(periodEnd, 3);
+    // Calculate the actual visible range (assuming ~50px per day, ~1000px visible)
+    const visibleDays = 20; // About 20 days visible at once
+    const bufferDays = 14;  // 2 weeks buffer on each side
+    const maxFetchDays = visibleDays + (bufferDays * 2); // Total: ~48 days max
+    
+    // Find the center point of the current period
+    const periodLength = Math.ceil((periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (periodLength <= maxFetchDays) {
+      // Period is small enough, use it directly
+      return {
+        start: addDays(periodStart, -3),
+        end: addDays(periodEnd, 3)
+      };
+    }
+    
+    // Period is too large - use sliding window around today or selected date
+    const today = new Date();
+    const referenceDate = today; // Use today as reference point
+    
+    const windowStart = addDays(referenceDate, -bufferDays);
+    const windowEnd = addDays(referenceDate, bufferDays + visibleDays);
     
     return {
-      start: bufferedStart,
-      end: bufferedEnd
+      start: windowStart,
+      end: windowEnd
     };
   }, [
     format(periodStart, 'yyyy-MM-dd'),
-    format(periodEnd, 'yyyy-MM-dd')
-  ]); // Track actual date changes, not just month
+    format(periodEnd, 'yyyy-MM-dd'),
+    Math.ceil((periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24)) // Track period length
+  ]); // Track actual date changes and period size
 
-  // Fetch equipment structure with optimized transformation
+  // Fetch equipment structure with immediate loading and caching
   const { data: equipmentData, isLoading: isLoadingEquipment } = useQuery({
     queryKey: ['optimized-equipment-structure', selectedOwner],
     queryFn: async (): Promise<{ 
       flattenedEquipment: FlattenedEquipment[];
       equipmentById: Map<string, FlattenedEquipment>;
     }> => {
-      const [equipmentResult, foldersResult] = await Promise.all([
-        supabase
-          .from('equipment')
-          .select('id, name, stock, folder_id'),
-        supabase
-          .from('equipment_folders')
-          .select('*')
-      ]);
-
-      const { data: equipment, error: equipmentError } = equipmentResult;
-      const { data: folders, error: foldersError } = foldersResult;
-
-      if (equipmentError) throw equipmentError;
-      if (foldersError) throw foldersError;
-
-      // Create folder lookup map
-      const folderMap = new Map(folders?.map(f => [f.id, f]) || []);
+      // Try to get from localStorage first for instant loading
+      const cacheKey = `equipment-structure-${selectedOwner || 'all'}`;
+      const cached = localStorage.getItem(cacheKey);
       
-      // Transform to flattened structure
-      const flattenedEquipment: FlattenedEquipment[] = [];
-      const equipmentById = new Map<string, FlattenedEquipment>();
-
-      equipment?.forEach(eq => {
-        const folder = folderMap.get(eq.folder_id);
-        const parentFolder = folder?.parent_id ? folderMap.get(folder.parent_id) : null;
-        
-        const mainFolder = parentFolder?.name || folder?.name || 'Uncategorized';
-        const subFolder = folder?.parent_id ? folder.name : undefined;
-        const folderPath = subFolder ? `${mainFolder}/${subFolder}` : mainFolder;
-
-        const flatEquipment: FlattenedEquipment = {
-          id: eq.id,
-          name: eq.name,
-          stock: eq.stock || 0,
-          folderPath,
-          mainFolder,
-          subFolder,
-          level: subFolder ? 2 : 1
-        };
-
-        flattenedEquipment.push(flatEquipment);
-        equipmentById.set(eq.id, flatEquipment);
-      });
-
-      return { flattenedEquipment, equipmentById };
+      if (cached) {
+        try {
+          const { data: cachedData, timestamp } = JSON.parse(cached);
+          // Use cache if less than 5 minutes old
+          if (Date.now() - timestamp < 5 * 60 * 1000) {
+            const equipmentById = new Map(cachedData.equipmentById);
+            // Return cached data immediately, fetch will happen in background
+            setTimeout(() => {
+              // Background fetch after returning cached data
+              fetchFreshEquipmentData(cacheKey);
+            }, 0);
+            return {
+              flattenedEquipment: cachedData.flattenedEquipment,
+              equipmentById
+            };
+          }
+        } catch (e) {
+          console.warn('Failed to parse cached equipment data');
+        }
+      }
+      
+      return await fetchFreshEquipmentData(cacheKey);
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes - equipment doesn't change often
+    staleTime: 30 * 1000, // 30 seconds - aggressive refresh for cache updates
+    gcTime: 10 * 60 * 1000, // Keep in memory for 10 minutes
   });
+
+  // Separate function for fresh data fetching
+  const fetchFreshEquipmentData = async (cacheKey: string) => {
+    const [equipmentResult, foldersResult] = await Promise.all([
+      supabase
+        .from('equipment')
+        .select('id, name, stock, folder_id'),
+      supabase
+        .from('equipment_folders')
+        .select('*')
+    ]);
+
+    const { data: equipment, error: equipmentError } = equipmentResult;
+    const { data: folders, error: foldersError } = foldersResult;
+
+    if (equipmentError) throw equipmentError;
+    if (foldersError) throw foldersError;
+
+    // Create folder lookup map
+    const folderMap = new Map(folders?.map(f => [f.id, f]) || []);
+    
+    // Transform to flattened structure
+    const flattenedEquipment: FlattenedEquipment[] = [];
+    const equipmentById = new Map<string, FlattenedEquipment>();
+
+    equipment?.forEach(eq => {
+      const folder = folderMap.get(eq.folder_id);
+      const parentFolder = folder?.parent_id ? folderMap.get(folder.parent_id) : null;
+      
+      const mainFolder = parentFolder?.name || folder?.name || 'Uncategorized';
+      const subFolder = folder?.parent_id ? folder.name : undefined;
+      const folderPath = subFolder ? `${mainFolder}/${subFolder}` : mainFolder;
+
+      const flatEquipment: FlattenedEquipment = {
+        id: eq.id,
+        name: eq.name,
+        stock: eq.stock || 0,
+        folderPath,
+        mainFolder,
+        subFolder,
+        level: subFolder ? 2 : 1
+      };
+
+      flattenedEquipment.push(flatEquipment);
+      equipmentById.set(eq.id, flatEquipment);
+    });
+
+    const result = { flattenedEquipment, equipmentById };
+    
+    // Cache the result
+    try {
+      localStorage.setItem(cacheKey, JSON.stringify({
+        data: {
+          flattenedEquipment: result.flattenedEquipment,
+          equipmentById: Array.from(result.equipmentById.entries())
+        },
+        timestamp: Date.now()
+      }));
+    } catch (e) {
+      console.warn('Failed to cache equipment data');
+    }
+
+    return result;
+  };
 
   // Fetch booking data with keepPreviousData to prevent loading states during expansion
   const { data: bookingsData, isLoading: isLoadingBookings } = useQuery({
     queryKey: [
       'optimized-equipment-bookings', 
-      format(stableDataRange.start, 'yyyy-MM-dd'), // Use actual dates for infinite scroll
-      format(stableDataRange.end, 'yyyy-MM-dd'),   // This tracks timeline expansions
+      format(stableDataRange.start, 'yyyy-MM-dd'), // Sliding window start
+      format(stableDataRange.end, 'yyyy-MM-dd'),   // Sliding window end  
       selectedOwner,
-      'v4' // Version key updated for new date tracking
+      'v5-sliding-window' // Version key for sliding window approach
     ],
     queryFn: async (): Promise<Map<string, EquipmentBookingFlat>> => {
-      let baseQuery = supabase
+      // Optimized query strategy: Use simpler joins and fetch only what we need
+      const dateRangeStart = format(stableDataRange.start, 'yyyy-MM-dd');
+      const dateRangeEnd = format(stableDataRange.end, 'yyyy-MM-dd');
+      
+      // Debug logging to track query performance
+      const dayRange = Math.ceil((stableDataRange.end.getTime() - stableDataRange.start.getTime()) / (1000 * 60 * 60 * 24));
+      console.log(`📊 Booking query: ${dateRangeStart} to ${dateRangeEnd} (${dayRange} days)`);
+      const queryStart = Date.now();
+      
+      // Query 1: Get events in date range with project info
+      let eventsQuery = supabase
         .from('project_events')
         .select(`
+          id,
           date,
           name,
+          project_id,
           project:projects!inner (
             name,
             owner_id
-          ),
-          project_event_equipment!inner (
-            equipment_id,
-            quantity
           )
         `)
-        .gte('date', format(stableDataRange.start, 'yyyy-MM-dd'))
-        .lte('date', format(stableDataRange.end, 'yyyy-MM-dd'));
+        .gte('date', dateRangeStart)
+        .lte('date', dateRangeEnd);
 
       if (selectedOwner) {
-        baseQuery = baseQuery.eq('project.owner_id', selectedOwner);
+        eventsQuery = eventsQuery.eq('project.owner_id', selectedOwner);
       }
 
-      const { data: eventData, error } = await baseQuery;
-      if (error) throw error;
+      const { data: events, error: eventsError } = await eventsQuery;
+      if (eventsError) throw eventsError;
 
+      if (!events || events.length === 0) {
+        return new Map(); // No events in range
+      }
+
+      // Query 2: Get equipment bookings for these specific events (much faster)
+      const eventIds = events.map(e => e.id);
+      const { data: equipmentBookings, error: equipmentError } = await supabase
+        .from('project_event_equipment')
+        .select('event_id, equipment_id, quantity')
+        .in('event_id', eventIds);
+
+      if (equipmentError) throw equipmentError;
+
+      // Create event lookup map for faster processing
+      const eventMap = new Map(events.map(e => [e.id, e]));
+      
       // Transform to optimized booking structure
       const bookingsByKey = new Map<string, EquipmentBookingFlat>();
       
-      eventData?.forEach(event => {
-        event.project_event_equipment?.forEach(equipmentBooking => {
-          const equipmentId = equipmentBooking.equipment_id;
-          const date = event.date;
-          const key = getBookingKey(equipmentId, date);
-          
-          if (!bookingsByKey.has(key)) {
-            const equipment = equipmentData?.equipmentById.get(equipmentId);
-            bookingsByKey.set(key, {
-              equipmentId,
-              equipmentName: equipment?.name || 'Unknown',
-              date,
-              stock: equipment?.stock || 0,
-              bookings: [],
-              totalUsed: 0,
-              isOverbooked: false,
-              folderPath: equipment?.folderPath || 'Uncategorized'
-            });
-          }
-          
-          const booking = bookingsByKey.get(key)!;
-          booking.bookings.push({
-            quantity: equipmentBooking.quantity || 0,
-            projectName: event.project.name,
-            eventName: event.name
+      equipmentBookings?.forEach(equipmentBooking => {
+        const event = eventMap.get(equipmentBooking.event_id);
+        if (!event) return; // Skip if event not found
+        
+        const equipmentId = equipmentBooking.equipment_id;
+        const date = event.date;
+        const key = getBookingKey(equipmentId, date);
+        
+        if (!bookingsByKey.has(key)) {
+          const equipment = equipmentData?.equipmentById.get(equipmentId);
+          bookingsByKey.set(key, {
+            equipmentId,
+            equipmentName: equipment?.name || 'Unknown',
+            date,
+            stock: equipment?.stock || 0,
+            bookings: [],
+            totalUsed: 0,
+            isOverbooked: false,
+            folderPath: equipment?.folderPath || 'Uncategorized'
           });
-          booking.totalUsed += equipmentBooking.quantity || 0;
-          booking.isOverbooked = booking.totalUsed > booking.stock;
+        }
+        
+        const booking = bookingsByKey.get(key)!;
+        booking.bookings.push({
+          quantity: equipmentBooking.quantity || 0,
+          projectName: event.project.name,
+          eventName: event.name
         });
+        booking.totalUsed += equipmentBooking.quantity || 0;
+        booking.isOverbooked = booking.totalUsed > booking.stock;
       });
+
+      // Debug logging for performance tracking
+      const queryTime = Date.now() - queryStart;
+      console.log(`⚡ Booking query completed in ${queryTime}ms for ${dayRange} days (${bookingsByKey.size} bookings)`);
 
       return bookingsByKey;
     },
     enabled: !!equipmentData,
-    staleTime: 5 * 60 * 1000, // 5 minutes - longer for year transitions
-    gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
+    staleTime: 15 * 1000, // 15 seconds - very responsive for smaller data ranges
+    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes  
     keepPreviousData: true, // Prevent loading states during timeline expansion
+    refetchOnWindowFocus: true, // Refetch when user comes back to window
+    refetchInterval: 30 * 1000, // Background refetch every 30 seconds for live data
+    retry: 3, // Quick retry for failed requests
   });
 
   // Transform flattened equipment into grouped structure
@@ -250,27 +366,52 @@ export function useOptimizedEquipmentData({
   const bookingsDataRef = useRef(bookingsData);
   bookingsDataRef.current = bookingsData;
   
+  const equipmentDataRef = useRef(equipmentData);
+  equipmentDataRef.current = equipmentData;
+  
   const periodStartRef = useRef(periodStart);
   periodStartRef.current = periodStart;
   
   const periodEndRef = useRef(periodEnd);
   periodEndRef.current = periodEnd;
   
+  // Debug: Track when function gets recreated
+  const functionCreationTime = useRef(Date.now());
+  
   const getBookingForEquipment = useCallback((equipmentId: string, dateStr: string): EquipmentBookingFlat | undefined => {
-    if (!bookingsDataRef.current) return undefined;
+    // Always return equipment info immediately
+    const equipment = equipmentDataRef.current?.equipmentById.get(equipmentId);
+    if (!equipment) return undefined;
     
-    // Filter to only return data within the actual period range (not the full month range)
-    const requestDate = new Date(dateStr);
-    if (requestDate < periodStartRef.current || requestDate > periodEndRef.current) {
-      return undefined;
+    // Try to get actual booking data if available
+    const booking = bookingsDataRef.current?.get(getBookingKey(equipmentId, dateStr));
+    
+    if (booking) {
+      return booking; // Return actual booking data
     }
     
-    return bookingsDataRef.current.get(getBookingKey(equipmentId, dateStr));
-  }, []); // No dependencies - function never changes reference
+    // No booking - return equipment with zero usage
+    return {
+      equipmentId,
+      equipmentName: equipment.name,
+      date: dateStr,
+      stock: equipment.stock,
+      bookings: [],
+      totalUsed: 0,
+      isOverbooked: false,
+      folderPath: equipment.folderPath
+    };
+  }, [bookingsData]); // Re-create when bookings change -> triggers re-renders
+  
+  // Debug: Log when function reference changes
+  useEffect(() => {
+    const now = Date.now();
+    const timeSinceCreation = now - functionCreationTime.current;
+    console.log(`🔄 getBookingForEquipment recreated! Time since last: ${timeSinceCreation}ms, hasBookings: ${!!bookingsData}`);
+    functionCreationTime.current = now;
+  }, [getBookingForEquipment]);
 
-  // Stabilize lowest available calculation to prevent cascade re-renders
-  const equipmentDataRef = useRef(equipmentData);
-  equipmentDataRef.current = equipmentData;
+  // Equipment data ref already defined above - removed duplicate
   
   const getLowestAvailable = useCallback((equipmentId: string, dates: string[]): number => {
     if (!equipmentDataRef.current?.equipmentById || !bookingsDataRef.current) {
@@ -299,6 +440,76 @@ export function useOptimizedEquipmentData({
     return Math.max(0, lowest);
   }, []); // No dependencies - function never changes reference
 
+  // Generate project usage data for expanded equipment view
+  const equipmentProjectUsage = useMemo(() => {
+    if (!bookingsData) return new Map<string, EquipmentProjectUsage>();
+    
+    const usage = new Map<string, EquipmentProjectUsage>();
+    
+    // Aggregate project usage per equipment
+    bookingsData.forEach((booking) => {
+      const { equipmentId } = booking;
+      
+      if (!usage.has(equipmentId)) {
+        usage.set(equipmentId, {
+          equipmentId,
+          projectNames: [],
+          projectQuantities: new Map()
+        });
+      }
+      
+      const equipmentUsage = usage.get(equipmentId)!;
+      
+      // Process each booking for this equipment/date
+      booking.bookings.forEach((projectBooking) => {
+        const { projectName, eventName, quantity } = projectBooking;
+        
+        // Add project to list if not already there
+        if (!equipmentUsage.projectNames.includes(projectName)) {
+          equipmentUsage.projectNames.push(projectName);
+        }
+        
+        // Initialize project quantities map if needed
+        if (!equipmentUsage.projectQuantities.has(projectName)) {
+          equipmentUsage.projectQuantities.set(projectName, new Map());
+        }
+        
+        const projectQuantities = equipmentUsage.projectQuantities.get(projectName)!;
+        
+        // Add or accumulate quantity for this date
+        const existingQuantity = projectQuantities.get(booking.date);
+        if (existingQuantity) {
+          existingQuantity.quantity += quantity;
+        } else {
+          projectQuantities.set(booking.date, {
+            date: booking.date,
+            quantity,
+            eventName,
+            projectName
+          });
+        }
+      });
+    });
+    
+    // Sort project names for consistent ordering
+    usage.forEach((equipmentUsage) => {
+      equipmentUsage.projectNames.sort();
+    });
+    
+    return usage;
+  }, [bookingsData]);
+
+  // Helper function to get project quantity for specific equipment/project/date
+  const getProjectQuantityForDate = useCallback((projectName: string, equipmentId: string, dateStr: string): ProjectQuantityCell | undefined => {
+    const equipmentUsage = equipmentProjectUsage.get(equipmentId);
+    if (!equipmentUsage) return undefined;
+    
+    const projectQuantities = equipmentUsage.projectQuantities.get(projectName);
+    if (!projectQuantities) return undefined;
+    
+    return projectQuantities.get(dateStr);
+  }, [equipmentProjectUsage]);
+
   // Group management functions with persistent state
   const toggleGroup = useCallback((groupKey: string, expandAllSubfolders = false) => {
     if (expandAllSubfolders && !groupKey.includes('/')) {
@@ -324,15 +535,26 @@ export function useOptimizedEquipmentData({
   }, [equipmentGroups, initializeDefaultExpansion]);
 
   const isLoading = isLoadingEquipment || isLoadingBookings;
+  
+  // More granular loading states for better UX
+  const isEquipmentReady = !!equipmentData?.equipmentById;
+  const isBookingsReady = !!bookingsData;
 
   return {
     equipmentGroups,
     equipmentById: equipmentData?.equipmentById || new Map(),
     bookingsData: bookingsData || new Map(),
     expandedGroups,
+    expandedEquipment, // New: equipment-level expansion state
+    equipmentProjectUsage, // New: project usage aggregation
     isLoading,
+    isEquipmentReady,
+    isBookingsReady,
     getBookingForEquipment,
+    getProjectQuantityForDate, // New: get project quantity for specific date
     getLowestAvailable,
     toggleGroup,
+    toggleEquipmentExpansion, // New: equipment expansion toggle function
+    // Remove complex version tracking
   };
 }

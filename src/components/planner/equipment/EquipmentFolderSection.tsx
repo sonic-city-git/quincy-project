@@ -1,36 +1,32 @@
 import { ChevronRightIcon, FolderIcon } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../../ui/collapsible";
-import { EquipmentDayCell } from "./EquipmentDayCell";
 import { LAYOUT } from '../constants';
-import { EquipmentGroup } from '../types';
+import { EquipmentGroup, EquipmentProjectUsage } from '../types';
 
 interface EquipmentFolderSectionProps {
   equipmentGroup: EquipmentGroup;
   expandedGroups: Set<string>;
+  expandedEquipment: Set<string>; // Equipment-level expansion state
+  equipmentProjectUsage: Map<string, EquipmentProjectUsage>; // Project usage data
   toggleGroup: (groupName: string, expandAllSubfolders?: boolean) => void;
   formattedDates: Array<{
     date: Date;
     dateStr: string;
+    isToday: boolean;
     isSelected: boolean;
     isWeekendDay: boolean;
   }>;
-  getBookingsForEquipment: (equipmentId: string, dateStr: string, equipment: any) => any;
-  getBookingState: (equipmentId: string, dateStr: string) => any;
-  updateBookingState: (equipmentId: string, dateStr: string, state: any) => void;
-  onDateChange: (date: Date) => void;
-  getLowestAvailable: (equipmentId: string) => number;
+  bookingsData: Map<string, any> | undefined;
 }
 
 export function EquipmentFolderSection({
   equipmentGroup,
   expandedGroups,
+  expandedEquipment,
+  equipmentProjectUsage,
   toggleGroup,
   formattedDates,
-  getBookingsForEquipment,
-  getBookingState,
-  updateBookingState,
-  onDateChange,
-  getLowestAvailable
+  bookingsData
 }: EquipmentFolderSectionProps) {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
   const isExpanded = expandedGroups.has(mainFolder);
@@ -62,18 +58,45 @@ export function EquipmentFolderSection({
       
       <CollapsibleContent>
         {/* Main folder equipment */}
-        {mainEquipment.map((equipment) => (
-          <div 
-            key={equipment.id} 
-            className="flex items-center px-2 border-b border-border hover:bg-muted/30 transition-colors"
-            style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
-          >
-            <div className="min-w-0 flex-1 pr-1">
-              <div className="text-xs font-medium truncate" title={equipment.name}>{equipment.name}</div>
-              <div className="text-xs text-muted-foreground mt-0.5">Stock: {equipment.stock}</div>
+        {mainEquipment.map((equipment) => {
+          const isEquipmentExpanded = expandedEquipment.has(equipment.id);
+          const equipmentUsage = equipmentProjectUsage.get(equipment.id);
+          
+          return (
+            <div key={equipment.id}>
+              {/* Main equipment name row */}
+              <div 
+                className="flex items-center px-2 border-b border-border hover:bg-muted/30 transition-colors"
+                style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
+              >
+                <div className="min-w-0 flex-1 pr-1">
+                  <div className="text-xs font-medium truncate" title={equipment.name}>{equipment.name}</div>
+                  <div className="text-xs text-muted-foreground mt-0.5">Stock: {equipment.stock}</div>
+                </div>
+              </div>
+              
+              {/* Project name rows when equipment is expanded */}
+              {isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
+                <div>
+                  {equipmentUsage.projectNames.map((projectName) => (
+                    <div 
+                      key={`${equipment.id}-${projectName}`}
+                      className="flex items-center px-2 border-b border-gray-300 bg-gray-700"
+                      style={{ height: LAYOUT.PROJECT_ROW_HEIGHT }}
+                    >
+                      <div className="min-w-0 flex-1 pr-1 pl-3">
+                        <div className="text-xs font-medium text-white truncate flex items-center" title={projectName}>
+                          <span className="text-gray-300 mr-2 text-[10px]">▸</span>
+                          <span className="text-white font-semibold">{projectName}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
         
         {/* Subfolders */}
         {subFolders.map((subFolder) => {
@@ -95,18 +118,45 @@ export function EquipmentFolderSection({
                 </div>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                {subFolder.equipment.map((equipment) => (
-                  <div 
-                    key={equipment.id} 
-                    className="flex items-center px-4 border-b border-border hover:bg-muted/30 transition-colors"
-                    style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
-                  >
-                    <div className="min-w-0 flex-1 pr-1">
-                      <div className="text-xs font-medium truncate" title={equipment.name}>{equipment.name}</div>
-                      <div className="text-xs text-muted-foreground mt-0.5">Stock: {equipment.stock}</div>
+                {subFolder.equipment.map((equipment) => {
+                  const isEquipmentExpanded = expandedEquipment.has(equipment.id);
+                  const equipmentUsage = equipmentProjectUsage.get(equipment.id);
+                  
+                  return (
+                    <div key={equipment.id}>
+                      {/* Main equipment name row */}
+                      <div 
+                        className="flex items-center px-4 border-b border-border hover:bg-muted/30 transition-colors"
+                        style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
+                      >
+                        <div className="min-w-0 flex-1 pr-1">
+                          <div className="text-xs font-medium truncate" title={equipment.name}>{equipment.name}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5">Stock: {equipment.stock}</div>
+                        </div>
+                      </div>
+                      
+                      {/* Project name rows when equipment is expanded */}
+                      {isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
+                        <div>
+                          {equipmentUsage.projectNames.map((projectName) => (
+                            <div 
+                              key={`${equipment.id}-${projectName}`}
+                              className="flex items-center px-4 border-b border-gray-300 bg-gray-700"
+                              style={{ height: LAYOUT.PROJECT_ROW_HEIGHT }}
+                            >
+                              <div className="min-w-0 flex-1 pr-1 pl-3">
+                                <div className="text-xs font-medium text-white truncate flex items-center" title={projectName}>
+                                  <span className="text-gray-300 mr-2 text-[10px]">▸</span>
+                                  <span className="text-white font-semibold">{projectName}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </CollapsibleContent>
             </Collapsible>
           );

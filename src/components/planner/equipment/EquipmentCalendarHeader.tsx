@@ -15,6 +15,7 @@ interface EquipmentCalendarHeaderProps {
   formattedDates: Array<{
     date: Date;
     dateStr: string;
+    isToday: boolean;
     isSelected: boolean;
     isWeekendDay: boolean;
   }>;
@@ -116,19 +117,31 @@ export function EquipmentCalendarHeader({
                     
                     <div
                       className={`h-8 flex flex-col items-center justify-center rounded-md text-xs font-medium transition-colors cursor-pointer select-none relative ${
-                        dateInfo.isSelected 
+                        dateInfo.isToday
                           ? 'bg-blue-500 text-white shadow-md' 
                           : isNewYear
                           ? 'bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200'
                           : dateInfo.isWeekendDay
                           ? 'bg-orange-100 text-orange-800 hover:bg-orange-200'
                           : 'text-muted-foreground hover:bg-muted/50'
+                      } ${
+                        dateInfo.isSelected 
+                          ? 'ring-2 ring-blue-300' 
+                          : ''
                       }`}
                       onClick={(e) => {
                         e.stopPropagation();
                         onDateChange(dateInfo.date);
                       }}
-                      title={format(dateInfo.date, 'EEEE, MMMM d, yyyy')}
+                      onDoubleClick={(e) => {
+                        e.stopPropagation();
+                        // Only handle double-click if this day is already selected
+                        if (dateInfo.isSelected) {
+                          const today = new Date();
+                          onDateChange(today);
+                        }
+                      }}
+                      title={`${format(dateInfo.date, 'EEEE, MMMM d, yyyy')}${dateInfo.isToday ? ' (Today)' : ''}${dateInfo.isSelected ? ' (Selected - Double-click to go to Today)' : ''}`}
                     >
                       <div className="text-[10px] leading-none">{format(dateInfo.date, 'EEE')[0]}</div>
                       <div className="text-xs font-medium leading-none">

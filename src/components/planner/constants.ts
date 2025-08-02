@@ -14,6 +14,8 @@ export const LAYOUT = {
   MAIN_FOLDER_HEIGHT: 57,
   SUBFOLDER_HEIGHT: 41,
   EQUIPMENT_ROW_HEIGHT: 60,
+  PROJECT_ROW_HEIGHT: 36, // Height per project row in expanded equipment view
+  PROJECT_QUANTITY_CELL_HEIGHT: 24, // Height of quantity indicator cells
   
   // Header heights
   MONTH_HEADER_HEIGHT: 12,

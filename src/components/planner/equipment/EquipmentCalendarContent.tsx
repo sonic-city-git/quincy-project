@@ -9,18 +9,19 @@ import { EquipmentGroup } from '../types';
 interface EquipmentCalendarContentProps {
   equipmentGroups: EquipmentGroup[];
   expandedGroups: Set<string>;
+  expandedEquipment: Set<string>; // New: equipment-level expansion
+  equipmentProjectUsage: Map<string, any>; // New: project usage data
   toggleGroup: (groupName: string, expandAllSubfolders?: boolean) => void;
+  toggleEquipmentExpansion: (equipmentId: string) => void; // New: equipment expansion toggle
   formattedDates: Array<{
     date: Date;
     dateStr: string;
+    isToday: boolean;
     isSelected: boolean;
     isWeekendDay: boolean;
   }>;
-  getBookingsForEquipment: (equipmentId: string, dateStr: string, equipment: any) => any;
-  getBookingState: (equipmentId: string, dateStr: string) => any;
-  updateBookingState: (equipmentId: string, dateStr: string, state: any) => void;
-  onDateChange: (date: Date) => void;
-  getLowestAvailable: (equipmentId: string) => number;
+  getBookingForEquipment: (equipmentId: string, dateStr: string) => any; // Optimized function for day cells
+  getProjectQuantityForDate: (projectName: string, equipmentId: string, dateStr: string) => any; // New: project quantity function
   equipmentRowsRef: React.RefObject<HTMLDivElement>;
   handleTimelineScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   handleTimelineMouseMove: (e: React.MouseEvent) => void;
@@ -30,23 +31,31 @@ interface EquipmentCalendarContentProps {
     handleMouseLeave: () => void;
   };
   isDragging: boolean;
+  getBookingsForEquipment: (equipmentId: string, dateStr: string, equipment: any) => any; // Legacy function for folder section
+  getBookingState: (equipmentId: string, dateStr: string) => any;
+  updateBookingState: (equipmentId: string, dateStr: string, state: any) => void;
+  getLowestAvailable: (equipmentId: string) => number;
 }
 
 const EquipmentCalendarContentComponent = ({
   equipmentGroups,
   expandedGroups,
+  expandedEquipment,
+  equipmentProjectUsage,
   toggleGroup,
+  toggleEquipmentExpansion,
   formattedDates,
-  getBookingsForEquipment,
-  getBookingState,
-  updateBookingState,
-  onDateChange,
-  getLowestAvailable,
+  getBookingForEquipment,
+  getProjectQuantityForDate,
   equipmentRowsRef,
   handleTimelineScroll,
   handleTimelineMouseMove,
   scrollHandlers,
-  isDragging
+  isDragging,
+  getBookingsForEquipment,
+  getBookingState,
+  updateBookingState,
+  getLowestAvailable
 }: EquipmentCalendarContentProps) => {
   if (!equipmentGroups || equipmentGroups.length === 0) {
     return (
@@ -71,13 +80,11 @@ const EquipmentCalendarContentComponent = ({
               key={group.mainFolder}
               equipmentGroup={group}
               expandedGroups={expandedGroups}
+              expandedEquipment={expandedEquipment}
+              equipmentProjectUsage={equipmentProjectUsage}
               toggleGroup={toggleGroup}
               formattedDates={formattedDates}
-              getBookingsForEquipment={getBookingsForEquipment}
-              getBookingState={getBookingState}
-              updateBookingState={updateBookingState}
-              onDateChange={onDateChange}
-              getLowestAvailable={getLowestAvailable}
+              bookingsData={undefined}
             />
           ))}
         </div>
@@ -98,11 +105,12 @@ const EquipmentCalendarContentComponent = ({
                 key={`timeline-${group.mainFolder}`}
                 equipmentGroup={group}
                 expandedGroups={expandedGroups}
+                expandedEquipment={expandedEquipment}
+                equipmentProjectUsage={equipmentProjectUsage}
                 formattedDates={formattedDates}
-                getBookingsForEquipment={getBookingsForEquipment}
-                getBookingState={getBookingState}
-                updateBookingState={updateBookingState}
-                onDateChange={onDateChange}
+                getBookingForEquipment={getBookingForEquipment}
+                getProjectQuantityForDate={getProjectQuantityForDate}
+                onToggleEquipmentExpansion={toggleEquipmentExpansion}
               />
             ))}
           </div>
@@ -120,21 +128,41 @@ export const EquipmentCalendarContent = memo(EquipmentCalendarContentComponent, 
   if (
     prevProps.equipmentGroups.length !== nextProps.equipmentGroups.length ||
     prevProps.expandedGroups !== nextProps.expandedGroups ||
+    prevProps.expandedEquipment !== nextProps.expandedEquipment ||
     prevProps.isDragging !== nextProps.isDragging
   ) {
     return false;
+  }
+  
+  // Function references that should be stable
+  if (prevProps.toggleGroup !== nextProps.toggleGroup ||
+      prevProps.toggleEquipmentExpansion !== nextProps.toggleEquipmentExpansion ||
+      prevProps.getProjectQuantityForDate !== nextProps.getProjectQuantityForDate) {
+    return false;
+  }
+  
+  // CRITICAL: Check if booking function changed - this ensures timeline sections get updated data
+  if (prevProps.getBookingForEquipment !== nextProps.getBookingForEquipment) {
+    return false; // Force re-render when booking function changes
   }
   
   // Smart date comparison for timeline expansion
   const prevDates = prevProps.formattedDates;
   const nextDates = nextProps.formattedDates;
   
-  // If lengths are equal, check if content is the same
+  // If lengths are equal, check if content is the same AND selected date hasn't changed
   if (prevDates.length === nextDates.length) {
-    return (
+    const firstLastSame = (
       prevDates[0]?.dateStr === nextDates[0]?.dateStr &&
       prevDates[prevDates.length - 1]?.dateStr === nextDates[nextDates.length - 1]?.dateStr
     );
+    
+    // Also check if selected date has changed within the range
+    const prevSelectedIndex = prevDates.findIndex(d => d.isSelected);
+    const nextSelectedIndex = nextDates.findIndex(d => d.isSelected);
+    const selectedChanged = prevSelectedIndex !== nextSelectedIndex;
+    
+    return firstLastSame && !selectedChanged;
   }
   
   // Timeline expansion detected - force re-render to show new dates
