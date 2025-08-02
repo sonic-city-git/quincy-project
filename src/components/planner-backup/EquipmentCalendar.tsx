@@ -2,25 +2,25 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { format, isWeekend, isSameDay } from "date-fns";
 import { Skeleton } from "../ui/skeleton";
 
-import { useCrewTimeline } from './shared/hooks/useCrewTimeline';
-import { useCrewHub } from './shared/hooks/useCrewHub';
-import { useTimelineScroll } from './shared/hooks/useTimelineScroll';
-import { LAYOUT, PERFORMANCE } from './shared/constants';
+import { useEquipmentTimeline } from './hooks/useEquipmentTimeline';
+import { useTimelineScroll } from './hooks/useTimelineScroll';
+import { useEquipmentHub } from './hooks/useEquipmentHub';
+import { LAYOUT, PERFORMANCE } from './constants';
 
-// Shared timeline components
-import { TimelineHeader } from './shared/components/TimelineHeader';
-import { TimelineContent } from './shared/components/TimelineContent';
+// New modular components
+import { EquipmentCalendarHeader } from './equipment/EquipmentCalendarHeader';
+import { EquipmentCalendarContent } from './equipment/EquipmentCalendarContent';
 
 
 
-interface CrewCalendarProps {
+interface EquipmentCalendarProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   selectedOwner?: string;
   viewMode?: 'week' | 'month';
 }
 
-export function CrewCalendar({ selectedDate, onDateChange, selectedOwner, viewMode = 'week' }: CrewCalendarProps) {
+export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, viewMode = 'week' }: EquipmentCalendarProps) {
   const isMonthView = viewMode === 'month';
   
 
@@ -44,7 +44,7 @@ export function CrewCalendar({ selectedDate, onDateChange, selectedOwner, viewMo
     equipmentRowsRef,
     loadMoreDates,
     scrollToDate,
-  } = useCrewTimeline({ selectedDate });
+  } = useEquipmentTimeline({ selectedDate });
 
   const scrollHandlers = useTimelineScroll({
     equipmentRowsRef,
@@ -140,7 +140,7 @@ export function CrewCalendar({ selectedDate, onDateChange, selectedOwner, viewMo
     }
   }, [timelineStart, timelineEnd]);
 
-  // Use unified crew hub with all data services
+  // Use unified equipment hub with all data services
   const {
     equipmentGroups,
     equipmentById,
@@ -163,19 +163,19 @@ export function CrewCalendar({ selectedDate, onDateChange, selectedOwner, viewMo
     batchUpdateBookings,
     clearStaleStates,
     resolveConflict,
-  } = useCrewHub({
+  } = useEquipmentHub({
     periodStart: stableDataRange.start,
     periodEnd: stableDataRange.end,
     selectedOwner,
   });
 
   // More sophisticated loading state management
-  // Show skeleton only when we have no crew data at all
-  // If crew is ready but assignments are loading, show crew with loading indicators
+  // Show skeleton only when we have no equipment data at all
+  // If equipment is ready but bookings are loading, show equipment with loading indicators
   const [hasInitialData, setHasInitialData] = useState(false);
   
   useEffect(() => {
-    if (equipmentGroups.length > 0 && !hasInitialData) { // equipmentGroups contains crew groups
+    if (equipmentGroups.length > 0 && !hasInitialData) {
       setHasInitialData(true);
     }
   }, [equipmentGroups.length, hasInitialData]);
@@ -265,46 +265,46 @@ export function CrewCalendar({ selectedDate, onDateChange, selectedOwner, viewMo
     return sections;
   }, [baseDates]);
 
-  // Simple assignment lookup - let React Query handle updates naturally  
-  const getBookingsForEquipment = useCallback((crewMemberId: string, dateStr: string, crewMember: any) => {
-    const assignment = getBookingForEquipment(crewMemberId, dateStr);
-    if (!assignment) return undefined;
+  // Simple booking lookup - let React Query handle updates naturally
+  const getBookingsForEquipment = useCallback((equipmentId: string, dateStr: string, equipment: any) => {
+    const booking = getBookingForEquipment(equipmentId, dateStr);
+    if (!booking) return undefined;
     
     return {
-      equipment_id: assignment.crewMemberId, // Using equipment interface for compatibility
-      equipment_name: assignment.crewMemberName,
-      stock: 1, // Crew members have availability, not stock
-      date: assignment.date,
-      folder_name: assignment.department,
-      bookings: assignment.assignments,
-      total_used: assignment.totalAssignments,
-      is_overbooked: assignment.isOverbooked,
+      equipment_id: booking.equipmentId,
+      equipment_name: booking.equipmentName,
+      stock: booking.stock,
+      date: booking.date,
+      folder_name: booking.folderPath,
+      bookings: booking.bookings,
+      total_used: booking.totalUsed,
+      is_overbooked: booking.isOverbooked,
     };
   }, [getBookingForEquipment]); // Update when underlying function changes
 
-  // Optimized crew availability calculation - memoize date strings from stable baseDates
+  // Optimized lowest available calculation - memoize date strings from stable baseDates
   const dateStrings = useMemo(() => baseDates.map(d => d.dateStr), [baseDates]);
   
-  const getLowestAvailableForEquipment = useCallback((crewMemberId: string) => {
-    return getLowestAvailable(crewMemberId, dateStrings);
+  const getLowestAvailableForEquipment = useCallback((equipmentId: string) => {
+    return getLowestAvailable(equipmentId, dateStrings);
   }, [dateStrings]); // dateStrings dependency needed, but getLowestAvailable is stable
 
   if (shouldShowLoading) {
     return (
-          <div className="space-y-4">
+      <div className="space-y-4">
         <Skeleton className="h-16 w-full" />
         <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
+          {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-4">
-      <TimelineHeader
+      <EquipmentCalendarHeader
         formattedDates={formattedDates}
         monthSections={monthSections}
         onDateChange={onDateChange}
@@ -312,7 +312,7 @@ export function CrewCalendar({ selectedDate, onDateChange, selectedOwner, viewMo
         stickyHeadersRef={stickyHeadersRef}
       />
 
-      <TimelineContent
+      <EquipmentCalendarContent
         equipmentGroups={equipmentGroups}
         expandedGroups={expandedGroups}
         expandedEquipment={expandedEquipment}
@@ -332,6 +332,6 @@ export function CrewCalendar({ selectedDate, onDateChange, selectedOwner, viewMo
         updateBookingState={updateBookingState}
         getLowestAvailable={getLowestAvailableForEquipment}
       />
-          </div>
+    </div>
   );
 }

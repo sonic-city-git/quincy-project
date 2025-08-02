@@ -2,14 +2,14 @@ import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { format, isWeekend, isSameDay } from "date-fns";
 import { Skeleton } from "../ui/skeleton";
 
-import { useEquipmentTimeline } from './hooks/useEquipmentTimeline';
-import { useTimelineScroll } from './hooks/useTimelineScroll';
-import { useEquipmentHub } from './hooks/useEquipmentHub';
-import { LAYOUT, PERFORMANCE } from './constants';
+import { useEquipmentTimeline } from './shared/hooks/useEquipmentTimeline';
+import { useEquipmentHub } from './shared/hooks/useEquipmentHub';
+import { useTimelineScroll } from './shared/hooks/useTimelineScroll';
+import { LAYOUT, PERFORMANCE } from './shared/constants';
 
-// New modular components
-import { EquipmentCalendarHeader } from './equipment/EquipmentCalendarHeader';
-import { EquipmentCalendarContent } from './equipment/EquipmentCalendarContent';
+// Shared timeline components
+import { TimelineHeader } from './shared/components/TimelineHeader';
+import { TimelineContent } from './shared/components/TimelineContent';
 
 
 
@@ -304,7 +304,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
 
   return (
     <div className="space-y-4">
-      <EquipmentCalendarHeader
+      <TimelineHeader
         formattedDates={formattedDates}
         monthSections={monthSections}
         onDateChange={onDateChange}
@@ -312,7 +312,7 @@ export function EquipmentCalendar({ selectedDate, onDateChange, selectedOwner, v
         stickyHeadersRef={stickyHeadersRef}
       />
 
-      <EquipmentCalendarContent
+      <TimelineContent
         equipmentGroups={equipmentGroups}
         expandedGroups={expandedGroups}
         expandedEquipment={expandedEquipment}

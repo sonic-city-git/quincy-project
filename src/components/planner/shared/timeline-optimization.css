@@ -1,0 +1,34 @@
+/**
+ * TIMELINE PERFORMANCE OPTIMIZATIONS - No animations, just speed
+ * 
+ * Shared optimizations for both crew and equipment timelines
+ * 
+ * Focus on:
+ * 1. GPU layers for repaints
+ * 2. Layout containment 
+ * 3. Memory efficiency
+ * 4. Instant responsiveness
+ */
+
+/* Performance optimizations for timeline rows */
+.equipment-row {
+  contain: layout; /* Isolate layout calculations */
+  will-change: auto; /* Let browser decide when to optimize */
+}
+
+/* Project rows performance - no animations */
+.project-rows-expanded {
+  contain: layout; /* Isolate layout changes */
+}
+
+.project-row {
+  contain: layout; /* Prevent layout thrashing */
+  backface-visibility: hidden; /* GPU optimization */
+}
+
+/* Timeline day cell performance optimization */
+.equipment-day-cell {
+  contain: layout style; /* Maximum containment */
+  will-change: auto;
+}
+
