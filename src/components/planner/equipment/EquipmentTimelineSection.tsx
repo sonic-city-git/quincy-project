@@ -2,7 +2,9 @@ import { memo } from "react";
 import { Collapsible, CollapsibleContent } from "../../ui/collapsible";
 import { EquipmentDayCell } from "./EquipmentDayCell";
 import { ProjectRow } from "./ProjectRow";
+import { ExpandedEquipmentRow } from "./ExpandedEquipmentRow";
 import { LAYOUT } from '../constants';
+import './equipment-expansion.css';
 import { EquipmentGroup, EquipmentProjectUsage, ProjectQuantityCell } from '../types';
 
 interface EquipmentTimelineSectionProps {
@@ -40,60 +42,19 @@ const EquipmentTimelineSectionComponent = ({
       <div style={{ height: LAYOUT.MAIN_FOLDER_HEIGHT }} className="border-b border-border" />
       
       <CollapsibleContent>
-        {/* Main folder equipment timeline */}
-        {mainEquipment.map((equipment) => {
-          const isEquipmentExpanded = expandedEquipment.has(equipment.id);
-          const equipmentUsage = equipmentProjectUsage.get(equipment.id);
-          const projectCount = equipmentUsage?.projectNames.length || 0;
-          const rowHeight = isEquipmentExpanded && projectCount > 0 
-            ? LAYOUT.EQUIPMENT_ROW_HEIGHT + (projectCount * LAYOUT.PROJECT_ROW_HEIGHT)
-            : LAYOUT.EQUIPMENT_ROW_HEIGHT;
-          
-          return (
-            <div key={equipment.id}>
-              {/* Main equipment row */}
-              <div 
-                className="flex items-center border-b border-border hover:bg-muted/30 transition-colors"
-                style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
-              >
-                <div 
-                  className="flex items-center" 
-                  style={{ 
-                    minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
-                    height: '100%'
-                  }}
-                >
-                  {formattedDates.map((dateInfo, index) => (
-                    <EquipmentDayCell
-                      key={dateInfo.date.toISOString()}
-                      equipment={equipment}
-                      dateInfo={dateInfo}
-                      getBookingForEquipment={getBookingForEquipment}
-                      isExpanded={isEquipmentExpanded}
-                      onToggleExpansion={onToggleEquipmentExpansion}
-                      isFirstCell={index === 0} // Only show toggle on first cell
-                    />
-                  ))}
-                </div>
-              </div>
-              
-              {/* Project breakdown rows when expanded */}
-              {isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
-                <div>
-                  {equipmentUsage.projectNames.map((projectName) => (
-                    <ProjectRow
-                      key={`${equipment.id}-${projectName}`}
-                      projectName={projectName}
-                      equipmentId={equipment.id}
-                      formattedDates={formattedDates}
-                      getProjectQuantityForDate={getProjectQuantityForDate}
-                    />
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
+        {/* Main folder equipment timeline - OPTIMIZED */}
+        {mainEquipment.map((equipment) => (
+          <ExpandedEquipmentRow
+            key={equipment.id}
+            equipment={equipment}
+            isExpanded={expandedEquipment.has(equipment.id)}
+            equipmentUsage={equipmentProjectUsage.get(equipment.id)}
+            formattedDates={formattedDates}
+            getBookingForEquipment={getBookingForEquipment}
+            getProjectQuantityForDate={getProjectQuantityForDate}
+            onToggleExpansion={onToggleEquipmentExpansion}
+          />
+        ))}
         
         {/* Subfolders timeline */}
         {subFolders.map((subFolder) => {
@@ -104,56 +65,19 @@ const EquipmentTimelineSectionComponent = ({
             <Collapsible key={subFolder.name} open={isSubfolderExpanded}>
               <div style={{ height: LAYOUT.SUBFOLDER_HEIGHT }} className="border-t border-border" />
               <CollapsibleContent>
-                {subFolder.equipment.map((equipment) => {
-                  const isEquipmentExpanded = expandedEquipment.has(equipment.id);
-                  const equipmentUsage = equipmentProjectUsage.get(equipment.id);
-                  const projectCount = equipmentUsage?.projectNames.length || 0;
-                  
-                  return (
-                    <div key={equipment.id}>
-                      {/* Main equipment row */}
-                      <div 
-                        className="flex items-center border-b border-border hover:bg-muted/30 transition-colors"
-                        style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
-                      >
-                        <div 
-                          className="flex items-center" 
-                          style={{ 
-                            minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
-                            height: '100%'
-                          }}
-                        >
-                          {formattedDates.map((dateInfo, index) => (
-                            <EquipmentDayCell
-                              key={dateInfo.date.toISOString()}
-                              equipment={equipment}
-                              dateInfo={dateInfo}
-                              getBookingForEquipment={getBookingForEquipment}
-                              isExpanded={isEquipmentExpanded}
-                              onToggleExpansion={onToggleEquipmentExpansion}
-                              isFirstCell={index === 0} // Only show toggle on first cell
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      
-                      {/* Project breakdown rows when expanded */}
-                      {isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
-                        <div>
-                          {equipmentUsage.projectNames.map((projectName) => (
-                            <ProjectRow
-                              key={`${equipment.id}-${projectName}`}
-                              projectName={projectName}
-                              equipmentId={equipment.id}
-                              formattedDates={formattedDates}
-                              getProjectQuantityForDate={getProjectQuantityForDate}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                {/* Subfolder equipment timeline - OPTIMIZED */}
+                {subFolder.equipment.map((equipment) => (
+                  <ExpandedEquipmentRow
+                    key={equipment.id}
+                    equipment={equipment}
+                    isExpanded={expandedEquipment.has(equipment.id)}
+                    equipmentUsage={equipmentProjectUsage.get(equipment.id)}
+                    formattedDates={formattedDates}
+                    getBookingForEquipment={getBookingForEquipment}
+                    getProjectQuantityForDate={getProjectQuantityForDate}
+                    onToggleExpansion={onToggleEquipmentExpansion}
+                  />
+                ))}
               </CollapsibleContent>
             </Collapsible>
           );
