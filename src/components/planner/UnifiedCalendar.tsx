@@ -94,95 +94,51 @@ export function UnifiedCalendar({
 
   // Note: Scroll logic is now simple - just scroll to center selected date
 
-  // ENHANCED: Improved scroll handler with RAF for smoother sync
+  // SIMPLE: Just sync header scroll with timeline scroll
   const handleTimelineScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     // Handle infinite scroll and drag functionality
     scrollHandlers.handleEquipmentScroll(e);
     
-    // IMPROVED: Use RAF for smoother header sync
-    requestAnimationFrame(() => {
-      const scrollLeft = e.currentTarget.scrollLeft;
-      if (stickyHeadersRef.current && stickyHeadersRef.current.scrollLeft !== scrollLeft) {
-        stickyHeadersRef.current.scrollLeft = scrollLeft;
-      }
-    });
+    // Simple header sync (no RAF needed for simple behavior)
+    const scrollLeft = e.currentTarget.scrollLeft;
+    if (stickyHeadersRef.current) {
+      stickyHeadersRef.current.scrollLeft = scrollLeft;
+    }
   }, [scrollHandlers]);
 
-  // ENHANCED: Improved mouse move handler with RAF
+  // SIMPLE: Handle mouse move for drag
   const handleTimelineMouseMove = useCallback((e: React.MouseEvent) => {
     scrollHandlers.handleMouseMove(e);
     
-    // IMPROVED: Use RAF for smoother drag sync
+    // Simple drag sync  
     if (isDragging && equipmentRowsRef.current && stickyHeadersRef.current) {
-      requestAnimationFrame(() => {
-        if (equipmentRowsRef.current && stickyHeadersRef.current) {
-          const scrollLeft = equipmentRowsRef.current.scrollLeft;
-          if (stickyHeadersRef.current.scrollLeft !== scrollLeft) {
-            stickyHeadersRef.current.scrollLeft = scrollLeft;
-          }
-        }
-      });
+      const scrollLeft = equipmentRowsRef.current.scrollLeft;
+      stickyHeadersRef.current.scrollLeft = scrollLeft;
     }
   }, [scrollHandlers.handleMouseMove, isDragging]);
 
   // Note: Header scroll is now handled in Planner.tsx
 
-  // STABLE data range - no debouncing on initial load to prevent "pop" effect
-  const [stableDataRange, setStableDataRange] = useState({
+  // SIMPLIFIED: Use timeline range directly (no racing conditions)
+  const stableDataRange = useMemo(() => ({
     start: timelineStart,
     end: timelineEnd
-  });
-  
-  const lastTimelineChangeRef = useRef(Date.now());
-  const isInitialLoad = useRef(true);
-  
-  useEffect(() => {
-    const now = Date.now();
-    const timeSinceLastChange = now - lastTimelineChangeRef.current;
-    lastTimelineChangeRef.current = now;
-    
-    // On initial load, update immediately to prevent pop effect
-    if (isInitialLoad.current) {
-      isInitialLoad.current = false;
-      setStableDataRange({
-        start: timelineStart,
-        end: timelineEnd
-      });
-      return;
-    }
-    
-    // For subsequent changes, only debounce rapid expansions
-    if (timeSinceLastChange < 100) {
-      const debounceTimer = setTimeout(() => {
-        setStableDataRange({
-          start: timelineStart,
-          end: timelineEnd
-        });
-      }, 50);
-      return () => clearTimeout(debounceTimer);
-    } else {
-      // Immediate update for single date changes
-      setStableDataRange({
-        start: timelineStart,
-        end: timelineEnd
-      });
-    }
-  }, [timelineStart, timelineEnd]);
+  }), [timelineStart, timelineEnd]);
 
-  // Always call both hooks but with enabled/disabled flag to respect Rules of Hooks
-  const hubConfig = {
+  // PERFORMANCE FIX: Use enabled flag to control data fetching
+  const baseConfig = {
     periodStart: stableDataRange.start,
     periodEnd: stableDataRange.end,
     selectedOwner,
     visibleTimelineStart,
     visibleTimelineEnd,
-    enabled: true, // Add enabled flag
   };
 
-  const equipmentHubConfig = { ...hubConfig, enabled: resourceType === 'equipment' };
-  const crewHubConfig = { ...hubConfig, enabled: resourceType === 'crew' };
+  // Only fetch data for the active resource type
+  const equipmentHubConfig = { ...baseConfig, enabled: resourceType === 'equipment' };
+  const crewHubConfig = { ...baseConfig, enabled: resourceType === 'crew' };
 
-  // Always call both hooks to maintain hook call order
+  // Always call both hooks (Rules of Hooks) but only fetch data for active type
   const equipmentHub = useEquipmentHub(equipmentHubConfig);
   const crewHub = useCrewHub(crewHubConfig);
   
@@ -214,20 +170,7 @@ export function UnifiedCalendar({
     resolveConflict,
   } = currentHub;
 
-  // Log performance metrics in development
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && equipmentGroups.length > 0) {
-      const loadTime = performance.now() - loadStartTime.current;
-      const metrics: PlannerMetrics = {
-        dataLoadTime: Math.round(loadTime),
-        renderTime: Math.round(performance.now() - renderStartTime.current),
-        activeResourceType: resourceType,
-        totalResources: equipmentGroups.reduce((sum, group) => sum + group.equipment.length, 0),
-        visibleDateRange: Math.ceil((timelineEnd.getTime() - timelineStart.getTime()) / (1000 * 60 * 60 * 24))
-      };
-      console.debug('🔧 Planner Performance Metrics:', metrics);
-    }
-  }, [equipmentGroups, resourceType, timelineStart, timelineEnd]);
+  // REMOVED: Performance metrics logging to reduce console spam
 
   // Handle scrolling to target item when targetScrollItem is provided
   useEffect(() => {

@@ -298,6 +298,7 @@ export function useCrewHub({
       // Create subfolders for each role type
       const subFolders = Array.from(roleGroups.entries()).map(([roleName, roles]) => ({
         name: roleName,
+        mainFolder: 'Unfilled Roles',
         equipment: roles,
         isExpanded: expandedGroups.has(`Unfilled Roles/${roleName}`)
       }));
@@ -390,14 +391,14 @@ export function useCrewHub({
 
     const assignment = crewAssignments[0];
     return {
+      date: dateStr,
       projectName: assignment.projectName,
       eventName: assignment.eventName,
-      eventType: assignment.eventType,
-      eventTypeColor: assignment.eventTypeColor,
-      quantity: crewAssignments.length,
-      used: crewAssignments.length,
-      available: 1,
-      isOverbooked: crewAssignments.length > 1
+      crewMemberId: crewMemberId,
+      role: assignment.role,
+      startTime: assignment.startTime,
+      endTime: assignment.endTime,
+      status: assignment.status
     };
   }, [assignmentsData?.assignments]);
 
@@ -437,16 +438,17 @@ export function useCrewHub({
     const crewMember = crewById.get(crewMemberId);
     if (!crewMember) return undefined;
     
-    // Return in equipment-compatible format
+    // Return proper CrewAvailability format
     return {
-      equipmentId: crewMemberId,
-      equipmentName: crewMember.name,
-      stock: 1, // Crew members have availability, not stock
+      crewMemberId: crewMemberId,
+      crewMemberName: crewMember.name,
       date: dateStr,
-      folderPath: crewMember.department,
-      bookings: crewAssignments, // Contains the assignments with event colors
-      totalUsed: crewAssignments.length,
+      department: crewMember.department,
+      role: crewMember.role,
+      assignments: crewAssignments,
+      totalAssignments: crewAssignments.length,
       isOverbooked: crewAssignments.length > 1, // Crew conflict
+      availability: crewAssignments.length > 0 ? 'busy' : 'available' as 'busy' | 'available' | 'unavailable'
     };
   }, [assignmentsData?.assignments, crewById]);
 

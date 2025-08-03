@@ -8,14 +8,7 @@ import { FOLDER_ORDER } from "@/types/equipment";
 import { format } from "date-fns";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import type { Tab } from "@/components/shared/SectionHeader";
-
-// Layout constants
-const LAYOUT = {
-  EQUIPMENT_NAME_WIDTH: 280,
-  DAY_CELL_WIDTH: 32,
-  MONTH_HEADER_HEIGHT: 72,
-  DATE_HEADER_HEIGHT: 48
-};
+import { LAYOUT } from '../constants'; // ✅ Use global LAYOUT constants
 
 // Date interface
 interface FormattedDate {
@@ -278,18 +271,16 @@ export function TimelineHeader({
                     )}
                     
                     <div
-                      className={`h-9 px-1 flex flex-col items-center justify-center rounded-md text-sm font-medium transition-colors cursor-pointer select-none relative ${
+                      className={`h-9 px-1 flex flex-col items-center justify-center text-sm font-medium transition-colors cursor-pointer select-none relative ${
                         dateInfo.isToday
-                          ? 'bg-blue-500 text-white shadow-md' 
+                          ? 'bg-blue-500 text-white shadow-md rounded-md' 
+                          : dateInfo.isSelected
+                          ? 'bg-blue-100 text-blue-800 ring-2 ring-blue-300 rounded-md'
                           : isNewYear
-                          ? 'bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200'
+                          ? 'bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200 rounded-md'
                           : dateInfo.isWeekendDay
-                          ? 'text-red-600 hover:bg-muted/30'
-                          : 'text-muted-foreground hover:bg-muted/50'
-                      } ${
-                        dateInfo.isSelected 
-                          ? 'ring-2 ring-blue-300' 
-                          : ''
+                          ? 'text-red-600 hover:bg-muted/30 rounded-sm'
+                          : 'text-muted-foreground hover:bg-muted/50 rounded-sm'
                       }`}
                       onClick={(e) => {
                         e.stopPropagation();

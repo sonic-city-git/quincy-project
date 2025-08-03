@@ -99,7 +99,7 @@ export function useEquipmentTimeline({ selectedDate }: UseEquipmentTimelineProps
     );
     
     if (targetIndex !== -1) {
-      const dayWidth = 50;
+      const dayWidth = LAYOUT.DAY_CELL_WIDTH;
       const containerWidth = equipmentRowsRef.current.clientWidth;
       const targetPosition = targetIndex * dayWidth;
       const centerOffset = containerWidth / 2 - dayWidth / 2;

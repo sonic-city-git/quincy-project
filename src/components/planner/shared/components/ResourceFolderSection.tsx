@@ -106,7 +106,7 @@ export function ResourceFolderSection({
                           src={equipment.avatarUrl} 
                           alt={equipment.name}
                           onError={(e) => {
-                            console.error('Avatar image failed to load:', e);
+                            // Silently handle avatar load errors
                             const target = e.target as HTMLImageElement;
                             target.style.display = 'none';
                           }}
@@ -201,7 +201,7 @@ export function ResourceFolderSection({
                                   src={equipment.avatarUrl} 
                                   alt={equipment.name}
                                   onError={(e) => {
-                                    console.error('Avatar image failed to load:', e);
+                                    // Silently handle avatar load errors
                                     const target = e.target as HTMLImageElement;
                                     target.style.display = 'none';
                                   }}

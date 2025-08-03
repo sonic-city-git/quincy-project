@@ -94,7 +94,7 @@ export function useTimelineScroll({
     if (!equipmentRowsRef.current) return;
     
     const daysToMove = isMonthView ? 30 : 7;
-    const dayWidth = 50;
+    const dayWidth = LAYOUT.DAY_CELL_WIDTH;
     const scrollAmount = dayWidth * daysToMove;
     
     equipmentRowsRef.current.scrollBy({
@@ -107,7 +107,7 @@ export function useTimelineScroll({
     if (!equipmentRowsRef.current) return;
     
     const daysToMove = isMonthView ? 7 : 1;
-    const dayWidth = 50;
+    const dayWidth = LAYOUT.DAY_CELL_WIDTH;
     const scrollAmount = dayWidth * daysToMove;
     
     equipmentRowsRef.current.scrollBy({

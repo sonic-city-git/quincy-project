@@ -35,7 +35,6 @@ const Planner = () => {
       localStorage.setItem('planner-selected-date', selectedDate.toISOString());
     } catch (error) {
       // Silently handle localStorage errors (e.g., when in private mode)
-      console.warn('Could not save preferences to localStorage:', error);
     }
   }, [selectedDate]);
   
@@ -128,14 +127,11 @@ const Planner = () => {
           monthSections={sharedTimeline.monthSections}
           onDateChange={setSelectedDate}
           onHeaderScroll={(e) => {
-            // IMPROVED: Enhanced header-to-content sync with RAF
-            requestAnimationFrame(() => {
-              const scrollLeft = e.currentTarget.scrollLeft;
-              if (sharedTimeline.equipmentRowsRef.current && 
-                  sharedTimeline.equipmentRowsRef.current.scrollLeft !== scrollLeft) {
-                sharedTimeline.equipmentRowsRef.current.scrollLeft = scrollLeft;
-              }
-            });
+            // SIMPLE: Sync header scroll to timeline
+            const scrollLeft = e.currentTarget.scrollLeft;
+            if (sharedTimeline.equipmentRowsRef.current) {
+              sharedTimeline.equipmentRowsRef.current.scrollLeft = scrollLeft;
+            }
           }}
           stickyHeadersRef={sharedTimeline.stickyHeadersRef}
           resourceType={activeTab}

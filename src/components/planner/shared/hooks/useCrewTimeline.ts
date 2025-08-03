@@ -53,7 +53,7 @@ export function useCrewTimeline({ selectedDate }: UseCrewTimelineProps) {
     
     if (targetIndex === -1) return;
 
-    const dayWidth = 50; // LAYOUT.DAY_CELL_WIDTH
+    const dayWidth = LAYOUT.DAY_CELL_WIDTH;
     const containerWidth = crewRowsRef.current.clientWidth;
     const targetPosition = targetIndex * dayWidth;
     const centerOffset = containerWidth / 2 - dayWidth / 2;

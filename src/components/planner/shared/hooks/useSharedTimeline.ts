@@ -76,6 +76,12 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     loadingRef.current = true;
     lastLoadTime.current = now;
 
+    // FIXED: Preserve scroll position when expanding timeline
+    let currentScrollLeft = 0;
+    if (timelineRowsRef.current) {
+      currentScrollLeft = timelineRowsRef.current.scrollLeft;
+    }
+
     // Use refs to get current values instead of stale closure values
     const currentStart = timelineStartRef.current;
     const currentEnd = timelineEndRef.current;
@@ -84,9 +90,21 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     if (direction === 'start') {
       const newStart = addDays(currentStart, -35);
       setTimelineStart(newStart);
+      
+      // When expanding backwards, we need to adjust scroll position
+      // to maintain visual continuity (35 days * DAY_CELL_WIDTH)
+      requestAnimationFrame(() => {
+        if (timelineRowsRef.current) {
+          timelineRowsRef.current.scrollLeft = currentScrollLeft + (35 * LAYOUT.DAY_CELL_WIDTH);
+          if (stickyHeadersRef.current) {
+            stickyHeadersRef.current.scrollLeft = currentScrollLeft + (35 * LAYOUT.DAY_CELL_WIDTH);
+          }
+        }
+      });
     } else {
       const newEnd = addDays(currentEnd, 35);
       setTimelineEnd(newEnd);
+      // No scroll adjustment needed when expanding forwards
     }
     
     setTimeout(() => {
@@ -94,25 +112,34 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     }, 200);
   }, []);
 
-  // Fast direct scroll to center the selected date
+  // Simple scroll to center the selected date
   const scrollToDate = useCallback((targetDate: Date, animate = true) => {
-    if (!timelineRowsRef.current) return;
-    
     const targetDateStr = format(targetDate, 'yyyy-MM-dd');
     const targetIndex = timelineDates.findIndex(date => 
       format(date, 'yyyy-MM-dd') === targetDateStr
     );
     
-    if (targetIndex !== -1) {
-      const dayWidth = LAYOUT.DAY_CELL_WIDTH;
-      const targetPosition = targetIndex * dayWidth;
-      const containerWidth = timelineRowsRef.current.clientWidth;
-      const scrollLeft = targetPosition - (containerWidth / 2) + (dayWidth / 2);
-      
-      // Direct DOM manipulation for instant response
+    if (targetIndex === -1 || !timelineRowsRef.current) return;
+    
+    const dayWidth = LAYOUT.DAY_CELL_WIDTH;
+    const targetPosition = targetIndex * dayWidth;
+    const containerWidth = timelineRowsRef.current.clientWidth;
+    const scrollLeft = targetPosition - (containerWidth / 2) + (dayWidth / 2);
+    
+    // Scroll both timeline and header
+    if (animate) {
+      timelineRowsRef.current.scrollTo({
+        left: scrollLeft,
+        behavior: 'smooth'
+      });
+      if (stickyHeadersRef.current) {
+        stickyHeadersRef.current.scrollTo({
+          left: scrollLeft,
+          behavior: 'smooth'
+        });
+      }
+    } else {
       timelineRowsRef.current.scrollLeft = scrollLeft;
-      
-      // Also sync the header scroll
       if (stickyHeadersRef.current) {
         stickyHeadersRef.current.scrollLeft = scrollLeft;
       }
@@ -123,15 +150,36 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
   // 1. On browser refresh → scroll to today (no animation)
   // 2. When selectedDate changes → scroll to that date (with animation)
   
-    // Handle date selection - always center the selected date
+  // FIXED: Separate timeline range from scroll operations to prevent racing
+  
+  // 1. Initialize timeline range once on mount
   useEffect(() => {
-    // Update timeline range to center on selected date
-    setTimelineStart(addDays(selectedDate, -35));
-    setTimelineEnd(addDays(selectedDate, 35));
-    
-    // Scroll to center the selected date
-    scrollToDate(selectedDate, true);
-  }, [selectedDate, scrollToDate]);
+    if (!hasInitialScrolled.current) {
+      hasInitialScrolled.current = true;
+      const today = new Date();
+      setTimelineStart(addDays(today, -35));
+      setTimelineEnd(addDays(today, 35));
+    }
+  }, []); // No dependencies - run once on mount
+  
+  // 2. Scroll to initial date after timeline is built (only once)
+  const hasScrolledToInitial = useRef(false);
+  useEffect(() => {
+    if (hasInitialScrolled.current && timelineDates.length > 0 && !hasScrolledToInitial.current) {
+      hasScrolledToInitial.current = true;
+      const timer = setTimeout(() => {
+        scrollToDate(new Date(), false);
+      }, 50); // Small delay to ensure timeline is rendered
+      return () => clearTimeout(timer);
+    }
+  }, [timelineDates.length > 0 ? 'ready' : 'loading']); // Stable dependency
+
+  // 3. Handle date selection (scroll only, don't change timeline range)
+  useEffect(() => {
+    if (hasInitialScrolled.current) {
+      scrollToDate(selectedDate, true);
+    }
+  }, [selectedDate]);
 
   // Pre-format dates for performance - avoid repeated format() calls
   const baseDates = useMemo(() => {
@@ -166,7 +214,7 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
         // Finish previous section
         if (currentSection) {
           currentSection.endIndex = index - 1;
-          currentSection.width = (currentSection.endIndex - currentSection.startIndex + 1) * 50;
+          currentSection.width = (currentSection.endIndex - currentSection.startIndex + 1) * LAYOUT.DAY_CELL_WIDTH;
           sections.push(currentSection);
         }
         
@@ -190,7 +238,7 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     // Don't forget the last section
     if (currentSection) {
       currentSection.endIndex = baseDates.length - 1;
-      currentSection.width = (currentSection.endIndex - currentSection.startIndex + 1) * 50;
+      currentSection.width = (currentSection.endIndex - currentSection.startIndex + 1) * LAYOUT.DAY_CELL_WIDTH;
       sections.push(currentSection);
     }
     
@@ -241,31 +289,7 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     }
   }, [timelineDates, visibleDateRange.start, visibleDateRange.end]);
 
-  // Update visible range on scroll with proper debouncing
-  useEffect(() => {
-    const scrollContainer = timelineRowsRef.current;
-    if (!scrollContainer) return;
-
-    let timeoutId: NodeJS.Timeout;
-    
-    const handleScroll = () => {
-      // Simple debounce - update after scroll stops
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        updateVisibleRange();
-      }, 100);
-    };
-
-    scrollContainer.addEventListener('scroll', handleScroll, { passive: true });
-    
-    // Initial calculation
-    updateVisibleRange();
-    
-    return () => {
-      scrollContainer.removeEventListener('scroll', handleScroll);
-      clearTimeout(timeoutId);
-    };
-  }, [updateVisibleRange]);
+  // REMOVED: Complex scroll event listener - not needed for simple behavior
 
   return {
     timelineStart,
