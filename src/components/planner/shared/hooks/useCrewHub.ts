@@ -248,13 +248,33 @@ export function useCrewHub({
       group.equipment.push(crewMember);
     });
 
-    // Add unfilled roles as a separate group
+    // Add unfilled roles as a separate group with role-based subfolders
     if (assignmentsData?.unfilledRoles && assignmentsData.unfilledRoles.length > 0) {
+      // Group unfilled roles by role type
+      const roleGroups = new Map<string, any[]>();
+      assignmentsData.unfilledRoles.forEach(role => {
+        if (!roleGroups.has(role.role)) {
+          roleGroups.set(role.role, []);
+        }
+        roleGroups.get(role.role)!.push(role);
+      });
+
+      // Create subfolders for each role type
+      const subFolders = Array.from(roleGroups.entries()).map(([roleName, roles]) => ({
+        name: roleName,
+        equipment: roles,
+        isExpanded: expandedGroups.has(`Unfilled Roles/${roleName}`)
+      }));
+
+      // Sort subfolders by role name
+      subFolders.sort((a, b) => a.name.localeCompare(b.name));
+
       groupsMap.set('Unfilled Roles', {
         mainFolder: 'Unfilled Roles',
-        equipment: assignmentsData.unfilledRoles,
-        subFolders: [],
-        isExpanded: expandedGroups.has('Unfilled Roles')
+        equipment: [], // No equipment at main level, all in subfolders
+        subFolders,
+        isExpanded: expandedGroups.has('Unfilled Roles'),
+        isUnfilledRolesSection: true // Mark this section for special handling
       });
     }
 

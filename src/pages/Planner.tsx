@@ -15,6 +15,11 @@ import { format, addDays } from "date-fns";
 
 const Planner = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // On page refresh, always start with today selected
+  useEffect(() => {
+    setSelectedDate(new Date());
+  }, []);
   
   // Initialize activeTab from localStorage, fallback to 'equipment'
   const [activeTab, setActiveTab] = useState<'equipment' | 'crew'>(() => {
@@ -26,15 +31,16 @@ const Planner = () => {
     }
   });
 
-  // Persist activeTab to localStorage whenever it changes
+  // Persist activeTab and selectedDate to localStorage whenever they change
   useEffect(() => {
     try {
       localStorage.setItem('planner-active-tab', activeTab);
+      localStorage.setItem('planner-selected-date', selectedDate.toISOString());
     } catch (error) {
       // Silently handle localStorage errors (e.g., when in private mode)
-      console.warn('Could not save tab preference to localStorage:', error);
+      console.warn('Could not save preferences to localStorage:', error);
     }
-  }, [activeTab]);
+  }, [activeTab, selectedDate]);
   
   // Filter state
   const [filters, setFilters] = useState<PlannerFilters>({

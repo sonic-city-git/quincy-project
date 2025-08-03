@@ -7,19 +7,19 @@
 // Layout dimensions
 export const LAYOUT = {
   // Column widths
-  EQUIPMENT_NAME_WIDTH: 240,
-  DAY_CELL_WIDTH: 50,
+  EQUIPMENT_NAME_WIDTH: 256, // Multiple of 16 for better alignment
+  DAY_CELL_WIDTH: 48, // Multiple of 16 for better alignment
   
   // Row heights
-  MAIN_FOLDER_HEIGHT: 57,
-  SUBFOLDER_HEIGHT: 41,
-  EQUIPMENT_ROW_HEIGHT: 60,
-  PROJECT_ROW_HEIGHT: 36, // Height per project row in expanded equipment view
-  PROJECT_QUANTITY_CELL_HEIGHT: 24, // Height of quantity indicator cells
+  MAIN_FOLDER_HEIGHT: 48, // Standard height for main folder headers
+  SUBFOLDER_HEIGHT: 40, // Standard height for subfolder headers
+  EQUIPMENT_ROW_HEIGHT: 48, // Standard height for equipment/crew rows
+  PROJECT_ROW_HEIGHT: 40, // Height per project row in expanded equipment view
+  PROJECT_QUANTITY_CELL_HEIGHT: 32, // Height of quantity indicator cells
   
   // Header heights
-  MONTH_HEADER_HEIGHT: 12,
-  DATE_HEADER_HEIGHT: 12,
+  MONTH_HEADER_HEIGHT: 57, // Height for month section including year
+  DATE_HEADER_HEIGHT: 48, // Height for date cells
   STICKY_HEADER_TOP_OFFSET: 72,
 } as const;
 

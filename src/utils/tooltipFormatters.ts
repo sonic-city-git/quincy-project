@@ -7,7 +7,7 @@ import { format } from 'date-fns';
 
 // Main interface - pass simple information and get formatted tooltip
 export interface PlannerTooltipData {
-  resourceName: string; // Person or equipment name
+  resourceName?: string; // Person or equipment name (optional)
   date: string;
   
   // For crew day cells (multiple assignments)
@@ -24,6 +24,7 @@ export interface PlannerTooltipData {
   stock?: number;
   used?: number;
   available?: number;
+  skipFolderName?: boolean; // Skip folder name in tooltip
   
   // For project row badges (single assignment)
   eventName?: string;
@@ -66,7 +67,7 @@ export function formatPlannerTooltip(data: PlannerTooltipData): string {
   // Format the date nicely
   const formattedDate = format(new Date(date), 'EEE, MMM d');
   
-  let tooltip = `${resourceName}\n${formattedDate}`;
+  let tooltip = formattedDate;
   
   // Handle crew assignments (multiple)
   if (data.assignments) {

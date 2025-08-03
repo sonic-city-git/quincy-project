@@ -94,15 +94,9 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     }, 200);
   }, []);
 
-  // Custom smooth scroll animation with proper cancellation
+  // Fast direct scroll to center the selected date
   const scrollToDate = useCallback((targetDate: Date, animate = true) => {
     if (!timelineRowsRef.current) return;
-    
-    // Cancel any existing animation
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-      animationRef.current = null;
-    }
     
     const targetDateStr = format(targetDate, 'yyyy-MM-dd');
     const targetIndex = timelineDates.findIndex(date => 
@@ -110,45 +104,17 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     );
     
     if (targetIndex !== -1) {
-      const dayWidth = 50;
-      const containerWidth = timelineRowsRef.current.clientWidth;
+      const dayWidth = LAYOUT.DAY_CELL_WIDTH;
       const targetPosition = targetIndex * dayWidth;
-      const centerOffset = containerWidth / 2 - dayWidth / 2;
-      const targetScrollLeft = Math.max(0, targetPosition - centerOffset);
+      const containerWidth = timelineRowsRef.current.clientWidth;
+      const scrollLeft = targetPosition - (containerWidth / 2) + (dayWidth / 2);
       
-      if (animate) {
-        const startScrollLeft = timelineRowsRef.current.scrollLeft;
-        const distance = targetScrollLeft - startScrollLeft;
-        
-        // Custom smooth scroll with easing
-        const duration = 900;
-        const startTime = performance.now();
-        
-        const animateScroll = (currentTime: number) => {
-          if (!timelineRowsRef.current) {
-            return;
-          }
-          
-          const elapsed = currentTime - startTime;
-          const progress = Math.min(elapsed / duration, 1);
-          
-          // Ease out cubic for smooth deceleration
-          const easeOutCubic = 1 - Math.pow(1 - progress, 3);
-          
-          const currentScrollLeft = startScrollLeft + (distance * easeOutCubic);
-          timelineRowsRef.current.scrollLeft = currentScrollLeft;
-          
-          if (progress < 1) {
-            animationRef.current = requestAnimationFrame(animateScroll);
-          } else {
-            animationRef.current = null;
-          }
-        };
-        
-        animationRef.current = requestAnimationFrame(animateScroll);
-      } else {
-        // Instant scroll (for page load)
-        timelineRowsRef.current.scrollLeft = targetScrollLeft;
+      // Direct DOM manipulation for instant response
+      timelineRowsRef.current.scrollLeft = scrollLeft;
+      
+      // Also sync the header scroll
+      if (stickyHeadersRef.current) {
+        stickyHeadersRef.current.scrollLeft = scrollLeft;
       }
     }
   }, [timelineDates]);
@@ -157,46 +123,15 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
   // 1. On browser refresh → scroll to today (no animation)
   // 2. When selectedDate changes → scroll to that date (with animation)
   
-  // Initial scroll to today on browser refresh
+    // Handle date selection - always center the selected date
   useEffect(() => {
-    if (!hasInitialScrolled.current) {
-      hasInitialScrolled.current = true;
-      // Small delay to ensure DOM is ready
-      setTimeout(() => {
-        const today = new Date();
-        scrollToDate(today, false); // false = no animation on initial load
-      }, 300);
-    }
-  }, []); // Only on first mount
-  
-  // Scroll to selected date when it changes
-  useEffect(() => {
-    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
-    const lastSelectedDateStr = format(lastSelectedDate.current, 'yyyy-MM-dd');
+    // Update timeline range to center on selected date
+    setTimelineStart(addDays(selectedDate, -35));
+    setTimelineEnd(addDays(selectedDate, 35));
     
-    // Only process if selectedDate actually changed
-    if (selectedDateStr !== lastSelectedDateStr) {
-      // Check if selected date is already in current timeline range
-      const isInCurrentRange = selectedDate >= timelineStart && selectedDate <= timelineEnd;
-      
-      if (!isInCurrentRange) {
-        // Expand timeline range to include selected date
-        const newTimelineStart = addDays(selectedDate, -35);
-        const newTimelineEnd = addDays(selectedDate, 35);
-        
-        setTimelineStart(newTimelineStart);
-        setTimelineEnd(newTimelineEnd);
-      }
-      
-      // Always scroll to selected date (animate if after initial load)
-      if (hasInitialScrolled.current) {
-        scrollToDate(selectedDate, true); // true = animate for user selections
-      }
-      
-      // Update tracking ref
-      lastSelectedDate.current = selectedDate;
-    }
-  }, [selectedDate, timelineStart, timelineEnd, scrollToDate]);
+    // Scroll to center the selected date
+    scrollToDate(selectedDate, true);
+  }, [selectedDate, scrollToDate]);
 
   // Pre-format dates for performance - avoid repeated format() calls
   const baseDates = useMemo(() => {

@@ -193,21 +193,22 @@ const TimelineContentComponent = ({
         >
           <div style={{ minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px` }}>
             {filteredEquipmentGroups.map((group) => (
-              <TimelineSection
-                key={`timeline-${group.mainFolder}`}
-                equipmentGroup={group}
-                expandedGroups={expandedGroups}
-                expandedEquipment={expandedEquipment}
-                equipmentProjectUsage={equipmentProjectUsage}
-                formattedDates={formattedDates}
-                getBookingForEquipment={getBookingForEquipment}
-                getProjectQuantityForDate={getProjectQuantityForDate}
-                getCrewRoleForDate={getCrewRoleForDate}
-                onToggleEquipmentExpansion={toggleEquipmentExpansion}
-                onToggleGroupExpansion={toggleGroup}
-                resourceType={resourceType}
-                filters={filters}
-              />
+                              <TimelineSection
+                  key={`timeline-${group.mainFolder}`}
+                  equipmentGroup={group}
+                  expandedGroups={expandedGroups}
+                  expandedEquipment={expandedEquipment}
+                  equipmentProjectUsage={equipmentProjectUsage}
+                  formattedDates={formattedDates}
+                  getBookingForEquipment={getBookingForEquipment}
+                  getProjectQuantityForDate={getProjectQuantityForDate}
+                  getCrewRoleForDate={getCrewRoleForDate}
+                  onToggleEquipmentExpansion={toggleEquipmentExpansion}
+                  onToggleGroupExpansion={toggleGroup}
+                  resourceType={resourceType}
+                  filters={filters}
+                  isUnfilledRolesSection={group.isUnfilledRolesSection}
+                />
             ))}
           </div>
         </div>
