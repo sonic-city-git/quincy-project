@@ -71,20 +71,6 @@ export function TopNavigation() {
       icon: Database,
       isActive: isActive("/resources"),
       onClick: () => {}
-    },
-    { 
-      href: "/crew", 
-      label: "Crew", 
-      icon: Users,
-      isActive: isActive("/crew"),
-      onClick: () => {}
-    },
-    { 
-      href: "/equipment", 
-      label: "Equipment", 
-      icon: Package,
-      isActive: isActive("/equipment"),
-      onClick: () => {}
     }
   ];
 
@@ -243,22 +229,6 @@ export function Sidebar() {
       icon: Database,
       isActive: isActive("/resources"),
       bgColor: "hover:bg-[#9b87f5]/10",
-      onClick: () => {}
-    },
-    { 
-      href: "/crew", 
-      label: "Crew", 
-      icon: Users,
-      isActive: isActive("/crew"),
-      bgColor: "hover:bg-[#F97316]/10",
-      onClick: () => {}
-    },
-    { 
-      href: "/equipment", 
-      label: "Equipment", 
-      icon: Package,
-      isActive: isActive("/equipment"),
-      bgColor: "hover:bg-[#22c55e]/10",
       onClick: () => {}
     }
   ];
