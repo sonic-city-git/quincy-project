@@ -94,17 +94,20 @@ export function UnifiedCalendar({
 
   // Note: Scroll logic is now simple - just scroll to center selected date
 
-  // SIMPLE: Just sync header scroll with timeline scroll
+  // FAST: Simplified timeline scroll handling
   const handleTimelineScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     // Handle infinite scroll and drag functionality
     scrollHandlers.handleEquipmentScroll(e);
     
-    // Simple header sync (no RAF needed for simple behavior)
+    // Simple header sync
     const scrollLeft = e.currentTarget.scrollLeft;
     if (stickyHeadersRef.current) {
       stickyHeadersRef.current.scrollLeft = scrollLeft;
     }
-  }, [scrollHandlers]);
+    
+    // Clear any lingering scroll operations when user scrolls manually
+    sharedTimeline.clearScrollTimeouts();
+  }, [scrollHandlers, sharedTimeline]);
 
   // SIMPLE: Handle mouse move for drag
   const handleTimelineMouseMove = useCallback((e: React.MouseEvent) => {
@@ -177,25 +180,22 @@ export function UnifiedCalendar({
     if (targetScrollItem && targetScrollItem.type === resourceType && equipmentGroups.length > 0) {
       const timer = setTimeout(() => {
         try {
-          // Look for the target item in the DOM
           const targetElement = document.querySelector(`[data-resource-id="${targetScrollItem.id}"]`);
           
           if (targetElement && equipmentRowsRef.current) {
-            // Scroll to the target element
+            // Simplified - just scroll to the target element immediately
             targetElement.scrollIntoView({
               behavior: 'smooth',
               block: 'center',
               inline: 'nearest'
             });
-            
-    
           } else {
             console.warn(`Could not find ${targetScrollItem.type} with ID: ${targetScrollItem.id}`);
           }
         } catch (error) {
           console.error('Error scrolling to target item:', error);
         }
-      }, 500); // Wait for render
+      }, 100); // Much shorter delay - just enough for DOM to be ready
       
       return () => clearTimeout(timer);
     }

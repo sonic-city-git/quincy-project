@@ -28,6 +28,18 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
   
   // Track initial scroll to center today once
   const hasInitialScrolled = useRef(false);
+  
+  // SCROLL MANAGEMENT: Prevent conflicts between multiple scroll triggers
+  const isScrolling = useRef(false);
+  const scrollSource = useRef<'user' | 'programmatic' | 'initial' | 'target'>('user');
+  const activeScrollTimeouts = useRef<NodeJS.Timeout[]>([]);
+  
+  // Clear all active scroll timeouts
+  const clearScrollTimeouts = useCallback(() => {
+    activeScrollTimeouts.current.forEach(timeout => clearTimeout(timeout));
+    activeScrollTimeouts.current = [];
+    isScrolling.current = false;
+  }, []);
 
   // Generate timeline dates - memoized for performance
   const timelineDates = useMemo(() => {
@@ -72,10 +84,15 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
       return;
     }
     
+    // Don't expand timeline if programmatic scrolling is happening
+    if (isScrolling.current) {
+      return;
+    }
+    
     loadingRef.current = true;
     lastLoadTime.current = now;
 
-    // FIXED: Preserve scroll position when expanding timeline
+    // COORDINATED: Preserve scroll position when expanding timeline
     let currentScrollLeft = 0;
     if (timelineRowsRef.current) {
       currentScrollLeft = timelineRowsRef.current.scrollLeft;
@@ -93,10 +110,12 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
       // When expanding backwards, we need to adjust scroll position
       // to maintain visual continuity (35 days * DAY_CELL_WIDTH)
       requestAnimationFrame(() => {
-        if (timelineRowsRef.current) {
-          timelineRowsRef.current.scrollLeft = currentScrollLeft + (35 * LAYOUT.DAY_CELL_WIDTH);
+        if (timelineRowsRef.current && !isScrolling.current) {
+          // Only adjust if no other scrolling is happening
+          const newScrollLeft = currentScrollLeft + (35 * LAYOUT.DAY_CELL_WIDTH);
+          timelineRowsRef.current.scrollLeft = newScrollLeft;
           if (stickyHeadersRef.current) {
-            stickyHeadersRef.current.scrollLeft = currentScrollLeft + (35 * LAYOUT.DAY_CELL_WIDTH);
+            stickyHeadersRef.current.scrollLeft = newScrollLeft;
           }
         }
       });
@@ -111,8 +130,16 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     }, 200);
   }, []);
 
-  // FAST: Scroll to center the selected date (NO expensive formatting!)
-  const scrollToDate = useCallback((targetDate: Date, animate = true) => {
+  // FAST: Responsive scroll to center the selected date
+  const scrollToDate = useCallback((targetDate: Date, animate = true, source: 'user' | 'programmatic' | 'initial' | 'target' = 'programmatic') => {
+    // For user interactions, be immediate - no conflict prevention needed
+    if (source === 'user') {
+      clearScrollTimeouts();
+    } else if (isScrolling.current && scrollSource.current === 'user') {
+      // Don't interrupt user scrolling with programmatic scrolls
+      return;
+    }
+    
     // PERFORMANCE: Use fast date comparison instead of expensive string formatting
     const target = new Date(targetDate);
     target.setHours(0, 0, 0, 0);
@@ -125,13 +152,19 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     
     if (targetIndex === -1 || !timelineRowsRef.current) return;
     
+    // Lighter scroll state tracking
+    const wasScrolling = isScrolling.current;
+    isScrolling.current = true;
+    scrollSource.current = source;
+    
     const dayWidth = LAYOUT.DAY_CELL_WIDTH;
     const targetPosition = targetIndex * dayWidth;
     const containerWidth = timelineRowsRef.current.clientWidth;
     const scrollLeft = Math.max(0, targetPosition - (containerWidth / 2) + (dayWidth / 2));
     
     // Scroll both timeline and header
-    if (animate) {
+    if (animate && source !== 'user') {
+      // Only animate for non-user interactions to avoid lag feel
       timelineRowsRef.current.scrollTo({
         left: scrollLeft,
         behavior: 'smooth'
@@ -142,49 +175,62 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
           behavior: 'smooth'
         });
       }
+      
+      // Shorter timeout for faster response
+      const timeout = setTimeout(() => {
+        isScrolling.current = false;
+        scrollSource.current = 'user';
+      }, 300); // Reduced from 500ms
+      activeScrollTimeouts.current.push(timeout);
     } else {
+      // Instant scrolling for user interactions and initial loads
       timelineRowsRef.current.scrollLeft = scrollLeft;
       if (stickyHeadersRef.current) {
         stickyHeadersRef.current.scrollLeft = scrollLeft;
       }
+      
+      // Clear scroll state immediately for instant scrolls
+      setTimeout(() => {
+        isScrolling.current = false;
+        scrollSource.current = 'user';
+      }, 50); // Minimal delay to prevent conflicts
     }
-  }, [timelineDates]);
+  }, [timelineDates, clearScrollTimeouts]);
   
-  // OPTIMIZED: Set initial scroll position to center today (40-day timeline)
+  // CLEAN: Set initial scroll position to center today (simplified)
   useEffect(() => {
-    if (timelineDates.length > 0 && !hasInitialScrolled.current && timelineRowsRef.current) {
-      hasInitialScrolled.current = true;
-      
-      // PERFORMANCE: Use simple date arithmetic instead of expensive formatting
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); // Normalize to start of day
-      
-      // Find today's index using fast date comparison (today should be at index ~20)
-      const todayIndex = timelineDates.findIndex(date => {
-        const timelineDate = new Date(date);
-        timelineDate.setHours(0, 0, 0, 0);
-        return timelineDate.getTime() === today.getTime();
-      });
-      
-      if (todayIndex !== -1) {
-        const dayWidth = LAYOUT.DAY_CELL_WIDTH;
-        const targetPosition = todayIndex * dayWidth;
-        const containerWidth = timelineRowsRef.current.clientWidth;
-        const scrollLeft = Math.max(0, targetPosition - (containerWidth / 2) + (dayWidth / 2));
-        
-        // Set position directly - instant, no lag
-        timelineRowsRef.current.scrollLeft = scrollLeft;
-        if (stickyHeadersRef.current) {
-          stickyHeadersRef.current.scrollLeft = scrollLeft;
+    if (timelineDates.length > 0 && !hasInitialScrolled.current) {
+      const centerTodayWhenReady = () => {
+        if (!timelineRowsRef.current) {
+          // Container not ready, try again
+          requestAnimationFrame(centerTodayWhenReady);
+          return;
         }
-      }
+        
+        const containerWidth = timelineRowsRef.current.clientWidth;
+        if (containerWidth === 0) {
+          // Container width not ready, try again
+          requestAnimationFrame(centerTodayWhenReady);
+          return;
+        }
+        
+        hasInitialScrolled.current = true;
+        
+        // Use the coordinated scroll function for initial centering
+        const today = new Date();
+        scrollToDate(today, false, 'initial'); // No animation for initial centering
+      };
+      
+      // Start the centering process
+      requestAnimationFrame(centerTodayWhenReady);
     }
-  }, [timelineDates.length]);
+  }, [timelineDates.length, scrollToDate]);
 
-  // Handle user date selection changes (with animation)
+  // Handle date selection changes - instant for better UX
   useEffect(() => {
     if (hasInitialScrolled.current) {
-      scrollToDate(selectedDate, true);
+      // Use instant scroll for date selection to feel more responsive
+      scrollToDate(selectedDate, false, 'user');
     }
   }, [selectedDate, scrollToDate]);
 
@@ -252,14 +298,15 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     return sections;
   }, [timelineDates]);
 
-  // Cleanup animation on unmount
+  // Cleanup animation and scroll timeouts on unmount
   useEffect(() => {
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
+      clearScrollTimeouts();
     };
-  }, []);
+  }, [clearScrollTimeouts]);
 
   // Calculate visible date range based on scroll position and viewport
   const [visibleDateRange, setVisibleDateRange] = useState<{start: Date, end: Date}>({
@@ -298,6 +345,11 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
 
   // REMOVED: Complex scroll event listener - not needed for simple behavior
 
+  // Check if timeline is currently scrolling programmatically
+  const isTimelineScrolling = useCallback(() => {
+    return isScrolling.current;
+  }, []);
+
   return {
     timelineStart,
     timelineEnd,
@@ -312,6 +364,9 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     stickyHeadersRef,
     loadMoreDates,
     scrollToDate,
+    // Scroll conflict management
+    isTimelineScrolling,
+    clearScrollTimeouts,
     // Visible date range for project filtering
     visibleTimelineStart: visibleDateRange.start,
     visibleTimelineEnd: visibleDateRange.end,

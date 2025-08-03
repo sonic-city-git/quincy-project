@@ -104,24 +104,19 @@ const FolderWarningRow = ({
                     e.preventDefault();
                     e.stopPropagation();
                     
-                    // Animate the dot on click
-                    const button = e.currentTarget;
-                    button.style.transform = 'scale(0.8)';
+                    // IMMEDIATE: Select date and scroll right away for responsive feel
+                    onDateSelect(dateInfo.dateStr);
+                    onScrollToDate(dateInfo.dateStr);
                     
-                    // Expand folder first
+                    // Expand folder (can be async)
                     onExpandFolder(folderPath);
                     
-                    // Sequence the animations
+                    // Simple visual feedback
+                    const button = e.currentTarget;
+                    button.style.transform = 'scale(0.9)';
                     setTimeout(() => {
-                      // Reset the button scale
                       button.style.transform = '';
-                      
-                      // Select and scroll after folder expansion
-                      setTimeout(() => {
-                        onDateSelect(dateInfo.dateStr);
-                        onScrollToDate(dateInfo.dateStr);
-                      }, 150);
-                    }, 150);
+                    }, 100); // Quick bounce back
                   }}
                 />
               )}
