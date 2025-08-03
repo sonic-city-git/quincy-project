@@ -6,6 +6,10 @@ import { TimelineSection } from "./TimelineSection";
 import { LAYOUT } from '../constants';
 import { EquipmentGroup } from '../types';
 import { PlannerFilters } from './TimelineHeader';
+import { analyzeFolderWarnings } from '../utils/folderWarnings';
+import { analyzeCrewWarnings } from '../utils/crewWarnings';
+
+
 
 interface TimelineContentProps {
   equipmentGroups: EquipmentGroup[];
@@ -39,6 +43,9 @@ interface TimelineContentProps {
   getLowestAvailable: (equipmentId: string) => number;
   resourceType?: 'equipment' | 'crew'; // Added prop to indicate resource type
   filters?: PlannerFilters; // Add filters prop
+  showProblemsOnly?: boolean; // Add problems-only filter prop
+  visibleTimelineStart?: Date; // Visible timeline start for performance
+  visibleTimelineEnd?: Date; // Visible timeline end for performance
 }
 
 const TimelineContentComponent = ({
@@ -62,18 +69,76 @@ const TimelineContentComponent = ({
   updateBookingState,
   getLowestAvailable,
   resourceType = 'equipment',
-  filters
+  filters,
+  showProblemsOnly = false,
+  visibleTimelineStart,
+  visibleTimelineEnd
 }: TimelineContentProps) => {
   
+  // Memoize visible dates calculation for performance
+  const visibleDates = useMemo(() => {
+    if (!formattedDates || !visibleTimelineStart || !visibleTimelineEnd) {
+      return [];
+    }
+    return formattedDates.filter(dateInfo => {
+      const date = new Date(dateInfo.dateStr);
+      return date >= visibleTimelineStart && date <= visibleTimelineEnd;
+    });
+  }, [formattedDates, visibleTimelineStart, visibleTimelineEnd]);
+
   // Apply UI-level filtering to equipment groups with smart expansion
   const { filteredEquipmentGroups, shouldExpand } = useMemo(() => {
-    // Check if filters are actually active
-    const hasActiveFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
-    if (!hasActiveFilters) return { filteredEquipmentGroups: equipmentGroups, shouldExpand: new Set<string>() };
+    // Check if any filters are actually active
+    const hasTextFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
+    const hasProblemsFilter = showProblemsOnly;
+    const hasAnyFilters = hasTextFilters || hasProblemsFilter;
     
-    const { search, equipmentType, crewRole } = filters;
+    // If no filters are active, return all equipment groups
+    if (!hasAnyFilters) {
+      return { filteredEquipmentGroups: equipmentGroups, shouldExpand: new Set<string>() };
+    }
+    
+    const { search, equipmentType, crewRole } = filters || {};
     const isCrewMode = resourceType === 'crew';
     const shouldExpand = new Set<string>();
+    
+    // Inline problems detection to avoid stale closures
+    const hasProblems = (item: any) => {
+      if (!hasProblemsFilter) {
+        return true; // If not filtering by problems, include all
+      }
+      
+      // For unfilled roles: they are always a "problem" since they need to be filled
+      if (item?.availability === 'needed') return true;
+      
+      // Quick check: only look at visible timeline dates (like project rows do)
+      if (!item?.id || visibleDates.length === 0) {
+        return false;
+      }
+      
+      // Check visible dates for problems
+      for (const dateInfo of visibleDates) {
+        if (dateInfo?.dateStr) {
+          const booking = getBookingForEquipment(item.id, dateInfo.dateStr);
+          if (booking && booking.bookings && booking.bookings.length > 0) { // Only check items with actual bookings
+            if (isCrewMode) {
+              // For crew: check for actual problems
+              if (booking.isOverbooked || (booking.totalUsed && booking.totalUsed > 1)) {
+                return true;
+              }
+            } else {
+              // For equipment: check for actual problems
+              if (booking.isOverbooked || (booking.totalUsed > booking.stock) || 
+                  (booking.conflict && booking.conflict.severity !== 'resolved')) {
+                return true;
+              }
+            }
+          }
+        }
+      }
+      
+      return false;
+    };
     
     const filtered = equipmentGroups.map(group => {
       // Filter by equipment type/crew role (folder/department name)
@@ -82,9 +147,12 @@ const TimelineContentComponent = ({
         return null; // Hide entire group
       }
       
-      // Filter equipment/crew members by search term
+      // Filter equipment/crew members by search term and problems
       const filteredEquipment = group.equipment.filter(item => {
         if (search && !item.name.toLowerCase().includes(search.toLowerCase())) {
+          return false;
+        }
+        if (!hasProblems(item)) {
           return false;
         }
         return true;
@@ -94,6 +162,9 @@ const TimelineContentComponent = ({
       const filteredSubFolders = group.subFolders?.map(subFolder => {
         const filteredSubEquipment = subFolder.equipment.filter(item => {
           if (search && !item.name.toLowerCase().includes(search.toLowerCase())) {
+            return false;
+          }
+          if (!hasProblems(item)) {
             return false;
           }
           return true;
@@ -129,24 +200,46 @@ const TimelineContentComponent = ({
     }).filter(Boolean) as EquipmentGroup[];
     
     return { filteredEquipmentGroups: filtered, shouldExpand };
-  }, [equipmentGroups, filters, resourceType]);
+  }, [
+    equipmentGroups, 
+    filters?.search, 
+    filters?.equipmentType, 
+    filters?.crewRole, 
+    resourceType, 
+    showProblemsOnly,
+    visibleDates,
+    getBookingForEquipment
+  ]);
   
   // Auto-expand folders that contain filtered results (only when filters are active)
   React.useEffect(() => {
-    const hasActiveFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
-    if (hasActiveFilters && shouldExpand.size > 0) {
+    const hasTextFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
+    const hasProblemsFilter = showProblemsOnly;
+    const hasAnyFilters = hasTextFilters || hasProblemsFilter;
+    
+    if (hasAnyFilters && shouldExpand.size > 0) {
       shouldExpand.forEach(groupKey => {
         if (!expandedGroups.has(groupKey)) {
           toggleGroup(groupKey, false);
         }
       });
     }
-  }, [shouldExpand, expandedGroups, toggleGroup, filters]);
+  }, [shouldExpand?.size || 0, expandedGroups?.size || 0, showProblemsOnly, filters?.search, filters?.equipmentType, filters?.crewRole, toggleGroup]);
+  
   if (!filteredEquipmentGroups || filteredEquipmentGroups.length === 0) {
-    const hasFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
-    const emptyMessage = hasFilters 
-      ? `No ${resourceType === 'crew' ? 'crew members' : 'equipment'} match your current filters`
-      : `No ${resourceType === 'crew' ? 'crew assignments' : 'equipment bookings'} found for this week`;
+    const hasTextFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
+    const hasProblemsFilter = showProblemsOnly;
+    const hasAnyFilters = hasTextFilters || hasProblemsFilter;
+    
+    let emptyMessage = `No ${resourceType === 'crew' ? 'crew assignments' : 'equipment bookings'} found for this week`;
+    
+    if (hasProblemsFilter && !hasTextFilters) {
+      emptyMessage = `No ${resourceType === 'crew' ? 'crew problems' : 'equipment problems'} found! 🎉`;
+    } else if (hasTextFilters && hasProblemsFilter) {
+      emptyMessage = `No ${resourceType === 'crew' ? 'crew members' : 'equipment'} with problems match your current filters`;
+    } else if (hasTextFilters) {
+      emptyMessage = `No ${resourceType === 'crew' ? 'crew members' : 'equipment'} match your current filters`;
+    }
     
     return (
       <Card>
@@ -228,7 +321,9 @@ export const TimelineContent = memo(TimelineContentComponent, (prevProps, nextPr
     prevProps.expandedEquipment !== nextProps.expandedEquipment ||
     prevProps.isDragging !== nextProps.isDragging ||
     prevProps.filters !== nextProps.filters ||
-    prevProps.toggleGroup !== nextProps.toggleGroup
+    prevProps.toggleGroup !== nextProps.toggleGroup ||
+    prevProps.showProblemsOnly !== nextProps.showProblemsOnly ||
+    prevProps.resourceType !== nextProps.resourceType
   ) {
     return false;
   }

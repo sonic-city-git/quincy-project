@@ -1,28 +1,21 @@
 import { useState } from "react";
-import { Card, CardContent } from "./ui/card";
-import { Separator } from "./ui/separator";
 import { Loader2 } from "lucide-react";
 import { useEquipment } from "@/hooks/useEquipment";
-import { EquipmentTable } from "./equipment/EquipmentTable";
-import { EquipmentListHeader } from "./equipment/EquipmentListHeader";
-import { useEquipmentFilters } from "./equipment/filters/useEquipmentFilters";
 import { useFolders } from "@/hooks/useFolders";
-import { Table } from "./ui/table";
-import { EquipmentTableHeader } from "./equipment/EquipmentTableHeader";
+import { EquipmentTable } from "../../equipment/EquipmentTable";
+import { Table } from "../../ui/table";
+import { EquipmentTableHeader } from "../../equipment/EquipmentTableHeader";
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from "@/utils/folderSort";
-import { EditEquipmentDialog } from "./equipment/EditEquipmentDialog";
+import { EditEquipmentDialog } from "../../equipment/EditEquipmentDialog";
+import { ResourceFilters } from "../ResourcesHeader";
 
-export function EquipmentList() {
+interface ResourceEquipmentTableProps {
+  filters: ResourceFilters;
+}
+
+export function ResourceEquipmentTable({ filters }: ResourceEquipmentTableProps) {
   const { equipment = [], loading } = useEquipment();
   const { folders = [] } = useFolders();
-  const {
-    searchQuery,
-    setSearchQuery,
-    selectedFolders,
-    handleFolderToggle,
-    clearFilters,
-    filterEquipment
-  } = useEquipmentFilters();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
@@ -34,7 +27,28 @@ export function EquipmentList() {
     );
   }
 
-  const filteredEquipment = filterEquipment(equipment);
+  // Apply filters
+  const filteredEquipment = equipment.filter(item => {
+    // Search filter
+    const matchesSearch = filters.search
+      ? item.name.toLowerCase().includes(filters.search.toLowerCase())
+      : true;
+
+    // Equipment type filter
+    const matchesType = filters.equipmentType && filters.equipmentType !== 'all'
+      ? (() => {
+          const folder = folders.find(f => f.id === item.folder_id);
+          const parentFolder = folder?.parent_id 
+            ? folders.find(f => f.id === folder.parent_id)
+            : null;
+          const folderName = parentFolder?.name || folder?.name || 'Uncategorized';
+          return folderName === filters.equipmentType;
+        })()
+      : true;
+
+    return matchesSearch && matchesType;
+  });
+
   const selectedEquipment = equipment.find(item => item.id === selectedItem);
 
   // Group equipment by folder and subfolder
@@ -91,11 +105,6 @@ export function EquipmentList() {
     return subOrderA - subOrderB;
   });
 
-  // Create a set of all parent folders from FOLDER_ORDER that have items
-  const parentFoldersWithItems = new Set(
-    sortedFolders.map(path => path.split('/')[0])
-  );
-
   // Create the final sorted folders list including empty parent folders
   const allSortedFolders = FOLDER_ORDER.reduce((acc, parentFolder) => {
     // Add the parent folder itself if it has items
@@ -122,46 +131,33 @@ export function EquipmentList() {
   };
 
   return (
-    <div className="h-[calc(100vh-2rem)] py-6">
-      <Card className="border-0 shadow-md bg-zinc-900/50 h-full">
-        <CardContent className="p-6 h-full flex flex-col">
-          <div className="space-y-6 h-full flex flex-col">
-            <EquipmentListHeader
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onClearFilters={clearFilters}
-              selectedFolders={selectedFolders}
-              onFolderToggle={handleFolderToggle}
-            />
-            <Separator className="bg-zinc-800" />
-            <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0 flex flex-col">
-              <div className="sticky top-0 z-20 bg-zinc-900/95 backdrop-blur border-b border-zinc-800">
-                <Table>
-                  <EquipmentTableHeader />
-                </Table>
-              </div>
-              <div className="overflow-y-auto flex-1">
-                <div className="divide-y divide-zinc-800">
-                  {allSortedFolders.map((folderPath) => (
-                    groupedEquipment[folderPath] && (
-                      <div key={folderPath}>
-                        <div className="bg-zinc-800/50 px-4 py-2 font-medium text-sm text-zinc-400">
-                          {folderPath}
-                        </div>
-                        <EquipmentTable 
-                          equipment={groupedEquipment[folderPath]}
-                          selectedItem={selectedItem}
-                          onItemSelect={handleItemSelect}
-                        />
-                      </div>
-                    )
-                  ))}
+    <>
+      {/* Sticky table header positioned right after ResourcesHeader */}
+      <div className="sticky top-[136px] z-20 bg-background border-x border-b border-border">
+        <Table>
+          <EquipmentTableHeader />
+        </Table>
+      </div>
+      
+      {/* Table content */}
+      <div className="border-x border-b border-border rounded-b-lg bg-background">
+        <div className="divide-y divide-border">
+          {allSortedFolders.map((folderPath) => (
+            groupedEquipment[folderPath] && (
+              <div key={folderPath}>
+                <div className="bg-muted/50 px-4 py-2 font-medium text-sm text-muted-foreground">
+                  {folderPath}
                 </div>
+                <EquipmentTable 
+                  equipment={groupedEquipment[folderPath]}
+                  selectedItem={selectedItem}
+                  onItemSelect={handleItemSelect}
+                />
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+            )
+          ))}
+        </div>
+      </div>
 
       {selectedEquipment && (
         <EditEquipmentDialog
@@ -171,6 +167,6 @@ export function EquipmentList() {
           equipment={selectedEquipment}
         />
       )}
-    </div>
+    </>
   );
 }

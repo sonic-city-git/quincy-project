@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CalendarDays, Calendar, Users, Package, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Calendar, Users, Package, LogOut, Menu, X, Database } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -66,17 +66,10 @@ export function TopNavigation() {
       onClick: () => {}
     },
     { 
-      href: "/crew", 
-      label: "Crew", 
-      icon: Users,
-      isActive: isActive("/crew"),
-      onClick: () => {}
-    },
-    { 
-      href: "/equipment", 
-      label: "Equipment", 
-      icon: Package,
-      isActive: isActive("/equipment"),
+      href: "/resources", 
+      label: "Resources", 
+      icon: Database,
+      isActive: isActive("/resources"),
       onClick: () => {}
     }
   ];
@@ -231,19 +224,11 @@ export function Sidebar() {
       onClick: () => {}
     },
     { 
-      href: "/crew", 
-      label: "Crew", 
-      icon: Users,
-      isActive: isActive("/crew"),
-      bgColor: "hover:bg-[#F97316]/10",
-      onClick: () => {}
-    },
-    { 
-      href: "/equipment", 
-      label: "Equipment", 
-      icon: Package,
-      isActive: isActive("/equipment"),
-      bgColor: "hover:bg-[#22c55e]/10",
+      href: "/resources", 
+      label: "Resources", 
+      icon: Database,
+      isActive: isActive("/resources"),
+      bgColor: "hover:bg-[#9b87f5]/10",
       onClick: () => {}
     }
   ];

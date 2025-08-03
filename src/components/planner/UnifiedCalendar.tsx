@@ -20,6 +20,7 @@ interface UnifiedCalendarProps {
   sharedTimeline: SharedTimeline;
   resourceType: 'equipment' | 'crew';
   filters?: PlannerFilters;
+  showProblemsOnly?: boolean;
 }
 
 // Performance metrics for monitoring
@@ -49,7 +50,8 @@ export function UnifiedCalendar({
   selectedOwner, 
   sharedTimeline,
   resourceType,
-  filters
+  filters,
+  showProblemsOnly = false
 }: UnifiedCalendarProps) {
   
   // Performance tracking
@@ -297,6 +299,9 @@ export function UnifiedCalendar({
       getLowestAvailable={getAvailableCapacityForResource}
       resourceType={resourceType}
       filters={filters}
+      showProblemsOnly={showProblemsOnly}
+      visibleTimelineStart={sharedTimeline.visibleTimelineStart}
+      visibleTimelineEnd={sharedTimeline.visibleTimelineEnd}
     />
   );
 }
