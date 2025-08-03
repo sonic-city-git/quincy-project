@@ -91,6 +91,7 @@ export function ResourceFolderSection({
             <div key={equipment.id}>
               {/* Main equipment name row */}
               <div 
+                data-resource-id={equipment.id}
                 className="flex items-center px-2 border-b border-border hover:bg-muted/30 transition-colors"
                 style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
               >
@@ -185,6 +186,7 @@ export function ResourceFolderSection({
                     <div key={equipment.id}>
                       {/* Main equipment name row */}
                       <div 
+                        data-resource-id={equipment.id}
                         className="flex items-center px-4 border-b border-border hover:bg-muted/30 transition-colors"
                         style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
                       >

@@ -11,17 +11,59 @@ import { ResourceFilters } from "../ResourcesHeader";
 
 interface ResourceCrewTableProps {
   filters: ResourceFilters;
+  targetScrollItem?: {
+    type: 'crew';
+    id: string;
+  } | null;
 }
 
-export function ResourceCrewTable({ filters }: ResourceCrewTableProps) {
+export function ResourceCrewTable({ filters, targetScrollItem }: ResourceCrewTableProps) {
   const { crew = [], loading, refetch } = useCrew();
   const { roles = [] } = useCrewRoles();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [highlightedItem, setHighlightedItem] = useState<string | null>(null);
   const { sortCrew } = useCrewSort();
 
   useEffect(() => {
     refetch();
   }, [refetch]);
+
+  // Handle scrolling to target item when targetScrollItem is provided
+  useEffect(() => {
+    if (targetScrollItem && targetScrollItem.id && crew.length > 0) {
+      const timer = setTimeout(() => {
+        try {
+          // Look for the target item in the DOM
+          const targetElement = document.querySelector(`[data-crew-id="${targetScrollItem.id}"]`);
+          
+          if (targetElement) {
+            // Highlight the item
+            setHighlightedItem(targetScrollItem.id);
+            
+            // Scroll to the target element
+            targetElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'nearest'
+            });
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+              setHighlightedItem(null);
+            }, 3000);
+            
+            console.log(`Scrolled to crew member: ${targetScrollItem.id}`);
+          } else {
+            console.warn(`Could not find crew member with ID: ${targetScrollItem.id}`);
+          }
+        } catch (error) {
+          console.error('Error scrolling to target crew member:', error);
+        }
+      }, 500); // Wait for render
+      
+      return () => clearTimeout(timer);
+    }
+  }, [targetScrollItem, crew]);
 
   const selectedMember = crew.find(member => member.id === selectedItem);
 
@@ -68,6 +110,7 @@ export function ResourceCrewTable({ filters }: ResourceCrewTableProps) {
             crew={sortedCrew} 
             selectedItem={selectedItem}
             onItemSelect={setSelectedItem}
+            highlightedItem={highlightedItem}
           />
         </Table>
       </div>

@@ -6,9 +6,10 @@ interface EquipmentTableProps {
   equipment: Equipment[];
   selectedItem: string | null;
   onItemSelect: (id: string) => void;
+  highlightedItem?: string | null;
 }
 
-export function EquipmentTable({ equipment, selectedItem, onItemSelect }: EquipmentTableProps) {
+export function EquipmentTable({ equipment, selectedItem, onItemSelect, highlightedItem }: EquipmentTableProps) {
   return (
     <div className="relative">
       <Table>
@@ -18,6 +19,7 @@ export function EquipmentTable({ equipment, selectedItem, onItemSelect }: Equipm
               key={item.id}
               item={item}
               isSelected={selectedItem === item.id}
+              isHighlighted={highlightedItem === item.id}
               onSelect={() => onItemSelect(item.id)}
             />
           ))}

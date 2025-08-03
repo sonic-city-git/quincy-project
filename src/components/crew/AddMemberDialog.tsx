@@ -25,8 +25,17 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function AddMemberDialog() {
-  const [open, setOpen] = useState(false);
+interface AddMemberDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOpenChange }: AddMemberDialogProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  // Use external control if provided, otherwise use internal state
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnOpenChange || setInternalOpen;
   const { mutate: addMember, isPending } = useAddMember();
   const { folders, loading: foldersLoading } = useFolders();
   const { roles, isLoading: rolesLoading, refetch: refetchRoles } = useCrewRoles();
@@ -74,14 +83,19 @@ export function AddMemberDialog() {
 
   const sortedRoles = sortRoles(roles);
 
+  // Show trigger button only when not externally controlled
+  const showTrigger = externalOpen === undefined;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button className="gap-2">
-          <UserPlus className="h-4 w-4" />
-          Add Member
-        </Button>
-      </DialogTrigger>
+      {showTrigger && (
+        <DialogTrigger asChild>
+          <Button className="gap-2">
+            <UserPlus className="h-4 w-4" />
+            Add Member
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add New Crew Member</DialogTitle>

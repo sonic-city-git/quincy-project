@@ -5,14 +5,18 @@ import { formatPrice } from "@/utils/priceFormatters";
 interface EquipmentTableRowProps {
   item: Equipment;
   isSelected: boolean;
+  isHighlighted?: boolean;
   onSelect: () => void;
 }
 
-export function EquipmentTableRow({ item, isSelected, onSelect }: EquipmentTableRowProps) {
+export function EquipmentTableRow({ item, isSelected, isHighlighted, onSelect }: EquipmentTableRowProps) {
   return (
     <TableRow 
-      className={`group hover:bg-zinc-800/50 cursor-pointer select-none flex flex-col md:table-row ${
+      data-equipment-id={item.id}
+      className={`group hover:bg-zinc-800/50 cursor-pointer select-none flex flex-col md:table-row transition-colors duration-300 ${
         isSelected ? 'bg-zinc-800/75' : ''
+      } ${
+        isHighlighted ? 'bg-blue-500/20 border border-blue-500/50' : ''
       }`}
       onDoubleClick={onSelect}
     >

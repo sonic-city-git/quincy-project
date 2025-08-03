@@ -3,10 +3,9 @@ import { Package, Users, Search, X, AlertTriangle, Mic, Volume2, Lightbulb, Vide
 import { Button } from "../../../ui/button";
 import { Input } from "../../../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../ui/select";
-import { Badge } from "../../../ui/badge";
 import { LAYOUT } from '../constants';
 import { FOLDER_ORDER } from '../../../../types/equipment';
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useCrewRoles } from "../../../../hooks/useCrewRoles";
 import { useFolders } from "../../../../hooks/useFolders";
 
@@ -62,6 +61,9 @@ export function TimelineHeader({
   showProblemsOnly = false,
   onToggleProblemsOnly
 }: TimelineHeaderProps) {
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const typeSelectRef = useRef<HTMLButtonElement>(null);
+  
   // Dynamic content based on resource type
   const isCrewPlanner = resourceType === 'crew';
   const title = isCrewPlanner ? 'Crew Planner' : 'Equipment Planner';
@@ -109,6 +111,36 @@ export function TimelineHeader({
   useEffect(() => {
     setLocalSearchValue(filters?.search || '');
   }, [filters?.search]);
+
+  // Keyboard shortcuts: Cmd+K to focus, ESC to clear search and filters and unfocus
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Cmd+K to focus search
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      }
+      
+      // ESC to clear search and filters and unfocus both fields
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setLocalSearchValue('');
+        if (onFiltersChange) {
+          onFiltersChange({
+            search: '',
+            equipmentType: '',
+            crewRole: '',
+            selectedOwner: ''
+          });
+        }
+        searchInputRef.current?.blur();
+        typeSelectRef.current?.blur();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onFiltersChange]);
 
   // Debounced search to prevent lag
   useEffect(() => {
@@ -182,10 +214,13 @@ export function TimelineHeader({
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
+                  ref={searchInputRef}
                   placeholder={`Search ${isCrewPlanner ? 'crew' : 'equipment'}...`}
                   value={localSearchValue}
                   onChange={(e) => setLocalSearchValue(e.target.value)}
-                  className="pl-9 w-56 h-8"
+                  className={`pl-9 w-56 h-8 transition-colors ${
+                    localSearchValue ? 'ring-2 ring-blue-500/50 border-blue-500/50 bg-blue-50/50' : ''
+                  }`}
                 />
               </div>
 
@@ -194,7 +229,12 @@ export function TimelineHeader({
                 {isCrewPlanner ? (
                   <>
                     <Select value={filters.crewRole || 'all'} onValueChange={(value) => updateFilters({ crewRole: value })}>
-                      <SelectTrigger className="w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors">
+                      <SelectTrigger 
+                        ref={typeSelectRef}
+                        className={`w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors ${
+                          filters.crewRole && filters.crewRole !== 'all' ? 'ring-2 ring-orange-500/50 border-orange-500/50 bg-orange-50/50' : ''
+                        }`}
+                      >
                         <div className="flex items-center gap-2">
                           {filters.crewRole && filters.crewRole !== 'all' ? (
                             <>
@@ -252,7 +292,12 @@ export function TimelineHeader({
                 ) : (
                   <>
                     <Select value={filters.equipmentType || 'all'} onValueChange={(value) => updateFilters({ equipmentType: value })}>
-                      <SelectTrigger className="w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors">
+                      <SelectTrigger 
+                        ref={typeSelectRef}
+                        className={`w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors ${
+                          filters.equipmentType && filters.equipmentType !== 'all' ? 'ring-2 ring-green-500/50 border-green-500/50 bg-green-50/50' : ''
+                        }`}
+                      >
                         <div className="flex items-center gap-2">
                           {filters.equipmentType && filters.equipmentType !== 'all' ? (
                             <>
@@ -310,27 +355,7 @@ export function TimelineHeader({
                 )}
               </div>
 
-              {/* Active Filters Display */}
-              {hasActiveFilters && (
-                <div className="flex items-center gap-1">
-                  {filters.search && (
-                    <Badge variant="secondary" className="flex items-center gap-1 text-xs">
-                      Search: {filters.search.slice(0, 10)}{filters.search.length > 10 ? '...' : ''}
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-auto p-0 ml-1 hover:bg-transparent"
-                        onClick={() => {
-                          setLocalSearchValue('');
-                          updateFilters({ search: '' });
-                        }}
-                      >
-                        <X className="h-3 w-3" />
-                      </Button>
-                    </Badge>
-                  )}
-                </div>
-              )}
+
             </div>
           )}
         </div>
