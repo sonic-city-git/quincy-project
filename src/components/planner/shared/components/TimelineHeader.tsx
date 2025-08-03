@@ -278,7 +278,7 @@ export function TimelineHeader({
                     )}
                     
                     <div
-                      className={`h-9 mx-1 flex flex-col items-center justify-center rounded-md text-sm font-medium transition-colors cursor-pointer select-none relative ${
+                      className={`h-9 px-1 flex flex-col items-center justify-center rounded-md text-sm font-medium transition-colors cursor-pointer select-none relative ${
                         dateInfo.isToday
                           ? 'bg-blue-500 text-white shadow-md' 
                           : isNewYear

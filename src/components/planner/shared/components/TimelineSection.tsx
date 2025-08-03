@@ -176,11 +176,17 @@ const TimelineSectionComponent = ({
 }: TimelineSectionProps) => {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
   
-  // Only use forced expansion when filters are active, otherwise use normal expansion logic
+  // IMPROVED: Unified expansion logic that prevents conflicts
   const hasActiveFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
-  const isExpanded = hasActiveFilters && equipmentGroup.isExpanded !== undefined 
-    ? equipmentGroup.isExpanded 
-    : expandedGroups.has(mainFolder);
+  const isExpanded = useMemo(() => {
+    // When filters are active and group has forced expansion state, use it
+    if (hasActiveFilters && equipmentGroup.isExpanded !== undefined) {
+      return equipmentGroup.isExpanded;
+    }
+    
+    // Otherwise, use persistent expansion state
+    return expandedGroups.has(mainFolder);
+  }, [hasActiveFilters, equipmentGroup.isExpanded, expandedGroups, mainFolder]);
   
   // PERFORMANCE: Pre-calculate timeline width once for all equipment
   const timelineWidthPx = useMemo(() => 
@@ -190,10 +196,7 @@ const TimelineSectionComponent = ({
 
   return (
     <Collapsible open={isExpanded}>
-      <div 
-        style={{ height: LAYOUT.MAIN_FOLDER_HEIGHT }} 
-        className="border-b border-border bg-muted/10"
-      />
+      {/* Main folder timeline content only - no duplicate header! */}
       
       <CollapsibleContent>
         {/* Main folder equipment/roles timeline */}
@@ -209,20 +212,16 @@ const TimelineSectionComponent = ({
               <div 
                 className={`equipment-row flex items-center border-b border-border/50 transition-all duration-200 ${!isUnfilledRolesSection ? 'hover:bg-muted/30' : ''}`}
                 style={{ 
-                  height: isUnfilledRolesSection ? LAYOUT.PROJECT_ROW_HEIGHT : LAYOUT.PROJECT_ROW_HEIGHT,
+                  height: LAYOUT.EQUIPMENT_ROW_HEIGHT, // FIXED: Use same height as ResourceFolderSection
                   backgroundColor: isUnfilledRolesSection ? 'transparent' : undefined
                 }}
               >
-                {/* Equipment/Role name */}
-
-
-                {/* Timeline cells */}
+                {/* Timeline cells - NO MORE DUPLICATE NAME COLUMN! */}
                 <div 
                   className="flex items-center" 
                   style={{ 
                     minWidth: `${timelineWidthPx}px`,
-                    height: '100%',
-                    marginLeft: 0
+                    height: '100%'
                   }}
                 >
                                                        {formattedDates.map((dateInfo, index) => {
@@ -275,13 +274,7 @@ const TimelineSectionComponent = ({
               
               {/* Project breakdown rows when expanded - only show for regular crew, not unfilled roles */}
               {!isUnfilledRolesSection && isEquipmentExpanded && (
-                <div className="project-rows-container transition-all duration-200">
-                  {/* Keep parent name visible */}
-                  <div className="flex items-center absolute left-0 bg-background border-r border-border" style={{ width: LAYOUT.EQUIPMENT_NAME_WIDTH, zIndex: 10 }}>
-                    <div className="flex items-center px-8 text-sm font-medium h-full">
-                      {equipment.name}
-                    </div>
-                  </div>
+                <div className="project-rows-container transition-all duration-200">{/* NO MORE DUPLICATE NAME OVERLAY! */}
 
                   {/* Project rows or empty state */}
                   <div className="relative">
@@ -303,15 +296,7 @@ const TimelineSectionComponent = ({
                         className="project-row flex items-center border-b border-border/50 bg-muted/20"
                         style={{ height: LAYOUT.PROJECT_ROW_HEIGHT / 2 }}
                       >
-                        {/* Empty state name column */}
-                        <div 
-                          className="flex items-center px-12 text-sm text-muted-foreground"
-                          style={{ width: LAYOUT.EQUIPMENT_NAME_WIDTH }}
-                        >
-                          No assignments
-                        </div>
-
-                        {/* Empty timeline */}
+                        {/* Empty timeline - NO MORE DUPLICATE NAME COLUMN! */}
                         <div 
                           className="flex items-center"
                           style={{ 
@@ -338,10 +323,7 @@ const TimelineSectionComponent = ({
           
           return (
             <Collapsible key={subFolder.name} open={isSubfolderExpanded}>
-              <div 
-                style={{ height: LAYOUT.SUBFOLDER_HEIGHT }} 
-                className="border-t border-border bg-muted/5"
-              />
+              {/* Subfolder timeline content only - no duplicate header! */}
               
               <CollapsibleContent>
                 {subFolder.equipment.map((equipment) => {
@@ -355,14 +337,11 @@ const TimelineSectionComponent = ({
                       <div 
                         className={`equipment-row flex items-center border-b border-border transition-all duration-200 ${!isUnfilledRolesSection ? 'hover:bg-muted/30' : ''}`}
                         style={{ 
-                          height: isUnfilledRolesSection ? LAYOUT.PROJECT_ROW_HEIGHT : LAYOUT.EQUIPMENT_ROW_HEIGHT,
+                          height: LAYOUT.EQUIPMENT_ROW_HEIGHT, // FIXED: Always use EQUIPMENT_ROW_HEIGHT to match ResourceFolderSection
                           backgroundColor: isUnfilledRolesSection ? 'transparent' : undefined
                         }}
                       >
-                        {/* Equipment/Role name */}
-
-
-                        {/* Timeline cells */}
+                        {/* Timeline cells - NO MORE DUPLICATE NAME COLUMN! */}
                         <div 
                           className="flex items-center" 
                           style={{ 
@@ -436,20 +415,21 @@ const TimelineSectionComponent = ({
                               />
                             ))
                           ) : (
-                            <div 
-                              className="project-row flex items-center border-b border-border/50 bg-muted/20"
-                              style={{ height: LAYOUT.PROJECT_ROW_HEIGHT / 2 }}
-                            >
-                              <div 
-                                className="flex items-center justify-center text-gray-400 text-sm"
-                                style={{ 
-                                  minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
-                                  height: '100%'
-                                }}
-                              >
-                                No project assignments
-                              </div>
-                            </div>
+                                          <div 
+                className="project-row flex items-center border-b border-border/50 bg-muted/20"
+                style={{ height: LAYOUT.PROJECT_ROW_HEIGHT / 2 }}
+              >
+                {/* Timeline area - NO MORE DUPLICATE NAME COLUMN! */}
+                <div 
+                  className="flex items-center justify-center text-gray-400 text-sm"
+                  style={{ 
+                    minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
+                    height: '100%'
+                  }}
+                >
+                  No project assignments
+                </div>
+              </div>
                           )}
                         </div>
                       )}
