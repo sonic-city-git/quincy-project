@@ -5,6 +5,7 @@ import { getInitials } from "../../../../utils/stringUtils";
 import { LAYOUT } from '../constants';
 import { EquipmentGroup, EquipmentProjectUsage } from '../types';
 
+
 interface ResourceFolderSectionProps {
   equipmentGroup: EquipmentGroup;
   expandedGroups: Set<string>;
@@ -52,6 +53,8 @@ export function ResourceFolderSection({
   const isExpanded = hasActiveFilters && equipmentGroup.isExpanded !== undefined 
     ? equipmentGroup.isExpanded 
     : expandedGroups.has(mainFolder);
+
+
 
   return (
     <Collapsible open={isExpanded}>
@@ -156,6 +159,8 @@ export function ResourceFolderSection({
           const isSubfolderExpanded = hasActiveFilters && subFolder.isExpanded !== undefined 
             ? subFolder.isExpanded 
             : expandedGroups.has(subFolderKey);
+          
+
           
           return (
             <Collapsible key={subFolder.name} open={isSubfolderExpanded}>

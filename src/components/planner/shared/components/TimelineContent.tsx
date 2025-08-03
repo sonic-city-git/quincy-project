@@ -204,6 +204,7 @@ const TimelineContentComponent = ({
                 getProjectQuantityForDate={getProjectQuantityForDate}
                 getCrewRoleForDate={getCrewRoleForDate}
                 onToggleEquipmentExpansion={toggleEquipmentExpansion}
+                onToggleGroupExpansion={toggleGroup}
                 resourceType={resourceType}
                 filters={filters}
               />
