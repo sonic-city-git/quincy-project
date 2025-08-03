@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Calendar } from "lucide-react";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { useTabPersistence } from "@/hooks/useTabPersistence";
+import { useOwnerOptions } from "@/hooks/useOwnerOptions";
+import { useProjects } from "@/hooks/useProjects";
 import { UnifiedCalendar } from "@/components/planner/UnifiedCalendar";
 import { useSharedTimeline } from "@/components/planner/shared/hooks/useSharedTimeline";
 import { TimelineHeader, PlannerFilters } from "@/components/planner/shared/components/TimelineHeader";
@@ -17,26 +21,22 @@ const Planner = () => {
     setSelectedDate(new Date());
   }, []);
   
-  // Initialize activeTab from localStorage, fallback to 'equipment'
-  const [activeTab, setActiveTab] = useState<'equipment' | 'crew'>(() => {
-    try {
-      const savedTab = localStorage.getItem('planner-active-tab');
-      return (savedTab === 'crew' || savedTab === 'equipment') ? savedTab : 'equipment';
-    } catch {
-      return 'equipment';
-    }
-  });
+  // Use consolidated tab persistence hook
+  const [activeTab, setActiveTab] = useTabPersistence(
+    'planner-active-tab',
+    'equipment',
+    ['equipment', 'crew'] as const
+  );
 
-  // Persist activeTab and selectedDate to localStorage whenever they change
+  // Persist selectedDate to localStorage (activeTab is handled by useTabPersistence hook)
   useEffect(() => {
     try {
-      localStorage.setItem('planner-active-tab', activeTab);
       localStorage.setItem('planner-selected-date', selectedDate.toISOString());
     } catch (error) {
       // Silently handle localStorage errors (e.g., when in private mode)
       console.warn('Could not save preferences to localStorage:', error);
     }
-  }, [activeTab, selectedDate]);
+  }, [selectedDate]);
   
   // Filter state
   const [filters, setFilters] = useState<PlannerFilters>({
@@ -102,56 +102,24 @@ const Planner = () => {
   // Shared timeline state for both planners
   const sharedTimeline = useSharedTimeline({ selectedDate });
 
-  // Get owners for filtering
-  const { data: owners } = useQuery({
-    queryKey: ['project-owners'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('projects')
-        .select(`
-          owner_id,
-          owner:crew_members!projects_owner_id_fkey (
-            id,
-            name,
-            email
-          )
-        `)
-        .not('owner_id', 'is', null);
-      
-      if (error) throw error;
-      
-      // Get unique owners
-      const ownerMap = new Map();
-      data?.forEach(project => {
-        if (project.owner_id && !ownerMap.has(project.owner_id)) {
-          ownerMap.set(project.owner_id, {
-            id: project.owner_id,
-            name: project.owner?.name || 'Unknown',
-            email: project.owner?.email
-          });
-        }
-      });
-      
-      return Array.from(ownerMap.values());
-    }
+  // Get projects data for owner extraction
+  const { projects } = useProjects();
+
+  // Extract unique project owners for the dropdown filter
+  const ownerOptions = useOwnerOptions(projects, { 
+    keyBy: 'id', 
+    includeEmails: true 
   });
 
 
 
   return (
-    <div className="container max-w-[1600px] p-8">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Calendar className="h-8 w-8 text-blue-500" />
-        <div>
-          <h1 className="text-3xl font-bold">Planner</h1>
-          <p className="text-muted-foreground">
-            Global resource availability and scheduling across all projects
-          </p>
-        </div>
-      </div>
-
-      {/* Main Content */}
+    <PageLayout
+      icon={Calendar}
+      title="Planner"
+      description="Global resource availability and scheduling across all projects"
+      iconColor="text-blue-500"
+    >
       <div className="space-y-4">
         {/* Timeline Header - Outside calendar for better performance */}
         <TimelineHeader
@@ -186,9 +154,7 @@ const Planner = () => {
           targetScrollItem={targetScrollItem}
         />
       </div>
-
-
-    </div>
+    </PageLayout>
   );
 };
 

@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useProjects } from "@/hooks/useProjects";
+import { useOwnerOptions } from "@/hooks/useOwnerOptions";
 
 // Filter types
 export interface ProjectFilters {
@@ -44,22 +45,10 @@ export function ProjectsHeader({
   const { projects } = useProjects();
 
   // Extract unique owners from actual project data with avatars
-  const ownerOptions = useMemo(() => {
-    if (!projects) return [];
-    const ownerMap = new Map<string, { name: string; avatar_url: string | null; id: string }>();
-    
-    projects.forEach(project => {
-      if (project.owner?.name && !ownerMap.has(project.owner.name)) {
-        ownerMap.set(project.owner.name, {
-          name: project.owner.name,
-          avatar_url: project.owner.avatar_url,
-          id: project.owner.id
-        });
-      }
-    });
-    
-    return Array.from(ownerMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [projects]);
+  const ownerOptions = useOwnerOptions(projects, { 
+    keyBy: 'name', 
+    includeAvatars: true 
+  });
 
   // Local search state for immediate UI feedback
   const [localSearchValue, setLocalSearchValue] = useState(filters.search || '');

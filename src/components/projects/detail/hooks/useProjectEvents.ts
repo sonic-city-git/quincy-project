@@ -2,11 +2,10 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchEvents } from "@/utils/eventQueries";
 import { CalendarEvent } from "@/types/events";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useProjectEvents(projectId: string) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
   
   const { data: events = [], isLoading, refetch } = useQuery({
     queryKey: ['events', projectId],

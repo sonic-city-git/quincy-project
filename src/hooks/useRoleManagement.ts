@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export function useRoleManagement(projectId: string) {
@@ -15,7 +15,7 @@ export function useRoleManagement(projectId: string) {
     quantity: number;
   } | null>(null);
 
-  const { toast } = useToast();
+
 
   const { data: roles, refetch: refetchRoles } = useQuery({
     queryKey: ['crew-roles'],
@@ -61,11 +61,7 @@ export function useRoleManagement(projectId: string) {
       const existingRole = projectRoles?.find(role => role.role_id === data.roleId);
       
       if (existingRole) {
-        toast({
-          title: "Error",
-          description: "This role is already added to the project",
-          variant: "destructive",
-        });
+        toast.error("This role is already added to the project");
         setLoading(false);
         return;
       }
@@ -84,17 +80,10 @@ export function useRoleManagement(projectId: string) {
       
       await refetchProjectRoles();
       setOpen(false);
-      toast({
-        title: "Success",
-        description: "Role added to project",
-      });
+      toast.success("Role added to project");
     } catch (error) {
       console.error('Error adding role:', error);
-      toast({
-        title: "Error",
-        description: "Failed to add role",
-        variant: "destructive",
-      });
+      toast.error("Failed to add role");
     } finally {
       setLoading(false);
     }
@@ -122,17 +111,10 @@ export function useRoleManagement(projectId: string) {
 
       await refetchProjectRoles();
       setOpen(false);
-      toast({
-        title: "Success",
-        description: "Role updated successfully",
-      });
+              toast.success("Role updated successfully");
     } catch (error) {
       console.error('Error updating role:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update role",
-        variant: "destructive",
-      });
+              toast.error("Failed to update role");
     } finally {
       setLoading(false);
     }
@@ -148,20 +130,13 @@ export function useRoleManagement(projectId: string) {
 
       if (error) throw error;
 
-      toast({
-        title: "Success",
-        description: "Role deleted from project",
-      });
+      toast.success("Role deleted from project");
 
       setSelectedItems([]);
       await refetchProjectRoles();
     } catch (error) {
       console.error('Error deleting role:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete role",
-        variant: "destructive",
-      });
+              toast.error("Failed to delete role");
     }
   };
 

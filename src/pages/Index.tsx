@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { LayoutDashboard, TrendingUp, AlertTriangle, Calendar, CalendarDays } from "lucide-react";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { useTabPersistence } from "@/hooks/useTabPersistence";
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,26 +20,22 @@ import { useProjects } from "@/hooks/useProjects";
 const Index = () => {
   const { session } = useAuth();
   
-  // Initialize activeTab: 'all' on browser refresh, saved preference on app navigation
-  const [activeTab, setActiveTab] = useState<'me' | 'all'>(() => {
-    try {
-      // Check if this was app navigation (double-ESC, sidebar, etc.)
-      const isAppNavigation = sessionStorage.getItem('dashboard-app-navigation') === 'true';
-      
-      if (isAppNavigation) {
-        // App navigation: restore user's last choice
-        sessionStorage.removeItem('dashboard-app-navigation'); // Clean up flag
-        const saved = localStorage.getItem('dashboard-active-tab');
-        return (saved as 'me' | 'all') || 'all';
-      } else {
-        // Browser refresh or direct URL: always default to 'all' tab
-        return 'all';
-      }
-    } catch {
-      // Fallback to 'all' 
-      return 'all';
+  // Check if this was app navigation for special behavior
+  const isAppNavigation = sessionStorage.getItem('dashboard-app-navigation') === 'true';
+  
+  // Use consolidated tab persistence hook with special handling for app navigation
+  const [activeTab, setActiveTab] = useTabPersistence(
+    'dashboard-active-tab',
+    isAppNavigation ? 'all' : 'all', // Default to 'all' for both cases now
+    ['me', 'all'] as const
+  );
+  
+  // Clean up app navigation flag
+  useEffect(() => {
+    if (isAppNavigation) {
+      sessionStorage.removeItem('dashboard-app-navigation');
     }
-  });
+  }, [isAppNavigation]);
   
   const [filters, setFilters] = useState<DashboardFilters>({
     search: '',
@@ -55,14 +53,7 @@ const Index = () => {
     }
   }, []); // Run only on mount
 
-  // Save tab preference to localStorage 
-  useEffect(() => {
-    try {
-      localStorage.setItem('dashboard-active-tab', activeTab);
-    } catch (error) {
-      console.warn('Could not save preferences to localStorage:', error);
-    }
-  }, [activeTab]);
+  // Tab persistence is now handled by useTabPersistence hook
 
   // Get projects data for owner name -> ID conversion
   const { projects } = useProjects();
@@ -133,19 +124,12 @@ const Index = () => {
 
 
   return (
-    <div className="container max-w-[1600px] p-8">
-      {/* Header - Following established pattern */}
-      <div className="flex items-center gap-4 mb-8">
-        <LayoutDashboard className="h-8 w-8 text-blue-500" />
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Production overview and operational insights across all projects
-          </p>
-        </div>
-      </div>
-
-      {/* Main Content */}
+    <PageLayout
+      icon={LayoutDashboard}
+      title="Dashboard"
+      description="Production overview and operational insights across all projects"
+      iconColor="text-blue-500"
+    >
       <div className="space-y-4">
         {/* Dashboard Header with Tab Switching and Filters */}
         <DashboardHeader
@@ -222,7 +206,7 @@ const Index = () => {
           </>
         )}
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

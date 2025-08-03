@@ -1,11 +1,10 @@
 import { CalendarEvent } from "@/types/events";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 export function useEventStatusChange(projectId?: string) {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
 
   const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
     if (!projectId) return;
@@ -36,14 +35,7 @@ export function useEventStatusChange(projectId?: string) {
 
       if (error) throw error;
 
-      const { dismiss } = toast({
-        title: "Status Updated",
-        description: `Event status changed to ${newStatus}`,
-      });
-
-      setTimeout(() => {
-        dismiss();
-      }, 600);
+      toast.success(`Event status changed to ${newStatus}`);
 
       await Promise.all(
         queryKeysToUpdate.map(queryKey =>

@@ -1,11 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Project } from "@/types/projects";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { projectBaseQuery, transformProjectData } from "@/utils/projectQueries";
 
 export function useProjects() {
-  const { toast } = useToast();
 
   const fetchProjects = async () => {
     console.log('Fetching projects...');
@@ -16,11 +15,7 @@ export function useProjects() {
 
     if (error) {
       console.error('Error fetching projects:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch projects",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch projects");
       throw error;
     }
 

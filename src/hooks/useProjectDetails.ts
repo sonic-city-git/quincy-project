@@ -1,10 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { projectBaseQuery } from "@/utils/projectQueries";
 
 export function useProjectDetails(projectId: string | undefined) {
-  const { toast } = useToast();
 
   const fetchProjectData = async () => {
     if (!projectId || projectId === ':id') {
@@ -22,11 +21,7 @@ export function useProjectDetails(projectId: string | undefined) {
 
     if (error) {
       console.error('Supabase error:', error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch project details",
-        variant: "destructive",
-      });
+      toast.error("Failed to fetch project details");
       throw error;
     }
 

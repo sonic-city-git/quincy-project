@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Database } from "lucide-react";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { useTabPersistence } from "@/hooks/useTabPersistence";
 
 // Import the custom header and table components
 import { ResourcesHeader, ResourceFilters } from "@/components/resources/ResourcesHeader";
@@ -12,19 +14,15 @@ import { AddEquipmentDialog } from "@/components/equipment/AddEquipmentDialog";
 const Resources = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // Initialize activeTab from URL or localStorage
-  const [activeTab, setActiveTab] = useState<'equipment' | 'crew'>(() => {
-    const urlType = searchParams.get('type');
-    if (urlType === 'crew' || urlType === 'equipment') {
-      return urlType;
-    }
-    try {
-      const savedTab = localStorage.getItem('resources-active-tab');
-      return (savedTab === 'crew' || savedTab === 'equipment') ? savedTab : 'equipment';
-    } catch {
-      return 'equipment';
-    }
-  });
+  // Initialize activeTab from URL or use persistent tab hook
+  const urlType = searchParams.get('type');
+  const initialTab = (urlType === 'crew' || urlType === 'equipment') ? urlType : 'equipment';
+  
+  const [activeTab, setActiveTab] = useTabPersistence(
+    'resources-active-tab',
+    initialTab,
+    ['equipment', 'crew'] as const
+  );
 
   // Filter state
   const [filters, setFilters] = useState<ResourceFilters>({
@@ -74,14 +72,7 @@ const Resources = () => {
     }
   }, [targetScrollItem]);
 
-  // Persist activeTab to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('resources-active-tab', activeTab);
-    } catch (error) {
-      console.warn('Could not save preferences to localStorage:', error);
-    }
-  }, [activeTab]);
+  // Tab persistence is now handled by useTabPersistence hook
 
   // Handle add button click
   const handleAddClick = () => {
@@ -93,19 +84,12 @@ const Resources = () => {
   };
 
   return (
-    <div className="container max-w-[1600px] p-8">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Database className="h-8 w-8 text-purple-500" />
-        <div>
-          <h1 className="text-3xl font-bold">Resources</h1>
-          <p className="text-muted-foreground">
-            Manage your crew members and equipment inventory across all projects
-          </p>
-        </div>
-      </div>
-
-      {/* Main Content */}
+    <PageLayout
+      icon={Database}
+      title="Resources"
+      description="Manage your crew members and equipment inventory across all projects"
+      iconColor="text-purple-500"
+    >
       <div className="space-y-4">
         {/* Resources Header with Tab Switching and Filters */}
         <ResourcesHeader
@@ -143,7 +127,7 @@ const Resources = () => {
         open={showAddEquipmentDialog}
         onOpenChange={setShowAddEquipmentDialog}
       />
-    </div>
+    </PageLayout>
   );
 };
 
