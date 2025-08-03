@@ -49,6 +49,24 @@ export function useGlobalKeyboard() {
             escTimeoutRef.current = null;
           }
           
+          // Store current dashboard tab for retention
+          const currentPath = window.location.pathname;
+          console.log('Double ESC - Current path:', currentPath);
+          
+          // Get the last known dashboard tab from sessionStorage
+          const currentDashboardTab = sessionStorage.getItem('dashboard-current-tab');
+          console.log('Current dashboard tab from storage:', currentDashboardTab);
+          
+          if (currentDashboardTab) {
+            // Store it for retention
+            sessionStorage.setItem('dashboard-retained-tab', currentDashboardTab);
+            console.log('Stored tab for retention:', currentDashboardTab);
+          } else {
+            // Fallback to 'all' if no tab is stored
+            sessionStorage.setItem('dashboard-retained-tab', 'all');
+            console.log('No current tab found, defaulting to "all"');
+          }
+          
           // Set flag for app navigation before navigating
           sessionStorage.setItem('dashboard-app-navigation', 'true');
           

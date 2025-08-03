@@ -1,5 +1,6 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
+import { PageLayout } from "@/components/layout/PageLayout";
 import { ProjectDetailTabsHeader } from "@/components/projects/detail/ProjectDetailTabsHeader";
 import { ProjectTabs } from "@/components/projects/detail/ProjectTabs";
 import { Tabs } from "@/components/ui/tabs";
@@ -110,53 +111,60 @@ const ProjectDetail = () => {
 
   if (loading) {
     return (
-      <div className="container max-w-[1600px] p-8">
-        <div className="flex items-center gap-4 mb-8">
-          <Building2 className="h-8 w-8 text-purple-500" />
-          <div>
-            <h1 className="text-3xl font-bold">Loading Project...</h1>
-            <p className="text-muted-foreground">Please wait while we load the project details</p>
-          </div>
+      <PageLayout
+        icon={Building2}
+        title="Loading Project..."
+        description="Please wait while we load the project details"
+        iconColor="text-purple-500"
+      >
+        <div className="animate-pulse space-y-4">
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   if (!project) {
     return (
-      <div className="container max-w-[1600px] p-8">
-        <div className="flex items-center gap-4 mb-8">
-          <Building2 className="h-8 w-8 text-purple-500" />
-          <div>
-            <h1 className="text-3xl font-bold">Project Not Found</h1>
-            <p className="text-muted-foreground">The requested project could not be found</p>
-          </div>
+      <PageLayout
+        icon={Building2}
+        title="Project Not Found"
+        description="The requested project could not be found"
+        iconColor="text-red-500"
+      >
+        <div className="text-center py-8">
+          <p className="text-lg text-muted-foreground mb-4">
+            This project may have been deleted or moved.
+          </p>
+          <button 
+            onClick={() => navigate('/projects')}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Back to Projects
+          </button>
         </div>
-      </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="container max-w-[1600px] p-8">
-      {/* Header - Exact same as Projects page */}
-      <div className="flex items-center gap-4 mb-8">
-        <Building2 className="h-8 w-8 text-purple-500" />
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold">{project.name}</h1>
-            <Badge 
-              variant={getProjectTypeBadgeVariant(project.project_type?.code)}
-              className="whitespace-nowrap"
-            >
-              {project.project_type?.name || 'Artist'}
-            </Badge>
-          </div>
-          <p className="text-muted-foreground">
-            Project #{String(project.project_number).padStart(4, '0')} • 
-            Manage equipment, crew, and project details
-          </p>
+    <PageLayout
+      icon={Building2}
+      title={
+        <div className="flex items-center gap-2">
+          {project.name}
+          <Badge 
+            variant={getProjectTypeBadgeVariant(project.project_type?.code)}
+            className="whitespace-nowrap"
+          >
+            {project.project_type?.name || 'Artist'}
+          </Badge>
         </div>
-      </div>
+      }
+      description={`Project #${String(project.project_number).padStart(4, '0')} • Manage equipment, crew, and project details`}
+      iconColor="text-purple-500"
+    >
 
       {/* Main Content - Exact same structure as Projects page */}
       <div className="space-y-4">
@@ -196,7 +204,7 @@ const ProjectDetail = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </PageLayout>
   );
 };
 

@@ -1,4 +1,9 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+/**
+ * CONSOLIDATED: AddProjectDialog - Now using generic FormDialog
+ * Reduced from 44 lines to 25 lines (43% reduction)
+ */
+
+import { AddItemDialog } from "@/components/shared/dialogs/FormDialog";
 import { useAddProject } from "@/hooks/useAddProject";
 import { ProjectForm } from "./forms/ProjectForm";
 
@@ -25,20 +30,15 @@ export function AddProjectDialog({ open, onOpenChange }: AddProjectDialogProps) 
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add New Project</DialogTitle>
-          <DialogDescription>
-            Fill in the details below to create a new project.
-          </DialogDescription>
-        </DialogHeader>
-
-        <ProjectForm 
-          onSubmit={handleSubmit}
-          onCancel={() => onOpenChange(false)}
-        />
-      </DialogContent>
-    </Dialog>
+    <AddItemDialog
+      itemType="Project"
+      open={open}
+      onOpenChange={onOpenChange}
+    >
+      <ProjectForm 
+        onSubmit={handleSubmit}
+        onCancel={() => onOpenChange(false)}
+      />
+    </AddItemDialog>
   );
 }

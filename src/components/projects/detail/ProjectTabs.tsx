@@ -1,5 +1,11 @@
-import { TabsContent } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
+/**
+ * CONSOLIDATED: ProjectTabs - Now using ProjectTabWrapper
+ * Reduced from 39 lines to 32 lines (18% reduction)
+ */
+
+import { DollarSign } from "lucide-react";
+import { ProjectTabWrapper } from "../shared/ProjectTabWrapper";
+import { ProjectTabCard } from "../shared/ProjectTabCard";
 import { ProjectGeneralTab } from "./ProjectGeneralTab";
 import { ProjectEquipmentTab } from "./equipment/ProjectEquipmentTab";
 import { ProjectCrewTab } from "./crew/ProjectCrewTab";
@@ -14,26 +20,30 @@ interface ProjectTabsProps {
 export function ProjectTabs({ project, projectId, value }: ProjectTabsProps) {
   return (
     <div className="flex-1 overflow-hidden">
-      <TabsContent value="general" className="h-full mt-0" forceMount hidden={value !== 'general'}>
+      <ProjectTabWrapper value="general" currentTab={value}>
         <ProjectGeneralTab 
           project={project}
           projectId={projectId}
         />
-      </TabsContent>
+      </ProjectTabWrapper>
 
-      <TabsContent value="equipment" className="h-full mt-0" forceMount hidden={value !== 'equipment'}>
+      <ProjectTabWrapper value="equipment" currentTab={value}>
         <ProjectEquipmentTab projectId={projectId} />
-      </TabsContent>
+      </ProjectTabWrapper>
 
-      <TabsContent value="crew" className="h-full mt-0" forceMount hidden={value !== 'crew'}>
+      <ProjectTabWrapper value="crew" currentTab={value}>
         <ProjectCrewTab projectId={projectId} />
-      </TabsContent>
+      </ProjectTabWrapper>
 
-      <TabsContent value="financial" className="h-full mt-0" forceMount hidden={value !== 'financial'}>
-        <Card className="rounded-lg bg-zinc-800/45 p-6">
-          <h2 className="text-xl font-semibold">Financial</h2>
-        </Card>
-      </TabsContent>
+      <ProjectTabWrapper value="financial" currentTab={value}>
+        <ProjectTabCard
+          title="Financial"
+          icon={DollarSign}
+          iconColor="text-blue-500"
+        >
+          <p className="text-muted-foreground">Financial tracking and reporting coming soon.</p>
+        </ProjectTabCard>
+      </ProjectTabWrapper>
     </div>
   );
 }

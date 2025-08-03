@@ -36,13 +36,13 @@ export function CalendarView({
              eventDate.getFullYear() === date.getFullYear();
     });
 
-    console.log('Calendar day clicked', { date, existingEvent: eventOnDate });
+
     
     if (eventOnDate) {
-      console.log('Found event, opening edit dialog for event:', eventOnDate);
+
       onEditEvent(eventOnDate);
     } else {
-      console.log('No event found, opening add dialog');
+
       onDayClick(date);
     }
   };
@@ -122,11 +122,11 @@ export function CalendarView({
 
     // Check if the event type requires crew or equipment
     if (eventType.needs_crew) {
-      console.log('Event type requires crew');
+      
     }
     
     if (eventType.needs_equipment) {
-      console.log('Event type requires equipment');
+      
     }
 
     onAddMultipleEvents(selectedDates, name, eventType, status);

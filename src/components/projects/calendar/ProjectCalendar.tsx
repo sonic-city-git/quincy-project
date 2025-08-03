@@ -39,24 +39,24 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
   const handleDayClick = (date: Date) => {
     const existingEvent = findEventOnDate(date);
-    console.log('Calendar day clicked', { date, existingEvent });
+
 
     if (existingEvent) {
-      console.log('Opening edit dialog for event:', existingEvent);
+
       openEditDialog(existingEvent);
     } else {
-      console.log('Opening add dialog for date:', date);
+
       openAddDialog(date);
     }
   };
 
   const handleEditEvent = (event: CalendarEvent) => {
-    console.log('Opening edit dialog for event:', event);
+
     openEditDialog(event);
   };
 
   const handleAddMultipleEvents = async (dates: Date[], name: string, eventType: any, status: CalendarEvent['status']) => {
-    console.log('Adding multiple events:', { dates, name, eventType, status });
+
     for (const date of dates) {
       await addEvent(date, name, eventType, status);
     }

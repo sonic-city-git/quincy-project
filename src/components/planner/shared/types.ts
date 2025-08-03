@@ -98,18 +98,8 @@ export interface EquipmentProjectUsage {
   projectQuantities: Map<string, Map<string, ProjectQuantityCell>>; // projectName -> date -> quantity
 }
 
-// Future: Serial number tracking structures
-export interface EquipmentSerialNumber {
-  id: string;
-  equipmentId: string;
-  serialNumber: string;
-  condition: 'excellent' | 'good' | 'fair' | 'needs_repair' | 'out_of_service';
-  location?: string;
-  notes?: string;
-  lastMaintenance?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
+// Note: EquipmentSerialNumber now imported from main types to eliminate duplication
+// import { EquipmentSerialNumber } from '@/types/equipment';
 
 export interface SerialNumberBooking {
   id: string;

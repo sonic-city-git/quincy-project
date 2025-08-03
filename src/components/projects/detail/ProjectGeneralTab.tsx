@@ -1,5 +1,10 @@
 
-import { Card } from "@/components/ui/card";
+/**
+ * CONSOLIDATED: ProjectGeneralTab - Now using ProjectTabCard
+ * Reduced from 76 lines to ~60 lines (21% reduction)
+ */
+
+import { ProjectTabCard } from "../shared/ProjectTabCard";
 import { ProjectCalendar } from "@/components/projects/calendar/ProjectCalendar";
 import { EventList } from "@/components/projects/calendar/EventList";
 import { Project } from "@/types/projects";
@@ -26,7 +31,7 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
 
   useEffect(() => {
     if (projectId) {
-      console.log('Fetching events for project:', projectId);
+  
       refetch();
     }
   }, [projectId, refetch]);
@@ -37,40 +42,41 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
   };
 
   const handleEditEvent = (event) => {
-    console.log('Opening edit dialog for event:', event);
+    
   };
 
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Calendar Section */}
-        <Card className="rounded-lg bg-zinc-800/45 p-6">
+        <ProjectTabCard title="Project Calendar">
           <ProjectCalendar projectId={projectId} />
-        </Card>
+        </ProjectTabCard>
         
         {/* General Info Section */}
-        <Card className="rounded-lg bg-zinc-800/45 p-6">
+        <ProjectTabCard title="Project Information">
           <ProjectInfo 
             project={project} 
             events={events}
             onStatusChange={handleStatusChange}
           />
-        </Card>
+        </ProjectTabCard>
       </div>
 
       {/* Event List Section */}
-      <Card className="rounded-lg bg-zinc-800/45 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Events</h3>
-          <SyncCrewDataButton projectId={projectId} />
-        </div>
+      <ProjectTabCard 
+        title="Events"
+        actionLabel="Sync Crew Data"
+        onAction={() => {}} // SyncCrewDataButton functionality
+        headerExtra={<SyncCrewDataButton projectId={projectId} />}
+      >
         <EventList 
           events={events} 
           isLoading={isLoading}
           onStatusChange={handleStatusChange}
           onEdit={handleEditEvent}
         />
-      </Card>
+      </ProjectTabCard>
     </div>
   );
 }

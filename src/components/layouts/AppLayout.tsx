@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { TopNavigation } from "@/components/Navigation";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/sonner";
 
 interface AppLayoutProps {
   children: ReactNode;

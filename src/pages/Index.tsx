@@ -1,5 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { LayoutDashboard, TrendingUp, AlertTriangle, Calendar, CalendarDays } from "lucide-react";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { useFilterState } from "@/hooks/useFilterState";
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,49 +20,43 @@ import { useProjects } from "@/hooks/useProjects";
 const Index = () => {
   const { session } = useAuth();
   
-  // Initialize activeTab: 'all' on browser refresh, saved preference on app navigation
-  const [activeTab, setActiveTab] = useState<'me' | 'all'>(() => {
-    try {
-      // Check if this was app navigation (double-ESC, sidebar, etc.)
-      const isAppNavigation = sessionStorage.getItem('dashboard-app-navigation') === 'true';
-      
-      if (isAppNavigation) {
-        // App navigation: restore user's last choice
-        sessionStorage.removeItem('dashboard-app-navigation'); // Clean up flag
-        const saved = localStorage.getItem('dashboard-active-tab');
-        return (saved as 'me' | 'all') || 'all';
-      } else {
-        // Browser refresh or direct URL: always default to 'all' tab
-        return 'all';
-      }
-    } catch {
-      // Fallback to 'all' 
-      return 'all';
-    }
-  });
+  // Check if this was app navigation (including double-ESC)
+  const isAppNavigation = sessionStorage.getItem('dashboard-app-navigation') === 'true';
+  const storedTab = sessionStorage.getItem('dashboard-retained-tab') as 'me' | 'all' | null;
   
-  const [filters, setFilters] = useState<DashboardFilters>({
+
+  
+  // Use retained tab if app navigation with stored tab, otherwise default to 'all'
+  const [activeTab, setActiveTab] = useState<'me' | 'all'>(
+    isAppNavigation && storedTab ? storedTab : 'all'
+  );
+  
+  const [filters, setFilters, updateFilters, clearFilters] = useFilterState<DashboardFilters>({
     search: '',
     owner: ''
   });
 
-  // Handle scroll reset on browser refresh
+  // Handle scroll reset and cleanup
   useEffect(() => {
-    // Check if this was app navigation vs browser refresh
-    const isAppNavigation = sessionStorage.getItem('dashboard-app-navigation') === 'true';
+    // Always scroll to top on page load
+    window.scrollTo({ top: 0, behavior: 'instant' });
     
-    if (!isAppNavigation) {
-      // Browser refresh: scroll to top
-      window.scrollTo({ top: 0, behavior: 'instant' });
+    // Clean up navigation flags after using them
+    if (isAppNavigation) {
+      sessionStorage.removeItem('dashboard-app-navigation');
+      sessionStorage.removeItem('dashboard-retained-tab');
     }
   }, []); // Run only on mount
 
-  // Save tab preference to localStorage 
+  // Store current dashboard tab for double ESC retention
   useEffect(() => {
-    try {
-      localStorage.setItem('dashboard-active-tab', activeTab);
-    } catch (error) {
-      console.warn('Could not save preferences to localStorage:', error);
+    // Always store the current dashboard tab in sessionStorage
+    sessionStorage.setItem('dashboard-current-tab', activeTab);
+    
+    // Also update the data attribute for the DOM element
+    const dashboardElement = document.querySelector('[data-dashboard-tab]');
+    if (dashboardElement) {
+      dashboardElement.setAttribute('data-current-tab', activeTab);
     }
   }, [activeTab]);
 
@@ -133,19 +129,14 @@ const Index = () => {
 
 
   return (
-    <div className="container max-w-[1600px] p-8">
-      {/* Header - Following established pattern */}
-      <div className="flex items-center gap-4 mb-8">
-        <LayoutDashboard className="h-8 w-8 text-blue-500" />
-        <div>
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <p className="text-muted-foreground">
-            Production overview and operational insights across all projects
-          </p>
-        </div>
-      </div>
-
-      {/* Main Content */}
+    <PageLayout
+      icon={LayoutDashboard}
+      title="Dashboard"
+      description="Production overview and operational insights across all projects"
+      iconColor="text-blue-500"
+    >
+      {/* Hidden element for tab tracking */}
+      <div data-dashboard-tab data-current-tab={activeTab} style={{ display: 'none' }} />
       <div className="space-y-4">
         {/* Dashboard Header with Tab Switching and Filters */}
         <DashboardHeader
@@ -222,7 +213,7 @@ const Index = () => {
           </>
         )}
       </div>
-    </div>
+    </PageLayout>
   );
 };
 

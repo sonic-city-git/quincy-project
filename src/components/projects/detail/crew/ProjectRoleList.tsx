@@ -104,7 +104,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
         console.error('Error deleting project role:', projectRoleError);
         throw projectRoleError;
       }
-      console.log('Deleted project role:', deletedProjectRole);
+
 
       await refetch();
       toast.success('Role deleted successfully');

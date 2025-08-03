@@ -18,7 +18,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CalendarEvent } from "@/types/events";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { InvoiceSummary } from "./InvoiceSummary";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -33,7 +33,7 @@ export function InvoiceDialog({ isOpen, onClose, events, onStatusChange }: Invoi
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processedCount, setProcessedCount] = useState(0);
-  const { toast } = useToast();
+
   const queryClient = useQueryClient();
   const invoiceReadyEvents = events.filter(event => event && event.status === 'invoice ready');
   const totalEvents = invoiceReadyEvents.length;

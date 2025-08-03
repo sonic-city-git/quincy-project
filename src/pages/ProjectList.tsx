@@ -1,5 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { CalendarDays } from "lucide-react";
+import { PageLayout } from "@/components/layout/PageLayout";
+import { useTabPersistence } from "@/hooks/useTabPersistence";
+import { useFilterState } from "@/hooks/useFilterState";
 
 // Import the new unified header and table components
 import { ProjectsHeader, ProjectFilters } from "@/components/projects/ProjectsHeader";
@@ -7,20 +10,15 @@ import { ProjectsTable } from "@/components/projects/tables/ProjectsTable";
 import { AddProjectDialog } from "@/components/projects/AddProjectDialog";
 
 const ProjectList = () => {
-  // Initialize activeTab from localStorage, fallback to 'active'
-  const [activeTab, setActiveTab] = useState<'active' | 'archived'>(() => {
-    try {
-      const savedTab = localStorage.getItem('projects-active-tab');
-      return (savedTab === 'active' || savedTab === 'archived') 
-        ? savedTab as 'active' | 'archived'
-        : 'active';
-    } catch {
-      return 'active';
-    }
-  });
+  // Use consolidated tab persistence hook
+  const [activeTab, setActiveTab] = useTabPersistence(
+    'projects-active-tab',
+    'active',
+    ['active', 'archived'] as const
+  );
 
   // Filter state
-  const [filters, setFilters] = useState<ProjectFilters>({
+  const [filters, setFilters, updateFilters, clearFilters] = useFilterState<ProjectFilters>({
     search: '',
     owner: ''
   });
@@ -28,29 +26,15 @@ const ProjectList = () => {
   // Add Project dialog state
   const [showAddDialog, setShowAddDialog] = useState(false);
 
-  // Persist activeTab to localStorage whenever it changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('projects-active-tab', activeTab);
-    } catch (error) {
-      console.warn('Could not save preferences to localStorage:', error);
-    }
-  }, [activeTab]);
+  // Tab persistence is now handled by useTabPersistence hook
 
   return (
-    <div className="container max-w-[1600px] p-8">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <CalendarDays className="h-8 w-8 text-purple-500" />
-        <div>
-          <h1 className="text-3xl font-bold">Projects</h1>
-          <p className="text-muted-foreground">
-            Manage and organize all your production projects
-          </p>
-        </div>
-      </div>
-
-      {/* Main Content */}
+    <PageLayout
+      icon={CalendarDays}
+      title="Projects"
+      description="Manage and organize all your production projects"
+      iconColor="text-purple-500"
+    >
       <div className="space-y-4">
         {/* Projects Header - Outside content for better performance */}
         <ProjectsHeader
@@ -75,7 +59,7 @@ const ProjectList = () => {
         open={showAddDialog}
         onOpenChange={setShowAddDialog}
       />
-    </div>
+    </PageLayout>
   );
 };
 

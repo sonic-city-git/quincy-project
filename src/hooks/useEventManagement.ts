@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { CalendarEvent, EventType } from "@/types/events";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { createEvent, updateEvent } from "@/utils/eventQueries";
 import { createRoleAssignments } from "@/utils/roleAssignments";
 import { useQueryClient } from "@tanstack/react-query";
@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const useEventManagement = (projectId: string) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const checkMissingResources = async (eventType: EventType) => {
@@ -50,11 +49,7 @@ export const useEventManagement = (projectId: string) => {
       // Check for missing resources but only show warnings, don't block creation
       const validationWarnings = await checkMissingResources(eventType);
       if (validationWarnings.length > 0) {
-        toast({
-          title: "Resource Setup Reminder",
-          description: `Event created! ${validationWarnings.join(" ")} You can sync them later.`,
-          variant: "default"
-        });
+        toast.info(`Event created! ${validationWarnings.join(" ")} You can sync them later.`);
       }
 
       console.log('Adding event:', { projectId, date, eventName, eventType, status });
@@ -66,11 +61,7 @@ export const useEventManagement = (projectId: string) => {
           await createRoleAssignments(projectId, eventData.id);
         } catch (error) {
           console.error('Error syncing crew roles:', error);
-          toast({
-            title: "Warning",
-            description: "Event created but crew roles could not be synced. Please sync manually.",
-            variant: "warning"
-          });
+          toast.warning("Event created but crew roles could not be synced. Please sync manually.");
         }
       }
 
@@ -85,7 +76,7 @@ export const useEventManagement = (projectId: string) => {
         queryClient.invalidateQueries({ queryKey: ['project-event-equipment'] })
       ]);
 
-      console.log('Event created and queries invalidated:', eventData);
+
       return eventData;
     } catch (error) {
       console.error('Error adding event:', error);

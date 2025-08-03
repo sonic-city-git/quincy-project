@@ -27,7 +27,7 @@ export function useAddProject() {
 
   return useMutation({
     mutationFn: async (data: AddProjectData) => {
-      console.log('Adding project with data:', data);
+  
       
       const { data: project, error } = await supabase
         .from('projects')
