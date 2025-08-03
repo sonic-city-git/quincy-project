@@ -4,7 +4,7 @@ import { useCrew } from "@/hooks/useCrew";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 import { CrewTable } from "../../crew/CrewTable";
 import { useCrewSort } from "../../crew/useCrewSort";
-import { Table } from "../../ui/table";
+import { Table, TableHeader } from "../../ui/table";
 import { CrewTableHeader } from "../../crew/CrewTableHeader";
 import { EditMemberDialog } from "../../crew/EditMemberDialog";
 import { ResourceFilters } from "../ResourcesHeader";
@@ -55,7 +55,9 @@ export function ResourceCrewTable({ filters }: ResourceCrewTableProps) {
       {/* Sticky table header positioned right after ResourcesHeader */}
       <div className="sticky top-[136px] z-20 bg-background border-x border-b border-border">
         <Table>
-          <CrewTableHeader />
+          <TableHeader>
+            <CrewTableHeader />
+          </TableHeader>
         </Table>
       </div>
       

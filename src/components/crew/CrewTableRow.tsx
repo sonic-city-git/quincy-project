@@ -13,7 +13,7 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
   const { roles: allRoles } = useCrewRoles();
   
   const memberRoles = allRoles.filter(role => 
-    member.roles?.includes(role.id)
+    member.roles?.includes(role.name)
   );
 
   return (

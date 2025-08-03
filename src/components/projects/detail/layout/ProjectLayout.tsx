@@ -1,9 +1,10 @@
 import { Tabs } from "@/components/ui/tabs";
-import { ProjectHeader } from "../ProjectHeader";
+import { Button } from "@/components/ui/button";
 import { ProjectTabs } from "../ProjectTabs";
 import { Project } from "@/types/projects";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
+import { Settings, Package, Users, DollarSign } from "lucide-react";
 
 interface ProjectLayoutProps {
   project: Project;
@@ -26,21 +27,61 @@ export function ProjectLayout({ project, projectId }: ProjectLayoutProps) {
   }, [location.pathname, location.hash, navigate]);
 
   return (
-    <Tabs 
-      value={tab}
-      className="h-full flex flex-col" 
-      onValueChange={handleTabChange}
-    >
-      <div className="fixed top-0 left-56 right-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
-        <div className="container max-w-[1400px] px-8">
-          <ProjectHeader 
-            project={project}
-            value={tab}
-            onValueChange={handleTabChange}
-          />
+    <Tabs value={tab} onValueChange={handleTabChange} className="space-y-4">
+      {/* Sticky Tab Navigation */}
+      <div className="sticky top-0 z-20 bg-background border-b border-border">
+        <div className="w-full p-4">
+          <div className="flex bg-muted rounded-lg p-1">
+            <Button
+              variant={tab === 'general' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleTabChange('general')}
+              className={`flex items-center gap-2 ${
+                tab === 'general' ? 'bg-purple-100 text-purple-700' : ''
+              }`}
+            >
+              <Settings className="h-4 w-4" />
+              General
+            </Button>
+            <Button
+              variant={tab === 'equipment' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleTabChange('equipment')}
+              className={`flex items-center gap-2 ${
+                tab === 'equipment' ? 'bg-green-100 text-green-700' : ''
+              }`}
+            >
+              <Package className="h-4 w-4" />
+              Equipment
+            </Button>
+            <Button
+              variant={tab === 'crew' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleTabChange('crew')}
+              className={`flex items-center gap-2 ${
+                tab === 'crew' ? 'bg-orange-100 text-orange-700' : ''
+              }`}
+            >
+              <Users className="h-4 w-4" />
+              Crew
+            </Button>
+            <Button
+              variant={tab === 'financial' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => handleTabChange('financial')}
+              className={`flex items-center gap-2 ${
+                tab === 'financial' ? 'bg-blue-100 text-blue-700' : ''
+              }`}
+            >
+              <DollarSign className="h-4 w-4" />
+              Financial
+            </Button>
+          </div>
         </div>
       </div>
-      <div className="flex-1 overflow-auto pt-[92px] container max-w-[1400px] px-8">
+
+      {/* Tab Content */}
+      <div className="space-y-4">
         <ProjectTabs 
           project={project}
           projectId={projectId}

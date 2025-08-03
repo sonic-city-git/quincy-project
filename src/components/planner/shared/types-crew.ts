@@ -10,6 +10,7 @@ export interface CrewMember {
   id: string;
   name: string;
   role: string; // e.g., "Sound Engineer", "Camera Operator", "Lighting Director"
+  roles?: string[]; // Array of all assigned role names for filtering
   department: string; // e.g., "Sound", "Camera", "Lighting", "Production"
   level: 'junior' | 'mid' | 'senior' | 'lead' | 'supervisor';
   availability: 'available' | 'busy' | 'unavailable' | 'vacation';

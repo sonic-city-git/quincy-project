@@ -141,32 +141,77 @@ const TimelineContentComponent = ({
     };
     
     const filtered = equipmentGroups.map(group => {
-      // Filter by equipment type/crew role (folder/department name)
+      // Different filtering logic for crew vs equipment
       const typeFilter = isCrewMode ? crewRole : equipmentType;
-      if (typeFilter && group.mainFolder !== typeFilter) {
+      
+      // For equipment mode: filter by equipment type (folder/department name)
+      if (!isCrewMode && typeFilter && group.mainFolder !== typeFilter) {
         return null; // Hide entire group
       }
       
-      // Filter equipment/crew members by search term and problems
+      // Filter equipment/crew members by search term, problems, and role (for crew)
       const filteredEquipment = group.equipment.filter(item => {
+        // Search filter
         if (search && !item.name.toLowerCase().includes(search.toLowerCase())) {
           return false;
         }
+        
+        // Problems filter
         if (!hasProblems(item)) {
           return false;
         }
+        
+        // Crew role filter - check individual crew member roles
+        if (isCrewMode && crewRole) {
+          // For regular crew members, check if they have the selected role
+          if ((item as any).roles && Array.isArray((item as any).roles)) {
+            if (!(item as any).roles.includes(crewRole)) {
+              return false;
+            }
+          }
+          // For unfilled roles, check the role property
+          else if ((item as any).role && (item as any).role !== crewRole) {
+            return false;
+          }
+        }
+        
         return true;
       });
       
       // Filter subfolders if they exist
       const filteredSubFolders = group.subFolders?.map(subFolder => {
+        // For unfilled roles group, filter subfolders by role name
+        if (isCrewMode && crewRole && group.mainFolder === 'Unfilled Roles') {
+          if (subFolder.name !== crewRole) {
+            return null; // Hide subfolder if it doesn't match the selected role
+          }
+        }
+        
         const filteredSubEquipment = subFolder.equipment.filter(item => {
+          // Search filter
           if (search && !item.name.toLowerCase().includes(search.toLowerCase())) {
             return false;
           }
+          
+          // Problems filter
           if (!hasProblems(item)) {
             return false;
           }
+          
+          // Crew role filter
+          if (isCrewMode && crewRole) {
+            // For regular crew members, check if they have the selected role
+            if ((item as any).roles && Array.isArray((item as any).roles)) {
+              if (!(item as any).roles.includes(crewRole)) {
+                return false;
+              }
+            }
+            // For unfilled roles, check the role property
+            else if ((item as any).role && (item as any).role !== crewRole) {
+              return false;
+            }
+          }
+          
           return true;
         });
         
@@ -300,7 +345,7 @@ const TimelineContentComponent = ({
                   onToggleGroupExpansion={toggleGroup}
                   resourceType={resourceType}
                   filters={filters}
-                  isUnfilledRolesSection={group.isUnfilledRolesSection}
+                  isUnfilledRolesSection={(group as any).isUnfilledRolesSection}
                 />
             ))}
           </div>
