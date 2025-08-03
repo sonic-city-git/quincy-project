@@ -36,13 +36,13 @@ export function CalendarView({
              eventDate.getFullYear() === date.getFullYear();
     });
 
-    console.log('Calendar day clicked', { date, existingEvent: eventOnDate });
+
     
     if (eventOnDate) {
-      console.log('Found event, opening edit dialog for event:', eventOnDate);
+
       onEditEvent(eventOnDate);
     } else {
-      console.log('No event found, opening add dialog');
+
       onDayClick(date);
     }
   };

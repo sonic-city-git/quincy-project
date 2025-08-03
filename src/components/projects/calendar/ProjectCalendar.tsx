@@ -39,19 +39,19 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
 
   const handleDayClick = (date: Date) => {
     const existingEvent = findEventOnDate(date);
-    console.log('Calendar day clicked', { date, existingEvent });
+
 
     if (existingEvent) {
-      console.log('Opening edit dialog for event:', existingEvent);
+
       openEditDialog(existingEvent);
     } else {
-      console.log('Opening add dialog for date:', date);
+
       openAddDialog(date);
     }
   };
 
   const handleEditEvent = (event: CalendarEvent) => {
-    console.log('Opening edit dialog for event:', event);
+
     openEditDialog(event);
   };
 
