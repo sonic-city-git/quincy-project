@@ -7,9 +7,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatPrice } from "@/utils/priceFormatters";
 
 const STATUS_COLORS = {
-  proposed: "#60A5FA", // blue-400
-  confirmed: "#34D399", // emerald-400
-  cancelled: "#F87171", // red-400
+  proposed: "#3B82F6", // blue-500
+  confirmed: "#10B981", // emerald-500
+  cancelled: "#EF4444", // red-500
+} as const;
+
+const STATUS_GRADIENTS = {
+  proposed: "linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%)",
+  confirmed: "linear-gradient(135deg, #34D399 0%, #10B981 100%)",
+  cancelled: "linear-gradient(135deg, #F87171 0%, #EF4444 100%)",
 } as const;
 
 type EventData = {
@@ -138,49 +144,116 @@ export function RevenueChart({ ownerId }: RevenueChartProps) {
 
   return (
     <div className="space-y-6">
-      <div className="h-[300px] pt-6">
+      {/* Summary Cards Row */}
+      <div className="grid grid-cols-3 gap-4">
+        <div className="bg-gradient-to-br from-blue-50/10 to-blue-100/10 border border-blue-200/20 rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+            <div>
+              <p className="text-xs font-medium text-blue-400 uppercase tracking-wide">Proposed</p>
+              <p className="text-xl font-bold text-blue-500">{formatPrice(summaryData?.proposed || 0)}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-emerald-50/10 to-emerald-100/10 border border-emerald-200/20 rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+            <div>
+              <p className="text-xs font-medium text-emerald-400 uppercase tracking-wide">Confirmed</p>
+              <p className="text-xl font-bold text-emerald-500">{formatPrice(summaryData?.confirmed || 0)}</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-br from-red-50/10 to-red-100/10 border border-red-200/20 rounded-lg p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full bg-red-500"></div>
+            <div>
+              <p className="text-xs font-medium text-red-400 uppercase tracking-wide">Cancelled</p>
+              <p className="text-xl font-bold text-red-500">{formatPrice(summaryData?.cancelled || 0)}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Chart */}
+      <div className="h-[320px] pt-2">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+          <BarChart 
+            data={chartData} 
+            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            barCategoryGap="20%"
+          >
+            {/* Enhanced Grid */}
+            <CartesianGrid strokeDasharray="2 4" stroke="#374151" opacity={0.3} />
+            
+            {/* Styled Axes */}
             <XAxis 
               dataKey="month" 
               stroke="#9CA3AF"
-              fontSize={12}
+              fontSize={13}
+              fontWeight={500}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#9CA3AF' }}
             />
             <YAxis 
               stroke="#9CA3AF"
               fontSize={12}
-              tickFormatter={(value) => formatPrice(value)}
+              tickFormatter={(value) => value >= 1000000 ? `${(value/1000000).toFixed(0)}M kr` : value >= 1000 ? `${(value/1000).toFixed(0)}k kr` : formatPrice(value)}
               domain={yAxisDomain}
+              axisLine={false}
+              tickLine={false}
+              tick={{ fill: '#9CA3AF' }}
             />
+            
+            {/* Enhanced Tooltip */}
             <Tooltip 
               contentStyle={{ 
-                backgroundColor: '#1F2937',
+                backgroundColor: '#111827',
                 border: '1px solid #374151',
-                borderRadius: '0.375rem'
+                borderRadius: '0.5rem',
+                boxShadow: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)'
               }}
-              labelStyle={{ color: '#9CA3AF' }}
-              itemStyle={{ color: '#E5E7EB' }}
-              formatter={(value: number) => formatPrice(value)}
+              labelStyle={{ color: '#F3F4F6', fontWeight: '600' }}
+              cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
+              formatter={(value: number, name: string) => [
+                formatPrice(value),
+                name
+              ]}
             />
-            <Legend />
+            
+            {/* Enhanced Legend */}
+            <Legend 
+              iconType="circle"
+              wrapperStyle={{ paddingTop: '20px' }}
+            />
+            
+            {/* Enhanced Bars with Gradients */}
             <Bar 
               dataKey="proposed" 
               name="Proposed"
               fill={STATUS_COLORS.proposed}
-              radius={[4, 4, 0, 0]}
+              radius={[6, 6, 0, 0]}
+              stroke="rgba(59, 130, 246, 0.3)"
+              strokeWidth={1}
             />
             <Bar 
               dataKey="confirmed" 
               name="Confirmed"
               fill={STATUS_COLORS.confirmed}
-              radius={[4, 4, 0, 0]}
+              radius={[6, 6, 0, 0]}
+              stroke="rgba(16, 185, 129, 0.3)"
+              strokeWidth={1}
             />
             <Bar 
               dataKey="cancelled" 
               name="Cancelled"
               fill={STATUS_COLORS.cancelled}
-              radius={[4, 4, 0, 0]}
+              radius={[6, 6, 0, 0]}
+              stroke="rgba(239, 68, 68, 0.3)"
+              strokeWidth={1}
             />
           </BarChart>
         </ResponsiveContainer>
