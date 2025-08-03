@@ -221,7 +221,7 @@ export function ResourcesHeader({
         
         {/* Add Button and Tab Toggle */}
         <div className="flex items-center gap-32">
-          <Button size="xs" className="gap-1 h-6 px-1.5 text-xs" onClick={onAddClick}>
+          <Button size="sm" className="gap-1 h-6 px-1.5 text-xs" onClick={onAddClick}>
             <Plus className="h-3 w-3" />
             Add {isCrewTab ? 'Member' : 'Equipment'}
           </Button>
