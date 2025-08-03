@@ -12,7 +12,8 @@ import {
   ArrowRight,
   Building,
   Eye,
-  Mail
+  Mail,
+  Calendar
 } from "lucide-react";
 import { SearchResult, GlobalSearchResults } from "@/hooks/useGlobalSearch";
 
@@ -41,7 +42,7 @@ function SearchResultItem({ result, onItemClick, onWarningClick, onAvailabilityC
   const getIcon = () => {
     switch (result.type) {
       case 'project':
-        return <FolderOpen className="h-4 w-4 text-blue-500" />;
+        return <Calendar className="h-4 w-4 text-blue-500" />;
       case 'crew':
         return <Users className="h-4 w-4 text-green-500" />;
       case 'equipment':
@@ -313,22 +314,36 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
     setCurrentFocusIndex(-1);
   }, [query, results.total]);
 
+  // Auto-focus container when search results appear to capture Tab navigation
+  useEffect(() => {
+    if (query && query.length >= 2 && focusableItems.length > 0 && containerRef.current) {
+      // Set tabIndex to make container focusable but not visually focused
+      containerRef.current.setAttribute('tabindex', '-1');
+      // Focus the container to ensure our keyboard handler gets priority
+      containerRef.current.focus({ preventScroll: true });
+    }
+  }, [query, focusableItems.length]);
+
   // Handle keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Only handle if search results are visible and there are focusable items
       if (!query || query.length < 2 || focusableItems.length === 0) return;
       
-      // Don't interfere if user is typing in an input field
+      // Don't interfere if user is typing in an input field (except when search results are focused)
       const activeElement = document.activeElement;
-      const isTyping = activeElement && (
+      const isTypingInInput = activeElement && (
         activeElement.tagName === 'INPUT' ||
         activeElement.tagName === 'TEXTAREA' ||
         activeElement.getAttribute('contenteditable') === 'true'
       );
+      
+      // Allow Tab navigation when container is focused or when we have an active focus index
+      const isSearchResultsContext = activeElement === containerRef.current || currentFocusIndex >= 0;
 
-      if (e.key === 'Tab' && !isTyping) {
+      if (e.key === 'Tab' && (!isTypingInInput || isSearchResultsContext)) {
         e.preventDefault();
+        e.stopPropagation(); // Prevent normal tab order
         
         if (e.shiftKey) {
           // Shift+Tab: previous item
@@ -344,7 +359,7 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
             return prev + 1;
           });
         }
-      } else if (e.key === 'Enter' && currentFocusIndex >= 0 && !isTyping) {
+      } else if (e.key === 'Enter' && currentFocusIndex >= 0 && !isTypingInInput) {
         e.preventDefault();
         const focusedItem = focusableItems[currentFocusIndex];
         
@@ -368,8 +383,8 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown, true); // Use capture phase for priority
+    return () => document.removeEventListener('keydown', handleKeyDown, true);
   }, [query, focusableItems, currentFocusIndex]);
 
   // Get currently focused items for highlighting
@@ -424,7 +439,7 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
         </p>
         <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground/60">
           <div className="flex items-center gap-1">
-            <FolderOpen className="h-3 w-3" />
+            <Calendar className="h-3 w-3" />
             <span>Projects</span>
           </div>
           <div className="flex items-center gap-1">
@@ -453,7 +468,17 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
   }
 
   return (
-    <div ref={containerRef} className="space-y-6">
+    <div 
+      ref={containerRef} 
+      className="space-y-6 outline-none" 
+      onKeyDown={(e) => {
+        // Immediate Tab capture for search results
+        if (e.key === 'Tab' && focusableItems.length > 0) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
+    >
       {/* Search Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-muted-foreground">
@@ -473,7 +498,7 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
       <div className="space-y-6">
         <SearchSection
           title="Projects"
-          icon={FolderOpen}
+          icon={Calendar}
           results={results.projects}
           onItemClick={handleItemClick}
           onWarningClick={handleWarningClick}
