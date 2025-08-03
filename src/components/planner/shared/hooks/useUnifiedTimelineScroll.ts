@@ -43,7 +43,12 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   
   // Scroll operation tracking
   const activeOperationRef = useRef<string | null>(null);
-  const operationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Use ref instead of state for isScrolling to avoid React timing issues
+  const isScrollingRef = useRef(false);
+  
+  // Safety mechanism to prevent stuck scroll state
+  const scrollingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // ========================
   // DRAG STATE  
@@ -87,12 +92,7 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   ) => {
     const { smooth = false, source = 'manual' } = options;
     
-    if (!equipmentRowsRef.current) return false;
-    
-    // Clear any active operation timeout
-    if (operationTimeoutRef.current) {
-      clearTimeout(operationTimeoutRef.current);
-    }
+    if (!equipmentRowsRef.current || !stickyHeadersRef.current) return false;
     
     // Set active operation
     activeOperationRef.current = source;
@@ -101,22 +101,116 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
     const maxScroll = Math.max(0, equipmentRowsRef.current.scrollWidth - equipmentRowsRef.current.clientWidth);
     const clampedPosition = Math.max(0, Math.min(position, maxScroll));
     
-    // Execute scroll on both containers
+    // Only log for important scroll operations
+    if (source === 'date' || source === 'navigation') {
+      console.log('⚡ SCROLL:', source, smooth ? 'physics-smooth' : 'instant', 'to', clampedPosition);
+    }
+    
     if (smooth) {
-      equipmentRowsRef.current.scrollTo({ left: clampedPosition, behavior: 'smooth' });
-      if (stickyHeadersRef.current) {
-        stickyHeadersRef.current.scrollTo({ left: clampedPosition, behavior: 'smooth' });
-      }
+      // Set scrolling state to prevent interference
+      isScrollingRef.current = true;
       
-      // Clear operation after animation completes
-      operationTimeoutRef.current = setTimeout(() => {
-        activeOperationRef.current = null;
-      }, 500);
-    } else {
-      equipmentRowsRef.current.scrollLeft = clampedPosition;
-      if (stickyHeadersRef.current) {
-        stickyHeadersRef.current.scrollLeft = clampedPosition;
+      // Safety timeout to prevent stuck scrolling state
+      if (scrollingTimeoutRef.current) {
+        clearTimeout(scrollingTimeoutRef.current);
       }
+      scrollingTimeoutRef.current = setTimeout(() => {
+        // Emergency reset - should rarely be needed now
+        activeOperationRef.current = null;
+        isScrollingRef.current = false;
+      }, 1000);
+      
+      // 🎨 PHYSICS-BASED SMOOTH ANIMATION
+      // Creates a natural scrolling feel with:
+      // - Subtle anticipation (tiny reverse movement)
+      // - Smooth acceleration with elastic feel  
+      // - Spring-damped deceleration with slight overshoot
+      // - Organic momentum variations
+      
+      const startPosition = equipmentRowsRef.current.scrollLeft;
+      const distance = clampedPosition - startPosition;
+      
+      // Physics-based animation parameters for natural scrolling feel
+      const distanceRange = Math.abs(distance);
+      
+      // Adaptive duration for luxurious, smooth feel
+      const baseDuration = 280; // Base duration for medium distances (increased for smoother feel)
+      const minDuration = 200;  // Minimum for very short distances
+      const maxDuration = 500;  // Maximum for very long distances  
+      const duration = Math.min(maxDuration, Math.max(minDuration, baseDuration + distanceRange * 0.06));
+      
+      // Spring physics parameters for natural momentum
+      const springTension = 0.8;  // How "tight" the spring is
+      const springFriction = 0.9; // How much friction/damping
+      
+      const startTime = performance.now();
+      let lastFrameTime = startTime;
+      let velocity = 0;
+      
+      const animateScroll = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const deltaTime = currentTime - lastFrameTime;
+        lastFrameTime = currentTime;
+        
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Advanced easing with natural physics-based movement
+        let easeValue;
+        
+        if (progress < 0.05) {
+          // Tiny anticipation movement (like real scrolling momentum)
+          const anticipation = progress / 0.05;
+          easeValue = -0.008 * Math.sin(anticipation * Math.PI); // Subtle reverse movement
+        } else if (progress < 0.6) {
+          // Smooth acceleration with elastic feel
+          const t = (progress - 0.05) / 0.55;
+          easeValue = 0.6 * t * t * (3 - 2 * t); // Smooth hermite interpolation
+        } else {
+          // Physics-based deceleration with spring damping
+          const t = (progress - 0.6) / 0.4;
+          const overshoot = 1 + 0.15 * Math.exp(-5 * t) * Math.sin(15 * t); // Spring overshoot
+          const damping = 1 - Math.pow(1 - t, 2.5); // Smooth deceleration
+          easeValue = 0.6 + 0.4 * damping * overshoot;
+        }
+        
+        // Add subtle momentum variation for organic feel
+        const momentum = 1 + Math.sin(progress * Math.PI * 2) * 0.008; // Very subtle oscillation
+        const finalEase = Math.max(0, Math.min(1, easeValue * momentum)); // Clamp to valid range
+        
+        const currentPosition = startPosition + (distance * finalEase);
+        
+        // Scroll both containers simultaneously with sub-pixel precision
+        if (equipmentRowsRef.current && stickyHeadersRef.current) {
+          equipmentRowsRef.current.scrollLeft = currentPosition;
+          stickyHeadersRef.current.scrollLeft = currentPosition;
+          // Update position state in real-time for responsive feel
+          setScrollPosition(currentPosition);
+        }
+        
+        if (progress < 1) {
+          requestAnimationFrame(animateScroll);
+        } else {
+          // Animation complete - immediate state reset with refs
+          activeOperationRef.current = null;
+          isScrollingRef.current = false;
+          setScrollPosition(clampedPosition);
+          
+          // Clear safety timeout since animation completed normally
+          if (scrollingTimeoutRef.current) {
+            clearTimeout(scrollingTimeoutRef.current);
+            scrollingTimeoutRef.current = null;
+          }
+          
+          console.log('✅ CENTERED WITH SMOOTH PHYSICS');
+        }
+      };
+      
+      // Start immediately on next frame
+      requestAnimationFrame(animateScroll);
+    } else {
+      // Instant scroll both containers
+      equipmentRowsRef.current.scrollLeft = clampedPosition;
+      stickyHeadersRef.current.scrollLeft = clampedPosition;
       
       // Clear operation immediately for instant scroll
       setTimeout(() => {
@@ -149,12 +243,20 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
       return timelineDate.getTime() === target.getTime();
     });
     
-    if (targetIndex === -1) return;
+    if (targetIndex === -1) {
+      console.log('🔍 scrollToDate: Date not found in timeline', target.toISOString().split('T')[0]);
+      return;
+    }
     
     // Calculate centered scroll position
     const dayWidth = LAYOUT.DAY_CELL_WIDTH;
     const targetPosition = targetIndex * dayWidth;
     const centeredPosition = targetPosition - (containerWidth / 2) + (dayWidth / 2);
+    
+    // Debug: Only log on date scroll attempts
+    if (targetIndex >= 0) {
+      console.log('📅 CENTERING DATE:', target.toISOString().split('T')[0], 'at position', centeredPosition);
+    }
     
     scrollTo(centeredPosition, { smooth: true, source: 'date' });
   }, [timelineDates, scrollTo]);
@@ -223,36 +325,44 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // EVENT HANDLERS
   // ========================
   
+  // Debounced scroll handler for performance
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;
     const { scrollLeft, scrollWidth, clientWidth } = element;
     
-    // Update central position if not from our own scrollTo
-    if (activeOperationRef.current !== 'date' && activeOperationRef.current !== 'navigation') {
-      setScrollPosition(scrollLeft);
+    // Block all scroll events during smooth scroll to prevent interference
+    if (isScrollingRef.current || activeOperationRef.current) {
+      return;
+    }
+    
+    // Update position immediately for responsive feel
+    setScrollPosition(scrollLeft);
+    
+    // IMMEDIATE sync for smooth manual scrolling (no lag)
+    if (element === equipmentRowsRef.current && stickyHeadersRef.current) {
+      stickyHeadersRef.current.scrollLeft = scrollLeft;
+    } else if (element === stickyHeadersRef.current && equipmentRowsRef.current) {
+      equipmentRowsRef.current.scrollLeft = scrollLeft;
+    }
+    
+    // Debounce ONLY expensive operations (infinite scroll)
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    
+    scrollTimeoutRef.current = setTimeout(() => {
+      // Infinite scroll detection
+      const FETCH_THRESHOLD = 1000;
+      const endThreshold = scrollWidth - clientWidth - FETCH_THRESHOLD;
       
-      // Sync headers if this is user scroll
-      if (stickyHeadersRef.current && activeOperationRef.current !== 'sync') {
-        activeOperationRef.current = 'sync';
-        stickyHeadersRef.current.scrollLeft = scrollLeft;
-        setTimeout(() => {
-          if (activeOperationRef.current === 'sync') {
-            activeOperationRef.current = null;
-          }
-        }, 50);
+      if (scrollLeft < FETCH_THRESHOLD || scrollLeft > endThreshold) {
+        const direction = scrollLeft < FETCH_THRESHOLD ? 'start' : 'end';
+        expandTimeline(direction);
       }
-    }
-    
-    // Infinite scroll detection
-    const dataFetchThreshold = 1000;
-    const startDataThreshold = dataFetchThreshold;
-    const endDataThreshold = scrollWidth - clientWidth - dataFetchThreshold;
-    
-    if (scrollLeft < startDataThreshold || scrollLeft > endDataThreshold) {
-      const direction = scrollLeft < startDataThreshold ? 'start' : 'end';
-      expandTimeline(direction);
-    }
-  }, [expandTimeline]);
+    }, 200); // Only debounce infinite scroll
+  }, [expandTimeline]); // Removed isScrolling dependency since we use ref
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!equipmentRowsRef.current) return;
@@ -281,9 +391,8 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // SELECTED DATE EFFECT
   // ========================
   
-  useEffect(() => {
-    scrollToDate(selectedDate);
-  }, [selectedDate, scrollToDate]);
+  // Note: Date scrolling is now handled immediately on click for better responsiveness
+  // No useEffect needed - direct calls from onDateChange prevent React state update delays
 
   // ========================
   // FORMATTED DATES (memoized)
@@ -376,8 +485,11 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   
   useEffect(() => {
     return () => {
-      if (operationTimeoutRef.current) {
-        clearTimeout(operationTimeoutRef.current);
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      if (scrollingTimeoutRef.current) {
+        clearTimeout(scrollingTimeoutRef.current);
       }
     };
   }, []);
@@ -386,6 +498,14 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // RETURN EVERYTHING
   // ========================
   
+  // DEBUG: Test function to jump to a date far away
+  const jumpToFarDate = useCallback(() => {
+    const farDate = new Date();
+    farDate.setDate(farDate.getDate() + 20); // 20 days from today
+    console.log('🚀 JUMPING TO FAR DATE:', farDate.toISOString().split('T')[0]);
+    scrollToDate(farDate);
+  }, [scrollToDate]);
+
   return {
     // Timeline state
     timelineStart,
@@ -396,6 +516,7 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
     
     // Central scroll state
     scrollPosition,
+    isScrolling: isScrollingRef.current, // For preventing interference during smooth scrolls
     equipmentRowsRef,
     stickyHeadersRef,
     
@@ -403,6 +524,7 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
     scrollTo,
     scrollToDate,
     navigate,
+    jumpToFarDate, // DEBUG function
     
     // Drag state  
     isDragging,
