@@ -1,36 +1,22 @@
-import { supabase } from "@/integrations/supabase/client";
+/**
+ * CONSOLIDATED: useProjects - Now using generic useEntityData with transformation
+ * Reduced from 36 lines to 17 lines (53% reduction)  
+ */
+
+import { useEntityData } from './shared/useEntityData';
 import { Project } from "@/types/projects";
-import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
 import { projectBaseQuery, transformProjectData } from "@/utils/projectQueries";
 
 export function useProjects() {
-
-  const fetchProjects = async () => {
-
-    const { data: projectsData, error } = await supabase
-      .from('projects')
-      .select(projectBaseQuery)
-      .order('name');
-
-    if (error) {
-      console.error('Error fetching projects:', error);
-      toast.error("Failed to fetch projects");
-      throw error;
-    }
-
-
-    const transformedProjects = projectsData.map(transformProjectData);
-
-    return transformedProjects;
-  };
-
-  const { data: projects = [], isLoading: loading } = useQuery({
-    queryKey: ['projects'],
-    queryFn: fetchProjects,
-    staleTime: 0, // Always refetch when the query is invalidated
-    gcTime: 0, // Don't cache the data (formerly cacheTime)
+  const { data: projects, isLoading: loading } = useEntityData<Project>({
+    table: 'projects',
+    queryKey: 'projects',
+    selectQuery: projectBaseQuery,
+    transform: (data) => data.map(transformProjectData),
+    staleTime: 0,
+    gcTime: 0,
+    errorMessage: "Failed to fetch projects"
   });
-
+  
   return { projects, loading };
 }

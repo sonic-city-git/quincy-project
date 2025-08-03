@@ -11,8 +11,6 @@ export function useProjectDetails(projectId: string | undefined) {
       return null;
     }
 
-    console.log('Fetching project with UUID:', projectId);
-
     const { data, error } = await supabase
       .from('projects')
       .select(projectBaseQuery)
@@ -24,8 +22,6 @@ export function useProjectDetails(projectId: string | undefined) {
       toast.error("Failed to fetch project details");
       throw error;
     }
-
-    console.log('Query response:', { projectData: data, projectError: error });
     return data;
   };
 

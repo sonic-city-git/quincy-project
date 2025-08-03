@@ -76,7 +76,7 @@ export const useEventManagement = (projectId: string) => {
         queryClient.invalidateQueries({ queryKey: ['project-event-equipment'] })
       ]);
 
-      console.log('Event created and queries invalidated:', eventData);
+
       return eventData;
     } catch (error) {
       console.error('Error adding event:', error);

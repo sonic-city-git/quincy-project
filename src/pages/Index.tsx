@@ -24,7 +24,7 @@ const Index = () => {
   const isAppNavigation = sessionStorage.getItem('dashboard-app-navigation') === 'true';
   const storedTab = sessionStorage.getItem('dashboard-retained-tab') as 'me' | 'all' | null;
   
-  console.log('Index.tsx - isAppNavigation:', isAppNavigation, 'storedTab:', storedTab);
+
   
   // Use retained tab if app navigation with stored tab, otherwise default to 'all'
   const [activeTab, setActiveTab] = useState<'me' | 'all'>(
