@@ -16,7 +16,6 @@ export interface CrewRoleCell {
 interface ProjectRowProps {
   projectName: string;
   equipmentId: string; // In crew mode, this is actually crewMemberId
-  resourceName: string; // Equipment name or crew member name
   formattedDates: Array<{
     date: Date;
     dateStr: string;
@@ -32,7 +31,6 @@ interface ProjectRowProps {
 const ProjectRowComponent = ({
   projectName,
   equipmentId,
-  resourceName,
   formattedDates,
   getProjectQuantityForDate,
   getCrewRoleForDate,
@@ -58,7 +56,6 @@ const ProjectRowComponent = ({
   }, [
     projectName, 
     equipmentId, 
-    resourceName,
     isCrew,
     // More stable dependency - only recompute if date range changes
     formattedDates.length > 0 ? `${formattedDates[0].dateStr}-${formattedDates[formattedDates.length - 1].dateStr}` : '',
@@ -71,15 +68,7 @@ const ProjectRowComponent = ({
       className="project-row flex items-center border-b border-border/50 bg-muted/20"
       style={{ height: LAYOUT.PROJECT_ROW_HEIGHT }}
     >
-      {/* Project name column */}
-            <div 
-        className="flex items-center px-12 text-sm text-muted-foreground"
-        style={{ width: LAYOUT.EQUIPMENT_NAME_WIDTH }}
-      >
-        {projectName}
-      </div>
-
-      {/* Timeline quantity cells */}
+      {/* Timeline quantity cells ONLY - no duplicate name column! */}
       <div 
         className="flex items-center" 
         style={{ 
@@ -117,7 +106,6 @@ const ProjectRowComponent = ({
                 <div
                   className="min-w-[20px] h-5 px-2 rounded-full bg-gray-900 flex items-center justify-center"
                   title={formatPlannerTooltip({
-                    resourceName: resourceName,
                     date: dateInfo.dateStr,
                     // Crew project row data
                     ...(isCrew && dataCell && 'role' in dataCell && {
@@ -149,10 +137,9 @@ const ProjectRowComponent = ({
 };
 
 export const ProjectRow = memo(ProjectRowComponent, (prevProps, nextProps) => {
-  // Re-render if project name, equipment/crew ID, resource name, or mode changes
+  // Re-render if project name, equipment/crew ID, or mode changes
   if (prevProps.projectName !== nextProps.projectName || 
       prevProps.equipmentId !== nextProps.equipmentId ||
-      prevProps.resourceName !== nextProps.resourceName ||
       prevProps.isCrew !== nextProps.isCrew) {
     return false;
   }

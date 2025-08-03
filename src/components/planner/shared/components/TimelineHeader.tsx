@@ -209,15 +209,8 @@ export function TimelineHeader({
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-foreground/30 rounded-l"></div>
                       )}
                       
-                      <div className="absolute inset-0 flex justify-between items-center px-4">
-                        {/* Left month marker */}
-                        <div className="flex flex-col items-center opacity-30">
-                          <span className="text-xs font-medium whitespace-nowrap">
-                            {format(section.date, 'MMM')}
-                          </span>
-                        </div>
-                        
-                        {/* Center main month display */}
+                      <div className="absolute inset-0 flex justify-center items-center">
+                        {/* Main month display */}
                         <div className={`flex flex-col items-center ${
                           isYearTransition 
                             ? 'text-foreground' 
@@ -232,13 +225,6 @@ export function TimelineHeader({
                               : 'text-muted-foreground'
                           }`}>
                             {format(section.date, 'yyyy')}
-                          </span>
-                        </div>
-                        
-                        {/* Right month marker */}
-                        <div className="flex flex-col items-center opacity-30">
-                          <span className="text-xs font-medium whitespace-nowrap">
-                            {format(section.date, 'MMM')}
                           </span>
                         </div>
                       </div>

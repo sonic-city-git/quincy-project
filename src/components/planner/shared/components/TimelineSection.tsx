@@ -284,7 +284,6 @@ const TimelineSectionComponent = ({
                           key={`${equipment.id}-${projectName}`}
                           projectName={projectName}
                           equipmentId={equipment.id}
-                          resourceName=""
                           formattedDates={formattedDates}
                           getProjectQuantityForDate={resourceType === 'equipment' ? getProjectQuantityForDate : undefined}
                           getCrewRoleForDate={resourceType === 'crew' ? getCrewRoleForDate : undefined}
@@ -407,7 +406,6 @@ const TimelineSectionComponent = ({
                                 key={`${equipment.id}-${projectName}`}
                                 projectName={projectName}
                                 equipmentId={equipment.id}
-                                resourceName=""
                                 formattedDates={formattedDates}
                                 getProjectQuantityForDate={resourceType === 'equipment' ? getProjectQuantityForDate : undefined}
                                 getCrewRoleForDate={resourceType === 'crew' ? getCrewRoleForDate : undefined}
