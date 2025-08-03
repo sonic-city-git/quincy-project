@@ -29,8 +29,17 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
-export function AddEquipmentDialog() {
-  const [open, setOpen] = useState(false);
+interface AddEquipmentDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function AddEquipmentDialog({ open: externalOpen, onOpenChange: externalOnOpenChange }: AddEquipmentDialogProps = {}) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  
+  // Use external control if provided, otherwise use internal state
+  const open = externalOpen !== undefined ? externalOpen : internalOpen;
+  const setOpen = externalOnOpenChange || setInternalOpen;
   const [isPending, setIsPending] = useState(false);
   const queryClient = useQueryClient();
   const { folders = [], loading: foldersLoading } = useFolders();
@@ -112,14 +121,19 @@ export function AddEquipmentDialog() {
     }
   };
 
+  // Show trigger button only when not externally controlled
+  const showTrigger = externalOpen === undefined;
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button>
-          <Package className="h-4 w-4 mr-2" />
-          Add Equipment
-        </Button>
-      </DialogTrigger>
+      {showTrigger && (
+        <DialogTrigger asChild>
+          <Button>
+            <Package className="h-4 w-4 mr-2" />
+            Add Equipment
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Add New Equipment</DialogTitle>

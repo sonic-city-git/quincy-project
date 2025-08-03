@@ -6,9 +6,10 @@ interface CrewTableProps {
   crew: CrewMember[];
   selectedItem: string | null;
   onItemSelect: (id: string) => void;
+  highlightedItem?: string | null;
 }
 
-export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) {
+export function CrewTable({ crew, selectedItem, onItemSelect, highlightedItem }: CrewTableProps) {
   return (
     <TableBody>
       {crew.map((member) => (
@@ -16,6 +17,7 @@ export function CrewTable({ crew, selectedItem, onItemSelect }: CrewTableProps) 
           key={member.id}
           member={member}
           isSelected={selectedItem === member.id}
+          isHighlighted={highlightedItem === member.id}
           onSelect={() => onItemSelect(member.id)}
         />
       ))}

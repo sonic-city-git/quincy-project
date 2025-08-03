@@ -21,6 +21,10 @@ interface UnifiedCalendarProps {
   resourceType: 'equipment' | 'crew';
   filters?: PlannerFilters;
   showProblemsOnly?: boolean;
+  targetScrollItem?: {
+    type: 'equipment' | 'crew';
+    id: string;
+  } | null;
 }
 
 // Performance metrics for monitoring
@@ -51,7 +55,8 @@ export function UnifiedCalendar({
   sharedTimeline,
   resourceType,
   filters,
-  showProblemsOnly = false
+  showProblemsOnly = false,
+  targetScrollItem
 }: UnifiedCalendarProps) {
   
   // Performance tracking
@@ -214,6 +219,35 @@ export function UnifiedCalendar({
       console.debug('🔧 Planner Performance Metrics:', metrics);
     }
   }, [equipmentGroups, resourceType, timelineStart, timelineEnd]);
+
+  // Handle scrolling to target item when targetScrollItem is provided
+  useEffect(() => {
+    if (targetScrollItem && targetScrollItem.type === resourceType && equipmentGroups.length > 0) {
+      const timer = setTimeout(() => {
+        try {
+          // Look for the target item in the DOM
+          const targetElement = document.querySelector(`[data-resource-id="${targetScrollItem.id}"]`);
+          
+          if (targetElement && equipmentRowsRef.current) {
+            // Scroll to the target element
+            targetElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'nearest'
+            });
+            
+            console.log(`Scrolled to ${targetScrollItem.type}: ${targetScrollItem.id}`);
+          } else {
+            console.warn(`Could not find ${targetScrollItem.type} with ID: ${targetScrollItem.id}`);
+          }
+        } catch (error) {
+          console.error('Error scrolling to target item:', error);
+        }
+      }, 500); // Wait for render
+      
+      return () => clearTimeout(timer);
+    }
+  }, [targetScrollItem, resourceType, equipmentGroups, equipmentRowsRef]);
 
   // Simple loading state
   const shouldShowLoading = !isEquipmentReady;

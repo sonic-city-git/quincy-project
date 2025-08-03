@@ -14,6 +14,8 @@ const Auth = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN") {
+        // Set flag for app navigation to preserve tab choice
+        sessionStorage.setItem('dashboard-app-navigation', 'true');
         navigate("/");
       }
     });

@@ -3,6 +3,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layouts/AppLayout";
+import { useGlobalKeyboard } from "@/hooks/useGlobalKeyboard";
 import Auth from "@/pages/Auth";
 import Index from "@/pages/Index";
 import ProjectList from "@/pages/ProjectList";
@@ -11,6 +12,9 @@ import ProjectDetail from "@/pages/ProjectDetail";
 import Resources from "@/pages/Resources";
 
 function App() {
+  // Global keyboard shortcuts (double ESC to dashboard)
+  useGlobalKeyboard();
+
   return (
     <AuthProvider>
       <TooltipProvider>
