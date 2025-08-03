@@ -56,7 +56,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
         .eq('event_id', event.id);
       
       if (error) throw error;
-      console.log('Event roles for event', event.id, ':', data);
+    
       return data;
     },
     enabled: eventType?.needs_crew

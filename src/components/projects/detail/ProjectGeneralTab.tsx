@@ -26,7 +26,7 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
 
   useEffect(() => {
     if (projectId) {
-      console.log('Fetching events for project:', projectId);
+  
       refetch();
     }
   }, [projectId, refetch]);
@@ -37,7 +37,7 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
   };
 
   const handleEditEvent = (event) => {
-    console.log('Opening edit dialog for event:', event);
+    
   };
 
   return (

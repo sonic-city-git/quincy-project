@@ -32,11 +32,7 @@ export function useEquipmentFilters() {
   };
 
   const filterEquipment = (equipment: Equipment[]) => {
-    console.log('Filtering equipment with:', {
-      searchQuery,
-      selectedFolders,
-      totalEquipment: equipment.length
-    });
+
 
     // Get all folder IDs including children of selected folders
     const expandedFolderIds = selectedFolders.flatMap(folderId => getChildFolderIds(folderId));
@@ -48,13 +44,7 @@ export function useEquipmentFilters() {
       const matchesFolders = selectedFolders.length === 0 || 
         (item.folder_id && expandedFolderIds.includes(item.folder_id));
 
-      console.log('Item filtering result:', {
-        name: item.name,
-        code: item.code,
-        folder_id: item.folder_id,
-        matchesSearch,
-        matchesFolders
-      });
+
 
       return matchesSearch && matchesFolders;
     });

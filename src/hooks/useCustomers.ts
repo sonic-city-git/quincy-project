@@ -7,38 +7,24 @@ export function useCustomers(enabled: boolean = false) {
     queryKey: ['customers'],
     queryFn: async () => {
       try {
-        console.log('Starting customer fetch with detailed logging...');
-        
         const { data: customersData, error } = await supabase
           .from('customers')
           .select('id, name, customer_number, organization_number')
           .order('name');
 
         if (error) {
-          console.error('Error details:', {
-            message: error.message,
-            code: error.code,
-            details: error.details,
-            hint: error.hint
-          });
+          console.error('Error fetching customers:', error);
           toast.error("Failed to fetch customers");
           throw error;
         }
 
         if (!customersData) {
-          console.log('No customers data returned from Supabase');
           return [];
         }
-
-        console.log('Successfully fetched customers:', {
-          count: customersData.length,
-          firstCustomer: customersData[0],
-          allCustomers: customersData
-        });
         
         return customersData;
       } catch (error) {
-        console.error('Detailed error in customers query:', error);
+        console.error('Error in customers query:', error);
         toast.error("Failed to fetch customers");
         throw error;
       }

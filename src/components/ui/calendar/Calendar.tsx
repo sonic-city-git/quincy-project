@@ -41,7 +41,7 @@ export function Calendar({
 }: CalendarProps) {
   // Filter out any null/undefined events and events with invalid dates
   const validEvents = events.filter(event => event && event.date);
-  console.log('Calendar render', { events, validEvents });
+
 
   const weeks = useMemo(() => {
     const start = startOfWeek(startOfMonth(month), { weekStartsOn: 1 }); // 1 = Monday
@@ -106,7 +106,7 @@ export function Calendar({
                   event={event}
                   isSelected={isDateSelected(day)}
                   onClick={() => {
-                    console.log('Calendar day clicked', { day, event });
+                
                     onDayClick?.(day);
                   }}
                   onMouseDown={() => {

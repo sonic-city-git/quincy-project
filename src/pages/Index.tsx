@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { LayoutDashboard, TrendingUp, AlertTriangle, Calendar, CalendarDays } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { useTabPersistence } from "@/hooks/useTabPersistence";
 import { useFilterState } from "@/hooks/useFilterState";
 
 import { useQuery } from "@tanstack/react-query";
@@ -21,40 +20,45 @@ import { useProjects } from "@/hooks/useProjects";
 const Index = () => {
   const { session } = useAuth();
   
-  // Check if this was app navigation for special behavior
+  // Check if this was app navigation (including double-ESC)
   const isAppNavigation = sessionStorage.getItem('dashboard-app-navigation') === 'true';
+  const storedTab = sessionStorage.getItem('dashboard-retained-tab') as 'me' | 'all' | null;
   
-  // Use consolidated tab persistence hook with special handling for app navigation
-  const [activeTab, setActiveTab] = useTabPersistence(
-    'dashboard-active-tab',
-    isAppNavigation ? 'all' : 'all', // Default to 'all' for both cases now
-    ['me', 'all'] as const
+  console.log('Index.tsx - isAppNavigation:', isAppNavigation, 'storedTab:', storedTab);
+  
+  // Use retained tab if app navigation with stored tab, otherwise default to 'all'
+  const [activeTab, setActiveTab] = useState<'me' | 'all'>(
+    isAppNavigation && storedTab ? storedTab : 'all'
   );
-  
-  // Clean up app navigation flag
-  useEffect(() => {
-    if (isAppNavigation) {
-      sessionStorage.removeItem('dashboard-app-navigation');
-    }
-  }, [isAppNavigation]);
   
   const [filters, setFilters, updateFilters, clearFilters] = useFilterState<DashboardFilters>({
     search: '',
     owner: ''
   });
 
-  // Handle scroll reset on browser refresh
+  // Handle scroll reset and cleanup
   useEffect(() => {
-    // Check if this was app navigation vs browser refresh
-    const isAppNavigation = sessionStorage.getItem('dashboard-app-navigation') === 'true';
+    // Always scroll to top on page load
+    window.scrollTo({ top: 0, behavior: 'instant' });
     
-    if (!isAppNavigation) {
-      // Browser refresh: scroll to top
-      window.scrollTo({ top: 0, behavior: 'instant' });
+    // Clean up navigation flags after using them
+    if (isAppNavigation) {
+      sessionStorage.removeItem('dashboard-app-navigation');
+      sessionStorage.removeItem('dashboard-retained-tab');
     }
   }, []); // Run only on mount
 
-  // Tab persistence is now handled by useTabPersistence hook
+  // Store current dashboard tab for double ESC retention
+  useEffect(() => {
+    // Always store the current dashboard tab in sessionStorage
+    sessionStorage.setItem('dashboard-current-tab', activeTab);
+    
+    // Also update the data attribute for the DOM element
+    const dashboardElement = document.querySelector('[data-dashboard-tab]');
+    if (dashboardElement) {
+      dashboardElement.setAttribute('data-current-tab', activeTab);
+    }
+  }, [activeTab]);
 
   // Get projects data for owner name -> ID conversion
   const { projects } = useProjects();
@@ -131,6 +135,8 @@ const Index = () => {
       description="Production overview and operational insights across all projects"
       iconColor="text-blue-500"
     >
+      {/* Hidden element for tab tracking */}
+      <div data-dashboard-tab data-current-tab={activeTab} style={{ display: 'none' }} />
       <div className="space-y-4">
         {/* Dashboard Header with Tab Switching and Filters */}
         <DashboardHeader

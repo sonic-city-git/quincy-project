@@ -1,11 +1,11 @@
-import { Search, X, Package, Users, Database, Plus, Mic, Volume2, Lightbulb, Video, Cable, Building, Settings } from "lucide-react";
+import { Package, Users, Mic, Volume2, Lightbulb, Video, Cable, Building, Settings, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState, useEffect, useCallback, useRef } from "react";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 import { useFolders } from "@/hooks/useFolders";
 import { FOLDER_ORDER } from "@/types/equipment";
+import { SectionHeader } from "@/components/shared/SectionHeader";
+import type { Tab } from "@/components/shared/SectionHeader";
 
 // Filter types
 export interface ResourceFilters {
@@ -29,8 +29,6 @@ export function ResourcesHeader({
   onFiltersChange,
   onAddClick
 }: ResourcesHeaderProps) {
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const typeSelectRef = useRef<HTMLButtonElement>(null);
   // Dynamic content based on resource type
   const isCrewTab = activeTab === 'crew';
   const title = isCrewTab ? 'Crew Management' : 'Equipment Management';
@@ -56,11 +54,14 @@ export function ResourcesHeader({
   const { roles: crewRolesData, isLoading: crewRolesLoading } = useCrewRoles();
   const crewRoles = crewRolesData?.map(role => role.name) || [];
 
-  // Local search state for immediate UI feedback
-  const [localSearchValue, setLocalSearchValue] = useState(filters.search || '');
+  // Tab configuration
+  const tabs: Tab<'equipment' | 'crew'>[] = [
+    { value: 'equipment', label: 'Equipment', icon: Package, color: 'text-green-500' },
+    { value: 'crew', label: 'Crew', icon: Users, color: 'text-orange-500' }
+  ];
 
-  // Stable updateFilters function
-  const updateFilters = useCallback((updates: Partial<ResourceFilters>) => {
+  // Update filters helper
+  const updateFilters = (updates: Partial<ResourceFilters>) => {
     // Convert "all" values to empty strings for internal state
     const normalizedUpdates = Object.entries(updates).reduce((acc, [key, value]) => {
       acc[key as keyof ResourceFilters] = value === 'all' ? '' : value;
@@ -68,58 +69,10 @@ export function ResourcesHeader({
     }, {} as Partial<ResourceFilters>);
     
     onFiltersChange({ ...filters, ...normalizedUpdates });
-  }, [filters, onFiltersChange]);
+  };
 
-  // Update local search when external filters change
-  useEffect(() => {
-    setLocalSearchValue(filters.search || '');
-  }, [filters.search]);
-
-  // Keyboard shortcuts: Cmd+K to focus, ESC to clear search and filters and unfocus
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Cmd+K to focus search
-      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
-        event.preventDefault();
-        searchInputRef.current?.focus();
-      }
-      
-      // ESC to clear search and filters and unfocus both fields
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        setLocalSearchValue('');
-        onFiltersChange({
-          search: '',
-          equipmentType: '',
-          crewRole: ''
-        });
-        searchInputRef.current?.blur();
-        typeSelectRef.current?.blur();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onFiltersChange]);
-
-  // Debounced search to prevent lag
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (localSearchValue !== filters.search) {
-        updateFilters({ search: localSearchValue });
-      }
-    }, 300); // 300ms debounce
-
-    return () => clearTimeout(timer);
-  }, [localSearchValue, filters.search, updateFilters]);
-
-  // Filter helpers
-  const hasActiveFilters = (
-    filters.search
-  );
-
+  // Clear all filters
   const clearAllFilters = () => {
-    setLocalSearchValue(''); // Clear local search state too
     onFiltersChange({
       search: '',
       equipmentType: '',
@@ -148,203 +101,142 @@ export function ResourcesHeader({
     if (roleLower.includes('lighting') || roleLower.includes('light')) return Lightbulb;
     if (roleLower.includes('camera') || roleLower.includes('video') || roleLower.includes('director')) return Video;
     if (roleLower.includes('stage') || roleLower.includes('manager')) return Building;
-    return Users; // Default for all other roles
+    return Users;
   };
 
   return (
-    <div className="sticky top-[72px] z-40 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-sm">
-      {/* Header with Title, Filters, and Tab Toggle */}
-      <div className="flex items-center justify-between py-3 px-4 bg-background border-b border-border/30">
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <IconComponent className={`h-5 w-5 ${iconColor}`} />
-            <h3 className="text-lg font-semibold">{title}</h3>
-          </div>
-          
-          {/* Search and Filters */}
-          <div className="flex items-center gap-2">
-            {/* Search Bar */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                ref={searchInputRef}
-                placeholder={`Search ${isCrewTab ? 'crew' : 'equipment'}...`}
-                value={localSearchValue}
-                onChange={(e) => setLocalSearchValue(e.target.value)}
-                className={`pl-9 w-56 h-8 transition-colors ${
-                  localSearchValue ? 'ring-2 ring-blue-500/50 border-blue-500/50 bg-blue-50/50' : ''
-                }`}
-              />
-            </div>
-
-            {/* Resource Type Filter */}
-            <div className="flex items-center gap-1">
-              {isCrewTab ? (
-                <>
-                  <Select value={filters.crewRole || 'all'} onValueChange={(value) => updateFilters({ crewRole: value })}>
-                    <SelectTrigger 
-                      ref={typeSelectRef}
-                      className={`w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors ${
-                        filters.crewRole && filters.crewRole !== 'all' ? 'ring-2 ring-orange-500/50 border-orange-500/50 bg-orange-50/50' : ''
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {filters.crewRole && filters.crewRole !== 'all' ? (
-                          <>
-                            {(() => {
-                              const IconComponent = getCrewIcon(filters.crewRole);
-                              return <IconComponent className="h-4 w-4 text-orange-500" />;
-                            })()}
-                            <span>{filters.crewRole}</span>
-                          </>
-                        ) : (
-                          <span>All Roles</span>
-                        )}
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent className="w-[200px]">
-                      <SelectItem value="all">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4 text-muted-foreground" />
-                          <span>All Roles</span>
-                        </div>
-                      </SelectItem>
-                      {crewRolesLoading ? (
-                        <SelectItem value="loading" disabled>
-                          <span className="text-sm text-muted-foreground">Loading roles...</span>
-                        </SelectItem>
-                      ) : (
-                        crewRoles.map(role => {
-                          const IconComponent = getCrewIcon(role);
-                          return (
-                            <SelectItem key={role} value={role}>
-                              <div className="flex items-center gap-2">
-                                <IconComponent className="h-4 w-4 text-orange-500" />
-                                <span>{role}</span>
-                              </div>
-                            </SelectItem>
-                          );
-                        })
-                      )}
-                    </SelectContent>
-                  </Select>
-                  
-                  {/* Clear Crew Role Button */}
-                  {filters.crewRole && filters.crewRole !== 'all' && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                      onClick={() => updateFilters({ crewRole: 'all' })}
-                      title="Clear role filter"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Select value={filters.equipmentType || 'all'} onValueChange={(value) => updateFilters({ equipmentType: value })}>
-                    <SelectTrigger 
-                      ref={typeSelectRef}
-                      className={`w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors ${
-                        filters.equipmentType && filters.equipmentType !== 'all' ? 'ring-2 ring-green-500/50 border-green-500/50 bg-green-50/50' : ''
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        {filters.equipmentType && filters.equipmentType !== 'all' ? (
-                          <>
-                            {(() => {
-                              const IconComponent = getEquipmentIcon(filters.equipmentType);
-                              return <IconComponent className="h-4 w-4 text-green-500" />;
-                            })()}
-                            <span>{filters.equipmentType}</span>
-                          </>
-                        ) : (
-                          <span>All Types</span>
-                        )}
-                      </div>
-                    </SelectTrigger>
-                    <SelectContent className="w-[200px]">
-                      <SelectItem value="all">
-                        <div className="flex items-center gap-2">
-                          <Package className="h-4 w-4 text-muted-foreground" />
-                          <span>All Types</span>
-                        </div>
-                      </SelectItem>
-                      {foldersLoading ? (
-                        <SelectItem value="loading" disabled>
-                          <span className="text-sm text-muted-foreground">Loading types...</span>
-                        </SelectItem>
-                      ) : (
-                        equipmentTypes.map(type => {
-                          const IconComponent = getEquipmentIcon(type);
-                          return (
-                            <SelectItem key={type} value={type}>
-                              <div className="flex items-center gap-2">
-                                <IconComponent className="h-4 w-4 text-green-500" />
-                                <span>{type}</span>
-                              </div>
-                            </SelectItem>
-                          );
-                        })
-                      )}
-                    </SelectContent>
-                  </Select>
-                  
-                  {/* Clear Equipment Type Button */}
-                  {filters.equipmentType && filters.equipmentType !== 'all' && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
-                      onClick={() => updateFilters({ equipmentType: 'all' })}
-                      title="Clear type filter"
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  )}
-                </>
-              )}
-            </div>
-
-
-          </div>
-        </div>
-        
-        {/* Add Button and Tab Toggle */}
-        <div className="flex items-center gap-6">
-          <Button size="sm" className="gap-1 h-6 px-1.5 text-xs" onClick={onAddClick}>
-            <Plus className="h-3 w-3" />
+    <SectionHeader
+      header={{
+        title,
+        icon: IconComponent,
+        iconColor
+      }}
+      tabs={{
+        activeTab,
+        onTabChange,
+        options: tabs
+      }}
+      search={{
+        placeholder: `Search ${isCrewTab ? 'crew' : 'equipment'}...`,
+        value: filters.search,
+        onChange: (value) => updateFilters({ search: value })
+      }}
+      filters={filters}
+      onFiltersChange={onFiltersChange}
+      onClearFilters={clearAllFilters}
+      actions={
+        onAddClick && (
+          <Button
+            onClick={onAddClick}
+            size="sm"
+            className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Plus className="h-3 w-3 mr-1.5" />
             Add {isCrewTab ? 'Member' : 'Equipment'}
           </Button>
-          
-          <div className="flex bg-muted rounded-lg p-1">
-          <Button
-            variant={activeTab === 'equipment' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => onTabChange('equipment')}
-            className={`flex items-center gap-2 ${
-              activeTab === 'equipment' ? 'bg-green-100 text-green-700' : ''
-            }`}
-          >
-            <Package className="h-4 w-4" />
-            Equipment
-          </Button>
-          <Button
-            variant={activeTab === 'crew' ? 'default' : 'ghost'}
-            size="sm"
-            onClick={() => onTabChange('crew')}
-            className={`flex items-center gap-2 ${
-              activeTab === 'crew' ? 'bg-orange-100 text-orange-700' : ''
-            }`}
-          >
-            <Users className="h-4 w-4" />
-            Crew
-          </Button>
-          </div>
-        </div>
+        )
+      }
+    >
+      {/* Resource Type Filter - Equipment or Crew based on active tab */}
+      <div className="flex items-center gap-1">
+        {isCrewTab ? (
+          // Crew Role Filter
+          <Select value={filters.crewRole || 'all'} onValueChange={(value) => updateFilters({ crewRole: value })}>
+            <SelectTrigger 
+              className={`w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors ${
+                filters.crewRole && filters.crewRole !== 'all' ? 'ring-2 ring-orange-500/50 border-orange-500/50 bg-orange-50/50' : ''
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {filters.crewRole && filters.crewRole !== 'all' ? (
+                  <>
+                    {(() => {
+                      const IconComponent = getCrewIcon(filters.crewRole);
+                      return <IconComponent className="h-4 w-4 text-orange-500" />;
+                    })()}
+                    <span>{filters.crewRole}</span>
+                  </>
+                ) : (
+                  <span>All Roles</span>
+                )}
+              </div>
+            </SelectTrigger>
+            <SelectContent className="w-[200px]">
+              <SelectItem value="all">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <span>All Roles</span>
+                </div>
+              </SelectItem>
+              {crewRolesLoading ? (
+                <SelectItem value="loading" disabled>
+                  <span className="text-sm text-muted-foreground">Loading roles...</span>
+                </SelectItem>
+              ) : (
+                crewRoles.map(role => {
+                  const IconComponent = getCrewIcon(role);
+                  return (
+                    <SelectItem key={role} value={role}>
+                      <div className="flex items-center gap-2">
+                        <IconComponent className="h-4 w-4 text-orange-500" />
+                        <span>{role}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })
+              )}
+            </SelectContent>
+          </Select>
+        ) : (
+          // Equipment Type Filter
+          <Select value={filters.equipmentType || 'all'} onValueChange={(value) => updateFilters({ equipmentType: value })}>
+            <SelectTrigger 
+              className={`w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors ${
+                filters.equipmentType && filters.equipmentType !== 'all' ? 'ring-2 ring-green-500/50 border-green-500/50 bg-green-50/50' : ''
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                {filters.equipmentType && filters.equipmentType !== 'all' ? (
+                  <>
+                    {(() => {
+                      const IconComponent = getEquipmentIcon(filters.equipmentType);
+                      return <IconComponent className="h-4 w-4 text-green-500" />;
+                    })()}
+                    <span>{filters.equipmentType}</span>
+                  </>
+                ) : (
+                  <span>All Types</span>
+                )}
+              </div>
+            </SelectTrigger>
+            <SelectContent className="w-[200px]">
+              <SelectItem value="all">
+                <div className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                  <span>All Types</span>
+                </div>
+              </SelectItem>
+              {foldersLoading ? (
+                <SelectItem value="loading" disabled>
+                  <span className="text-sm text-muted-foreground">Loading types...</span>
+                </SelectItem>
+              ) : (
+                equipmentTypes.map(type => {
+                  const IconComponent = getEquipmentIcon(type);
+                  return (
+                    <SelectItem key={type} value={type}>
+                      <div className="flex items-center gap-2">
+                        <IconComponent className="h-4 w-4 text-green-500" />
+                        <span>{type}</span>
+                      </div>
+                    </SelectItem>
+                  );
+                })
+              )}
+            </SelectContent>
+          </Select>
+        )}
       </div>
-    </div>
+    </SectionHeader>
   );
 }

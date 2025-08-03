@@ -56,7 +56,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   };
 
   const handleAddMultipleEvents = async (dates: Date[], name: string, eventType: any, status: CalendarEvent['status']) => {
-    console.log('Adding multiple events:', { dates, name, eventType, status });
+
     for (const date of dates) {
       await addEvent(date, name, eventType, status);
     }

@@ -52,7 +52,7 @@ export function ResourceCrewTable({ filters, targetScrollItem }: ResourceCrewTab
               setHighlightedItem(null);
             }, 3000);
             
-            console.log(`Scrolled to crew member: ${targetScrollItem.id}`);
+    
           } else {
             console.warn(`Could not find crew member with ID: ${targetScrollItem.id}`);
           }

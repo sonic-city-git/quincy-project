@@ -45,7 +45,7 @@ export function AddRoleDialog({ isOpen, onClose, project }: AddRoleDialogProps) 
 
   const onSubmit = async (data: FormData) => {
     try {
-      console.log('Starting to add role:', data);
+  
       
       // Add the project role
       const { error } = await supabase

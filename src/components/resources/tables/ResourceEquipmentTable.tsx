@@ -48,7 +48,7 @@ export function ResourceEquipmentTable({ filters, targetScrollItem }: ResourceEq
               setHighlightedItem(null);
             }, 3000);
             
-            console.log(`Scrolled to equipment: ${targetScrollItem.id}`);
+    
           } else {
             console.warn(`Could not find equipment with ID: ${targetScrollItem.id}`);
           }

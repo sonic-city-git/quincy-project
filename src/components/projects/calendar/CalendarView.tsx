@@ -122,11 +122,11 @@ export function CalendarView({
 
     // Check if the event type requires crew or equipment
     if (eventType.needs_crew) {
-      console.log('Event type requires crew');
+      
     }
     
     if (eventType.needs_equipment) {
-      console.log('Event type requires equipment');
+      
     }
 
     onAddMultipleEvents(selectedDates, name, eventType, status);

@@ -67,7 +67,7 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
           filter: `project_id=eq.${project.id}`,
         },
         () => {
-          console.log('Project events changed, refetching archive status');
+      
           refetchArchiveStatus();
         }
       )

@@ -236,7 +236,7 @@ export function UnifiedCalendar({
               inline: 'nearest'
             });
             
-            console.log(`Scrolled to ${targetScrollItem.type}: ${targetScrollItem.id}`);
+    
           } else {
             console.warn(`Could not find ${targetScrollItem.type} with ID: ${targetScrollItem.id}`);
           }
