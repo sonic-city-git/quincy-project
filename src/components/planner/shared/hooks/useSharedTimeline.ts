@@ -146,9 +146,10 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     }
   }, [timelineDates]);
   
-  // Simple scroll logic:
-  // 1. On browser refresh → scroll to today (no animation)
+  // Unified scroll logic:
+  // 1. On page load → scroll to today (with smooth animation)
   // 2. When selectedDate changes → scroll to that date (with animation)
+  // 3. Timeline state persists across equipment/crew tab switches
   
   // FIXED: Separate timeline range from scroll operations to prevent racing
   
@@ -162,14 +163,14 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     }
   }, []); // No dependencies - run once on mount
   
-  // 2. Scroll to initial date after timeline is built (only once)
+  // 2. Scroll to initial date after timeline is built (only once) - WITH ANIMATION
   const hasScrolledToInitial = useRef(false);
   useEffect(() => {
     if (hasInitialScrolled.current && timelineDates.length > 0 && !hasScrolledToInitial.current) {
       hasScrolledToInitial.current = true;
       const timer = setTimeout(() => {
-        scrollToDate(new Date(), false);
-      }, 50); // Small delay to ensure timeline is rendered
+        scrollToDate(new Date(), true); // ✅ Enable animation for beautiful initial scroll
+      }, 150); // Slightly longer delay to ensure smooth animation visibility
       return () => clearTimeout(timer);
     }
   }, [timelineDates.length > 0 ? 'ready' : 'loading']); // Stable dependency
