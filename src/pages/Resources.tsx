@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { Database } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useTabPersistence } from "@/hooks/useTabPersistence";
+import { useFilterState } from "@/hooks/useFilterState";
 
 // Import the custom header and table components
 import { ResourcesHeader, ResourceFilters } from "@/components/resources/ResourcesHeader";
@@ -25,7 +26,7 @@ const Resources = () => {
   );
 
   // Filter state
-  const [filters, setFilters] = useState<ResourceFilters>({
+  const [filters, setFilters, updateFilters, clearFilters] = useFilterState<ResourceFilters>({
     search: '',
     equipmentType: '',
     crewRole: ''

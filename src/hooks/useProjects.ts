@@ -7,7 +7,7 @@ import { projectBaseQuery, transformProjectData } from "@/utils/projectQueries";
 export function useProjects() {
 
   const fetchProjects = async () => {
-    console.log('Fetching projects...');
+
     const { data: projectsData, error } = await supabase
       .from('projects')
       .select(projectBaseQuery)
@@ -19,9 +19,9 @@ export function useProjects() {
       throw error;
     }
 
-    console.log('Raw projects data:', projectsData);
+
     const transformedProjects = projectsData.map(transformProjectData);
-    console.log('Transformed projects:', transformedProjects);
+
     return transformedProjects;
   };
 

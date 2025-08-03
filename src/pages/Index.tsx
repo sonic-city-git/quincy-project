@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { LayoutDashboard, TrendingUp, AlertTriangle, Calendar, CalendarDays } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useTabPersistence } from "@/hooks/useTabPersistence";
+import { useFilterState } from "@/hooks/useFilterState";
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,7 +38,7 @@ const Index = () => {
     }
   }, [isAppNavigation]);
   
-  const [filters, setFilters] = useState<DashboardFilters>({
+  const [filters, setFilters, updateFilters, clearFilters] = useFilterState<DashboardFilters>({
     search: '',
     owner: ''
   });

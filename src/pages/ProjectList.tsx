@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useTabPersistence } from "@/hooks/useTabPersistence";
+import { useFilterState } from "@/hooks/useFilterState";
 
 // Import the new unified header and table components
 import { ProjectsHeader, ProjectFilters } from "@/components/projects/ProjectsHeader";
@@ -17,7 +18,7 @@ const ProjectList = () => {
   );
 
   // Filter state
-  const [filters, setFilters] = useState<ProjectFilters>({
+  const [filters, setFilters, updateFilters, clearFilters] = useFilterState<ProjectFilters>({
     search: '',
     owner: ''
   });

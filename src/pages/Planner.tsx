@@ -5,6 +5,7 @@ import { PageLayout } from "@/components/layout/PageLayout";
 import { useTabPersistence } from "@/hooks/useTabPersistence";
 import { useOwnerOptions } from "@/hooks/useOwnerOptions";
 import { useProjects } from "@/hooks/useProjects";
+import { useFilterState } from "@/hooks/useFilterState";
 import { UnifiedCalendar } from "@/components/planner/UnifiedCalendar";
 import { useSharedTimeline } from "@/components/planner/shared/hooks/useSharedTimeline";
 import { TimelineHeader, PlannerFilters } from "@/components/planner/shared/components/TimelineHeader";
@@ -39,7 +40,7 @@ const Planner = () => {
   }, [selectedDate]);
   
   // Filter state
-  const [filters, setFilters] = useState<PlannerFilters>({
+  const [filters, setFilters, updateFilters, clearFilters] = useFilterState<PlannerFilters>({
     search: '',
     selectedOwner: '',
     equipmentType: '',
