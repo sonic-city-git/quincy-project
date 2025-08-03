@@ -196,7 +196,13 @@ const TimelineSectionComponent = ({
 
   return (
     <Collapsible open={isExpanded}>
-      {/* Main folder timeline content only - no duplicate header! */}
+      {/* CRITICAL FIX: Add folder header spacer to match ResourceFolderSection trigger */}
+      <div 
+        className="folder-header-spacer border-b border-border bg-background"
+        style={{ height: LAYOUT.MAIN_FOLDER_HEIGHT }}
+      >
+        {/* Invisible spacer to align with folder header in ResourceFolderSection */}
+      </div>
       
       <CollapsibleContent>
         {/* Main folder equipment/roles timeline */}
@@ -297,12 +303,14 @@ const TimelineSectionComponent = ({
                       >
                         {/* Empty timeline - NO MORE DUPLICATE NAME COLUMN! */}
                         <div 
-                          className="flex items-center"
+                          className="flex items-center justify-center text-xs text-muted-foreground"
                           style={{ 
                             minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
                             height: '100%'
                           }}
-                        />
+                        >
+                          No project assignments
+                        </div>
                       </div>
                     )}
                   </div>
@@ -322,7 +330,13 @@ const TimelineSectionComponent = ({
           
           return (
             <Collapsible key={subFolder.name} open={isSubfolderExpanded}>
-              {/* Subfolder timeline content only - no duplicate header! */}
+              {/* CRITICAL FIX: Add subfolder header spacer to match ResourceFolderSection */}
+              <div 
+                className="subfolder-header-spacer border-t border-b border-border bg-muted/50"
+                style={{ height: LAYOUT.SUBFOLDER_HEIGHT }}
+              >
+                {/* Invisible spacer to align with subfolder header in ResourceFolderSection */}
+              </div>
               
               <CollapsibleContent>
                 {subFolder.equipment.map((equipment) => {
@@ -419,7 +433,7 @@ const TimelineSectionComponent = ({
               >
                 {/* Timeline area - NO MORE DUPLICATE NAME COLUMN! */}
                 <div 
-                  className="flex items-center justify-center text-gray-400 text-sm"
+                  className="flex items-center justify-center text-xs text-muted-foreground"
                   style={{ 
                     minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
                     height: '100%'

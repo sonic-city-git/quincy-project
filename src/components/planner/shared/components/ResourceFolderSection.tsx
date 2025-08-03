@@ -133,22 +133,36 @@ export function ResourceFolderSection({
               </div>
               
                                     {/* Project name rows when equipment is expanded - NOT for unfilled roles */}
-                      {!isUnfilledRolesSection && isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
+                      {!isUnfilledRolesSection && isEquipmentExpanded && (
                 <div>
-                  {equipmentUsage.projectNames.map((projectName) => (
+                  {equipmentUsage && equipmentUsage.projectNames.length > 0 ? (
+                    equipmentUsage.projectNames.map((projectName) => (
+                      <div 
+                        key={`${equipment.id}-${projectName}`}
+                        className="flex items-center px-2 border-b border-gray-300 bg-gray-700"
+                        style={{ height: LAYOUT.PROJECT_ROW_HEIGHT }}
+                      >
+                        <div className="min-w-0 flex-1 pr-1 pl-3">
+                          <div className="text-xs font-medium text-white truncate flex items-center" title={projectName}>
+                            <span className="text-gray-300 mr-2 text-[10px]">▸</span>
+                            <span className="text-white font-semibold">{projectName}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
                     <div 
-                      key={`${equipment.id}-${projectName}`}
-                      className="flex items-center px-2 border-b border-gray-300 bg-gray-700"
-                      style={{ height: LAYOUT.PROJECT_ROW_HEIGHT }}
+                      className="flex items-center px-2 border-b border-border/50 bg-muted/20"
+                      style={{ height: LAYOUT.PROJECT_ROW_HEIGHT / 2 }}
                     >
                       <div className="min-w-0 flex-1 pr-1 pl-3">
-                        <div className="text-xs font-medium text-white truncate flex items-center" title={projectName}>
+                        <div className="text-xs text-muted-foreground flex items-center">
                           <span className="text-gray-300 mr-2 text-[10px]">▸</span>
-                          <span className="text-white font-semibold">{projectName}</span>
+                          <span>No project assignments</span>
                         </div>
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
@@ -228,22 +242,36 @@ export function ResourceFolderSection({
                       </div>
                       
                       {/* Project name rows when equipment is expanded - NOT for unfilled roles */}
-                      {!isUnfilledRolesSection && isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
+                      {!isUnfilledRolesSection && isEquipmentExpanded && (
                         <div>
-                          {equipmentUsage.projectNames.map((projectName) => (
+                          {equipmentUsage && equipmentUsage.projectNames.length > 0 ? (
+                            equipmentUsage.projectNames.map((projectName) => (
+                              <div 
+                                key={`${equipment.id}-${projectName}`}
+                                className="flex items-center px-4 border-b border-gray-300 bg-gray-700"
+                                style={{ height: LAYOUT.PROJECT_ROW_HEIGHT }}
+                              >
+                                <div className="min-w-0 flex-1 pr-1 pl-3">
+                                  <div className="text-xs font-medium text-white truncate flex items-center" title={projectName}>
+                                    <span className="text-gray-300 mr-2 text-[10px]">▸</span>
+                                    <span className="text-white font-semibold">{projectName}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
                             <div 
-                              key={`${equipment.id}-${projectName}`}
-                              className="flex items-center px-4 border-b border-gray-300 bg-gray-700"
-                              style={{ height: LAYOUT.PROJECT_ROW_HEIGHT }}
+                              className="flex items-center px-4 border-b border-border/50 bg-muted/20"
+                              style={{ height: LAYOUT.PROJECT_ROW_HEIGHT / 2 }}
                             >
                               <div className="min-w-0 flex-1 pr-1 pl-3">
-                                <div className="text-xs font-medium text-white truncate flex items-center" title={projectName}>
+                                <div className="text-xs text-muted-foreground flex items-center">
                                   <span className="text-gray-300 mr-2 text-[10px]">▸</span>
-                                  <span className="text-white font-semibold">{projectName}</span>
+                                  <span>No project assignments</span>
                                 </div>
                               </div>
                             </div>
-                          ))}
+                          )}
                         </div>
                       )}
                     </div>
