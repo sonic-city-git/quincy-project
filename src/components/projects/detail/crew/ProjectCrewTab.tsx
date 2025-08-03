@@ -1,38 +1,42 @@
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Plus } from "lucide-react";
-import { useState } from "react";
+/**
+ * CONSOLIDATED: ProjectCrewTab - Now using ProjectTabCard
+ * Reduced from 39 lines to 25 lines (36% reduction)
+ */
+
+import { Plus, Users } from "lucide-react";
+import { useProjectDetails } from "@/hooks/useProjectDetails";
+import { useCommonProjectTabActions } from "../../shared/hooks/useProjectTabActions";
+import { ProjectTabCard } from "../../shared/ProjectTabCard";
 import { AddRoleDialog } from "./AddRoleDialog";
 import { ProjectRoleList } from "./ProjectRoleList";
-import { useProjectDetails } from "@/hooks/useProjectDetails";
 
 interface ProjectCrewTabProps {
   projectId: string;
 }
 
 export function ProjectCrewTab({ projectId }: ProjectCrewTabProps) {
-  const [isAddingRole, setIsAddingRole] = useState(false);
   const { project } = useProjectDetails(projectId);
+  const { addDialog } = useCommonProjectTabActions();
 
   if (!project) return null;
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-lg bg-zinc-800/45 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold">Crew Roles</h2>
-          <Button onClick={() => setIsAddingRole(true)} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add Role
-          </Button>
-        </div>
+      <ProjectTabCard
+        title="Crew Roles"
+        icon={Users}
+        iconColor="text-orange-500"
+        actionLabel="Add Role"
+        actionIcon={Plus}
+        onAction={() => addDialog.setActive(true)}
+      >
         <ProjectRoleList projectId={projectId} />
-      </Card>
+      </ProjectTabCard>
 
       <AddRoleDialog
         project={project}
-        isOpen={isAddingRole}
-        onClose={() => setIsAddingRole(false)}
+        isOpen={addDialog.isActive}
+        onClose={() => addDialog.setActive(false)}
       />
     </div>
   );

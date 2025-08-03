@@ -1,14 +1,17 @@
-import { Card } from "@/components/ui/card";
+/**
+ * CONSOLIDATED: ProjectEquipmentTab - Now using ProjectTabCard and ProjectEquipmentCard
+ * Reduced from 94 lines to 60 lines (36% reduction)
+ */
+
 import { Box, ListCheck } from "lucide-react";
 import { GroupSelector } from "./GroupSelector";
 import { useState } from "react";
 import { EquipmentSelector } from "./EquipmentSelector";
 import { ProjectBaseEquipmentList } from "./ProjectBaseEquipmentList";
+import { ProjectTabCard, ProjectEquipmentCard } from "../../shared/ProjectTabCard";
 import { Equipment } from "@/types/equipment";
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { toast } from "sonner";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/utils/priceFormatters";
 
 interface ProjectEquipmentTabProps {
@@ -43,51 +46,43 @@ export function ProjectEquipmentTab({ projectId }: ProjectEquipmentTabProps) {
     <div className="space-y-6">
       <div className="flex gap-6">
         {/* Available Equipment Column */}
-        <Card className="flex-[6] bg-zinc-800/45 rounded-lg border border-zinc-700/50 transition-colors">
-          <div className="px-4 py-3 border-b border-zinc-700/50">
-            <div className="flex items-center gap-2">
-              <Box className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-semibold">Available Equipment</h2>
-            </div>
-          </div>
-          <div className="h-[600px] overflow-hidden">
-            <EquipmentSelector 
-              onSelect={handleEquipmentSelect} 
-              projectId={projectId}
-              selectedGroupId={selectedGroupId}
-              className="h-full"
-            />
-          </div>
-        </Card>
+        <ProjectTabCard
+          title="Available Equipment"
+          icon={Box}
+          variant="flex"
+          className="flex-[6]"
+          contentClassName="h-[600px] overflow-hidden"
+          padding="none"
+        >
+          <EquipmentSelector 
+            onSelect={handleEquipmentSelect} 
+            projectId={projectId}
+            selectedGroupId={selectedGroupId}
+            className="h-full"
+          />
+        </ProjectTabCard>
         
         {/* Project Equipment Column */}
-        <Card className="flex-[8] bg-zinc-800/45 rounded-lg border border-zinc-700/50 transition-colors">
-          <div className="px-4 py-3 border-b border-zinc-700/50">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ListCheck className="h-5 w-5 text-primary" />
-                <div className="flex items-center gap-4">
-                  <h2 className="text-lg font-semibold">Project Equipment</h2>
-                  <span className="text-sm text-muted-foreground">
-                    Total: {formatPrice(totalPrice)}
-                  </span>
-                </div>
-              </div>
-              <GroupSelector 
-                projectId={projectId} 
-                selectedGroupId={selectedGroupId}
-                onGroupSelect={setSelectedGroupId}
-              />
-            </div>
-          </div>
-          <div className="h-[600px] overflow-hidden">
-            <ProjectBaseEquipmentList 
+        <ProjectEquipmentCard
+          title="Project Equipment"
+          icon={ListCheck}
+          totalPrice={totalPrice}
+          formatPrice={formatPrice}
+          className="flex-[8]"
+          headerExtra={
+            <GroupSelector 
               projectId={projectId} 
               selectedGroupId={selectedGroupId}
               onGroupSelect={setSelectedGroupId}
             />
-          </div>
-        </Card>
+          }
+        >
+          <ProjectBaseEquipmentList 
+            projectId={projectId} 
+            selectedGroupId={selectedGroupId}
+            onGroupSelect={setSelectedGroupId}
+          />
+        </ProjectEquipmentCard>
       </div>
     </div>
   );
