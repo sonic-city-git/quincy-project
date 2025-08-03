@@ -127,10 +127,9 @@ const Planner = () => {
           monthSections={sharedTimeline.monthSections}
           onDateChange={setSelectedDate}
           onHeaderScroll={(e) => {
-            // COORDINATED: Sync header scroll to timeline with conflict prevention
+            // Simple: Sync header scroll to timeline
             const scrollLeft = e.currentTarget.scrollLeft;
-            if (sharedTimeline.equipmentRowsRef.current && !sharedTimeline.isTimelineScrolling()) {
-              // Only sync if no programmatic scrolling is happening
+            if (sharedTimeline.equipmentRowsRef.current) {
               sharedTimeline.equipmentRowsRef.current.scrollLeft = scrollLeft;
             }
           }}

@@ -94,7 +94,7 @@ export function UnifiedCalendar({
 
   // Note: Scroll logic is now simple - just scroll to center selected date
 
-  // FAST: Simplified timeline scroll handling
+  // Simple timeline scroll handling
   const handleTimelineScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     // Handle infinite scroll and drag functionality
     scrollHandlers.handleEquipmentScroll(e);
@@ -104,10 +104,7 @@ export function UnifiedCalendar({
     if (stickyHeadersRef.current) {
       stickyHeadersRef.current.scrollLeft = scrollLeft;
     }
-    
-    // Clear any lingering scroll operations when user scrolls manually
-    sharedTimeline.clearScrollTimeouts();
-  }, [scrollHandlers, sharedTimeline]);
+  }, [scrollHandlers, stickyHeadersRef]);
 
   // SIMPLE: Handle mouse move for drag
   const handleTimelineMouseMove = useCallback((e: React.MouseEvent) => {
@@ -183,7 +180,6 @@ export function UnifiedCalendar({
           const targetElement = document.querySelector(`[data-resource-id="${targetScrollItem.id}"]`);
           
           if (targetElement && equipmentRowsRef.current) {
-            // Simplified - just scroll to the target element immediately
             targetElement.scrollIntoView({
               behavior: 'smooth',
               block: 'center',
@@ -195,7 +191,7 @@ export function UnifiedCalendar({
         } catch (error) {
           console.error('Error scrolling to target item:', error);
         }
-      }, 100); // Much shorter delay - just enough for DOM to be ready
+      }, 100);
       
       return () => clearTimeout(timer);
     }
