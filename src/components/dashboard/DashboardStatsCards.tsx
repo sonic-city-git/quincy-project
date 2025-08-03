@@ -2,39 +2,32 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Users, 
-  Package, 
   AlertTriangle, 
-  Settings, 
-  Filter,
   TrendingUp,
   Clock,
-  Building,
-  Calendar,
   UserX
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useCrew } from "@/hooks/useCrew";
-import { useEquipment } from "@/hooks/useEquipment";
-import { useCrewRoles } from "@/hooks/useCrewRoles";
-import { useFolders } from "@/hooks/useFolders";
+import { getWarningTimeframe, OVERBOOKING_WARNING_DAYS } from "@/constants/timeframes";
+// Removed unused data hooks - focusing only on operational conflicts and alerts
 
 interface DashboardStatsCardsProps {
   selectedOwnerId?: string;
 }
 
 export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProps) {
-  // Data hooks
-  const { crew, loading: crewLoading } = useCrew();
-  const { equipment, loading: equipmentLoading } = useEquipment();
-  const { roles } = useCrewRoles();
-  const { folders } = useFolders();
+  // Only load data we actually need for operational insights
 
-  // Equipment conflicts query
-  const { data: conflictStats, isLoading: conflictsLoading } = useQuery({
-    queryKey: ['equipment-conflicts-stats', selectedOwnerId],
+  // Comprehensive operational alerts query
+  const { data: operationalAlerts, isLoading: alertsLoading } = useQuery({
+    queryKey: ['operational-alerts', selectedOwnerId],
     queryFn: async () => {
-      let query = supabase
+      // Use standard 30-day timeframe for all overbooking warnings
+      const { startDate, endDate } = getWarningTimeframe();
+
+      // Equipment conflicts - same day overbookings
+      let equipmentQuery = supabase
         .from('project_event_equipment')
         .select(`
           equipment_id,
@@ -49,54 +42,135 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
               owner_id
             )
           )
-        `);
+        `)
+        .gte('project_events.date', startDate)
+        .lte('project_events.date', endDate);
 
       if (selectedOwnerId) {
-        query = query.eq('project_events.project.owner_id', selectedOwnerId);
+        equipmentQuery = equipmentQuery.eq('project_events.project.owner_id', selectedOwnerId);
       }
 
-      const { data, error } = await query;
-      if (error) throw error;
+      // Crew double-bookings - same person assigned to multiple events on same day
+      let crewConflictQuery = supabase
+        .from('project_event_roles')
+        .select(`
+          crew_member_id,
+          project_events!inner (
+            date,
+            name,
+            project:projects!inner (
+              name,
+              owner_id
+            )
+          )
+        `)
+        .not('crew_member_id', 'is', null)
+        .gte('project_events.date', startDate)
+        .lte('project_events.date', endDate);
 
-      // Process conflicts (simplified version)
-      const equipmentUsage = new Map<string, { stock: number, totalUsed: number }>();
+      if (selectedOwnerId) {
+        crewConflictQuery = crewConflictQuery.eq('project_events.project.owner_id', selectedOwnerId);
+      }
+
+      const [equipmentResult, crewResult] = await Promise.all([
+        equipmentQuery,
+        crewConflictQuery
+      ]);
+
+      if (equipmentResult.error) throw equipmentResult.error;
+      if (crewResult.error) throw crewResult.error;
+
+      // Process equipment conflicts by date
+      const equipmentByDate = new Map<string, Map<string, { stock: number, totalUsed: number, events: string[] }>>();
       
-      data?.forEach(booking => {
+      equipmentResult.data?.forEach(booking => {
+        const date = booking.project_events.date;
         const equipmentId = booking.equipment_id;
         const stock = booking.equipment?.stock || 0;
         const used = booking.quantity || 0;
         
-        if (!equipmentUsage.has(equipmentId)) {
-          equipmentUsage.set(equipmentId, { stock, totalUsed: 0 });
+        if (!equipmentByDate.has(date)) {
+          equipmentByDate.set(date, new Map());
         }
         
-        const current = equipmentUsage.get(equipmentId)!;
-        current.totalUsed += used;
+        const dateMap = equipmentByDate.get(date)!;
+        if (!dateMap.has(equipmentId)) {
+          dateMap.set(equipmentId, { stock, totalUsed: 0, events: [] });
+        }
+        
+        const equipment = dateMap.get(equipmentId)!;
+        equipment.totalUsed += used;
+        equipment.events.push(booking.project_events.name);
       });
 
-      const conflicts = Array.from(equipmentUsage.values()).filter(
-        item => item.totalUsed > item.stock
-      ).length;
+      // Count equipment conflicts
+      let equipmentConflicts = 0;
+      equipmentByDate.forEach((equipmentMap) => {
+        equipmentMap.forEach((equipment) => {
+          if (equipment.totalUsed > equipment.stock) {
+            equipmentConflicts++;
+          }
+        });
+      });
 
-      return { conflicts };
+      // Process crew conflicts by date
+      const crewByDate = new Map<string, Map<string, string[]>>();
+      
+      crewResult.data?.forEach(assignment => {
+        const date = assignment.project_events.date;
+        const crewId = assignment.crew_member_id;
+        const eventName = assignment.project_events.name;
+        
+        if (!crewByDate.has(date)) {
+          crewByDate.set(date, new Map());
+        }
+        
+        const dateMap = crewByDate.get(date)!;
+        if (!dateMap.has(crewId)) {
+          dateMap.set(crewId, []);
+        }
+        
+        dateMap.get(crewId)!.push(eventName);
+      });
+
+      // Count crew conflicts (same person assigned to multiple events same day)
+      let crewConflicts = 0;
+      crewByDate.forEach((crewMap) => {
+        crewMap.forEach((events) => {
+          if (events.length > 1) {
+            crewConflicts++;
+          }
+        });
+      });
+
+      return { 
+        equipmentConflicts,
+        crewConflicts,
+        totalConflicts: equipmentConflicts + crewConflicts
+      };
     }
   });
 
-  // Unassigned roles query  
+  // Unassigned roles query - using 30-day timeframe like other warnings
   const { data: unassignedStats, isLoading: unassignedLoading } = useQuery({
     queryKey: ['unassigned-roles-stats', selectedOwnerId],
     queryFn: async () => {
+      const { startDate, endDate } = getWarningTimeframe();
+      
       let query = supabase
         .from('project_event_roles')
         .select(`
           id,
-          event:event_id (
+          event:event_id!inner (
+            date,
             project:project_id (
               owner_id
             )
           )
         `)
-        .is('crew_member_id', null);
+        .is('crew_member_id', null)
+        .gte('event.date', startDate)
+        .lte('event.date', endDate);
 
       if (selectedOwnerId) {
         query = query.eq('event.project.owner_id', selectedOwnerId);
@@ -140,150 +214,132 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
     }
   });
 
-  // Calculate stats
-  const crewStats = {
-    total: crew?.length || 0,
-    withRoles: crew?.filter(member => member.roles && member.roles.length > 0).length || 0,
-    totalRoles: roles?.length || 0
-  };
+  // Only calculate what we actually need for operational insights
 
-  const equipmentStats = {
-    total: equipment?.length || 0,
-    inStock: equipment?.filter(item => item.stock > 0).length || 0,
-    totalFolders: folders?.filter(folder => !folder.parent_id).length || 0
-  };
+  // Critical operational alerts - what actually matters for production
+  const totalConflicts = (operationalAlerts?.equipmentConflicts || 0) + (operationalAlerts?.crewConflicts || 0);
+  const unassignedCount = unassignedStats?.unassigned || 0;
   
-  equipmentStats.utilization = equipmentStats.total > 0 ? Math.round((equipmentStats.inStock / equipmentStats.total) * 100) : 0;
-
-  const statCards = [
-    // Crew Statistics
+  const criticalMetrics = [
+    // Equipment overbookings
     {
-      title: "Total Crew",
-      value: crewStats.total,
-      subtitle: "Members",
+      title: "Equipment Conflicts",
+      value: operationalAlerts?.equipmentConflicts || 0,
+      subtitle: operationalAlerts?.equipmentConflicts 
+        ? `${operationalAlerts.equipmentConflicts} overbookings next ${OVERBOOKING_WARNING_DAYS} days` 
+        : `No equipment conflicts next ${OVERBOOKING_WARNING_DAYS} days`,
+      icon: AlertTriangle,
+      color: operationalAlerts?.equipmentConflicts ? "text-red-500" : "text-green-500",
+      bgColor: operationalAlerts?.equipmentConflicts ? "from-red-50/10 to-red-100/10" : "from-green-50/10 to-green-100/10",
+      borderColor: operationalAlerts?.equipmentConflicts ? "border-red-200/20" : "border-green-200/20",
+      loading: alertsLoading,
+      priority: operationalAlerts?.equipmentConflicts ? "critical" : "operational"
+    },
+    // Crew double-bookings
+    {
+      title: "Crew Conflicts",
+      value: operationalAlerts?.crewConflicts || 0,
+      subtitle: operationalAlerts?.crewConflicts 
+        ? `${operationalAlerts.crewConflicts} double-bookings next ${OVERBOOKING_WARNING_DAYS} days`
+        : `No crew conflicts next ${OVERBOOKING_WARNING_DAYS} days`,
       icon: Users,
-      color: "text-blue-500",
-      bgColor: "from-blue-50/10 to-blue-100/10",
-      borderColor: "border-blue-200/20",
-      loading: crewLoading
+      color: operationalAlerts?.crewConflicts ? "text-red-500" : "text-green-500",
+      bgColor: operationalAlerts?.crewConflicts ? "from-red-50/10 to-red-100/10" : "from-green-50/10 to-green-100/10",
+      borderColor: operationalAlerts?.crewConflicts ? "border-red-200/20" : "border-green-200/20",
+      loading: alertsLoading,
+      priority: operationalAlerts?.crewConflicts ? "critical" : "operational"
     },
+    // Unassigned roles
     {
-      title: "Crew with Roles",
-      value: crewStats.withRoles,
-      subtitle: crewStats.total > 0 ? `${Math.round((crewStats.withRoles / crewStats.total) * 100)}% assigned` : "0% assigned",
-      icon: Filter,
-      color: "text-orange-500",
-      bgColor: "from-orange-50/10 to-orange-100/10",
-      borderColor: "border-orange-200/20",
-      loading: crewLoading
+      title: "Unassigned Roles",
+      value: unassignedCount,
+      subtitle: unassignedCount 
+        ? `${unassignedCount} roles need crew next ${OVERBOOKING_WARNING_DAYS} days` 
+        : `All roles assigned next ${OVERBOOKING_WARNING_DAYS} days`,
+      icon: UserX,
+      color: unassignedCount ? "text-amber-500" : "text-green-500",
+      bgColor: unassignedCount ? "from-amber-50/10 to-amber-100/10" : "from-green-50/10 to-green-100/10",
+      borderColor: unassignedCount ? "border-amber-200/20" : "border-green-200/20",
+      loading: unassignedLoading,
+      priority: unassignedCount ? "high" : "operational"
     },
+    // Current operations
     {
       title: "Active Crew Today",
       value: activeCrewStats?.activeCrew || 0,
-      subtitle: "Assignments",
+      subtitle: activeCrewStats?.activeCrew 
+        ? `${activeCrewStats.activeCrew} crew members deployed`
+        : "No active assignments today",
       icon: Clock,
-      color: "text-green-500",
-      bgColor: "from-green-50/10 to-green-100/10",
-      borderColor: "border-green-200/20",
-      loading: activeCrewLoading
-    },
-    
-    // Equipment Statistics
-    {
-      title: "Total Equipment",
-      value: equipmentStats.total,
-      subtitle: "Items",
-      icon: Package,
-      color: "text-purple-500",
-      bgColor: "from-purple-50/10 to-purple-100/10",
-      borderColor: "border-purple-200/20",
-      loading: equipmentLoading
-    },
-    {
-      title: "In Stock",
-      value: equipmentStats.inStock,
-      subtitle: `${equipmentStats.utilization}% available`,
-      icon: TrendingUp,
-      color: "text-emerald-500",
-      bgColor: "from-emerald-50/10 to-emerald-100/10",
-      borderColor: "border-emerald-200/20",
-      loading: equipmentLoading
-    },
-    {
-      title: "Equipment Categories",
-      value: equipmentStats.totalFolders,
-      subtitle: "Categories",
-      icon: Settings,
-      color: "text-cyan-500",
-      bgColor: "from-cyan-50/10 to-cyan-100/10",
-      borderColor: "border-cyan-200/20",
-      loading: equipmentLoading
-    },
-    
-    // Issues & Alerts
-    {
-      title: "Equipment Conflicts",
-      value: conflictStats?.conflicts || 0,
-      subtitle: "Overbookings",
-      icon: AlertTriangle,
-      color: "text-red-500",
-      bgColor: "from-red-50/10 to-red-100/10",
-      borderColor: "border-red-200/20",
-      loading: conflictsLoading
-    },
-    {
-      title: "Unassigned Roles",
-      value: unassignedStats?.unassigned || 0,
-      subtitle: "Open positions",
-      icon: UserX,
-      color: "text-amber-500",
-      bgColor: "from-amber-50/10 to-amber-100/10",
-      borderColor: "border-amber-200/20",
-      loading: unassignedLoading
-    },
-    {
-      title: "Available Roles",
-      value: crewStats.totalRoles,
-      subtitle: "Role types",
-      icon: Building,
-      color: "text-indigo-500",
-      bgColor: "from-indigo-50/10 to-indigo-100/10",
-      borderColor: "border-indigo-200/20",
-      loading: crewLoading
+      color: "text-blue-500",
+      bgColor: "from-blue-50/10 to-blue-100/10",
+      borderColor: "border-blue-200/20",
+      loading: activeCrewLoading,
+      priority: "operational"
     }
   ];
 
+  // Group metrics by priority for clean display
+  const criticalIssues = criticalMetrics.filter(m => m.priority === 'critical');
+  const highPriorityAlerts = criticalMetrics.filter(m => m.priority === 'high');
+  const operationalStatus = criticalMetrics.filter(m => m.priority === 'operational');
+
+  // Check if we have any issues that need attention
+  const hasIssues = criticalIssues.some(m => m.value > 0) || highPriorityAlerts.some(m => m.value > 0);
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {statCards.map((stat, index) => {
-        const IconComponent = stat.icon;
-        
-        return (
-          <Card key={index} className={`border-0 shadow-md bg-gradient-to-br ${stat.bgColor} border ${stat.borderColor}`}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg bg-background/10`}>
-                    <IconComponent className={`h-5 w-5 ${stat.color}`} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-muted-foreground">{stat.title}</p>
-                    <p className="text-xs text-muted-foreground/80">{stat.subtitle}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  {!stat.loading ? (
-                    <p className={`text-2xl font-bold ${stat.color}`}>{stat.value}</p>
-                  ) : (
-                    <Skeleton className="h-8 w-12" />
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
-      })}
+    <div className="space-y-6">
+      {/* All Systems - Compact 4-column grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {criticalMetrics.map((stat, index) => (
+          <OperationalCard key={index} stat={stat} />
+        ))}
+      </div>
+
+      {/* All Clear Status - Only show when no issues */}
+      {!hasIssues && (
+        <div className="text-center py-4">
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-50/10 border border-green-200/20">
+            <TrendingUp className="h-5 w-5 text-green-500" />
+            <p className="text-green-500 font-medium">All systems operational - no conflicts detected</p>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+// Unified operational card with consistent styling and priority indicators
+function OperationalCard({ stat }: { stat: any }) {
+  const IconComponent = stat.icon;
+  const hasCriticalIssue = stat.priority === 'critical' && stat.value > 0;
+  const hasHighPriorityIssue = stat.priority === 'high' && stat.value > 0;
+  
+  return (
+    <Card className={`border-0 shadow-md bg-gradient-to-br ${stat.bgColor} border ${stat.borderColor} relative overflow-hidden transition-all hover:shadow-lg`}>
+      {/* Priority indicator bar */}
+      {hasCriticalIssue && (
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-red-600"></div>
+      )}
+      {hasHighPriorityIssue && (
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 to-amber-600"></div>
+      )}
+      
+      <CardContent className="p-2">
+        <div className="text-center space-y-1">
+          <div className={`mx-auto w-8 h-8 rounded-lg bg-background/20 flex items-center justify-center`}>
+            <IconComponent className={`h-4 w-4 ${stat.color}`} />
+          </div>
+          {!stat.loading ? (
+            <p className={`text-lg font-bold ${stat.color}`}>{stat.value}</p>
+          ) : (
+            <Skeleton className="h-5 w-6 mx-auto" />
+          )}
+          <p className="text-xs font-medium truncate">{stat.title}</p>
+          <p className="text-xs text-muted-foreground/60 truncate">{stat.subtitle}</p>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
 

@@ -2,8 +2,7 @@ import { Search, X, Clock, CheckCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useProjects } from "@/hooks/useProjects";
 
 // Filter types
@@ -27,6 +26,8 @@ export function ProjectsHeader({
   onFiltersChange,
   onAddClick
 }: ProjectsHeaderProps) {
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const ownerSelectRef = useRef<HTMLButtonElement>(null);
   // Dynamic content based on project tab
   const getTabConfig = () => {
     switch (activeTab) {
@@ -79,6 +80,32 @@ export function ProjectsHeader({
     setLocalSearchValue(filters.search || '');
   }, [filters.search]);
 
+  // Keyboard shortcuts: Cmd+K to focus, ESC to clear search and filters and unfocus
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Cmd+K to focus search
+      if ((event.metaKey || event.ctrlKey) && event.key === 'k') {
+        event.preventDefault();
+        searchInputRef.current?.focus();
+      }
+      
+      // ESC to clear search and filters and unfocus both fields
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setLocalSearchValue('');
+        onFiltersChange({
+          search: '',
+          owner: ''
+        });
+        searchInputRef.current?.blur();
+        ownerSelectRef.current?.blur();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onFiltersChange]);
+
   // Debounced search to prevent lag
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -119,17 +146,25 @@ export function ProjectsHeader({
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
+                ref={searchInputRef}
                 placeholder="Search projects..."
                 value={localSearchValue}
                 onChange={(e) => setLocalSearchValue(e.target.value)}
-                className="pl-9 w-56 h-8"
+                className={`pl-9 w-56 h-8 transition-colors ${
+                  localSearchValue ? 'ring-2 ring-blue-500/50 border-blue-500/50 bg-blue-50/50' : ''
+                }`}
               />
             </div>
 
             {/* Owner Filter */}
             <div className="flex items-center gap-1">
               <Select value={filters.owner || 'all'} onValueChange={(value) => updateFilters({ owner: value })}>
-                <SelectTrigger className="w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors">
+                <SelectTrigger 
+                  ref={ownerSelectRef}
+                  className={`w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors ${
+                    filters.owner && filters.owner !== 'all' ? 'ring-2 ring-purple-500/50 border-purple-500/50 bg-purple-50/50' : ''
+                  }`}
+                >
                   <div className="flex items-center gap-2">
                     {filters.owner && filters.owner !== 'all' ? (
                       <>
@@ -202,27 +237,7 @@ export function ProjectsHeader({
               )}
             </div>
 
-            {/* Active Filters Display */}
-            {hasActiveFilters && (
-              <div className="flex items-center gap-1">
-                {filters.search && (
-                  <Badge variant="secondary" className="flex items-center gap-1 text-xs">
-                    Search: {filters.search.slice(0, 10)}{filters.search.length > 10 ? '...' : ''}
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-auto p-0 ml-1 hover:bg-transparent"
-                      onClick={() => {
-                        setLocalSearchValue('');
-                        updateFilters({ search: '' });
-                      }}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
-                )}
-              </div>
-            )}
+
           </div>
         </div>
         
