@@ -18,13 +18,24 @@ import { useProjects } from "@/hooks/useProjects";
 const Index = () => {
   const { session } = useAuth();
   
-  // Initialize activeTab from localStorage, fallback to 'me'
+  // Initialize activeTab: 'all' on browser refresh, saved preference on app navigation
   const [activeTab, setActiveTab] = useState<'me' | 'all'>(() => {
     try {
-      const saved = localStorage.getItem('dashboard-active-tab');
-      return (saved as 'me' | 'all') || 'me';
+      // Check if this was app navigation (double-ESC, sidebar, etc.)
+      const isAppNavigation = sessionStorage.getItem('dashboard-app-navigation') === 'true';
+      
+      if (isAppNavigation) {
+        // App navigation: restore user's last choice
+        sessionStorage.removeItem('dashboard-app-navigation'); // Clean up flag
+        const saved = localStorage.getItem('dashboard-active-tab');
+        return (saved as 'me' | 'all') || 'all';
+      } else {
+        // Browser refresh or direct URL: always default to 'all' tab
+        return 'all';
+      }
     } catch {
-      return 'me';
+      // Fallback to 'all' 
+      return 'all';
     }
   });
   
@@ -33,7 +44,18 @@ const Index = () => {
     owner: ''
   });
 
-  // Save tab preference to localStorage
+  // Handle scroll reset on browser refresh
+  useEffect(() => {
+    // Check if this was app navigation vs browser refresh
+    const isAppNavigation = sessionStorage.getItem('dashboard-app-navigation') === 'true';
+    
+    if (!isAppNavigation) {
+      // Browser refresh: scroll to top
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, []); // Run only on mount
+
+  // Save tab preference to localStorage 
   useEffect(() => {
     try {
       localStorage.setItem('dashboard-active-tab', activeTab);

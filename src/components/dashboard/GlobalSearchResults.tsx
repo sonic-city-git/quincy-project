@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,15 +22,22 @@ interface GlobalSearchResultsProps {
   query: string;
 }
 
+interface FocusableItem {
+  resultIndex: number;
+  element: 'main' | 'warning' | 'availability' | 'action';
+  result: SearchResult;
+}
+
 interface SearchResultItemProps {
   result: SearchResult;
   onItemClick: () => void;
   onWarningClick?: () => void;
   onAvailabilityClick?: () => void;
   onPrimaryActionClick?: () => void;
+  focusedElement?: 'main' | 'warning' | 'availability' | 'action' | null;
 }
 
-function SearchResultItem({ result, onItemClick, onWarningClick, onAvailabilityClick, onPrimaryActionClick }: SearchResultItemProps) {
+function SearchResultItem({ result, onItemClick, onWarningClick, onAvailabilityClick, onPrimaryActionClick, focusedElement }: SearchResultItemProps) {
   const getIcon = () => {
     switch (result.type) {
       case 'project':
@@ -65,8 +73,18 @@ function SearchResultItem({ result, onItemClick, onWarningClick, onAvailabilityC
     }
   };
 
+  const getMainItemClasses = () => {
+    const baseClasses = "flex items-center gap-3 p-3 rounded-lg transition-colors border";
+    const hoverClasses = "hover:bg-muted/50 hover:border-border/50";
+    const focusClasses = focusedElement === 'main' 
+      ? "bg-blue-500/20 border-blue-500/50 ring-2 ring-blue-500/30" 
+      : "border-transparent";
+    
+    return `${baseClasses} ${hoverClasses} ${focusClasses}`;
+  };
+
   return (
-    <div className="flex items-center gap-3 p-3 hover:bg-muted/50 rounded-lg transition-colors border border-transparent hover:border-border/50">
+    <div className={getMainItemClasses()}>
       {/* Avatar/Icon */}
       <div className="flex-shrink-0">
         {result.avatar_url ? (
@@ -125,7 +143,9 @@ function SearchResultItem({ result, onItemClick, onWarningClick, onAvailabilityC
                 e.stopPropagation();
                 onWarningClick();
               }}
-              className={`px-2 py-1 rounded-md text-xs font-medium border transition-colors cursor-pointer ${getWarningColor()}`}
+              className={`px-2 py-1 rounded-md text-xs font-medium border transition-colors cursor-pointer ${getWarningColor()} ${
+                focusedElement === 'warning' ? 'ring-2 ring-blue-500/50' : ''
+              }`}
             >
               ⚠️ {result.warning.text}
             </button>
@@ -145,7 +165,9 @@ function SearchResultItem({ result, onItemClick, onWarningClick, onAvailabilityC
               e.stopPropagation();
               onAvailabilityClick();
             }}
-            className="px-3 py-1.5 rounded-md text-xs font-medium border border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors cursor-pointer"
+            className={`px-3 py-1.5 rounded-md text-xs font-medium border border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors cursor-pointer ${
+              focusedElement === 'availability' ? 'ring-2 ring-blue-500/50 bg-muted/50' : ''
+            }`}
           >
             <Eye className="h-3 w-3 inline mr-1" />
             View Availability
@@ -162,7 +184,9 @@ function SearchResultItem({ result, onItemClick, onWarningClick, onAvailabilityC
                 e.stopPropagation();
                 onPrimaryActionClick();
               }}
-              className="p-1.5 rounded-md border border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors cursor-pointer"
+              className={`p-1.5 rounded-md border border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors cursor-pointer ${
+                focusedElement === 'action' ? 'ring-2 ring-blue-500/50 bg-muted/50' : ''
+              }`}
               title="Send Email"
             >
               <Mail className="h-4 w-4" />
@@ -184,7 +208,9 @@ function SearchSection({
   onItemClick,
   onWarningClick,
   onAvailabilityClick,
-  onPrimaryActionClick
+  onPrimaryActionClick,
+  focusedItems,
+  allResults
 }: {
   title: string;
   icon: any;
@@ -193,8 +219,16 @@ function SearchSection({
   onWarningClick: (result: SearchResult) => void;
   onAvailabilityClick: (result: SearchResult) => void;
   onPrimaryActionClick: (result: SearchResult) => void;
+  focusedItems: FocusableItem[];
+  allResults: SearchResult[];
 }) {
   if (results.length === 0) return null;
+
+  const getFocusedElement = (result: SearchResult) => {
+    const globalIndex = allResults.findIndex(r => r.type === result.type && r.id === result.id);
+    const focused = focusedItems.find(item => item.resultIndex === globalIndex);
+    return focused?.element || null;
+  };
 
   return (
     <div className="space-y-2">
@@ -213,6 +247,7 @@ function SearchSection({
             onWarningClick={result.warning?.route ? () => onWarningClick(result) : undefined}
             onAvailabilityClick={result.availabilityAction ? () => onAvailabilityClick(result) : undefined}
             onPrimaryActionClick={result.primaryAction ? () => onPrimaryActionClick(result) : undefined}
+            focusedElement={getFocusedElement(result)}
           />
         ))}
       </div>
@@ -245,6 +280,105 @@ function LoadingSkeleton() {
 
 export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchResultsProps) {
   const navigate = useNavigate();
+  const [currentFocusIndex, setCurrentFocusIndex] = useState(-1);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Create flat array of all results
+  const allResults = [...results.projects, ...results.crew, ...results.equipment];
+
+  // Create flat array of all focusable items
+  const focusableItems: FocusableItem[] = [];
+  allResults.forEach((result, index) => {
+    // Main item is always focusable
+    focusableItems.push({ resultIndex: index, element: 'main', result });
+    
+    // Add warning button if it exists and is clickable
+    if (result.warning?.route) {
+      focusableItems.push({ resultIndex: index, element: 'warning', result });
+    }
+    
+    // Add availability button if it exists
+    if (result.availabilityAction) {
+      focusableItems.push({ resultIndex: index, element: 'availability', result });
+    }
+    
+    // Add action button if it exists
+    if (result.primaryAction) {
+      focusableItems.push({ resultIndex: index, element: 'action', result });
+    }
+  });
+
+  // Reset focus when query changes or results load
+  useEffect(() => {
+    setCurrentFocusIndex(-1);
+  }, [query, results.total]);
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Only handle if search results are visible and there are focusable items
+      if (!query || query.length < 2 || focusableItems.length === 0) return;
+      
+      // Don't interfere if user is typing in an input field
+      const activeElement = document.activeElement;
+      const isTyping = activeElement && (
+        activeElement.tagName === 'INPUT' ||
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.getAttribute('contenteditable') === 'true'
+      );
+
+      if (e.key === 'Tab' && !isTyping) {
+        e.preventDefault();
+        
+        if (e.shiftKey) {
+          // Shift+Tab: previous item
+          setCurrentFocusIndex(prev => {
+            if (prev <= 0) return focusableItems.length - 1;
+            return prev - 1;
+          });
+        } else {
+          // Tab: next item or start navigation if none focused
+          setCurrentFocusIndex(prev => {
+            if (prev === -1) return 0; // Start at first item
+            if (prev >= focusableItems.length - 1) return 0;
+            return prev + 1;
+          });
+        }
+      } else if (e.key === 'Enter' && currentFocusIndex >= 0 && !isTyping) {
+        e.preventDefault();
+        const focusedItem = focusableItems[currentFocusIndex];
+        
+        switch (focusedItem.element) {
+          case 'main':
+            handleItemClick(focusedItem.result);
+            break;
+          case 'warning':
+            handleWarningClick(focusedItem.result);
+            break;
+          case 'availability':
+            handleAvailabilityClick(focusedItem.result);
+            break;
+          case 'action':
+            handlePrimaryActionClick(focusedItem.result);
+            break;
+        }
+      } else if (e.key === 'Escape') {
+        // Reset focus when ESC is pressed
+        setCurrentFocusIndex(-1);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [query, focusableItems, currentFocusIndex]);
+
+  // Get currently focused items for highlighting
+  const getCurrentlyFocused = (): FocusableItem[] => {
+    if (currentFocusIndex >= 0 && currentFocusIndex < focusableItems.length) {
+      return [focusableItems[currentFocusIndex]];
+    }
+    return [];
+  };
 
   const handleItemClick = (result: SearchResult) => {
     navigate(result.route);
@@ -319,7 +453,7 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
   }
 
   return (
-    <div className="space-y-6">
+    <div ref={containerRef} className="space-y-6">
       {/* Search Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 text-muted-foreground">
@@ -328,6 +462,11 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
             Found {results.total} result{results.total !== 1 ? 's' : ''} for "{query}"
           </span>
         </div>
+        {focusableItems.length > 0 && (
+          <div className="text-xs text-muted-foreground/60">
+            {currentFocusIndex === -1 ? 'Press Tab to navigate' : 'Tab/Shift+Tab to navigate'} • Enter to select
+          </div>
+        )}
       </div>
 
       {/* Results by Category */}
@@ -340,6 +479,8 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
           onWarningClick={handleWarningClick}
           onAvailabilityClick={handleAvailabilityClick}
           onPrimaryActionClick={handlePrimaryActionClick}
+          focusedItems={getCurrentlyFocused()}
+          allResults={allResults}
         />
         
         <SearchSection
@@ -350,6 +491,8 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
           onWarningClick={handleWarningClick}
           onAvailabilityClick={handleAvailabilityClick}
           onPrimaryActionClick={handlePrimaryActionClick}
+          focusedItems={getCurrentlyFocused()}
+          allResults={allResults}
         />
         
         <SearchSection
@@ -360,6 +503,8 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
           onWarningClick={handleWarningClick}
           onAvailabilityClick={handleAvailabilityClick}
           onPrimaryActionClick={handlePrimaryActionClick}
+          focusedItems={getCurrentlyFocused()}
+          allResults={allResults}
         />
       </div>
     </div>

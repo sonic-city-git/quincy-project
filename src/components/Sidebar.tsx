@@ -49,7 +49,10 @@ export function TopNavigation() {
       label: "Dashboard", 
       icon: LayoutDashboard,
       isActive: isActive("/"),
-      onClick: () => {}
+      onClick: () => {
+        // Set flag for app navigation to preserve tab choice
+        sessionStorage.setItem('dashboard-app-navigation', 'true');
+      }
     },
     { 
       href: "/projects", 
