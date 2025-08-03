@@ -50,6 +50,9 @@ const Planner = () => {
     crewRole: ''
   });
 
+  // Separate state for problems-only mode
+  const [showProblemsOnly, setShowProblemsOnly] = useState(false);
+
   // Shared timeline state for both planners
   const sharedTimeline = useSharedTimeline({ selectedDate });
 
@@ -184,6 +187,8 @@ const Planner = () => {
           onTabChange={setActiveTab}
           filters={filters}
           onFiltersChange={setFilters}
+          showProblemsOnly={showProblemsOnly}
+          onToggleProblemsOnly={() => setShowProblemsOnly(!showProblemsOnly)}
         />
         
         {/* Calendar Content */}
@@ -194,6 +199,7 @@ const Planner = () => {
           sharedTimeline={sharedTimeline}
           resourceType={activeTab}
           filters={filters}
+          showProblemsOnly={showProblemsOnly}
         />
       </div>
 

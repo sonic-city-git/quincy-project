@@ -1,5 +1,5 @@
 import { format } from "date-fns";
-import { Package, Users, Search, Filter, X } from "lucide-react";
+import { Package, Users, Search, Filter, X, AlertTriangle } from "lucide-react";
 import { Button } from "../../../ui/button";
 import { Input } from "../../../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../ui/select";
@@ -21,6 +21,7 @@ interface MonthSection {
 // Filter types
 export interface PlannerFilters {
   search: string;
+  selectedOwner: string;
   equipmentType: string;
   crewRole: string;
 }
@@ -42,6 +43,8 @@ interface TimelineHeaderProps {
   onTabChange?: (tab: 'equipment' | 'crew') => void;
   filters?: PlannerFilters;
   onFiltersChange?: (filters: PlannerFilters) => void;
+  showProblemsOnly?: boolean;
+  onToggleProblemsOnly?: () => void;
 }
 
 export function TimelineHeader({
@@ -54,7 +57,9 @@ export function TimelineHeader({
   activeTab,
   onTabChange,
   filters,
-  onFiltersChange
+  onFiltersChange,
+  showProblemsOnly = false,
+  onToggleProblemsOnly
 }: TimelineHeaderProps) {
   // Dynamic content based on resource type
   const isCrewPlanner = resourceType === 'crew';
@@ -254,9 +259,28 @@ export function TimelineHeader({
           )}
         </div>
         
-        {/* Tab Toggle - only show if both activeTab and onTabChange are provided */}
-        {activeTab && onTabChange && (
-          <div className="flex bg-muted rounded-lg p-1">
+        {/* Show Problems Button and Tab Toggle */}
+        <div className="flex items-center gap-32">
+          {/* Show Problems Button */}
+          {onToggleProblemsOnly && (
+            <Button 
+              size="xs" 
+              className="gap-1 h-6 px-1.5 text-xs"
+              onClick={onToggleProblemsOnly}
+              style={showProblemsOnly ? {
+                backgroundColor: '#ef4444',
+                color: '#ffffff',
+                borderColor: '#ef4444'
+              } : {}}
+            >
+              <AlertTriangle className="h-3 w-3" />
+              Show Problems
+            </Button>
+          )}
+          
+          {/* Tab Toggle - only show if both activeTab and onTabChange are provided */}
+          {activeTab && onTabChange && (
+            <div className="flex bg-muted rounded-lg p-1">
             <Button
               variant={activeTab === 'equipment' ? 'default' : 'ghost'}
               size="sm"
@@ -280,7 +304,8 @@ export function TimelineHeader({
               Crew
             </Button>
           </div>
-        )}
+          )}
+        </div>
       </div>
       
       {/* Column Headers */}

@@ -10,6 +10,7 @@ import Planner from "@/pages/Planner";
 import CrewList from "@/pages/CrewList";
 import ProjectDetail from "@/pages/ProjectDetail";
 import EquipmentList from "@/pages/EquipmentList";
+import Resources from "@/pages/Resources";
 
 function App() {
   return (
@@ -73,6 +74,16 @@ function App() {
               <ProtectedRoute>
                 <AppLayout>
                   <EquipmentList />
+                </AppLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/resources"
+            element={
+              <ProtectedRoute>
+                <AppLayout>
+                  <Resources />
                 </AppLayout>
               </ProtectedRoute>
             }

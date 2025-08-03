@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { LayoutDashboard, CalendarDays, Calendar, Users, Package, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, CalendarDays, Calendar, Users, Package, LogOut, Menu, X, Database } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -63,6 +63,13 @@ export function TopNavigation() {
       label: "Planner", 
       icon: Calendar,
       isActive: isActive("/planner"),
+      onClick: () => {}
+    },
+    { 
+      href: "/resources", 
+      label: "Resources", 
+      icon: Database,
+      isActive: isActive("/resources"),
       onClick: () => {}
     },
     { 
@@ -228,6 +235,14 @@ export function Sidebar() {
       icon: Calendar,
       isActive: isActive("/planner"),
       bgColor: "hover:bg-[#0ea5e9]/10",
+      onClick: () => {}
+    },
+    { 
+      href: "/resources", 
+      label: "Resources", 
+      icon: Database,
+      isActive: isActive("/resources"),
+      bgColor: "hover:bg-[#9b87f5]/10",
       onClick: () => {}
     },
     { 
