@@ -16,14 +16,24 @@
   will-change: auto; /* Let browser decide when to optimize */
 }
 
-/* Project rows performance - no animations */
+/* Project rows with smooth transitions */
+.project-rows-container {
+  contain: layout; /* Isolate layout changes */
+  transform-origin: top;
+  opacity: 1;
+  max-height: 1000px; /* Large enough for most cases */
+}
+
 .project-rows-expanded {
   contain: layout; /* Isolate layout changes */
+  transform-origin: top;
 }
 
 .project-row {
   contain: layout; /* Prevent layout thrashing */
   backface-visibility: hidden; /* GPU optimization */
+  transform-origin: top;
+  opacity: 1;
 }
 
 /* Timeline day cell performance optimization */

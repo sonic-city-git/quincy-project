@@ -290,12 +290,10 @@ export function TimelineHeader({
           className="flex-shrink-0 bg-muted/90 backdrop-blur-sm border-r border-border"
           style={{ width: LAYOUT.EQUIPMENT_NAME_WIDTH }}
         >
-          <div className="h-12 py-3 px-4 border-b border-border/50">
-            <div className="text-sm font-semibold text-foreground">{resourceLabel}</div>
-          </div>
-          <div className="h-12 py-3 px-4">
-            <div className="text-xs text-muted-foreground">{resourceSubtitle}</div>
-          </div>
+                      <div className="h-[57px] py-4 px-4 border-b border-border/50 flex flex-col justify-center">
+              <div className="text-sm font-semibold text-foreground">{resourceLabel}</div>
+              <div className="text-xs text-muted-foreground mt-1">{resourceSubtitle}</div>
+            </div>
         </div>
         
         {/* Middle Header - Timeline */}
@@ -307,8 +305,8 @@ export function TimelineHeader({
         >
           <div style={{ width: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px` }}>
             {/* Month Header */}
-            <div className="h-12 border-b border-border/50">
-              <div className="flex">
+            <div className="h-[57px] border-b border-border/50">
+              <div className="flex h-full">
                 {monthSections.map((section, index) => {
                   // Check if this is a year transition (different year from previous section)
                   const prevSection = index > 0 ? monthSections[index - 1] : null;
@@ -318,23 +316,63 @@ export function TimelineHeader({
                   return (
                     <div 
                       key={`section-${section.monthYear}`}
-                      className={`border-r border-border/30 flex items-center justify-center relative ${
+                      className={`flex items-center justify-center relative ${
                         section.isEven ? 'bg-muted/40' : 'bg-muted/20'
                       }`}
                       style={{ width: `${section.width}px`, minWidth: `${LAYOUT.DAY_CELL_WIDTH}px` }}
                     >
+                      {/* Weekend pattern indicator */}
+                      <div className="absolute inset-0 flex">
+                        {formattedDates
+                          .slice(section.startIndex, section.endIndex + 1)
+                          .map((date, i) => (
+                            <div
+                              key={i}
+                              className={`${date.isWeekendDay ? 'bg-red-500/5' : ''}`}
+                              style={{ width: LAYOUT.DAY_CELL_WIDTH }}
+                            />
+                          ))}
+                      </div>
+                      {/* Month divider */}
+                      <div className="absolute right-0 top-0 bottom-0 w-[1px] bg-foreground/10"></div>
                       {/* Year transition indicator */}
                       {isYearTransition && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-blue-500 rounded-l"></div>
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-foreground/30 rounded-l"></div>
                       )}
                       
-                      <span className={`text-xs font-semibold whitespace-nowrap px-2 py-1 rounded-md shadow-sm border ${
-                        isYearTransition 
-                          ? 'bg-blue-50 text-blue-800 border-blue-200' 
-                          : 'bg-background/90 text-foreground border-border/20'
-                      }`}>
-                        {format(section.date, 'MMMM yyyy')}
-                      </span>
+                      <div className="absolute inset-0 flex justify-between items-center px-4">
+                        {/* Left month marker */}
+                        <div className="flex flex-col items-center opacity-30">
+                          <span className="text-xs font-medium whitespace-nowrap">
+                            {format(section.date, 'MMM')}
+                          </span>
+                        </div>
+                        
+                        {/* Center main month display */}
+                        <div className={`flex flex-col items-center gap-1 ${
+                          isYearTransition 
+                            ? 'text-foreground' 
+                            : 'text-foreground'
+                        }`}>
+                          <span className="text-sm font-semibold whitespace-nowrap">
+                            {format(section.date, 'MMMM')}
+                          </span>
+                          <span className={`text-xs font-medium whitespace-nowrap px-2 py-0.5 rounded ${
+                            isYearTransition 
+                              ? 'bg-muted border border-border' 
+                              : 'text-muted-foreground'
+                          }`}>
+                            {format(section.date, 'yyyy')}
+                          </span>
+                        </div>
+                        
+                        {/* Right month marker */}
+                        <div className="flex flex-col items-center opacity-30">
+                          <span className="text-xs font-medium whitespace-nowrap">
+                            {format(section.date, 'MMM')}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   );
                 })}
@@ -342,30 +380,35 @@ export function TimelineHeader({
             </div>
             
             {/* Date Header */}
-            <div className="h-12 flex py-3">
+            <div className="h-12 flex py-3 relative">
               {formattedDates.map((dateInfo, index) => {
-                // Check if this is the first day of a new year
+                // Check if this is the first day of a new year or month
                 const prevDate = index > 0 ? formattedDates[index - 1] : null;
                 const isNewYear = prevDate && 
                   dateInfo.date.getFullYear() !== prevDate.date.getFullYear();
                 const isNewMonth = prevDate && 
                   (dateInfo.date.getMonth() !== prevDate.date.getMonth() || isNewYear);
                 
+                // Add month divider
+                const showMonthDivider = isNewMonth || index === 0;
+                
                 return (
                   <div key={dateInfo.date.toISOString()} className="px-1 relative" style={{ width: LAYOUT.DAY_CELL_WIDTH }}>
-                    {/* Year transition indicator for date cells */}
-                    {isNewYear && (
-                      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-blue-500 rounded"></div>
+                    {/* Month/Year dividers */}
+                    {showMonthDivider && (
+                      <div className={`absolute left-0 top-0 bottom-0 w-[1px] ${
+                        isNewYear ? 'bg-foreground/30' : 'bg-foreground/10'
+                      }`}></div>
                     )}
                     
                     <div
-                      className={`h-8 flex flex-col items-center justify-center rounded-md text-xs font-medium transition-colors cursor-pointer select-none relative ${
+                      className={`h-8 flex flex-col items-center justify-center rounded-md text-sm font-medium transition-colors cursor-pointer select-none relative ${
                         dateInfo.isToday
                           ? 'bg-blue-500 text-white shadow-md' 
                           : isNewYear
                           ? 'bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200'
                           : dateInfo.isWeekendDay
-                          ? 'bg-orange-100 text-orange-800 hover:bg-orange-200'
+                          ? 'text-red-600 hover:bg-muted/30'
                           : 'text-muted-foreground hover:bg-muted/50'
                       } ${
                         dateInfo.isSelected 
@@ -386,8 +429,8 @@ export function TimelineHeader({
                       }}
                       title={`${format(dateInfo.date, 'EEEE, MMMM d, yyyy')}${dateInfo.isToday ? ' (Today)' : ''}${dateInfo.isSelected ? ' (Selected - Double-click to go to Today)' : ''}`}
                     >
-                      <div className="text-[10px] leading-none">{format(dateInfo.date, 'EEE')[0]}</div>
-                      <div className="text-xs font-medium leading-none">
+                      <div className="text-xs leading-none">{format(dateInfo.date, 'EEE')[0]}</div>
+                      <div className="text-sm font-semibold leading-none">
                         {format(dateInfo.date, 'd')}
                         {/* Show year on first day of year */}
                         {isNewYear && (

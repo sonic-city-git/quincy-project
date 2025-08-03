@@ -13,6 +13,7 @@ import {
   sortCrewGroups,
   DEPARTMENT_ORDER
 } from '../types-crew';
+import { CrewRoleCell } from '../components/ProjectRow';
 
 interface UseCrewHubProps {
   periodStart: Date;
@@ -21,6 +22,8 @@ interface UseCrewHubProps {
   // Visible timeline boundaries for UI filtering
   visibleTimelineStart?: Date;
   visibleTimelineEnd?: Date;
+  // Enable/disable flag to respect Rules of Hooks
+  enabled?: boolean;
 }
 
 // Transform crew data to be compatible with shared UI components
@@ -41,6 +44,7 @@ interface CrewHubReturn {
   // Function interfaces compatible with shared components
   getBookingForEquipment: (crewMemberId: string, dateStr: string) => CrewAvailability | undefined;
   getProjectQuantityForDate: (projectName: string, crewMemberId: string, dateStr: string) => CrewProjectAssignment | undefined;
+  getCrewRoleForDate: (projectName: string, crewMemberId: string, dateStr: string) => CrewRoleCell | undefined;
   getLowestAvailable: (crewMemberId: string, dateStrings?: string[]) => number;
   toggleGroup: (groupName: string, expandAllSubRoles?: boolean) => void;
   toggleEquipmentExpansion: (crewMemberId: string) => void;
@@ -56,7 +60,8 @@ export function useCrewHub({
   periodEnd,
   selectedOwner,
   visibleTimelineStart,
-  visibleTimelineEnd
+  visibleTimelineEnd,
+  enabled = true
 }: UseCrewHubProps): CrewHubReturn {
   
   // Persistent expansion state management for crew
@@ -75,7 +80,7 @@ export function useCrewHub({
     queryFn: async () => {
       const { data: crewMembers, error: crewError } = await supabase
         .from('crew_members')
-        .select('id, name, email, phone, folder_id');
+        .select('id, name, email, phone, folder_id, avatar_url');
 
       if (crewError) {
         console.error('Error fetching crew:', crewError);
@@ -102,7 +107,7 @@ export function useCrewHub({
         id: dbCrew.id,
         name: dbCrew.name,
         role: 'Crew Member', // Default role
-        department: folderMap.get(dbCrew.folder_id) || 'Sonic', // Default to Sonic
+        department: folderMap.get(dbCrew.folder_id) || 'Sonic City', // Default to Sonic City
         level: 'mid' as const,
         availability: 'available' as const,
         hourlyRate: 75,
@@ -110,11 +115,14 @@ export function useCrewHub({
         contactInfo: {
           email: dbCrew.email || undefined,
           phone: dbCrew.phone || undefined
-        }
+        },
+        // Avatar support - use actual avatar_url from Google Auth
+        avatarUrl: dbCrew.avatar_url || undefined
       }));
 
       return { crewMembers: transformedCrew };
     },
+    enabled, // Only fetch when enabled
     staleTime: 30 * 1000,
     gcTime: 10 * 60 * 1000,
   });
@@ -135,6 +143,7 @@ export function useCrewHub({
           project_events(
             name,
             date,
+            location,
             event_type_id,
             projects(name),
             event_types(name, color)
@@ -163,7 +172,8 @@ export function useCrewHub({
         status: 'confirmed' as const,
         dailyRate: dbRole.daily_rate || undefined,
         eventType: dbRole.project_events?.event_types?.name || 'Unknown Type',
-        eventTypeColor: dbRole.project_events?.event_types?.color || '#6B7280'
+        eventTypeColor: dbRole.project_events?.event_types?.color || '#6B7280',
+        location: dbRole.project_events?.location || undefined
       }));
 
       // Fetch unfilled roles (roles without crew_member_id)
@@ -203,11 +213,14 @@ export function useCrewHub({
         date: dbRole.project_events?.date || '',
         eventType: dbRole.project_events?.event_types?.name || 'Unknown Type',
         eventTypeColor: dbRole.project_events?.event_types?.color || '#EF4444',
-        dailyRate: dbRole.daily_rate
+        dailyRate: dbRole.daily_rate,
+        // Avatar support for unfilled roles - no avatar URL
+        avatarUrl: undefined
       }));
 
       return { assignments: transformedAssignments, unfilledRoles };
     },
+    enabled: enabled && !!crewData, // Only fetch when enabled and crew data is available
     staleTime: 15 * 1000,
     refetchInterval: 30 * 1000,
   });
@@ -329,6 +342,27 @@ export function useCrewHub({
       used: crewAssignments.length,
       available: 1,
       isOverbooked: crewAssignments.length > 1
+    };
+  }, [assignmentsData?.assignments]);
+
+  // Function to get crew role for a specific project and date
+  const getCrewRoleForDate = useCallback((projectName: string, crewMemberId: string, dateStr: string): CrewRoleCell | undefined => {
+    const crewAssignments = assignmentsData?.assignments?.filter(
+      assignment => assignment.crewMemberId === crewMemberId && 
+                   assignment.projectName === projectName && 
+                   assignment.date === dateStr
+    ) || [];
+
+    if (crewAssignments.length === 0) return undefined;
+
+    const assignment = crewAssignments[0];
+    return {
+      date: dateStr,
+      role: assignment.role,
+      eventName: assignment.eventName,
+      projectName: assignment.projectName,
+      location: assignment.location,
+      eventType: assignment.eventType
     };
   }, [assignmentsData?.assignments]);
 
@@ -458,6 +492,7 @@ export function useCrewHub({
     resolutionInProgress,
     getBookingForEquipment,
     getProjectQuantityForDate,
+    getCrewRoleForDate, // New function for crew role data
     getLowestAvailable,
     toggleGroup,
     toggleEquipmentExpansion,

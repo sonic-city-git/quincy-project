@@ -7,9 +7,16 @@ interface UseSharedTimelineProps {
 }
 
 export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
-  // Day-based infinite scrolling: Larger buffer to reduce fetch frequency
-  const [timelineStart, setTimelineStart] = useState(() => addDays(selectedDate, -35));
-  const [timelineEnd, setTimelineEnd] = useState(() => addDays(selectedDate, 35));
+  // STABLE timeline range - prevent "pop" by using consistent initial date
+  const [timelineStart, setTimelineStart] = useState(() => {
+    // Use today's date for stable initialization, not the passed selectedDate which might change
+    const today = new Date();
+    return addDays(today, -35);
+  });
+  const [timelineEnd, setTimelineEnd] = useState(() => {
+    const today = new Date();
+    return addDays(today, 35);
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, scrollLeft: 0 });
   
