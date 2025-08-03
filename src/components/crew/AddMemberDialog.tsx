@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
+import { useDialogState } from "@/components/shared/dialogs/useDialogState";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -31,11 +32,11 @@ interface AddMemberDialogProps {
 }
 
 export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOpenChange }: AddMemberDialogProps = {}) {
-  const [internalOpen, setInternalOpen] = useState(false);
-  
-  // Use external control if provided, otherwise use internal state
-  const open = externalOpen !== undefined ? externalOpen : internalOpen;
-  const setOpen = externalOnOpenChange || setInternalOpen;
+  // Use consolidated dialog state management
+  const { open, setOpen } = useDialogState({ 
+    open: externalOpen, 
+    onOpenChange: externalOnOpenChange 
+  });
   const { mutate: addMember, isPending } = useAddMember();
   const { folders, loading: foldersLoading } = useFolders();
   const { roles, isLoading: rolesLoading, refetch: refetchRoles } = useCrewRoles();
