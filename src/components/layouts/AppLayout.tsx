@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { TopNavigation } from "@/components/Sidebar";
+import { TopNavigation } from "@/components/Navigation";
 import { Toaster } from "@/components/ui/toaster";
 
 interface AppLayoutProps {
