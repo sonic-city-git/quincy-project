@@ -2,8 +2,8 @@ import { ProjectTable } from "../ProjectTable";
 import { Table } from "@/components/ui/table";
 import { TableHeader } from "../TableHeader";
 import { OwnerSection } from "./OwnerSection";
+import { LoadingSpinner } from "@/components/resources/shared/LoadingSpinner";
 import { Project } from "@/types/projects";
-import { Loader2 } from "lucide-react";
 
 interface ProjectListContentProps {
   loading: boolean;
@@ -16,11 +16,7 @@ interface ProjectListContentProps {
 
 export function ProjectListContent({ loading, groupedProjects }: ProjectListContentProps) {
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <LoadingSpinner message="Loading projects..." />;
   }
 
   // Sort owner names alphabetically
