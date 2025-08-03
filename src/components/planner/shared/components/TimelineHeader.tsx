@@ -305,7 +305,7 @@ export function TimelineHeader({
         >
           <div style={{ width: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px` }}>
             {/* Month Header */}
-            <div className="h-[57px] border-b border-border/50">
+            <div style={{ height: LAYOUT.MONTH_HEADER_HEIGHT }} className="border-b border-border/50">
               <div className="flex h-full">
                 {monthSections.map((section, index) => {
                   // Check if this is a year transition (different year from previous section)
@@ -349,12 +349,12 @@ export function TimelineHeader({
                         </div>
                         
                         {/* Center main month display */}
-                        <div className={`flex flex-col items-center gap-1 ${
+                        <div className={`flex flex-col items-center ${
                           isYearTransition 
                             ? 'text-foreground' 
                             : 'text-foreground'
                         }`}>
-                          <span className="text-sm font-semibold whitespace-nowrap">
+                          <span className="text-sm font-semibold whitespace-nowrap mb-1">
                             {format(section.date, 'MMMM')}
                           </span>
                           <span className={`text-xs font-medium whitespace-nowrap px-2 py-0.5 rounded ${
@@ -380,7 +380,7 @@ export function TimelineHeader({
             </div>
             
             {/* Date Header */}
-            <div className="h-12 flex py-3 relative">
+            <div style={{ height: LAYOUT.DATE_HEADER_HEIGHT }} className="flex items-center relative">
               {formattedDates.map((dateInfo, index) => {
                 // Check if this is the first day of a new year or month
                 const prevDate = index > 0 ? formattedDates[index - 1] : null;
@@ -393,7 +393,7 @@ export function TimelineHeader({
                 const showMonthDivider = isNewMonth || index === 0;
                 
                 return (
-                  <div key={dateInfo.date.toISOString()} className="px-1 relative" style={{ width: LAYOUT.DAY_CELL_WIDTH }}>
+                  <div key={dateInfo.date.toISOString()} className="relative" style={{ width: LAYOUT.DAY_CELL_WIDTH }}>
                     {/* Month/Year dividers */}
                     {showMonthDivider && (
                       <div className={`absolute left-0 top-0 bottom-0 w-[1px] ${
@@ -402,7 +402,7 @@ export function TimelineHeader({
                     )}
                     
                     <div
-                      className={`h-8 flex flex-col items-center justify-center rounded-md text-sm font-medium transition-colors cursor-pointer select-none relative ${
+                      className={`h-9 mx-1 flex flex-col items-center justify-center rounded-md text-sm font-medium transition-colors cursor-pointer select-none relative ${
                         dateInfo.isToday
                           ? 'bg-blue-500 text-white shadow-md' 
                           : isNewYear
@@ -429,12 +429,12 @@ export function TimelineHeader({
                       }}
                       title={`${format(dateInfo.date, 'EEEE, MMMM d, yyyy')}${dateInfo.isToday ? ' (Today)' : ''}${dateInfo.isSelected ? ' (Selected - Double-click to go to Today)' : ''}`}
                     >
-                      <div className="text-xs leading-none">{format(dateInfo.date, 'EEE')[0]}</div>
+                      <div className="text-xs leading-none mb-0.5">{format(dateInfo.date, 'EEE')[0]}</div>
                       <div className="text-sm font-semibold leading-none">
                         {format(dateInfo.date, 'd')}
                         {/* Show year on first day of year */}
                         {isNewYear && (
-                          <div className="text-[8px] text-blue-600 font-bold leading-none">
+                          <div className="text-[8px] text-blue-600 font-bold leading-none mt-0.5">
                             {format(dateInfo.date, 'yy')}
                           </div>
                         )}

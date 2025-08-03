@@ -93,6 +93,7 @@ export interface CrewGroup {
   equipment: CrewMember[]; // Direct department members - using 'equipment' name for compatibility
   subFolders: CrewRole[]; // Sub-roles within department - using 'subFolders' name for compatibility
   isExpanded: boolean;
+  isUnfilledRolesSection?: boolean; // Special flag for unfilled roles section
 }
 
 // Project-specific crew assignments for expanded view
@@ -122,6 +123,7 @@ export type ResourceAssignment = CrewAssignment; // Can be either crew assignmen
 // Helper function to sort crew groups by department priority
 // Custom order: Sonic City first, then Associates, then Freelancers, then other departments
 export const DEPARTMENT_ORDER = [
+  'Unfilled Roles',
   'Sonic City',
   'Associates', 
   'Freelancers',

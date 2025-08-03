@@ -122,7 +122,6 @@ const TimelineDayCellComponent = ({
   
   // Generate simple tooltip
   const tooltipText = formatPlannerTooltip({
-    resourceName: equipment.name,
     date: dateInfo.dateStr,
     // Crew-specific data
     ...(isCrew && {
@@ -139,7 +138,8 @@ const TimelineDayCellComponent = ({
     ...(!isCrew && {
       stock: booking?.stock || equipment.stock || 0,
       used: booking?.totalUsed || 0,
-      available: displayValue
+      available: displayValue,
+      skipFolderName: true
     })
   });
   
@@ -154,11 +154,11 @@ const TimelineDayCellComponent = ({
     >
       {/* Today indicator - solid blue background */}
       {dateInfo.isToday && (
-        <div className="absolute inset-0 bg-blue-100/80 rounded pointer-events-none" />
+        <div className="absolute inset-0 bg-blue-100/80 rounded pointer-events-none z-10" />
       )}
       {/* Selected indicator - solid border overlay */}
       {dateInfo.isSelected && (
-        <div className="absolute inset-0 border-2 border-blue-300 rounded pointer-events-none" />
+        <div className="absolute inset-0 border-2 border-blue-300 rounded pointer-events-none z-10" />
       )}
       
       {/* Main availability cell - clickable for expansion */}

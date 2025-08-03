@@ -68,10 +68,18 @@ const ProjectRowComponent = ({
 
   return (
     <div 
-      className="project-row flex items-center border-b border-gray-300 bg-gray-700"
+      className="project-row flex items-center border-b border-border/50 bg-muted/20"
       style={{ height: LAYOUT.PROJECT_ROW_HEIGHT }}
     >
-      {/* Timeline quantity cells only - minimal, clean design */}
+      {/* Project name column */}
+      <div 
+        className="flex items-center px-12 text-sm text-muted-foreground"
+        style={{ width: LAYOUT.EQUIPMENT_NAME_WIDTH }}
+      >
+        {projectName}
+      </div>
+
+      {/* Timeline quantity cells */}
       <div 
         className="flex items-center" 
         style={{ 

@@ -2,10 +2,12 @@ import { memo, useMemo } from "react";
 import { Collapsible, CollapsibleContent } from "../../../ui/collapsible";
 import { TimelineDayCell } from "./TimelineDayCell";
 import { ProjectRow, CrewRoleCell } from "./ProjectRow";
+import { UnfilledRoleBadges } from "./UnfilledRoleBadges";
 import { LAYOUT } from '../constants';
 import '../timeline-optimization.css';
 import { EquipmentGroup, EquipmentProjectUsage, ProjectQuantityCell } from '../types';
 import { analyzeFolderWarnings, getFolderWarningType } from '../utils/folderWarnings';
+import { analyzeCrewWarnings, getCrewWarningType } from '../utils/crewWarnings';
 
 // Folder warning row component that shows dots for each date with issues
 const FolderWarningRow = ({ 
@@ -15,7 +17,8 @@ const FolderWarningRow = ({
   getBookingForEquipment,
   onDateSelect,
   onExpandFolder,
-  onScrollToDate
+  onScrollToDate,
+  resourceType = 'equipment'
 }: {
   folderPath: string;
   formattedDates: Array<{ dateStr: string }>;
@@ -24,6 +27,7 @@ const FolderWarningRow = ({
   onDateSelect: (date: string) => void;
   onExpandFolder: (folderPath: string) => void;
   onScrollToDate: (date: string) => void;
+  resourceType?: 'equipment' | 'crew';
 }) => {
   return (
     <div 
@@ -31,22 +35,46 @@ const FolderWarningRow = ({
     >
       <div className="flex" style={{ minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px` }}>
         {formattedDates.map((dateInfo) => {
-          // Check if any equipment in this folder has issues on this date
+          // Check for issues based on resource type
+          let hasDoubleBooking = false;
+          let hasMissingAssignment = false;
           let hasOverbooking = false;
           let hasEmpty = false;
           let hasConflict = false;
           
-          equipmentInFolder.forEach(equipment => {
-            const booking = getBookingForEquipment(equipment.id, dateInfo.dateStr);
-            if (!booking) {
-              hasEmpty = true;
+          equipmentInFolder.forEach(resource => {
+            const booking = getBookingForEquipment(resource.id, dateInfo.dateStr);
+            if (resourceType === 'crew') {
+              
+              // For crew, check double bookings and missing assignments
+              if (booking) {
+                // Double booking: Multiple events on the same day
+                if (booking.bookings?.length > 1) {
+                  hasDoubleBooking = true;
+                }
+                // Missing assignment: Event needs crew but none assigned
+                if (booking.needsCrew && !booking.hasAssignedCrew) {
+                  hasMissingAssignment = true;
+                }
+              }
             } else {
-              if (booking.isOverbooked) hasOverbooking = true;
-              if (booking.conflict && booking.conflict.severity !== 'resolved') hasConflict = true;
+              // For equipment, check overbookings and empties
+              if (!booking) {
+                hasEmpty = true;
+              } else {
+                if (booking.isOverbooked) {
+                  hasOverbooking = true;
+                }
+                if (booking.conflict && booking.conflict.severity !== 'resolved') {
+                  hasConflict = true;
+                }
+              }
             }
           });
           
-          const warningType = (hasOverbooking || hasConflict) ? 'critical' : hasEmpty ? 'warning' : 'none';
+          const warningType = resourceType === 'crew'
+            ? (hasDoubleBooking ? 'critical' : hasMissingAssignment ? 'warning' : 'none')
+            : (hasOverbooking || hasConflict) ? 'critical' : hasEmpty ? 'warning' : 'none';
           
           return (
             <div 
@@ -63,7 +91,15 @@ const FolderWarningRow = ({
                       ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20' 
                       : 'bg-yellow-500 hover:bg-yellow-600 shadow-yellow-500/20'
                   }`}
-                  title={`${folderPath}: ${warningType === 'critical' ? 'Overbookings/Conflicts' : 'Empty slots'} on ${dateInfo.dateStr}. Click to view details.`}
+                  title={`${folderPath}: ${
+                    resourceType === 'crew'
+                      ? warningType === 'critical' 
+                        ? 'Double booking detected'
+                        : 'Missing crew assignment'
+                      : warningType === 'critical'
+                        ? 'Overbookings/Conflicts'
+                        : 'Empty slots'
+                  } on ${dateInfo.dateStr}. Click to view details.`}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -115,6 +151,7 @@ interface TimelineSectionProps {
   onToggleEquipmentExpansion: (equipmentId: string) => void;
   onToggleGroupExpansion?: (groupPath: string) => void; // For expanding folders
   resourceType?: 'equipment' | 'crew';
+  isUnfilledRolesSection?: boolean; // New: identifies unfilled roles sections
   filters?: any;
   onDateSelect?: (date: string) => void;
   onScrollToDate?: (date: string) => void;
@@ -132,6 +169,7 @@ const TimelineSectionComponent = ({
   onToggleEquipmentExpansion,
   onToggleGroupExpansion,
   resourceType = 'equipment',
+  isUnfilledRolesSection = false,
   filters,
   onDateSelect,
   onScrollToDate
@@ -152,21 +190,16 @@ const TimelineSectionComponent = ({
 
   return (
     <Collapsible open={isExpanded}>
-      <div style={{ height: LAYOUT.MAIN_FOLDER_HEIGHT }} className="border-b border-border bg-muted/10">
-        <FolderWarningRow 
-          folderPath={mainFolder}
-          formattedDates={formattedDates}
-          equipmentInFolder={mainEquipment}
-          getBookingForEquipment={getBookingForEquipment}
-          onDateSelect={onDateSelect || (() => {})}
-          onExpandFolder={() => onToggleGroupExpansion ? onToggleGroupExpansion(mainFolder) : null}
-          onScrollToDate={onScrollToDate || (() => {})}
-        />
-      </div>
+      <div 
+        style={{ height: LAYOUT.MAIN_FOLDER_HEIGHT }} 
+        className="border-b border-border bg-muted/10"
+      />
       
       <CollapsibleContent>
-        {/* Main folder equipment timeline - OPTIMIZED */}
+        {/* Main folder equipment/roles timeline */}
         {mainEquipment.map((equipment) => {
+
+          // Standard equipment/crew timeline
           const isEquipmentExpanded = expandedEquipment.has(equipment.id);
           const equipmentUsage = equipmentProjectUsage.get(equipment.id);
           
@@ -174,63 +207,121 @@ const TimelineSectionComponent = ({
             <div key={equipment.id}>
               {/* Main equipment row */}
               <div 
-                className="equipment-row flex items-center border-b border-border hover:bg-muted/30 transition-all duration-200"
-                style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
+                className={`equipment-row flex items-center border-b border-border/50 transition-all duration-200 ${!isUnfilledRolesSection ? 'hover:bg-muted/30' : ''}`}
+                style={{ 
+                  height: isUnfilledRolesSection ? LAYOUT.PROJECT_ROW_HEIGHT : LAYOUT.PROJECT_ROW_HEIGHT,
+                  backgroundColor: isUnfilledRolesSection ? 'transparent' : undefined
+                }}
               >
+                {/* Equipment/Role name */}
+
+
+                {/* Timeline cells */}
                 <div 
                   className="flex items-center" 
                   style={{ 
                     minWidth: `${timelineWidthPx}px`,
-                    height: '100%'
+                    height: '100%',
+                    marginLeft: 0
                   }}
                 >
-                  {formattedDates.map((dateInfo, index) => (
-                    <TimelineDayCell
-                      key={dateInfo.date.toISOString()}
-                      equipment={equipment}
-                      dateInfo={dateInfo}
-                      getBookingForEquipment={getBookingForEquipment}
-                      isExpanded={isEquipmentExpanded}
-                      onToggleExpansion={onToggleEquipmentExpansion}
-                      isFirstCell={index === 0} // Only show toggle on first cell
-                      isCrew={resourceType === 'crew'}
-                    />
-                  ))}
+                                                       {formattedDates.map((dateInfo, index) => {
+                    if (isUnfilledRolesSection) {
+                      const booking = getBookingForEquipment(equipment.id, dateInfo.dateStr);
+                      const needsCrew = booking?.needsCrew && !booking?.hasAssignedCrew;
+                      
+                      return (
+                        <div
+                          key={dateInfo.date.toISOString()}
+                          className="flex items-center justify-center h-full"
+                          style={{ 
+                            width: LAYOUT.DAY_CELL_WIDTH,
+                            minHeight: LAYOUT.PROJECT_ROW_HEIGHT
+                          }}
+                        >
+                          <UnfilledRoleBadges
+                            roles={needsCrew ? [{
+                              id: equipment.id,
+                              role: '',
+                              projectName: booking.projectName || '',
+                              eventName: booking.eventName || '',
+                              eventTypeColor: booking.eventTypeColor || '#666'
+                            }] : []}
+                            dateStr={dateInfo.dateStr}
+                            onRoleClick={(roleId, date) => {
+                              onDateSelect?.(date);
+                              onScrollToDate?.(date);
+                            }}
+                          />
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <TimelineDayCell
+                        key={dateInfo.date.toISOString()}
+                        equipment={equipment}
+                        dateInfo={dateInfo}
+                        getBookingForEquipment={getBookingForEquipment}
+                        isExpanded={isEquipmentExpanded}
+                        onToggleExpansion={onToggleEquipmentExpansion}
+                        isFirstCell={index === 0} // Only show toggle on first cell
+                        isCrew={resourceType === 'crew'}
+                      />
+                    );
+                  })}
                 </div>
               </div>
               
-              {/* Project breakdown rows when expanded - always show, even if no projects */}
-              {isEquipmentExpanded && (
+              {/* Project breakdown rows when expanded - only show for regular crew, not unfilled roles */}
+              {!isUnfilledRolesSection && isEquipmentExpanded && (
                 <div className="project-rows-container transition-all duration-200">
-                  {equipmentUsage && equipmentUsage.projectNames.length > 0 ? (
-                    equipmentUsage.projectNames.map((projectName) => (
-                      <ProjectRow
-                        key={`${equipment.id}-${projectName}`}
-                        projectName={projectName}
-                        equipmentId={equipment.id}
-                        resourceName={equipment.name}
-                        formattedDates={formattedDates}
-                        getProjectQuantityForDate={resourceType === 'equipment' ? getProjectQuantityForDate : undefined}
-                        getCrewRoleForDate={resourceType === 'crew' ? getCrewRoleForDate : undefined}
-                        isCrew={resourceType === 'crew'}
-                      />
-                    ))
-                  ) : (
-                    <div 
-                      className="project-row flex items-center border-b border-border/50 bg-muted/20"
-                      style={{ height: LAYOUT.PROJECT_ROW_HEIGHT / 2 }}
-                    >
-                      <div 
-                        className="flex items-center justify-center text-gray-400 text-sm"
-                        style={{ 
-                          minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
-                          height: '100%'
-                        }}
-                      >
-                        No project assignments
-                      </div>
+                  {/* Keep parent name visible */}
+                  <div className="flex items-center absolute left-0 bg-background border-r border-border" style={{ width: LAYOUT.EQUIPMENT_NAME_WIDTH, zIndex: 10 }}>
+                    <div className="flex items-center px-8 text-sm font-medium h-full">
+                      {equipment.name}
                     </div>
-                  )}
+                  </div>
+
+                  {/* Project rows or empty state */}
+                  <div className="relative">
+                    {equipmentUsage && equipmentUsage.projectNames.length > 0 ? (
+                      equipmentUsage.projectNames.map((projectName) => (
+                        <ProjectRow
+                          key={`${equipment.id}-${projectName}`}
+                          projectName={projectName}
+                          equipmentId={equipment.id}
+                          resourceName=""
+                          formattedDates={formattedDates}
+                          getProjectQuantityForDate={resourceType === 'equipment' ? getProjectQuantityForDate : undefined}
+                          getCrewRoleForDate={resourceType === 'crew' ? getCrewRoleForDate : undefined}
+                          isCrew={resourceType === 'crew'}
+                        />
+                      ))
+                    ) : (
+                      <div 
+                        className="project-row flex items-center border-b border-border/50 bg-muted/20"
+                        style={{ height: LAYOUT.PROJECT_ROW_HEIGHT / 2 }}
+                      >
+                        {/* Empty state name column */}
+                        <div 
+                          className="flex items-center px-12 text-sm text-muted-foreground"
+                          style={{ width: LAYOUT.EQUIPMENT_NAME_WIDTH }}
+                        >
+                          No assignments
+                        </div>
+
+                        {/* Empty timeline */}
+                        <div 
+                          className="flex items-center"
+                          style={{ 
+                            minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
+                            height: '100%'
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -247,20 +338,14 @@ const TimelineSectionComponent = ({
           
           return (
             <Collapsible key={subFolder.name} open={isSubfolderExpanded}>
-              <div style={{ height: LAYOUT.SUBFOLDER_HEIGHT }} className="border-t border-border bg-muted/5">
-                <FolderWarningRow 
-                  folderPath={subFolderKey}
-                  formattedDates={formattedDates}
-                  equipmentInFolder={subFolder.equipment}
-                  getBookingForEquipment={getBookingForEquipment}
-                  onDateSelect={onDateSelect || (() => {})}
-                  onExpandFolder={() => onToggleGroupExpansion ? onToggleGroupExpansion(subFolderKey) : null}
-                  onScrollToDate={onScrollToDate || (() => {})}
-                />
-              </div>
+              <div 
+                style={{ height: LAYOUT.SUBFOLDER_HEIGHT }} 
+                className="border-t border-border bg-muted/5"
+              />
               
               <CollapsibleContent>
                 {subFolder.equipment.map((equipment) => {
+
                   const isEquipmentExpanded = expandedEquipment.has(equipment.id);
                   const equipmentUsage = equipmentProjectUsage.get(equipment.id);
                   
@@ -268,27 +353,69 @@ const TimelineSectionComponent = ({
                     <div key={equipment.id}>
                       {/* Main equipment row */}
                       <div 
-                        className="equipment-row flex items-center border-b border-border hover:bg-muted/30 transition-all duration-200"
-                        style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}
+                        className={`equipment-row flex items-center border-b border-border transition-all duration-200 ${!isUnfilledRolesSection ? 'hover:bg-muted/30' : ''}`}
+                        style={{ 
+                          height: isUnfilledRolesSection ? LAYOUT.PROJECT_ROW_HEIGHT : LAYOUT.EQUIPMENT_ROW_HEIGHT,
+                          backgroundColor: isUnfilledRolesSection ? 'transparent' : undefined
+                        }}
                       >
+                        {/* Equipment/Role name */}
+
+
+                        {/* Timeline cells */}
                         <div 
                           className="flex items-center" 
                           style={{ 
                             minWidth: `${timelineWidthPx}px`,
-                            height: '100%'
+                            height: '100%',
+                            marginLeft: 0
                           }}
                         >
-                          {formattedDates.map((dateInfo, index) => (
-                            <TimelineDayCell
-                              key={dateInfo.date.toISOString()}
-                              equipment={equipment}
-                              dateInfo={dateInfo}
-                              getBookingForEquipment={getBookingForEquipment}
-                              isExpanded={isEquipmentExpanded}
-                              onToggleExpansion={onToggleEquipmentExpansion}
-                              isFirstCell={index === 0} // Only show toggle on first cell
-                            />
-                          ))}
+                                            {formattedDates.map((dateInfo, index) => {
+                    if (isUnfilledRolesSection) {
+                      const booking = getBookingForEquipment(equipment.id, dateInfo.dateStr);
+                      const needsCrew = booking?.needsCrew && !booking?.hasAssignedCrew;
+                      
+                      return (
+                        <div
+                          key={dateInfo.date.toISOString()}
+                          className="flex items-center justify-center h-full"
+                          style={{ 
+                            width: LAYOUT.DAY_CELL_WIDTH,
+                            minHeight: LAYOUT.PROJECT_ROW_HEIGHT
+                          }}
+                        >
+                          <UnfilledRoleBadges
+                            roles={needsCrew ? [{
+                              id: equipment.id,
+                              role: '',
+                              projectName: booking.projectName || '',
+                              eventName: booking.eventName || '',
+                              eventTypeColor: booking.eventTypeColor || '#666'
+                            }] : []}
+                            dateStr={dateInfo.dateStr}
+                            onRoleClick={(roleId, date) => {
+                              onDateSelect?.(date);
+                              onScrollToDate?.(date);
+                            }}
+                          />
+                        </div>
+                      );
+                    }
+
+                            return (
+                              <TimelineDayCell
+                                key={dateInfo.date.toISOString()}
+                                equipment={equipment}
+                                dateInfo={dateInfo}
+                                getBookingForEquipment={getBookingForEquipment}
+                                isExpanded={isEquipmentExpanded}
+                                onToggleExpansion={onToggleEquipmentExpansion}
+                                isFirstCell={index === 0} // Only show toggle on first cell
+                                isCrew={resourceType === 'crew'}
+                              />
+                            );
+                          })}
                         </div>
                       </div>
                       
@@ -301,7 +428,7 @@ const TimelineSectionComponent = ({
                                 key={`${equipment.id}-${projectName}`}
                                 projectName={projectName}
                                 equipmentId={equipment.id}
-                                resourceName={equipment.name}
+                                resourceName=""
                                 formattedDates={formattedDates}
                                 getProjectQuantityForDate={resourceType === 'equipment' ? getProjectQuantityForDate : undefined}
                                 getCrewRoleForDate={resourceType === 'crew' ? getCrewRoleForDate : undefined}
