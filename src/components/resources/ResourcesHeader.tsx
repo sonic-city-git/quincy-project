@@ -5,6 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useState, useEffect, useCallback } from "react";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
+import { useFolders } from "@/hooks/useFolders";
+import { FOLDER_ORDER } from "@/types/equipment";
 
 // Filter types
 export interface ResourceFilters {
@@ -35,8 +37,19 @@ export function ResourcesHeader({
   const IconComponent = icon;
   const iconColor = isCrewTab ? 'text-orange-500' : 'text-green-500';
 
-  // Predefined filters
-  const equipmentTypes = ['Mixers', 'Microphones', 'Speakers', 'Lighting', 'Video', 'Cables', 'Stage', 'Other'];
+  // Dynamic equipment types from database, ordered by FOLDER_ORDER
+  const { folders: foldersData, loading: foldersLoading } = useFolders();
+  const equipmentTypes = (() => {
+    if (!foldersData) return [];
+    
+    // Get actual folder names from database (main folders only)
+    const actualFolderNames = foldersData
+      .filter(folder => !folder.parent_id)
+      .map(folder => folder.name);
+    
+    // Filter FOLDER_ORDER to only include folders that exist in database
+    return FOLDER_ORDER.filter(folderName => actualFolderNames.includes(folderName));
+  })();
   
   // Dynamic crew roles from database
   const { roles: crewRolesData, isLoading: crewRolesLoading } = useCrewRoles();
@@ -218,17 +231,23 @@ export function ResourcesHeader({
                           <span>All Types</span>
                         </div>
                       </SelectItem>
-                      {equipmentTypes.map(type => {
-                        const IconComponent = getEquipmentIcon(type);
-                        return (
-                          <SelectItem key={type} value={type}>
-                            <div className="flex items-center gap-2">
-                              <IconComponent className="h-4 w-4 text-green-500" />
-                              <span>{type}</span>
-                            </div>
-                          </SelectItem>
-                        );
-                      })}
+                      {foldersLoading ? (
+                        <SelectItem value="loading" disabled>
+                          <span className="text-sm text-muted-foreground">Loading types...</span>
+                        </SelectItem>
+                      ) : (
+                        equipmentTypes.map(type => {
+                          const IconComponent = getEquipmentIcon(type);
+                          return (
+                            <SelectItem key={type} value={type}>
+                              <div className="flex items-center gap-2">
+                                <IconComponent className="h-4 w-4 text-green-500" />
+                                <span>{type}</span>
+                              </div>
+                            </SelectItem>
+                          );
+                        })
+                      )}
                     </SelectContent>
                   </Select>
                   
