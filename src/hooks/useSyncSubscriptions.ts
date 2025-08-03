@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { ProjectEquipment } from '@/types/equipment';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 interface SyncOperation {
@@ -15,16 +16,8 @@ interface SyncOperation {
   updated_at?: string;
 }
 
-interface ProjectEquipment {
-  id: string;
-  project_id: string;
-  equipment_id: string;
-  quantity: number;
-  group_id?: string;
-  notes?: string;
-  created_at?: string;
-  updated_at?: string;
-}
+// Note: Using ProjectEquipment from main types to eliminate duplication
+import { ProjectEquipment } from '@/types/equipment';
 
 interface EventEquipment {
   id: string;
