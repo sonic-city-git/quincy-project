@@ -104,24 +104,19 @@ const FolderWarningRow = ({
                     e.preventDefault();
                     e.stopPropagation();
                     
-                    // Animate the dot on click
-                    const button = e.currentTarget;
-                    button.style.transform = 'scale(0.8)';
+                    // IMMEDIATE: Select date and scroll right away for responsive feel
+                    onDateSelect(dateInfo.dateStr);
+                    onScrollToDate(dateInfo.dateStr);
                     
-                    // Expand folder first
+                    // Expand folder (can be async)
                     onExpandFolder(folderPath);
                     
-                    // Sequence the animations
+                    // Simple visual feedback
+                    const button = e.currentTarget;
+                    button.style.transform = 'scale(0.9)';
                     setTimeout(() => {
-                      // Reset the button scale
                       button.style.transform = '';
-                      
-                      // Select and scroll after folder expansion
-                      setTimeout(() => {
-                        onDateSelect(dateInfo.dateStr);
-                        onScrollToDate(dateInfo.dateStr);
-                      }, 150);
-                    }, 150);
+                    }, 100); // Quick bounce back
                   }}
                 />
               )}
@@ -196,7 +191,13 @@ const TimelineSectionComponent = ({
 
   return (
     <Collapsible open={isExpanded}>
-      {/* Main folder timeline content only - no duplicate header! */}
+      {/* CRITICAL FIX: Add folder header spacer to match ResourceFolderSection trigger */}
+      <div 
+        className="folder-header-spacer border-b border-border bg-background"
+        style={{ height: LAYOUT.MAIN_FOLDER_HEIGHT }}
+      >
+        {/* Invisible spacer to align with folder header in ResourceFolderSection */}
+      </div>
       
       <CollapsibleContent>
         {/* Main folder equipment/roles timeline */}
@@ -284,7 +285,6 @@ const TimelineSectionComponent = ({
                           key={`${equipment.id}-${projectName}`}
                           projectName={projectName}
                           equipmentId={equipment.id}
-                          resourceName=""
                           formattedDates={formattedDates}
                           getProjectQuantityForDate={resourceType === 'equipment' ? getProjectQuantityForDate : undefined}
                           getCrewRoleForDate={resourceType === 'crew' ? getCrewRoleForDate : undefined}
@@ -298,12 +298,14 @@ const TimelineSectionComponent = ({
                       >
                         {/* Empty timeline - NO MORE DUPLICATE NAME COLUMN! */}
                         <div 
-                          className="flex items-center"
+                          className="flex items-center justify-center text-xs text-muted-foreground"
                           style={{ 
                             minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
                             height: '100%'
                           }}
-                        />
+                        >
+                          No project assignments
+                        </div>
                       </div>
                     )}
                   </div>
@@ -323,7 +325,13 @@ const TimelineSectionComponent = ({
           
           return (
             <Collapsible key={subFolder.name} open={isSubfolderExpanded}>
-              {/* Subfolder timeline content only - no duplicate header! */}
+              {/* CRITICAL FIX: Add subfolder header spacer to match ResourceFolderSection */}
+              <div 
+                className="subfolder-header-spacer border-t border-b border-border bg-muted/50"
+                style={{ height: LAYOUT.SUBFOLDER_HEIGHT }}
+              >
+                {/* Invisible spacer to align with subfolder header in ResourceFolderSection */}
+              </div>
               
               <CollapsibleContent>
                 {subFolder.equipment.map((equipment) => {
@@ -407,7 +415,6 @@ const TimelineSectionComponent = ({
                                 key={`${equipment.id}-${projectName}`}
                                 projectName={projectName}
                                 equipmentId={equipment.id}
-                                resourceName=""
                                 formattedDates={formattedDates}
                                 getProjectQuantityForDate={resourceType === 'equipment' ? getProjectQuantityForDate : undefined}
                                 getCrewRoleForDate={resourceType === 'crew' ? getCrewRoleForDate : undefined}
@@ -421,7 +428,7 @@ const TimelineSectionComponent = ({
               >
                 {/* Timeline area - NO MORE DUPLICATE NAME COLUMN! */}
                 <div 
-                  className="flex items-center justify-center text-gray-400 text-sm"
+                  className="flex items-center justify-center text-xs text-muted-foreground"
                   style={{ 
                     minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
                     height: '100%'

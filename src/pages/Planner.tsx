@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { format } from "date-fns";
 import { Calendar } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useTabPersistence } from "@/hooks/useTabPersistence";
@@ -7,20 +8,37 @@ import { useOwnerOptions } from "@/hooks/useOwnerOptions";
 import { useProjects } from "@/hooks/useProjects";
 import { useFilterState } from "@/hooks/useFilterState";
 import { UnifiedCalendar } from "@/components/planner/UnifiedCalendar";
-import { useSharedTimeline } from "@/components/planner/shared/hooks/useSharedTimeline";
+import { useUnifiedTimelineScroll } from "@/components/planner/shared/hooks/useUnifiedTimelineScroll";
 import { TimelineHeader, PlannerFilters } from "@/components/planner/shared/components/TimelineHeader";
+import { LAYOUT } from "@/components/planner/shared/constants";
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 const Planner = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [selectedDate, setSelectedDate] = useState(new Date());
-
-  // On page refresh, always start with today selected
-  useEffect(() => {
-    setSelectedDate(new Date());
-  }, []);
+  
+  // PERFORMANCE: Initialize with today's date directly, no useEffect needed
+  const [selectedDate, setSelectedDate] = useState(() => {
+    // Try to restore from localStorage first, fallback to today
+    try {
+      const stored = localStorage.getItem('planner-selected-date');
+      if (stored) {
+        const date = new Date(stored);
+        // Only use stored date if it's valid and recent (within 30 days)
+        if (!isNaN(date.getTime())) {
+          const daysDiff = Math.abs((new Date().getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+          if (daysDiff <= 30) {
+            return date;
+          }
+        }
+      }
+    } catch (error) {
+      // Fall through to default
+    }
+    return new Date();
+  });
   
   // Use consolidated tab persistence hook
   const [activeTab, setActiveTab] = useTabPersistence(
@@ -29,14 +47,17 @@ const Planner = () => {
     ['equipment', 'crew'] as const
   );
 
-  // Persist selectedDate to localStorage (activeTab is handled by useTabPersistence hook)
+  // OPTIMIZED: Debounced localStorage persistence
   useEffect(() => {
-    try {
-      localStorage.setItem('planner-selected-date', selectedDate.toISOString());
-    } catch (error) {
-      // Silently handle localStorage errors (e.g., when in private mode)
-      console.warn('Could not save preferences to localStorage:', error);
-    }
+    const timeoutId = setTimeout(() => {
+      try {
+        localStorage.setItem('planner-selected-date', selectedDate.toISOString());
+      } catch (error) {
+        // Silently handle localStorage errors (e.g., when in private mode)
+      }
+    }, 300); // Debounce rapid date changes
+    
+    return () => clearTimeout(timeoutId);
   }, [selectedDate]);
   
   // Filter state
@@ -47,38 +68,30 @@ const Planner = () => {
     crewRole: ''
   });
 
-  // Handle URL parameters for direct navigation to specific equipment/crew
+  // OPTIMIZED: Handle URL parameters for direct navigation (run only once per URL change)
   useEffect(() => {
     const equipmentId = searchParams.get('equipment');
     const crewId = searchParams.get('crew');
     const projectId = searchParams.get('project');
 
+    // Only process if there are actual parameters to handle
+    if (!equipmentId && !crewId && !projectId) return;
+
     if (equipmentId) {
-      // Switch to equipment tab and set target for scrolling
       setActiveTab('equipment');
       setTargetScrollItem({ type: 'equipment', id: equipmentId });
-      
-      // Clear URL parameter
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete('equipment');
-      setSearchParams(newParams, { replace: true });
     } else if (crewId) {
-      // Switch to crew tab and set target for scrolling
       setActiveTab('crew');
       setTargetScrollItem({ type: 'crew', id: crewId });
-      
-      // Clear URL parameter
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete('crew');
-      setSearchParams(newParams, { replace: true });
-    } else if (projectId) {
-      // For projects, we can filter by project owner or name
-      // This is more complex and might need additional implementation
-      const newParams = new URLSearchParams(searchParams);
-      newParams.delete('project');
-      setSearchParams(newParams, { replace: true });
     }
-  }, [searchParams, setSearchParams]);
+
+    // Clear all parameters in one go
+    const newParams = new URLSearchParams(searchParams);
+    newParams.delete('equipment');
+    newParams.delete('crew');
+    newParams.delete('project');
+    setSearchParams(newParams, { replace: true });
+  }, [searchParams.toString()]); // Only re-run when URL actually changes
 
   // State to track target item for scrolling
   const [targetScrollItem, setTargetScrollItem] = useState<{
@@ -86,27 +99,23 @@ const Planner = () => {
     id: string;
   } | null>(null);
 
-  // Clear target scroll item after a delay to allow planner to process it
+  // OPTIMIZED: Clear target scroll item after processing
   useEffect(() => {
-    if (targetScrollItem) {
-      const timer = setTimeout(() => {
-        setTargetScrollItem(null);
-      }, 2000); // Give planner components time to load and scroll
-      
-      return () => clearTimeout(timer);
-    }
+    if (!targetScrollItem) return;
+    
+    const timer = setTimeout(() => {
+      setTargetScrollItem(null);
+    }, 1500); // Reduced timeout for faster response
+    
+    return () => clearTimeout(timer);
   }, [targetScrollItem]);
 
   // Separate state for problems-only mode
   const [showProblemsOnly, setShowProblemsOnly] = useState(false);
 
-  // Shared timeline state for both planners
-  const sharedTimeline = useSharedTimeline({ selectedDate });
-
-  // Get projects data for owner extraction
+  // UNIFIED: One scroll system to rule them all
+  const timelineScroll = useUnifiedTimelineScroll({ selectedDate });
   const { projects } = useProjects();
-
-  // Extract unique project owners for the dropdown filter
   const ownerOptions = useOwnerOptions(projects, { 
     keyBy: 'id', 
     includeEmails: true 
@@ -122,22 +131,30 @@ const Planner = () => {
       iconColor="text-blue-500"
     >
       <div className="space-y-4">
-        {/* Timeline Header - Outside calendar for better performance */}
+        {/* DEBUG: Test scroll to far date */}
+        <div className="mb-4">
+          <button 
+            onClick={timelineScroll.jumpToFarDate}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            🚀 Test Jump +20 Days (Debug)
+          </button>
+        </div>
+
+        {/* Standard header with filters and tabs */}
         <TimelineHeader
-          formattedDates={sharedTimeline.formattedDates}
-          monthSections={sharedTimeline.monthSections}
-          onDateChange={setSelectedDate}
-          onHeaderScroll={(e) => {
-            // IMPROVED: Enhanced header-to-content sync with RAF
-            requestAnimationFrame(() => {
-              const scrollLeft = e.currentTarget.scrollLeft;
-              if (sharedTimeline.equipmentRowsRef.current && 
-                  sharedTimeline.equipmentRowsRef.current.scrollLeft !== scrollLeft) {
-                sharedTimeline.equipmentRowsRef.current.scrollLeft = scrollLeft;
-              }
-            });
+          formattedDates={timelineScroll.formattedDates}
+          monthSections={timelineScroll.monthSections}
+          onDateChange={(date) => {
+            // Immediate scroll for instant feedback
+            timelineScroll.scrollToDate(date);
+            // Then update state
+            setSelectedDate(date);
           }}
-          stickyHeadersRef={sharedTimeline.stickyHeadersRef}
+          onHeaderScroll={() => {
+            // No sync needed - unified scroll system handles this
+          }}
+          stickyHeadersRef={timelineScroll.stickyHeadersRef}
           resourceType={activeTab}
           activeTab={activeTab}
           onTabChange={setActiveTab}
@@ -147,16 +164,22 @@ const Planner = () => {
           onToggleProblemsOnly={() => setShowProblemsOnly(!showProblemsOnly)}
         />
         
-        {/* Calendar Content */}
+        {/* Main timeline content with its own scroll that syncs back to header */}
         <UnifiedCalendar 
           selectedDate={selectedDate} 
-          onDateChange={setSelectedDate}
+          onDateChange={(date) => {
+            // Immediate scroll for instant feedback
+            timelineScroll.scrollToDate(date);
+            // Then update state
+            setSelectedDate(date);
+          }}
           selectedOwner={filters.selectedOwner}
-          sharedTimeline={sharedTimeline}
+          timelineScroll={timelineScroll}
           resourceType={activeTab}
           filters={filters}
           showProblemsOnly={showProblemsOnly}
           targetScrollItem={targetScrollItem}
+          isWithinScrollContainer={false}
         />
       </div>
     </PageLayout>

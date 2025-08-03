@@ -55,13 +55,36 @@ export function useEquipmentHub({
   enabled = true
 }: UseEquipmentHubProps) {
   
-  // Stable date range to prevent unnecessary re-fetches during infinite scroll
+  // FIXED: Truly stable range that doesn't change during infinite scroll expansions
   const stableDataRange = useMemo(() => {
-    const daysDiff = Math.ceil((periodEnd.getTime() - periodStart.getTime()) / (1000 * 60 * 60 * 24));
-    return { start: periodStart, end: periodEnd, dayCount: daysDiff };
+    // Use a wider, more stable range that doesn't change on every expansion
+    // This prevents cascade refetches while still fetching needed data
+    const bufferDays = 70; // Wide buffer to reduce refetch frequency
+    const centerDate = new Date();
+    const stableStart = new Date(centerDate);
+    stableStart.setDate(centerDate.getDate() - bufferDays);
+    const stableEnd = new Date(centerDate);
+    stableEnd.setDate(centerDate.getDate() + bufferDays);
+    
+    // Only update stable range if current range extends far beyond our buffer
+    const currentStart = periodStart;
+    const currentEnd = periodEnd;
+    
+    // If the requested range is within our stable buffer, use stable range
+    if (currentStart >= stableStart && currentEnd <= stableEnd) {
+      return { start: stableStart, end: stableEnd, dayCount: bufferDays * 2 };
+    }
+    
+    // If requested range exceeds buffer, expand the stable range incrementally
+    const expandedStart = currentStart < stableStart ? currentStart : stableStart;
+    const expandedEnd = currentEnd > stableEnd ? currentEnd : stableEnd;
+    const dayCount = Math.ceil((expandedEnd.getTime() - expandedStart.getTime()) / (1000 * 60 * 60 * 24));
+    
+    return { start: expandedStart, end: expandedEnd, dayCount };
   }, [
-    Math.floor(periodStart.getTime() / (1000 * 60 * 60 * 24)), // Daily precision
-    Math.floor(periodEnd.getTime() / (1000 * 60 * 60 * 24))
+    // Use weekly precision instead of daily to reduce sensitivity
+    Math.floor(periodStart.getTime() / (7 * 24 * 60 * 60 * 1000)), 
+    Math.floor(periodEnd.getTime() / (7 * 24 * 60 * 60 * 1000))
   ]);
 
   // Persistent expansion state management

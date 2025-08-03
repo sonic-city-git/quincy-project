@@ -150,7 +150,7 @@ const TimelineDayCellComponent = ({
       className={`equipment-day-cell px-1 relative ${
         dateInfo.isSelected || dateInfo.isToday ? 'z-10' : ''
       } flex items-center justify-center`}
-      style={{ width: '50px' }}
+      style={{ width: LAYOUT.DAY_CELL_WIDTH }}
     >
       {/* Today indicator - solid blue background */}
       {dateInfo.isToday && (

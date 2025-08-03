@@ -64,6 +64,32 @@ export function useCrewHub({
   enabled = true
 }: UseCrewHubProps): CrewHubReturn {
   
+  // FIXED: Stable date range to prevent cascade refetches during infinite scroll
+  const stableDataRange = useMemo(() => {
+    // Use a wider, more stable range that doesn't change on every expansion
+    const bufferDays = 70; // Wide buffer to reduce refetch frequency
+    const centerDate = new Date();
+    const stableStart = new Date(centerDate);
+    stableStart.setDate(centerDate.getDate() - bufferDays);
+    const stableEnd = new Date(centerDate);
+    stableEnd.setDate(centerDate.getDate() + bufferDays);
+    
+    // If the requested range is within our stable buffer, use stable range
+    if (periodStart >= stableStart && periodEnd <= stableEnd) {
+      return { start: stableStart, end: stableEnd };
+    }
+    
+    // If requested range exceeds buffer, expand the stable range incrementally
+    const expandedStart = periodStart < stableStart ? periodStart : stableStart;
+    const expandedEnd = periodEnd > stableEnd ? periodEnd : stableEnd;
+    
+    return { start: expandedStart, end: expandedEnd };
+  }, [
+    // Use weekly precision to reduce sensitivity to timeline expansions
+    Math.floor(periodStart.getTime() / (7 * 24 * 60 * 60 * 1000)), 
+    Math.floor(periodEnd.getTime() / (7 * 24 * 60 * 60 * 1000))
+  ]);
+
   // Persistent expansion state management for crew
   const {
     expandedGroups,
@@ -163,9 +189,9 @@ export function useCrewHub({
     gcTime: 10 * 60 * 1000,
   });
 
-  // Fetch crew assignments from Supabase
+  // Fetch crew assignments from Supabase - using stable range to prevent cascade refetches
   const { data: assignmentsData, isLoading: isLoadingAssignments } = useQuery({
-    queryKey: ['crew-assignments', periodStart.toISOString(), periodEnd.toISOString(), selectedOwner],
+    queryKey: ['crew-assignments', stableDataRange.start.toISOString(), stableDataRange.end.toISOString(), selectedOwner],
     queryFn: async () => {
 
       const { data: eventRoles, error: assignmentsError } = await supabase
@@ -187,8 +213,8 @@ export function useCrewHub({
           crew_members(name),
           crew_roles(name)
         `)
-        .gte('project_events.date', periodStart.toISOString().split('T')[0])
-        .lte('project_events.date', periodEnd.toISOString().split('T')[0]);
+        .gte('project_events.date', stableDataRange.start.toISOString().split('T')[0])
+        .lte('project_events.date', stableDataRange.end.toISOString().split('T')[0]);
 
       if (assignmentsError) {
         console.error('Error fetching crew assignments:', assignmentsError);
@@ -212,7 +238,7 @@ export function useCrewHub({
         location: dbRole.project_events?.location || undefined
       }));
 
-      // Fetch unfilled roles (roles without crew_member_id)
+      // Fetch unfilled roles (roles without crew_member_id) - using stable range
       const { data: unfilledEventRoles } = await supabase
         .from('project_event_roles')
         .select(`
@@ -230,8 +256,8 @@ export function useCrewHub({
           crew_roles(name)
         `)
         .is('crew_member_id', null)
-        .gte('project_events.date', periodStart.toISOString().split('T')[0])
-        .lte('project_events.date', periodEnd.toISOString().split('T')[0]);
+        .gte('project_events.date', stableDataRange.start.toISOString().split('T')[0])
+        .lte('project_events.date', stableDataRange.end.toISOString().split('T')[0]);
 
       // Transform unfilled roles
       const unfilledRoles = (unfilledEventRoles || []).map(dbRole => ({
@@ -298,6 +324,7 @@ export function useCrewHub({
       // Create subfolders for each role type
       const subFolders = Array.from(roleGroups.entries()).map(([roleName, roles]) => ({
         name: roleName,
+        mainFolder: 'Unfilled Roles',
         equipment: roles,
         isExpanded: expandedGroups.has(`Unfilled Roles/${roleName}`)
       }));
@@ -390,14 +417,14 @@ export function useCrewHub({
 
     const assignment = crewAssignments[0];
     return {
+      date: dateStr,
       projectName: assignment.projectName,
       eventName: assignment.eventName,
-      eventType: assignment.eventType,
-      eventTypeColor: assignment.eventTypeColor,
-      quantity: crewAssignments.length,
-      used: crewAssignments.length,
-      available: 1,
-      isOverbooked: crewAssignments.length > 1
+      crewMemberId: crewMemberId,
+      role: assignment.role,
+      startTime: assignment.startTime,
+      endTime: assignment.endTime,
+      status: assignment.status
     };
   }, [assignmentsData?.assignments]);
 
@@ -437,16 +464,17 @@ export function useCrewHub({
     const crewMember = crewById.get(crewMemberId);
     if (!crewMember) return undefined;
     
-    // Return in equipment-compatible format
+    // Return proper CrewAvailability format
     return {
-      equipmentId: crewMemberId,
-      equipmentName: crewMember.name,
-      stock: 1, // Crew members have availability, not stock
+      crewMemberId: crewMemberId,
+      crewMemberName: crewMember.name,
       date: dateStr,
-      folderPath: crewMember.department,
-      bookings: crewAssignments, // Contains the assignments with event colors
-      totalUsed: crewAssignments.length,
+      department: crewMember.department,
+      role: crewMember.role,
+      assignments: crewAssignments,
+      totalAssignments: crewAssignments.length,
       isOverbooked: crewAssignments.length > 1, // Crew conflict
+      availability: crewAssignments.length > 0 ? 'busy' : 'available' as 'busy' | 'available' | 'unavailable'
     };
   }, [assignmentsData?.assignments, crewById]);
 

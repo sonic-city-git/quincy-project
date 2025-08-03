@@ -8,14 +8,7 @@ import { FOLDER_ORDER } from "@/types/equipment";
 import { format } from "date-fns";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import type { Tab } from "@/components/shared/SectionHeader";
-
-// Layout constants
-const LAYOUT = {
-  EQUIPMENT_NAME_WIDTH: 280,
-  DAY_CELL_WIDTH: 32,
-  MONTH_HEADER_HEIGHT: 72,
-  DATE_HEADER_HEIGHT: 48
-};
+import { LAYOUT } from '../constants'; // ✅ Use global LAYOUT constants
 
 // Date interface
 interface FormattedDate {
@@ -55,9 +48,19 @@ interface TimelineHeaderProps {
   // Filter props (optional)
   filters?: PlannerFilters;
   onFiltersChange?: (filters: PlannerFilters) => void;
+  
+  // NEW: Flag to indicate if header is within a unified scroll container
+  isWithinScrollContainer?: boolean;
 
   showProblemsOnly?: boolean;
   onToggleProblemsOnly?: () => void;
+  
+  // NEW: Timeline scroll system for integrated scroll handling
+  timelineScroll?: any;
+  
+  // NEW: Render mode flags
+  renderOnlyLeft?: boolean;
+  renderOnlyTimeline?: boolean;
 }
 
 export function TimelineHeader({
@@ -72,7 +75,11 @@ export function TimelineHeader({
   filters,
   onFiltersChange,
   showProblemsOnly = false,
-  onToggleProblemsOnly
+  onToggleProblemsOnly,
+  isWithinScrollContainer = false,
+  timelineScroll,
+  renderOnlyLeft = false,
+  renderOnlyTimeline = false
 }: TimelineHeaderProps) {
   
   // Dynamic content based on resource type
@@ -216,15 +223,8 @@ export function TimelineHeader({
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-foreground/30 rounded-l"></div>
                       )}
                       
-                      <div className="absolute inset-0 flex justify-between items-center px-4">
-                        {/* Left month marker */}
-                        <div className="flex flex-col items-center opacity-30">
-                          <span className="text-xs font-medium whitespace-nowrap">
-                            {format(section.date, 'MMM')}
-                          </span>
-                        </div>
-                        
-                        {/* Center main month display */}
+                      <div className="absolute inset-0 flex justify-center items-center">
+                        {/* Main month display */}
                         <div className={`flex flex-col items-center ${
                           isYearTransition 
                             ? 'text-foreground' 
@@ -239,13 +239,6 @@ export function TimelineHeader({
                               : 'text-muted-foreground'
                           }`}>
                             {format(section.date, 'yyyy')}
-                          </span>
-                        </div>
-                        
-                        {/* Right month marker */}
-                        <div className="flex flex-col items-center opacity-30">
-                          <span className="text-xs font-medium whitespace-nowrap">
-                            {format(section.date, 'MMM')}
                           </span>
                         </div>
                       </div>
@@ -278,18 +271,16 @@ export function TimelineHeader({
                     )}
                     
                     <div
-                      className={`h-9 px-1 flex flex-col items-center justify-center rounded-md text-sm font-medium transition-colors cursor-pointer select-none relative ${
+                      className={`h-9 px-1 flex flex-col items-center justify-center text-sm font-medium transition-colors cursor-pointer select-none relative ${
                         dateInfo.isToday
-                          ? 'bg-blue-500 text-white shadow-md' 
+                          ? 'bg-blue-500 text-white shadow-md rounded-md' 
+                          : dateInfo.isSelected
+                          ? 'bg-blue-100 text-blue-800 ring-2 ring-blue-300 rounded-md'
                           : isNewYear
-                          ? 'bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200'
+                          ? 'bg-blue-50 text-blue-800 hover:bg-blue-100 border border-blue-200 rounded-md'
                           : dateInfo.isWeekendDay
-                          ? 'text-red-600 hover:bg-muted/30'
-                          : 'text-muted-foreground hover:bg-muted/50'
-                      } ${
-                        dateInfo.isSelected 
-                          ? 'ring-2 ring-blue-300' 
-                          : ''
+                          ? 'text-red-600 hover:bg-muted/30 rounded-sm'
+                          : 'text-muted-foreground hover:bg-muted/50 rounded-sm'
                       }`}
                       onClick={(e) => {
                         e.stopPropagation();
@@ -326,6 +317,7 @@ export function TimelineHeader({
     </>
   );
 
+  // Standard component render
   return (
     <SectionHeader
       header={{
@@ -469,8 +461,8 @@ export function TimelineHeader({
                 )}
               </SelectContent>
             </Select>
-                              )}
-    </div>
+          )}
+        </div>
       )}
     </SectionHeader>
   );

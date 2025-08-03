@@ -5,19 +5,19 @@ import { Skeleton } from "../ui/skeleton";
 import { useEquipmentHub } from './shared/hooks/useEquipmentHub';
 import { useCrewHub } from './shared/hooks/useCrewHub';
 
-import { useTimelineScroll } from './shared/hooks/useTimelineScroll';
+
 import { LAYOUT, PERFORMANCE } from './shared/constants';
 
 // Shared timeline components
 import { PlannerFilters } from './shared/components/TimelineHeader';
 import { TimelineContent } from './shared/components/TimelineContent';
-import { SharedTimeline } from './shared/types/timeline';
+import { useUnifiedTimelineScroll } from './shared/hooks/useUnifiedTimelineScroll';
 
 interface UnifiedCalendarProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   selectedOwner?: string;
-  sharedTimeline: SharedTimeline;
+  timelineScroll: ReturnType<typeof useUnifiedTimelineScroll>;
   resourceType: 'equipment' | 'crew';
   filters?: PlannerFilters;
   showProblemsOnly?: boolean;
@@ -25,6 +25,12 @@ interface UnifiedCalendarProps {
     type: 'equipment' | 'crew';
     id: string;
   } | null;
+  // NEW: Flag to indicate if content is within a unified scroll container
+  isWithinScrollContainer?: boolean;
+  
+  // NEW: Render mode flags
+  renderOnlyLeft?: boolean;
+  renderOnlyTimeline?: boolean;
 }
 
 // Performance metrics for monitoring
@@ -52,18 +58,21 @@ export function UnifiedCalendar({
   selectedDate, 
   onDateChange, 
   selectedOwner, 
-  sharedTimeline,
+  timelineScroll,
   resourceType,
   filters,
   showProblemsOnly = false,
-  targetScrollItem
+  targetScrollItem,
+  isWithinScrollContainer = false,
+  renderOnlyLeft = false,
+  renderOnlyTimeline = false
 }: UnifiedCalendarProps) {
   
   // Performance tracking
   const loadStartTime = useRef(performance.now());
   const renderStartTime = useRef(performance.now());
   
-  // Use shared timeline state
+  // UNIFIED: Use unified timeline scroll system
   const {
     timelineStart,
     timelineEnd,
@@ -78,111 +87,37 @@ export function UnifiedCalendar({
     stickyHeadersRef,
     loadMoreDates,
     scrollToDate,
-    visibleTimelineStart,
-    visibleTimelineEnd,
-  } = sharedTimeline;
+    handleScroll,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleMouseLeave,
+  } = timelineScroll;
 
-  const scrollHandlers = useTimelineScroll({
-    equipmentRowsRef,
-    isDragging,
-    setIsDragging,
-    dragStart,
-    setDragStart,
-    loadMoreDates,
-    isMonthView: false, // Removed viewMode prop
-  });
-
-  // Note: Scroll logic is now simple - just scroll to center selected date
-
-  // ENHANCED: Improved scroll handler with RAF for smoother sync
-  const handleTimelineScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    // Handle infinite scroll and drag functionality
-    scrollHandlers.handleEquipmentScroll(e);
-    
-    // IMPROVED: Use RAF for smoother header sync
-    requestAnimationFrame(() => {
-      const scrollLeft = e.currentTarget.scrollLeft;
-      if (stickyHeadersRef.current && stickyHeadersRef.current.scrollLeft !== scrollLeft) {
-        stickyHeadersRef.current.scrollLeft = scrollLeft;
-      }
-    });
-  }, [scrollHandlers]);
-
-  // ENHANCED: Improved mouse move handler with RAF
-  const handleTimelineMouseMove = useCallback((e: React.MouseEvent) => {
-    scrollHandlers.handleMouseMove(e);
-    
-    // IMPROVED: Use RAF for smoother drag sync
-    if (isDragging && equipmentRowsRef.current && stickyHeadersRef.current) {
-      requestAnimationFrame(() => {
-        if (equipmentRowsRef.current && stickyHeadersRef.current) {
-          const scrollLeft = equipmentRowsRef.current.scrollLeft;
-          if (stickyHeadersRef.current.scrollLeft !== scrollLeft) {
-            stickyHeadersRef.current.scrollLeft = scrollLeft;
-          }
-        }
-      });
-    }
-  }, [scrollHandlers.handleMouseMove, isDragging]);
+  // UNIFIED: All scroll handling is now in the unified hook - no need for separate scroll handlers!
 
   // Note: Header scroll is now handled in Planner.tsx
 
-  // STABLE data range - no debouncing on initial load to prevent "pop" effect
-  const [stableDataRange, setStableDataRange] = useState({
+  // SIMPLIFIED: Use timeline range directly (no racing conditions)
+  const stableDataRange = useMemo(() => ({
     start: timelineStart,
     end: timelineEnd
-  });
-  
-  const lastTimelineChangeRef = useRef(Date.now());
-  const isInitialLoad = useRef(true);
-  
-  useEffect(() => {
-    const now = Date.now();
-    const timeSinceLastChange = now - lastTimelineChangeRef.current;
-    lastTimelineChangeRef.current = now;
-    
-    // On initial load, update immediately to prevent pop effect
-    if (isInitialLoad.current) {
-      isInitialLoad.current = false;
-      setStableDataRange({
-        start: timelineStart,
-        end: timelineEnd
-      });
-      return;
-    }
-    
-    // For subsequent changes, only debounce rapid expansions
-    if (timeSinceLastChange < 100) {
-      const debounceTimer = setTimeout(() => {
-        setStableDataRange({
-          start: timelineStart,
-          end: timelineEnd
-        });
-      }, 50);
-      return () => clearTimeout(debounceTimer);
-    } else {
-      // Immediate update for single date changes
-      setStableDataRange({
-        start: timelineStart,
-        end: timelineEnd
-      });
-    }
-  }, [timelineStart, timelineEnd]);
+  }), [timelineStart, timelineEnd]);
 
-  // Always call both hooks but with enabled/disabled flag to respect Rules of Hooks
-  const hubConfig = {
+  // PERFORMANCE FIX: Use enabled flag to control data fetching
+  const baseConfig = {
     periodStart: stableDataRange.start,
     periodEnd: stableDataRange.end,
     selectedOwner,
-    visibleTimelineStart,
-    visibleTimelineEnd,
-    enabled: true, // Add enabled flag
+    visibleTimelineStart: timelineStart,
+    visibleTimelineEnd: timelineEnd,
   };
 
-  const equipmentHubConfig = { ...hubConfig, enabled: resourceType === 'equipment' };
-  const crewHubConfig = { ...hubConfig, enabled: resourceType === 'crew' };
+  // Only fetch data for the active resource type
+  const equipmentHubConfig = { ...baseConfig, enabled: resourceType === 'equipment' };
+  const crewHubConfig = { ...baseConfig, enabled: resourceType === 'crew' };
 
-  // Always call both hooks to maintain hook call order
+  // Always call both hooks (Rules of Hooks) but only fetch data for active type
   const equipmentHub = useEquipmentHub(equipmentHubConfig);
   const crewHub = useCrewHub(crewHubConfig);
   
@@ -214,45 +149,28 @@ export function UnifiedCalendar({
     resolveConflict,
   } = currentHub;
 
-  // Log performance metrics in development
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development' && equipmentGroups.length > 0) {
-      const loadTime = performance.now() - loadStartTime.current;
-      const metrics: PlannerMetrics = {
-        dataLoadTime: Math.round(loadTime),
-        renderTime: Math.round(performance.now() - renderStartTime.current),
-        activeResourceType: resourceType,
-        totalResources: equipmentGroups.reduce((sum, group) => sum + group.equipment.length, 0),
-        visibleDateRange: Math.ceil((timelineEnd.getTime() - timelineStart.getTime()) / (1000 * 60 * 60 * 24))
-      };
-      console.debug('🔧 Planner Performance Metrics:', metrics);
-    }
-  }, [equipmentGroups, resourceType, timelineStart, timelineEnd]);
+  // REMOVED: Performance metrics logging to reduce console spam
 
   // Handle scrolling to target item when targetScrollItem is provided
   useEffect(() => {
     if (targetScrollItem && targetScrollItem.type === resourceType && equipmentGroups.length > 0) {
       const timer = setTimeout(() => {
         try {
-          // Look for the target item in the DOM
           const targetElement = document.querySelector(`[data-resource-id="${targetScrollItem.id}"]`);
           
           if (targetElement && equipmentRowsRef.current) {
-            // Scroll to the target element
             targetElement.scrollIntoView({
               behavior: 'smooth',
               block: 'center',
               inline: 'nearest'
             });
-            
-    
           } else {
             console.warn(`Could not find ${targetScrollItem.type} with ID: ${targetScrollItem.id}`);
           }
         } catch (error) {
           console.error('Error scrolling to target item:', error);
         }
-      }, 500); // Wait for render
+      }, 100);
       
       return () => clearTimeout(timer);
     }
@@ -319,6 +237,7 @@ export function UnifiedCalendar({
     );
   }
 
+  // Simply return TimelineContent - no complex conditional rendering needed
   return (
     <TimelineContent
       equipmentGroups={equipmentGroups}
@@ -332,9 +251,14 @@ export function UnifiedCalendar({
       getProjectQuantityForDate={getProjectQuantityForDate}
       getCrewRoleForDate={getCrewRoleForDate}
       equipmentRowsRef={equipmentRowsRef}
-      handleTimelineScroll={handleTimelineScroll}
-      handleTimelineMouseMove={handleTimelineMouseMove}
-      scrollHandlers={scrollHandlers}
+      handleTimelineScroll={(e) => {
+        // Handle scroll only - unified system manages sync
+        handleScroll(e);
+      }}
+      handleTimelineMouseMove={handleMouseMove}
+      handleMouseDown={handleMouseDown}
+      handleMouseUp={handleMouseUp}
+      handleMouseLeave={handleMouseLeave}
       isDragging={isDragging}
       getBookingsForEquipment={getBookingsForResource}
       getBookingState={getBookingState}
@@ -343,8 +267,9 @@ export function UnifiedCalendar({
       resourceType={resourceType}
       filters={filters}
       showProblemsOnly={showProblemsOnly}
-      visibleTimelineStart={sharedTimeline.visibleTimelineStart}
-      visibleTimelineEnd={sharedTimeline.visibleTimelineEnd}
+      visibleTimelineStart={timelineStart}
+      visibleTimelineEnd={timelineEnd}
+      isWithinScrollContainer={isWithinScrollContainer}
     />
   );
 }
