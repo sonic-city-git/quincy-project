@@ -1,4 +1,6 @@
 import { RefObject, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useScrollStateMachine, type ScrollOperation } from './useScrollStateMachine';
+import { LAYOUT } from '../constants';
 
 interface UseTimelineScrollProps {
   timelineRef?: RefObject<HTMLDivElement>; // Now optional - for static headers
@@ -20,7 +22,8 @@ export function useTimelineScroll({
   setDragStart,
   loadMoreDates,
   isMonthView,
-}: UseTimelineScrollProps) {
+  scrollCoordinator, // Use scroll state machine
+}: UseTimelineScrollProps & { scrollCoordinator?: ReturnType<typeof useScrollStateMachine> }) {
   
   // Debounced scroll state
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -56,15 +59,19 @@ export function useTimelineScroll({
     }, 50); // Very responsive for early prefetching
   }, [loadMoreDates]);
 
-  // Simplified: Mouse drag handlers for master scroll area
+  // STATE MACHINE: Mouse drag handlers with proper coordination
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!equipmentRowsRef.current) return;
-    setIsDragging(true);
-    setDragStart({
-      x: e.pageX - equipmentRowsRef.current.offsetLeft,
-      scrollLeft: equipmentRowsRef.current.scrollLeft,
-    });
-  }, [equipmentRowsRef, setIsDragging, setDragStart]);
+    
+    // Start drag operation in state machine
+    if (scrollCoordinator?.startOperation('dragging')) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.pageX - equipmentRowsRef.current.offsetLeft,
+        scrollLeft: equipmentRowsRef.current.scrollLeft,
+      });
+    }
+  }, [equipmentRowsRef, setIsDragging, setDragStart, scrollCoordinator]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging || !equipmentRowsRef.current) return;
@@ -74,34 +81,46 @@ export function useTimelineScroll({
     requestAnimationFrame(() => {
       if (!equipmentRowsRef.current || !isDragging) return;
       
-      const x = e.pageX - equipmentRowsRef.current.offsetLeft;
-      const walk = (x - dragStart.x) * 2;
-      // Natural scroll direction: drag right to see future, drag left to see past
-      equipmentRowsRef.current.scrollLeft = dragStart.scrollLeft - walk;
+      // STATE MACHINE: Only execute if dragging operation is active
+      if (scrollCoordinator?.isOperationActive('dragging')) {
+        const x = e.pageX - equipmentRowsRef.current.offsetLeft;
+        const walk = (x - dragStart.x) * 2;
+        const newScrollLeft = dragStart.scrollLeft - walk;
+        
+        // Use state machine for coordinated manual scroll
+        scrollCoordinator.executeManual(equipmentRowsRef.current, newScrollLeft);
+      }
     });
-  }, [isDragging, equipmentRowsRef, dragStart]);
+  }, [isDragging, equipmentRowsRef, dragStart, scrollCoordinator]);
 
   const handleMouseUp = useCallback(() => {
     setIsDragging(false);
-  }, [setIsDragging]);
+    // End drag operation in state machine
+    scrollCoordinator?.endOperation('dragging');
+  }, [setIsDragging, scrollCoordinator]);
 
   const handleMouseLeave = useCallback(() => {
     setIsDragging(false);
-  }, [setIsDragging]);
+    // End drag operation in state machine
+    scrollCoordinator?.endOperation('dragging');
+  }, [setIsDragging, scrollCoordinator]);
 
-  // Simplified: Navigation functions for master scroll area
+  // STATE MACHINE: Navigation functions with proper coordination
   const navigatePeriod = useCallback((direction: 'prev' | 'next') => {
     if (!equipmentRowsRef.current) return;
     
     const daysToMove = isMonthView ? 30 : 7;
     const dayWidth = LAYOUT.DAY_CELL_WIDTH;
     const scrollAmount = dayWidth * daysToMove;
+    const currentScroll = equipmentRowsRef.current.scrollLeft;
+    const targetScroll = direction === 'next' ? 
+      currentScroll + scrollAmount : currentScroll - scrollAmount;
     
-    equipmentRowsRef.current.scrollBy({
-      left: direction === 'next' ? scrollAmount : -scrollAmount,
-      behavior: 'smooth'
-    });
-  }, [equipmentRowsRef, isMonthView]);
+    // Use state machine for coordinated smooth navigation
+    if (scrollCoordinator?.startOperation('navigating', 500)) {
+      scrollCoordinator.executeSmooth(equipmentRowsRef.current, Math.max(0, targetScroll));
+    }
+  }, [equipmentRowsRef, isMonthView, scrollCoordinator]);
 
   const navigateDays = useCallback((direction: 'prev' | 'next') => {
     if (!equipmentRowsRef.current) return;
@@ -109,12 +128,15 @@ export function useTimelineScroll({
     const daysToMove = isMonthView ? 7 : 1;
     const dayWidth = LAYOUT.DAY_CELL_WIDTH;
     const scrollAmount = dayWidth * daysToMove;
+    const currentScroll = equipmentRowsRef.current.scrollLeft;
+    const targetScroll = direction === 'next' ? 
+      currentScroll + scrollAmount : currentScroll - scrollAmount;
     
-    equipmentRowsRef.current.scrollBy({
-      left: direction === 'next' ? scrollAmount : -scrollAmount,
-      behavior: 'smooth'
-    });
-  }, [equipmentRowsRef, isMonthView]);
+    // Use state machine for coordinated smooth navigation
+    if (scrollCoordinator?.startOperation('navigating', 500)) {
+      scrollCoordinator.executeSmooth(equipmentRowsRef.current, Math.max(0, targetScroll));
+    }
+  }, [equipmentRowsRef, isMonthView, scrollCoordinator]);
 
   // Cursor management
   useEffect(() => {

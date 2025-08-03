@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { addDays, format, isWeekend } from 'date-fns';
 import { LAYOUT } from '../constants';
+import { useScrollStateMachine } from './useScrollStateMachine';
 
 interface UseSharedTimelineProps {
   selectedDate: Date;
@@ -26,10 +27,8 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
   const lastSelectedDate = useRef(selectedDate);
   const animationRef = useRef<number | null>(null);
   
-  // Track initial scroll to center today once
-  const hasInitialScrolled = useRef(false);
-  
-  // Simple scroll state tracking
+  // SCROLL STATE MACHINE: Proper coordination of all scroll operations
+  const scrollCoordinator = useScrollStateMachine();
   const isScrolling = useRef(false);
 
   // Generate timeline dates - memoized for performance
@@ -100,12 +99,13 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
       
       // When expanding backwards, adjust scroll position to maintain visual continuity
       requestAnimationFrame(() => {
-        if (timelineRowsRef.current) {
+        if (timelineRowsRef.current && scrollCoordinator.startOperation('expanding')) {
           const newScrollLeft = currentScrollLeft + (35 * LAYOUT.DAY_CELL_WIDTH);
-          timelineRowsRef.current.scrollLeft = newScrollLeft;
+          scrollCoordinator.executeManual(timelineRowsRef.current, newScrollLeft);
           if (stickyHeadersRef.current) {
-            stickyHeadersRef.current.scrollLeft = newScrollLeft;
+            scrollCoordinator.executeManual(stickyHeadersRef.current, newScrollLeft);
           }
+          scrollCoordinator.endOperation('expanding');
         }
       });
     } else {
@@ -119,11 +119,14 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     }, 200);
   }, []);
 
-  // SMOOTH: Scroll to center the selected date with animation
-  const scrollToDate = useCallback((targetDate: Date, isInitial = false) => {
-    if (!timelineRowsRef.current || !timelineDates.length) return;
+  // STATE MACHINE: Coordinated scroll to center with proper state management
+  const scrollToCenter = useCallback((targetDate: Date) => {
+    if (!timelineDates.length || !timelineRowsRef.current) return;
     
-    // Find the target date index
+    const containerWidth = timelineRowsRef.current.clientWidth;
+    if (containerWidth === 0) return;
+    
+    // Find the selected date in timeline
     const target = new Date(targetDate);
     target.setHours(0, 0, 0, 0);
     
@@ -138,49 +141,25 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     // Calculate centered scroll position
     const dayWidth = LAYOUT.DAY_CELL_WIDTH;
     const targetPosition = targetIndex * dayWidth;
-    const containerWidth = timelineRowsRef.current.clientWidth;
-    const scrollLeft = Math.max(0, targetPosition - (containerWidth / 2) + (dayWidth / 2));
+    const finalScrollLeft = Math.max(0, targetPosition - (containerWidth / 2) + (dayWidth / 2));
     
-    // Smooth scroll animation for better UX
-    if (isInitial) {
-      // Initial load: instant positioning
-      timelineRowsRef.current.scrollLeft = scrollLeft;
-      if (stickyHeadersRef.current) {
-        stickyHeadersRef.current.scrollLeft = scrollLeft;
-      }
-    } else {
-      // User selections: smooth animation
-      timelineRowsRef.current.scrollTo({
-        left: scrollLeft,
-        behavior: 'smooth'
+    // Use state machine to coordinate smooth scroll
+    if (scrollCoordinator.startOperation('centering', 500)) {
+      requestAnimationFrame(() => {
+        if (timelineRowsRef.current && scrollCoordinator.isOperationActive('centering')) {
+          scrollCoordinator.executeSmooth(timelineRowsRef.current, finalScrollLeft);
+          
+          if (stickyHeadersRef.current) {
+            scrollCoordinator.executeSmooth(stickyHeadersRef.current, finalScrollLeft);
+          }
+        }
       });
-      if (stickyHeadersRef.current) {
-        stickyHeadersRef.current.scrollTo({
-          left: scrollLeft,
-          behavior: 'smooth'
-        });
-      }
     }
-  }, [timelineDates]);
-  
-  // Initial scroll to center today
-  useEffect(() => {
-    if (timelineDates.length > 0 && !hasInitialScrolled.current && timelineRowsRef.current) {
-      const containerWidth = timelineRowsRef.current.clientWidth;
-      if (containerWidth > 0) {
-        hasInitialScrolled.current = true;
-        const today = new Date();
-        scrollToDate(today, true); // Initial = instant
-      }
-    }
-  }, [timelineDates.length]); // Remove scrollToDate dependency to prevent re-renders
+  }, [timelineDates, scrollCoordinator]);
 
-  // When selectedDate changes, scroll to center it with smooth animation  
   useEffect(() => {
-    if (hasInitialScrolled.current) {
-      scrollToDate(selectedDate, false); // Not initial = smooth
-    }
-  }, [selectedDate]); // Remove scrollToDate dependency to prevent re-renders
+    scrollToCenter(selectedDate);
+  }, [selectedDate, scrollToCenter]);
 
   // FAST: Lightweight date formatting - only what's needed!
   const formattedDates = useMemo(() => {
@@ -305,7 +284,8 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     equipmentRowsRef: timelineRowsRef, // Use shared ref for both planners
     stickyHeadersRef,
     loadMoreDates,
-    scrollToDate,
+    // Scroll state machine
+    scrollCoordinator,
     // Visible date range for project filtering
     visibleTimelineStart: visibleDateRange.start,
     visibleTimelineEnd: visibleDateRange.end,

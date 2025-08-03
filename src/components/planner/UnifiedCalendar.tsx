@@ -5,19 +5,19 @@ import { Skeleton } from "../ui/skeleton";
 import { useEquipmentHub } from './shared/hooks/useEquipmentHub';
 import { useCrewHub } from './shared/hooks/useCrewHub';
 
-import { useTimelineScroll } from './shared/hooks/useTimelineScroll';
+
 import { LAYOUT, PERFORMANCE } from './shared/constants';
 
 // Shared timeline components
 import { PlannerFilters } from './shared/components/TimelineHeader';
 import { TimelineContent } from './shared/components/TimelineContent';
-import { SharedTimeline } from './shared/types/timeline';
+import { useUnifiedTimelineScroll } from './shared/hooks/useUnifiedTimelineScroll';
 
 interface UnifiedCalendarProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   selectedOwner?: string;
-  sharedTimeline: SharedTimeline;
+  timelineScroll: ReturnType<typeof useUnifiedTimelineScroll>;
   resourceType: 'equipment' | 'crew';
   filters?: PlannerFilters;
   showProblemsOnly?: boolean;
@@ -52,7 +52,7 @@ export function UnifiedCalendar({
   selectedDate, 
   onDateChange, 
   selectedOwner, 
-  sharedTimeline,
+  timelineScroll,
   resourceType,
   filters,
   showProblemsOnly = false,
@@ -63,7 +63,7 @@ export function UnifiedCalendar({
   const loadStartTime = useRef(performance.now());
   const renderStartTime = useRef(performance.now());
   
-  // Use shared timeline state
+  // UNIFIED: Use unified timeline scroll system
   const {
     timelineStart,
     timelineEnd,
@@ -78,44 +78,14 @@ export function UnifiedCalendar({
     stickyHeadersRef,
     loadMoreDates,
     scrollToDate,
-    visibleTimelineStart,
-    visibleTimelineEnd,
-  } = sharedTimeline;
+    handleScroll,
+    handleMouseDown,
+    handleMouseMove,
+    handleMouseUp,
+    handleMouseLeave,
+  } = timelineScroll;
 
-  const scrollHandlers = useTimelineScroll({
-    equipmentRowsRef,
-    isDragging,
-    setIsDragging,
-    dragStart,
-    setDragStart,
-    loadMoreDates,
-    isMonthView: false, // Removed viewMode prop
-  });
-
-  // Note: Scroll logic is now simple - just scroll to center selected date
-
-  // Simple timeline scroll handling
-  const handleTimelineScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    // Handle infinite scroll and drag functionality
-    scrollHandlers.handleEquipmentScroll(e);
-    
-    // Simple header sync
-    const scrollLeft = e.currentTarget.scrollLeft;
-    if (stickyHeadersRef.current) {
-      stickyHeadersRef.current.scrollLeft = scrollLeft;
-    }
-  }, [scrollHandlers, stickyHeadersRef]);
-
-  // SIMPLE: Handle mouse move for drag
-  const handleTimelineMouseMove = useCallback((e: React.MouseEvent) => {
-    scrollHandlers.handleMouseMove(e);
-    
-    // Simple drag sync  
-    if (isDragging && equipmentRowsRef.current && stickyHeadersRef.current) {
-      const scrollLeft = equipmentRowsRef.current.scrollLeft;
-      stickyHeadersRef.current.scrollLeft = scrollLeft;
-    }
-  }, [scrollHandlers.handleMouseMove, isDragging]);
+  // UNIFIED: All scroll handling is now in the unified hook - no need for separate scroll handlers!
 
   // Note: Header scroll is now handled in Planner.tsx
 
@@ -271,9 +241,11 @@ export function UnifiedCalendar({
       getProjectQuantityForDate={getProjectQuantityForDate}
       getCrewRoleForDate={getCrewRoleForDate}
       equipmentRowsRef={equipmentRowsRef}
-      handleTimelineScroll={handleTimelineScroll}
-      handleTimelineMouseMove={handleTimelineMouseMove}
-      scrollHandlers={scrollHandlers}
+      handleTimelineScroll={handleScroll}
+      handleTimelineMouseMove={handleMouseMove}
+      handleMouseDown={handleMouseDown}
+      handleMouseUp={handleMouseUp}
+      handleMouseLeave={handleMouseLeave}
       isDragging={isDragging}
       getBookingsForEquipment={getBookingsForResource}
       getBookingState={getBookingState}
@@ -282,8 +254,8 @@ export function UnifiedCalendar({
       resourceType={resourceType}
       filters={filters}
       showProblemsOnly={showProblemsOnly}
-      visibleTimelineStart={sharedTimeline.visibleTimelineStart}
-      visibleTimelineEnd={sharedTimeline.visibleTimelineEnd}
+      visibleTimelineStart={timelineStart}
+      visibleTimelineEnd={timelineEnd}
     />
   );
 }
