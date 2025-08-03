@@ -87,6 +87,38 @@ export function useCrewHub({
         throw crewError;
       }
 
+      // Fetch all crew member roles and crew roles in separate queries
+      const [crewMemberRolesResult, crewRolesResult, foldersResult] = await Promise.all([
+        supabase.from('crew_member_roles').select('*'),
+        supabase.from('crew_roles').select('*'),
+        Promise.resolve({ data: [] }) // Will fetch folders below if needed
+      ]);
+
+      if (crewMemberRolesResult.error) {
+        console.error('Error fetching crew member roles:', crewMemberRolesResult.error);
+      }
+      if (crewRolesResult.error) {
+        console.error('Error fetching crew roles:', crewRolesResult.error);
+      }
+
+      // Create lookup maps for roles
+      const roleIdToName = new Map(
+        (crewRolesResult.data || []).map(role => [role.id, role.name])
+      );
+      
+      const memberIdToRoles = new Map<string, string[]>();
+      (crewMemberRolesResult.data || []).forEach(cmr => {
+        if (cmr.crew_member_id && cmr.role_id) {
+          const roleName = roleIdToName.get(cmr.role_id);
+          if (roleName) {
+            if (!memberIdToRoles.has(cmr.crew_member_id)) {
+              memberIdToRoles.set(cmr.crew_member_id, []);
+            }
+            memberIdToRoles.get(cmr.crew_member_id)!.push(roleName);
+          }
+        }
+      });
+
       // Get folder names if needed
       const folderIds = [...new Set(crewMembers?.map(c => c.folder_id).filter(Boolean) || [])];
       let folderMap = new Map();
@@ -103,22 +135,26 @@ export function useCrewHub({
       }
 
       // Transform database crew to our crew format
-      const transformedCrew: CrewMember[] = (crewMembers || []).map(dbCrew => ({
-        id: dbCrew.id,
-        name: dbCrew.name,
-        role: 'Crew Member', // Default role
-        department: folderMap.get(dbCrew.folder_id) || 'Sonic City', // Default to Sonic City
-        level: 'mid' as const,
-        availability: 'available' as const,
-        hourlyRate: 75,
-        skills: [],
-        contactInfo: {
-          email: dbCrew.email || undefined,
-          phone: dbCrew.phone || undefined
-        },
-        // Avatar support - use actual avatar_url from Google Auth
-        avatarUrl: dbCrew.avatar_url || undefined
-      }));
+      const transformedCrew: CrewMember[] = (crewMembers || []).map(dbCrew => {
+        const memberRoles = memberIdToRoles.get(dbCrew.id) || [];
+        return {
+          id: dbCrew.id,
+          name: dbCrew.name,
+          role: memberRoles.length > 0 ? memberRoles[0] : 'Crew Member', // Use first role or default
+          roles: memberRoles, // Add roles array for filtering
+          department: folderMap.get(dbCrew.folder_id) || 'Sonic City', // Default to Sonic City
+          level: 'mid' as const,
+          availability: 'available' as const,
+          hourlyRate: 75,
+          skills: [],
+          contactInfo: {
+            email: dbCrew.email || undefined,
+            phone: dbCrew.phone || undefined
+          },
+          // Avatar support - use actual avatar_url from Google Auth
+          avatarUrl: dbCrew.avatar_url || undefined
+        };
+      });
 
       return { crewMembers: transformedCrew };
     },

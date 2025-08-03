@@ -7,8 +7,38 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useProjects } from "@/hooks/useProjects";
 import { ProjectFilters } from "../ProjectsHeader";
 
+// Extended project type with joined data
+type ProjectWithJoins = {
+  id: string;
+  name: string;
+  color: string | null;
+  created_at: string;
+  customer_id: string | null;
+  is_archived: boolean | null;
+  owner_id: string | null;
+  project_number: number;
+  project_type_id: string | null;
+  to_be_invoiced: number | null;
+  updated_at: string;
+  owner?: {
+    id: string;
+    name: string;
+    avatar_url: string | null;
+  } | null;
+  customer?: {
+    id: string;
+    name: string;
+  } | null;
+  project_type?: {
+    id: string;
+    name: string;
+    code: string;
+    price_multiplier: number | null;
+  } | null;
+};
+
 interface ProjectsTableProps {
-  activeTab: 'all' | 'active' | 'completed' | 'draft';
+  activeTab: 'active' | 'archived';
   filters: ProjectFilters;
 }
 
@@ -41,16 +71,10 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
   };
 
   // Filter projects based on tab and filters
-  const filteredProjects = projects?.filter(project => {
-    // Get safe status value
-    const projectStatus = project.status || 'draft';
-    
-    // Tab filtering
-    if (activeTab !== 'all') {
-      if (activeTab === 'active' && projectStatus !== 'active') return false;
-      if (activeTab === 'completed' && projectStatus !== 'completed') return false;
-      if (activeTab === 'draft' && projectStatus !== 'draft') return false;
-    }
+  const filteredProjects = (projects as ProjectWithJoins[])?.filter(project => {
+    // Tab filtering based on archived status
+    if (activeTab === 'archived' && !project.is_archived) return false;
+    if (activeTab === 'active' && project.is_archived) return false;
 
     // Search filtering
     if (filters.search && project.name && !project.name.toLowerCase().includes(filters.search.toLowerCase())) {
@@ -62,10 +86,7 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
       return false;
     }
 
-    // Status filtering
-    if (filters.status && filters.status !== 'all' && projectStatus !== filters.status) {
-      return false;
-    }
+    // Note: No status filtering needed - tabs handle active/archived filtering
 
     return true;
   }) || [];
@@ -80,7 +101,7 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
           <div className="grid grid-cols-[240px_2fr_160px_80px] gap-6 p-4 bg-muted/50 font-semibold text-sm">
             <div>Owner</div>
             <div className="text-center">Project Name</div>
-            <div>PGA</div>
+                            <div>Amount</div>
             <div></div>
           </div>
         </div>
@@ -108,11 +129,10 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
   if (filteredProjects.length === 0) {
     const getEmptyMessage = () => {
       if (activeTab === 'active') return 'No active projects found';
-      if (activeTab === 'completed') return 'No completed projects found';
-      if (activeTab === 'draft') return 'No draft projects found';
+      if (activeTab === 'archived') return 'No archived projects found';
       
-      if (filters.search || filters.owner || filters.status) {
-        return 'No projects match your current filters';
+      if (filters.search) {
+        return 'No projects match your search';
       }
       
       return 'No projects found. Create your first project to get started!';
@@ -125,7 +145,7 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
           <div className="grid grid-cols-[240px_2fr_160px_80px] gap-6 p-4 bg-muted/50 font-semibold text-sm">
             <div>Owner</div>
             <div className="text-center">Project Name</div>
-            <div>PGA</div>
+                            <div>Amount</div>
             <div></div>
           </div>
         </div>
@@ -135,7 +155,7 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
           <div className="text-center py-12 text-muted-foreground">
             <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p className="text-lg font-medium mb-2">{getEmptyMessage()}</p>
-            {!filters.search && !filters.owner && !filters.status && (
+            {!filters.search && (
               <p className="text-sm">Projects help you organize crew, equipment, and schedules for your productions.</p>
             )}
           </div>
@@ -151,7 +171,7 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
         <div className="grid grid-cols-[240px_2fr_160px_80px] gap-6 p-4 bg-muted/50 font-semibold text-sm">
           <div>Owner</div>
           <div>Project Name</div>
-          <div>PGA</div>
+                          <div>Amount</div>
           <div></div>
         </div>
       </div>
@@ -166,11 +186,7 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
               <div 
                 key={project.id}
                 className="grid grid-cols-[240px_2fr_160px_80px] gap-6 p-4 cursor-pointer hover:bg-muted/50 transition-all duration-200 group border-l-4 border-l-transparent"
-                style={{
-                  ':hover': {
-                    borderLeftColor: project.color || '#64748b'
-                  }
-                }}
+                style={{}}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderLeftColor = project.color || '#64748b';
                 }}
@@ -195,26 +211,24 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
                   </span>
                 </div>
 
-                {/* Project Name & Description - CENTER & LARGER */}
+                                {/* Project Name - CENTER & LARGER */}
                 <div className="flex flex-col space-y-2 items-center">
-                  <div 
+                  <div
                     className="px-4 py-2 rounded-lg text-lg font-bold transition-all duration-200 group-hover:shadow-lg"
                     style={projectColorStyles}
                   >
                     {project.name}
                   </div>
-                  {project.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed text-center">
-                      {project.description}
-                    </p>
-                  )}
+                  <p className="text-sm text-muted-foreground text-center">
+                    Project #{String(project.project_number).padStart(4, '0')}
+                  </p>
                 </div>
                 
-                {/* PGA */}
+                {/* Invoice Amount */}
                 <div className="flex items-center gap-1">
                   <DollarSign className="h-3 w-3 text-muted-foreground" />
                   <span className="text-sm font-medium">
-                    {project.budget ? `${(project.budget / 1000).toFixed(0)}k` : (
+                    {project.to_be_invoiced ? `${(project.to_be_invoiced / 1000).toFixed(0)}k` : (
                       <span className="text-muted-foreground italic">Not set</span>
                     )}
                   </span>

@@ -1,10 +1,10 @@
-import { Search, Filter, X, Package, Users, Database, Plus } from "lucide-react";
+import { Search, X, Package, Users, Database, Plus, Mic, Volume2, Lightbulb, Video, Cable, Building, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useState, useEffect, useCallback } from "react";
+import { useCrewRoles } from "@/hooks/useCrewRoles";
 
 // Filter types
 export interface ResourceFilters {
@@ -37,7 +37,10 @@ export function ResourcesHeader({
 
   // Predefined filters
   const equipmentTypes = ['Mixers', 'Microphones', 'Speakers', 'Lighting', 'Video', 'Cables', 'Stage', 'Other'];
-  const crewRoles = ['Sound Engineer', 'Lighting Technician', 'Camera Operator', 'Stage Manager', 'Production Assistant', 'Director', 'Producer'];
+  
+  // Dynamic crew roles from database
+  const { roles: crewRolesData, isLoading: crewRolesLoading } = useCrewRoles();
+  const crewRoles = crewRolesData?.map(role => role.name) || [];
 
   // Local search state for immediate UI feedback
   const [localSearchValue, setLocalSearchValue] = useState(filters.search || '');
@@ -71,9 +74,7 @@ export function ResourcesHeader({
 
   // Filter helpers
   const hasActiveFilters = (
-    filters.search || 
-    (filters.equipmentType && filters.equipmentType !== 'all') || 
-    (filters.crewRole && filters.crewRole !== 'all')
+    filters.search
   );
 
   const clearAllFilters = () => {
@@ -83,6 +84,30 @@ export function ResourcesHeader({
       equipmentType: '',
       crewRole: ''
     });
+  };
+
+  // Equipment type icons
+  const getEquipmentIcon = (type: string) => {
+    switch (type) {
+      case 'Mixers': return Package;
+      case 'Microphones': return Mic;
+      case 'Speakers': return Volume2;
+      case 'Lighting': return Lightbulb;
+      case 'Video': return Video;
+      case 'Cables': return Cable;
+      case 'Stage': return Building;
+      default: return Settings;
+    }
+  };
+
+  // Crew role icons - intelligent mapping based on role name
+  const getCrewIcon = (role: string) => {
+    const roleLower = role.toLowerCase();
+    if (roleLower.includes('sound') || roleLower.includes('audio')) return Mic;
+    if (roleLower.includes('lighting') || roleLower.includes('light')) return Lightbulb;
+    if (roleLower.includes('camera') || roleLower.includes('video') || roleLower.includes('director')) return Video;
+    if (roleLower.includes('stage') || roleLower.includes('manager')) return Building;
+    return Users; // Default for all other roles
   };
 
   return (
@@ -104,68 +129,123 @@ export function ResourcesHeader({
                 placeholder={`Search ${isCrewTab ? 'crew' : 'equipment'}...`}
                 value={localSearchValue}
                 onChange={(e) => setLocalSearchValue(e.target.value)}
-                className="pl-9 w-64 h-8"
+                className="pl-9 w-56 h-8"
               />
             </div>
 
-            {/* Quick Filters */}
+            {/* Resource Type Filter */}
             <div className="flex items-center gap-1">
               {isCrewTab ? (
-                <Select value={filters.crewRole || 'all'} onValueChange={(value) => updateFilters({ crewRole: value })}>
-                  <SelectTrigger className="w-auto h-8 text-xs">
-                    <SelectValue placeholder="Role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All roles</SelectItem>
-                    {crewRoles.map(role => (
-                      <SelectItem key={role} value={role}>{role}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              ) : (
-                <Select value={filters.equipmentType || 'all'} onValueChange={(value) => updateFilters({ equipmentType: value })}>
-                  <SelectTrigger className="w-auto h-8 text-xs">
-                    <SelectValue placeholder="Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All types</SelectItem>
-                    {equipmentTypes.map(type => (
-                      <SelectItem key={type} value={type}>{type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-
-              {/* More Filters Button */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 px-2 relative">
-                    <Filter className="h-4 w-4" />
-                    {hasActiveFilters && (
-                      <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 p-0 text-xs flex items-center justify-center">
-                        !
-                      </Badge>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64" align="end">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-sm">Advanced Filters</h4>
-                      {hasActiveFilters && (
-                        <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-auto p-1 text-xs">
-                          Clear all
-                        </Button>
+                <>
+                  <Select value={filters.crewRole || 'all'} onValueChange={(value) => updateFilters({ crewRole: value })}>
+                    <SelectTrigger className="w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors">
+                      <div className="flex items-center gap-2">
+                        {filters.crewRole && filters.crewRole !== 'all' ? (
+                          <>
+                            {(() => {
+                              const IconComponent = getCrewIcon(filters.crewRole);
+                              return <IconComponent className="h-4 w-4 text-orange-500" />;
+                            })()}
+                            <span>{filters.crewRole}</span>
+                          </>
+                        ) : (
+                          <span>All Roles</span>
+                        )}
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="w-[200px]">
+                      <SelectItem value="all">
+                        <div className="flex items-center gap-2">
+                          <Users className="h-4 w-4 text-muted-foreground" />
+                          <span>All Roles</span>
+                        </div>
+                      </SelectItem>
+                      {crewRolesLoading ? (
+                        <SelectItem value="loading" disabled>
+                          <span className="text-sm text-muted-foreground">Loading roles...</span>
+                        </SelectItem>
+                      ) : (
+                        crewRoles.map(role => {
+                          const IconComponent = getCrewIcon(role);
+                          return (
+                            <SelectItem key={role} value={role}>
+                              <div className="flex items-center gap-2">
+                                <IconComponent className="h-4 w-4 text-orange-500" />
+                                <span>{role}</span>
+                              </div>
+                            </SelectItem>
+                          );
+                        })
                       )}
-                    </div>
-                    
-                    {/* Advanced filters can be added here */}
-                    <div className="text-sm text-muted-foreground">
-                      More filter options coming soon...
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
+                    </SelectContent>
+                  </Select>
+                  
+                  {/* Clear Crew Role Button */}
+                  {filters.crewRole && filters.crewRole !== 'all' && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => updateFilters({ crewRole: 'all' })}
+                      title="Clear role filter"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <>
+                  <Select value={filters.equipmentType || 'all'} onValueChange={(value) => updateFilters({ equipmentType: value })}>
+                    <SelectTrigger className="w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors">
+                      <div className="flex items-center gap-2">
+                        {filters.equipmentType && filters.equipmentType !== 'all' ? (
+                          <>
+                            {(() => {
+                              const IconComponent = getEquipmentIcon(filters.equipmentType);
+                              return <IconComponent className="h-4 w-4 text-green-500" />;
+                            })()}
+                            <span>{filters.equipmentType}</span>
+                          </>
+                        ) : (
+                          <span>All Types</span>
+                        )}
+                      </div>
+                    </SelectTrigger>
+                    <SelectContent className="w-[200px]">
+                      <SelectItem value="all">
+                        <div className="flex items-center gap-2">
+                          <Package className="h-4 w-4 text-muted-foreground" />
+                          <span>All Types</span>
+                        </div>
+                      </SelectItem>
+                      {equipmentTypes.map(type => {
+                        const IconComponent = getEquipmentIcon(type);
+                        return (
+                          <SelectItem key={type} value={type}>
+                            <div className="flex items-center gap-2">
+                              <IconComponent className="h-4 w-4 text-green-500" />
+                              <span>{type}</span>
+                            </div>
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectContent>
+                  </Select>
+                  
+                  {/* Clear Equipment Type Button */}
+                  {filters.equipmentType && filters.equipmentType !== 'all' && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                      onClick={() => updateFilters({ equipmentType: 'all' })}
+                      title="Clear type filter"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  )}
+                </>
+              )}
             </div>
 
             {/* Active Filters Display */}
@@ -187,40 +267,13 @@ export function ResourcesHeader({
                     </Button>
                   </Badge>
                 )}
-
-                {filters.equipmentType && filters.equipmentType !== 'all' && (
-                  <Badge variant="secondary" className="flex items-center gap-1 text-xs">
-                    {filters.equipmentType}
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-auto p-0 ml-1 hover:bg-transparent"
-                      onClick={() => updateFilters({ equipmentType: '' })}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
-                )}
-                {filters.crewRole && filters.crewRole !== 'all' && (
-                  <Badge variant="secondary" className="flex items-center gap-1 text-xs">
-                    {filters.crewRole}
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-auto p-0 ml-1 hover:bg-transparent"
-                      onClick={() => updateFilters({ crewRole: '' })}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
-                )}
               </div>
             )}
           </div>
         </div>
         
         {/* Add Button and Tab Toggle */}
-        <div className="flex items-center gap-32">
+        <div className="flex items-center gap-6">
           <Button size="sm" className="gap-1 h-6 px-1.5 text-xs" onClick={onAddClick}>
             <Plus className="h-3 w-3" />
             Add {isCrewTab ? 'Member' : 'Equipment'}

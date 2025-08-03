@@ -7,23 +7,22 @@ import { ProjectsTable } from "@/components/projects/tables/ProjectsTable";
 import { AddProjectDialog } from "@/components/projects/AddProjectDialog";
 
 const ProjectList = () => {
-  // Initialize activeTab from localStorage, fallback to 'all'
-  const [activeTab, setActiveTab] = useState<'all' | 'active' | 'completed' | 'draft'>(() => {
+  // Initialize activeTab from localStorage, fallback to 'active'
+  const [activeTab, setActiveTab] = useState<'active' | 'archived'>(() => {
     try {
       const savedTab = localStorage.getItem('projects-active-tab');
-      return (savedTab === 'all' || savedTab === 'active' || savedTab === 'completed' || savedTab === 'draft') 
-        ? savedTab as 'all' | 'active' | 'completed' | 'draft'
-        : 'all';
+      return (savedTab === 'active' || savedTab === 'archived') 
+        ? savedTab as 'active' | 'archived'
+        : 'active';
     } catch {
-      return 'all';
+      return 'active';
     }
   });
 
   // Filter state
   const [filters, setFilters] = useState<ProjectFilters>({
     search: '',
-    owner: '',
-    status: ''
+    owner: ''
   });
 
   // Add Project dialog state

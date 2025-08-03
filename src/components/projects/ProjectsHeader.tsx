@@ -1,9 +1,8 @@
-import { Search, Filter, X, CalendarDays, Clock, CheckCircle, FileText, Plus } from "lucide-react";
+import { Search, X, Clock, CheckCircle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useProjects } from "@/hooks/useProjects";
 
@@ -11,12 +10,11 @@ import { useProjects } from "@/hooks/useProjects";
 export interface ProjectFilters {
   search: string;
   owner: string;
-  status: string;
 }
 
 interface ProjectsHeaderProps {
-  activeTab: 'all' | 'active' | 'completed' | 'draft';
-  onTabChange: (tab: 'all' | 'active' | 'completed' | 'draft') => void;
+  activeTab: 'active' | 'archived';
+  onTabChange: (tab: 'active' | 'archived') => void;
   filters: ProjectFilters;
   onFiltersChange: (filters: ProjectFilters) => void;
   onAddClick?: () => void;
@@ -32,14 +30,10 @@ export function ProjectsHeader({
   // Dynamic content based on project tab
   const getTabConfig = () => {
     switch (activeTab) {
-      case 'active':
-        return { title: 'Active Projects', icon: Clock, color: 'text-blue-500' };
-      case 'completed':
-        return { title: 'Completed Projects', icon: CheckCircle, color: 'text-green-500' };
-      case 'draft':
-        return { title: 'Draft Projects', icon: FileText, color: 'text-gray-500' };
+      case 'archived':
+        return { title: 'Archived Projects', icon: CheckCircle, color: 'text-green-500' };
       default:
-        return { title: 'All Projects', icon: CalendarDays, color: 'text-purple-500' };
+        return { title: 'Active Projects', icon: Clock, color: 'text-blue-500' };
     }
   };
 
@@ -48,23 +42,22 @@ export function ProjectsHeader({
   // Get dynamic data from projects
   const { projects } = useProjects();
 
-  // Extract unique statuses and owners from actual project data
-  const statusOptions = useMemo(() => {
-    if (!projects) return [];
-    const statuses = projects
-      .map(project => project.status)
-      .filter((status, index, self) => status && self.indexOf(status) === index)
-      .sort();
-    return statuses;
-  }, [projects]);
-
+  // Extract unique owners from actual project data with avatars
   const ownerOptions = useMemo(() => {
     if (!projects) return [];
-    const owners = projects
-      .map(project => project.owner?.name)
-      .filter((owner, index, self) => owner && self.indexOf(owner) === index)
-      .sort();
-    return owners;
+    const ownerMap = new Map<string, { name: string; avatar_url: string | null; id: string }>();
+    
+    projects.forEach(project => {
+      if (project.owner?.name && !ownerMap.has(project.owner.name)) {
+        ownerMap.set(project.owner.name, {
+          name: project.owner.name,
+          avatar_url: project.owner.avatar_url,
+          id: project.owner.id
+        });
+      }
+    });
+    
+    return Array.from(ownerMap.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [projects]);
 
   // Local search state for immediate UI feedback
@@ -99,17 +92,14 @@ export function ProjectsHeader({
 
   // Filter helpers
   const hasActiveFilters = (
-    filters.search || 
-    (filters.owner && filters.owner !== 'all') || 
-    (filters.status && filters.status !== 'all')
+    filters.search
   );
 
   const clearAllFilters = () => {
     setLocalSearchValue(''); // Clear local search state too
     onFiltersChange({
       search: '',
-      owner: '',
-      status: ''
+      owner: ''
     });
   };
 
@@ -132,68 +122,84 @@ export function ProjectsHeader({
                 placeholder="Search projects..."
                 value={localSearchValue}
                 onChange={(e) => setLocalSearchValue(e.target.value)}
-                className="pl-9 w-64 h-8"
+                className="pl-9 w-56 h-8"
               />
             </div>
 
-            {/* Quick Filters */}
+            {/* Owner Filter */}
             <div className="flex items-center gap-1">
               <Select value={filters.owner || 'all'} onValueChange={(value) => updateFilters({ owner: value })}>
-                <SelectTrigger className="w-auto h-8 text-xs">
-                  <SelectValue placeholder="Owner" />
+                <SelectTrigger className="w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors">
+                  <div className="flex items-center gap-2">
+                    {filters.owner && filters.owner !== 'all' ? (
+                      <>
+                        {(() => {
+                          const selectedOwner = ownerOptions.find(o => o.name === filters.owner);
+                          return selectedOwner?.avatar_url ? (
+                            <img
+                              src={selectedOwner.avatar_url}
+                              alt={selectedOwner.name}
+                              className="h-4 w-4 rounded-full ring-1 ring-border shadow-sm"
+                            />
+                          ) : (
+                            <div className="h-4 w-4 rounded-full bg-muted flex items-center justify-center">
+                              <span className="text-xs font-medium text-muted-foreground">
+                                {selectedOwner?.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          );
+                        })()}
+                        <span>{filters.owner}</span>
+                      </>
+                    ) : (
+                      <span>All Owners</span>
+                    )}
+                  </div>
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All owners</SelectItem>
+                <SelectContent className="w-[200px]">
+                  <SelectItem value="all">
+                    <div className="flex items-center gap-2">
+                      <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center">
+                        <span className="text-xs text-muted-foreground">All</span>
+                      </div>
+                      <span>All Owners</span>
+                    </div>
+                  </SelectItem>
                   {ownerOptions.map(owner => (
-                    <SelectItem key={owner} value={owner}>{owner}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={filters.status || 'all'} onValueChange={(value) => updateFilters({ status: value })}>
-                <SelectTrigger className="w-auto h-8 text-xs">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All statuses</SelectItem>
-                  {statusOptions.map(status => (
-                    <SelectItem key={status} value={status}>
-                      {status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'}
+                    <SelectItem key={owner.name} value={owner.name}>
+                      <div className="flex items-center gap-2">
+                        {owner.avatar_url ? (
+                          <img
+                            src={owner.avatar_url}
+                            alt={owner.name}
+                            className="h-5 w-5 rounded-full ring-1 ring-border shadow-sm"
+                          />
+                        ) : (
+                          <div className="h-5 w-5 rounded-full bg-muted flex items-center justify-center">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {owner.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <span>{owner.name}</span>
+                      </div>
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              {/* More Filters Button */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-8 px-2 relative">
-                    <Filter className="h-4 w-4" />
-                    {hasActiveFilters && (
-                      <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 p-0 text-xs flex items-center justify-center">
-                        !
-                      </Badge>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-64" align="end">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-medium text-sm">Advanced Filters</h4>
-                      {hasActiveFilters && (
-                        <Button variant="ghost" size="sm" onClick={clearAllFilters} className="h-auto p-1 text-xs">
-                          Clear all
-                        </Button>
-                      )}
-                    </div>
-                    
-                    {/* Advanced filters can be added here */}
-                    <div className="text-sm text-muted-foreground">
-                      More filter options coming soon...
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              {/* Clear Owner Button */}
+              {filters.owner && filters.owner !== 'all' && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0 hover:bg-destructive/10 hover:text-destructive"
+                  onClick={() => updateFilters({ owner: 'all' })}
+                  title="Clear owner filter"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              )}
             </div>
 
             {/* Active Filters Display */}
@@ -215,58 +221,19 @@ export function ProjectsHeader({
                     </Button>
                   </Badge>
                 )}
-
-                {filters.owner && filters.owner !== 'all' && (
-                  <Badge variant="secondary" className="flex items-center gap-1 text-xs">
-                    {filters.owner}
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-auto p-0 ml-1 hover:bg-transparent"
-                      onClick={() => updateFilters({ owner: '' })}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
-                )}
-
-                {filters.status && filters.status !== 'all' && (
-                  <Badge variant="secondary" className="flex items-center gap-1 text-xs">
-                    {filters.status ? filters.status.charAt(0).toUpperCase() + filters.status.slice(1) : 'Unknown'}
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-auto p-0 ml-1 hover:bg-transparent"
-                      onClick={() => updateFilters({ status: '' })}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </Badge>
-                )}
               </div>
             )}
           </div>
         </div>
         
         {/* Add Button and Tab Toggle */}
-        <div className="flex items-center gap-32">
+        <div className="flex items-center gap-6">
           <Button size="sm" className="gap-1 h-6 px-1.5 text-xs" onClick={onAddClick}>
             <Plus className="h-3 w-3" />
             Add Project
           </Button>
           
           <div className="flex bg-muted rounded-lg p-1">
-            <Button
-              variant={activeTab === 'all' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onTabChange('all')}
-              className={`flex items-center gap-2 ${
-                activeTab === 'all' ? 'bg-purple-100 text-purple-700' : ''
-              }`}
-            >
-              <CalendarDays className="h-4 w-4" />
-              All
-            </Button>
             <Button
               variant={activeTab === 'active' ? 'default' : 'ghost'}
               size="sm"
@@ -279,26 +246,15 @@ export function ProjectsHeader({
               Active
             </Button>
             <Button
-              variant={activeTab === 'completed' ? 'default' : 'ghost'}
+              variant={activeTab === 'archived' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => onTabChange('completed')}
+              onClick={() => onTabChange('archived')}
               className={`flex items-center gap-2 ${
-                activeTab === 'completed' ? 'bg-green-100 text-green-700' : ''
+                activeTab === 'archived' ? 'bg-green-100 text-green-700' : ''
               }`}
             >
               <CheckCircle className="h-4 w-4" />
-              Completed
-            </Button>
-            <Button
-              variant={activeTab === 'draft' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onTabChange('draft')}
-              className={`flex items-center gap-2 ${
-                activeTab === 'draft' ? 'bg-gray-100 text-gray-700' : ''
-              }`}
-            >
-              <FileText className="h-4 w-4" />
-              Draft
+              Archived
             </Button>
           </div>
         </div>
