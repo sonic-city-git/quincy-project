@@ -213,32 +213,8 @@ export function UnifiedCalendar({
     }
   }, [equipmentGroups, resourceType, timelineStart, timelineEnd]);
 
-  // Track resource type changes for instant loading
-  const prevResourceTypeRef = useRef(resourceType);
-  const [hasInitialData, setHasInitialData] = useState(false);
-  const [isLoadingResourceSwitch, setIsLoadingResourceSwitch] = useState(false);
-  
-  // Detect resource type changes and manage loading state
-  useEffect(() => {
-    const hasResourceTypeChanged = prevResourceTypeRef.current !== resourceType;
-    
-    if (hasResourceTypeChanged) {
-      prevResourceTypeRef.current = resourceType;
-      setIsLoadingResourceSwitch(true);
-      setHasInitialData(false);
-    }
-  }, [resourceType]);
-
-  // Mark loading as complete when data is ready
-  useEffect(() => {
-    if (isEquipmentReady && equipmentGroups.length > 0) {
-      setHasInitialData(true);
-      setIsLoadingResourceSwitch(false);
-    }
-  }, [isEquipmentReady, equipmentGroups.length]);
-
-  // Show loading screen while data loads OR when switching resource types
-  const shouldShowLoading = !isEquipmentReady || !hasInitialData || isLoadingResourceSwitch;
+  // Simple loading state
+  const shouldShowLoading = !isEquipmentReady;
   
   // Cleanup stale states periodically
   const clearStaleStatesRef = useRef(clearStaleStates);
@@ -281,24 +257,16 @@ export function UnifiedCalendar({
   }, [getLowestAvailable, dateStrings]);
 
   if (shouldShowLoading) {
-    const loadingMessage = isLoadingResourceSwitch 
-      ? `Switching to ${resourceType}...` 
-      : `Loading ${resourceType} timeline...`;
-    
-    const subMessage = isLoadingResourceSwitch
-      ? `Loading ${resourceType} data and availability...`
-      : `Loading booking data and availability...`;
-
     return (
       <div className="border border-border rounded-lg overflow-hidden bg-background">
         <div className="flex items-center justify-center h-96">
           <div className="text-center space-y-4">
             <div className="inline-flex items-center gap-2 text-lg font-medium">
               <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse" />
-              {loadingMessage}
+              Loading {resourceType} timeline...
             </div>
             <p className="text-sm text-muted-foreground">
-              {subMessage}
+              Loading booking data and availability...
             </p>
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Calendar, Package, Users, Filter, AlertTriangle, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +15,26 @@ import { format, addDays } from "date-fns";
 
 const Planner = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [activeTab, setActiveTab] = useState<'equipment' | 'crew'>('equipment');
+  
+  // Initialize activeTab from localStorage, fallback to 'equipment'
+  const [activeTab, setActiveTab] = useState<'equipment' | 'crew'>(() => {
+    try {
+      const savedTab = localStorage.getItem('planner-active-tab');
+      return (savedTab === 'crew' || savedTab === 'equipment') ? savedTab : 'equipment';
+    } catch {
+      return 'equipment';
+    }
+  });
+
+  // Persist activeTab to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('planner-active-tab', activeTab);
+    } catch (error) {
+      // Silently handle localStorage errors (e.g., when in private mode)
+      console.warn('Could not save tab preference to localStorage:', error);
+    }
+  }, [activeTab]);
   
   // Filter state
   const [filters, setFilters] = useState<PlannerFilters>({
