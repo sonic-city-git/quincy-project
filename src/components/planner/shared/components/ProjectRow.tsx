@@ -72,7 +72,7 @@ const ProjectRowComponent = ({
       style={{ height: LAYOUT.PROJECT_ROW_HEIGHT }}
     >
       {/* Project name column */}
-      <div 
+            <div 
         className="flex items-center px-12 text-sm text-muted-foreground"
         style={{ width: LAYOUT.EQUIPMENT_NAME_WIDTH }}
       >
@@ -96,12 +96,12 @@ const ProjectRowComponent = ({
           const hasData = isCrew ? !!role : quantity > 0;
           
           return (
-            <div 
+            <div
               key={dateInfo.date.toISOString()}
               className={`px-1 relative flex items-center justify-center ${
                 dateInfo.isSelected || dateInfo.isToday ? 'z-10' : ''
               }`}
-              style={{ width: '50px' }}
+              style={{ width: LAYOUT.DAY_CELL_WIDTH }}
             >
               {/* Today indicator */}
               {dateInfo.isToday && (

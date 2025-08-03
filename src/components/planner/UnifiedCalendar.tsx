@@ -94,25 +94,34 @@ export function UnifiedCalendar({
 
   // Note: Scroll logic is now simple - just scroll to center selected date
 
-  // Enhanced scroll handler to sync headers with timeline content
+  // ENHANCED: Improved scroll handler with RAF for smoother sync
   const handleTimelineScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     // Handle infinite scroll and drag functionality
     scrollHandlers.handleEquipmentScroll(e);
     
-    // Sync timeline headers with content scroll position
-    const scrollLeft = e.currentTarget.scrollLeft;
-    if (stickyHeadersRef.current) {
-      stickyHeadersRef.current.scrollLeft = scrollLeft;
-    }
+    // IMPROVED: Use RAF for smoother header sync
+    requestAnimationFrame(() => {
+      const scrollLeft = e.currentTarget.scrollLeft;
+      if (stickyHeadersRef.current && stickyHeadersRef.current.scrollLeft !== scrollLeft) {
+        stickyHeadersRef.current.scrollLeft = scrollLeft;
+      }
+    });
   }, [scrollHandlers]);
 
-  // Enhanced mouse move handler for drag synchronization
+  // ENHANCED: Improved mouse move handler with RAF
   const handleTimelineMouseMove = useCallback((e: React.MouseEvent) => {
     scrollHandlers.handleMouseMove(e);
     
-    // Sync headers during drag
+    // IMPROVED: Use RAF for smoother drag sync
     if (isDragging && equipmentRowsRef.current && stickyHeadersRef.current) {
-      stickyHeadersRef.current.scrollLeft = equipmentRowsRef.current.scrollLeft;
+      requestAnimationFrame(() => {
+        if (equipmentRowsRef.current && stickyHeadersRef.current) {
+          const scrollLeft = equipmentRowsRef.current.scrollLeft;
+          if (stickyHeadersRef.current.scrollLeft !== scrollLeft) {
+            stickyHeadersRef.current.scrollLeft = scrollLeft;
+          }
+        }
+      });
     }
   }, [scrollHandlers.handleMouseMove, isDragging]);
 

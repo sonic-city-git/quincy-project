@@ -22,6 +22,7 @@ interface ResourceFolderSectionProps {
   getBookingsForEquipment: (equipmentId: string, dateStr: string, equipment: any) => any;
   filters?: any; // Add filters to detect when filtering is active
   resourceType?: 'equipment' | 'crew'; // Add resource type to hide stock for crew
+  isUnfilledRolesSection?: boolean; // ADDED: Match TimelineSection for unfilled roles handling
 }
 
 export function ResourceFolderSection({
@@ -33,7 +34,8 @@ export function ResourceFolderSection({
   formattedDates,
   getBookingsForEquipment,
   filters,
-  resourceType = 'equipment'
+  resourceType = 'equipment',
+  isUnfilledRolesSection = false // ADDED: Match TimelineSection
 }: ResourceFolderSectionProps) {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
   
@@ -130,8 +132,8 @@ export function ResourceFolderSection({
                 </div>
               </div>
               
-              {/* Project name rows when equipment is expanded */}
-              {isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
+                                    {/* Project name rows when equipment is expanded - NOT for unfilled roles */}
+                      {!isUnfilledRolesSection && isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
                 <div>
                   {equipmentUsage.projectNames.map((projectName) => (
                     <div 
@@ -170,7 +172,7 @@ export function ResourceFolderSection({
                 onClick={() => toggleGroup(subFolderKey)}
               >
                 <div 
-                  className="flex items-center gap-3 px-4 pl-12 bg-muted/50 hover:bg-muted transition-colors border-t border-border"
+                  className="flex items-center gap-3 px-4 pl-12 bg-muted/50 hover:bg-muted transition-colors border-t border-b border-border"
                   style={{ height: LAYOUT.SUBFOLDER_HEIGHT }}
                 >
                   <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-data-[state=open]/subfolder:rotate-90 transition-transform" />
@@ -225,8 +227,8 @@ export function ResourceFolderSection({
                         </div>
                       </div>
                       
-                      {/* Project name rows when equipment is expanded */}
-                      {isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
+                      {/* Project name rows when equipment is expanded - NOT for unfilled roles */}
+                      {!isUnfilledRolesSection && isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0 && (
                         <div>
                           {equipmentUsage.projectNames.map((projectName) => (
                             <div 

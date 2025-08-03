@@ -111,13 +111,13 @@ const TimelineContentComponent = ({
       // For unfilled roles: they are always a "problem" since they need to be filled
       if (item?.availability === 'needed') return true;
       
-      // Quick check: only look at visible timeline dates (like project rows do)
-      if (!item?.id || visibleDates.length === 0) {
+      // BUGFIX: Check ALL dates, not just visible ones for reliable problems detection
+      if (!item?.id || formattedDates.length === 0) {
         return false;
       }
       
-      // Check visible dates for problems
-      for (const dateInfo of visibleDates) {
+      // Check ALL dates for problems (not just visible ones)
+      for (const dateInfo of formattedDates) {
         if (dateInfo?.dateStr) {
           const booking = getBookingForEquipment(item.id, dateInfo.dateStr);
           if (booking && booking.bookings && booking.bookings.length > 0) { // Only check items with actual bookings
@@ -252,7 +252,7 @@ const TimelineContentComponent = ({
     filters?.crewRole, 
     resourceType, 
     showProblemsOnly,
-    visibleDates,
+    formattedDates, // BUGFIX: Use formattedDates instead of visibleDates for problems detection
     getBookingForEquipment
   ]);
   
@@ -315,6 +315,7 @@ const TimelineContentComponent = ({
               getBookingsForEquipment={getBookingsForEquipment}
               filters={filters}
               resourceType={resourceType}
+              isUnfilledRolesSection={(group as any).isUnfilledRolesSection} // FIXED: Pass the flag
             />
           ))}
         </div>

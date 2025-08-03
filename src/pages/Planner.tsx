@@ -128,10 +128,14 @@ const Planner = () => {
           monthSections={sharedTimeline.monthSections}
           onDateChange={setSelectedDate}
           onHeaderScroll={(e) => {
-            // Sync with timeline content scroll
-            if (sharedTimeline.equipmentRowsRef.current) {
-              sharedTimeline.equipmentRowsRef.current.scrollLeft = e.currentTarget.scrollLeft;
-            }
+            // IMPROVED: Enhanced header-to-content sync with RAF
+            requestAnimationFrame(() => {
+              const scrollLeft = e.currentTarget.scrollLeft;
+              if (sharedTimeline.equipmentRowsRef.current && 
+                  sharedTimeline.equipmentRowsRef.current.scrollLeft !== scrollLeft) {
+                sharedTimeline.equipmentRowsRef.current.scrollLeft = scrollLeft;
+              }
+            });
           }}
           stickyHeadersRef={sharedTimeline.stickyHeadersRef}
           resourceType={activeTab}
