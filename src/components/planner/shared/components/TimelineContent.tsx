@@ -31,11 +31,9 @@ interface TimelineContentProps {
   equipmentRowsRef: React.RefObject<HTMLDivElement>;
   handleTimelineScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   handleTimelineMouseMove: (e: React.MouseEvent) => void;
-  scrollHandlers: {
-    handleMouseDown: (e: React.MouseEvent) => void;
-    handleMouseUp: () => void;
-    handleMouseLeave: () => void;
-  };
+  handleMouseDown: (e: React.MouseEvent) => void;
+  handleMouseUp: () => void;
+  handleMouseLeave: () => void;
   isDragging: boolean;
   getBookingsForEquipment: (equipmentId: string, dateStr: string, equipment: any) => any; // Legacy function for folder section
   getBookingState: (equipmentId: string, dateStr: string) => any;
@@ -46,6 +44,7 @@ interface TimelineContentProps {
   showProblemsOnly?: boolean; // Add problems-only filter prop
   visibleTimelineStart?: Date; // Visible timeline start for performance
   visibleTimelineEnd?: Date; // Visible timeline end for performance
+  isWithinScrollContainer?: boolean; // Flag to remove own scroll area when within unified container
 }
 
 const TimelineContentComponent = ({
@@ -62,7 +61,9 @@ const TimelineContentComponent = ({
   equipmentRowsRef,
   handleTimelineScroll,
   handleTimelineMouseMove,
-  scrollHandlers,
+  handleMouseDown,
+  handleMouseUp,
+  handleMouseLeave,
   isDragging,
   getBookingsForEquipment,
   getBookingState,
@@ -72,7 +73,8 @@ const TimelineContentComponent = ({
   filters,
   showProblemsOnly = false,
   visibleTimelineStart,
-  visibleTimelineEnd
+  visibleTimelineEnd,
+  isWithinScrollContainer = false
 }: TimelineContentProps) => {
   
   // Memoize visible dates calculation for performance
@@ -320,15 +322,15 @@ const TimelineContentComponent = ({
           ))}
         </div>
 
-        {/* Middle Column - Timeline (Horizontally Scrollable) */}
+        {/* Middle Column - Timeline */}
         <div 
-          ref={equipmentRowsRef}
-          className={`flex-1 overflow-x-auto scrollbar-hide ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-          onScroll={handleTimelineScroll}
-          onMouseDown={scrollHandlers.handleMouseDown}
-          onMouseMove={handleTimelineMouseMove}
-          onMouseUp={scrollHandlers.handleMouseUp}
-          onMouseLeave={scrollHandlers.handleMouseLeave}
+          ref={isWithinScrollContainer ? undefined : equipmentRowsRef}
+          className={`flex-1 ${isWithinScrollContainer ? '' : 'overflow-x-auto scrollbar-hide'} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          onScroll={isWithinScrollContainer ? undefined : handleTimelineScroll}
+          onMouseDown={isWithinScrollContainer ? undefined : handleMouseDown}
+          onMouseMove={isWithinScrollContainer ? undefined : handleTimelineMouseMove}
+          onMouseUp={isWithinScrollContainer ? undefined : handleMouseUp}
+          onMouseLeave={isWithinScrollContainer ? undefined : handleMouseLeave}
         >
           <div style={{ minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px` }}>
             {filteredEquipmentGroups.map((group) => (

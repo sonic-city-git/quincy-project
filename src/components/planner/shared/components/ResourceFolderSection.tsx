@@ -23,6 +23,10 @@ interface ResourceFolderSectionProps {
   filters?: any; // Add filters to detect when filtering is active
   resourceType?: 'equipment' | 'crew'; // Add resource type to hide stock for crew
   isUnfilledRolesSection?: boolean; // ADDED: Match TimelineSection for unfilled roles handling
+  
+  // NEW: Render mode flags
+  renderOnlyLeft?: boolean;
+  renderOnlyTimeline?: boolean;
 }
 
 export function ResourceFolderSection({
@@ -35,7 +39,9 @@ export function ResourceFolderSection({
   getBookingsForEquipment,
   filters,
   resourceType = 'equipment',
-  isUnfilledRolesSection = false // ADDED: Match TimelineSection
+  isUnfilledRolesSection = false, // ADDED: Match TimelineSection
+  renderOnlyLeft = false,
+  renderOnlyTimeline = false
 }: ResourceFolderSectionProps) {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
   

@@ -48,9 +48,19 @@ interface TimelineHeaderProps {
   // Filter props (optional)
   filters?: PlannerFilters;
   onFiltersChange?: (filters: PlannerFilters) => void;
+  
+  // NEW: Flag to indicate if header is within a unified scroll container
+  isWithinScrollContainer?: boolean;
 
   showProblemsOnly?: boolean;
   onToggleProblemsOnly?: () => void;
+  
+  // NEW: Timeline scroll system for integrated scroll handling
+  timelineScroll?: any;
+  
+  // NEW: Render mode flags
+  renderOnlyLeft?: boolean;
+  renderOnlyTimeline?: boolean;
 }
 
 export function TimelineHeader({
@@ -65,7 +75,11 @@ export function TimelineHeader({
   filters,
   onFiltersChange,
   showProblemsOnly = false,
-  onToggleProblemsOnly
+  onToggleProblemsOnly,
+  isWithinScrollContainer = false,
+  timelineScroll,
+  renderOnlyLeft = false,
+  renderOnlyTimeline = false
 }: TimelineHeaderProps) {
   
   // Dynamic content based on resource type
@@ -303,6 +317,7 @@ export function TimelineHeader({
     </>
   );
 
+  // Standard component render
   return (
     <SectionHeader
       header={{
@@ -446,8 +461,8 @@ export function TimelineHeader({
                 )}
               </SelectContent>
             </Select>
-                              )}
-    </div>
+          )}
+        </div>
       )}
     </SectionHeader>
   );

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
+import { format } from "date-fns";
 import { Calendar } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { useTabPersistence } from "@/hooks/useTabPersistence";
@@ -9,9 +10,11 @@ import { useFilterState } from "@/hooks/useFilterState";
 import { UnifiedCalendar } from "@/components/planner/UnifiedCalendar";
 import { useUnifiedTimelineScroll } from "@/components/planner/shared/hooks/useUnifiedTimelineScroll";
 import { TimelineHeader, PlannerFilters } from "@/components/planner/shared/components/TimelineHeader";
+import { LAYOUT } from "@/components/planner/shared/constants";
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
 
 const Planner = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -128,15 +131,28 @@ const Planner = () => {
       iconColor="text-blue-500"
     >
       <div className="space-y-4">
-        {/* Timeline Header - Outside calendar for better performance */}
+        {/* DEBUG: Test scroll to far date */}
+        <div className="mb-4">
+          <button 
+            onClick={timelineScroll.jumpToFarDate}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            🚀 Test Jump +20 Days (Debug)
+          </button>
+        </div>
+
+        {/* Standard header with filters and tabs */}
         <TimelineHeader
           formattedDates={timelineScroll.formattedDates}
           monthSections={timelineScroll.monthSections}
-          onDateChange={setSelectedDate}
-          onHeaderScroll={(e) => {
-            // UNIFIED: Use central scroll system for header sync
-            const scrollLeft = e.currentTarget.scrollLeft;
-            timelineScroll.scrollTo(scrollLeft, { smooth: false, source: 'sync' });
+          onDateChange={(date) => {
+            // Immediate scroll for instant feedback
+            timelineScroll.scrollToDate(date);
+            // Then update state
+            setSelectedDate(date);
+          }}
+          onHeaderScroll={() => {
+            // No sync needed - unified scroll system handles this
           }}
           stickyHeadersRef={timelineScroll.stickyHeadersRef}
           resourceType={activeTab}
@@ -148,16 +164,22 @@ const Planner = () => {
           onToggleProblemsOnly={() => setShowProblemsOnly(!showProblemsOnly)}
         />
         
-        {/* Calendar Content */}
+        {/* Main timeline content with its own scroll that syncs back to header */}
         <UnifiedCalendar 
           selectedDate={selectedDate} 
-          onDateChange={setSelectedDate}
+          onDateChange={(date) => {
+            // Immediate scroll for instant feedback
+            timelineScroll.scrollToDate(date);
+            // Then update state
+            setSelectedDate(date);
+          }}
           selectedOwner={filters.selectedOwner}
           timelineScroll={timelineScroll}
           resourceType={activeTab}
           filters={filters}
           showProblemsOnly={showProblemsOnly}
           targetScrollItem={targetScrollItem}
+          isWithinScrollContainer={false}
         />
       </div>
     </PageLayout>

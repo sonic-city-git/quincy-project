@@ -25,6 +25,12 @@ interface UnifiedCalendarProps {
     type: 'equipment' | 'crew';
     id: string;
   } | null;
+  // NEW: Flag to indicate if content is within a unified scroll container
+  isWithinScrollContainer?: boolean;
+  
+  // NEW: Render mode flags
+  renderOnlyLeft?: boolean;
+  renderOnlyTimeline?: boolean;
 }
 
 // Performance metrics for monitoring
@@ -56,7 +62,10 @@ export function UnifiedCalendar({
   resourceType,
   filters,
   showProblemsOnly = false,
-  targetScrollItem
+  targetScrollItem,
+  isWithinScrollContainer = false,
+  renderOnlyLeft = false,
+  renderOnlyTimeline = false
 }: UnifiedCalendarProps) {
   
   // Performance tracking
@@ -100,8 +109,8 @@ export function UnifiedCalendar({
     periodStart: stableDataRange.start,
     periodEnd: stableDataRange.end,
     selectedOwner,
-    visibleTimelineStart,
-    visibleTimelineEnd,
+    visibleTimelineStart: timelineStart,
+    visibleTimelineEnd: timelineEnd,
   };
 
   // Only fetch data for the active resource type
@@ -228,6 +237,7 @@ export function UnifiedCalendar({
     );
   }
 
+  // Simply return TimelineContent - no complex conditional rendering needed
   return (
     <TimelineContent
       equipmentGroups={equipmentGroups}
@@ -241,7 +251,10 @@ export function UnifiedCalendar({
       getProjectQuantityForDate={getProjectQuantityForDate}
       getCrewRoleForDate={getCrewRoleForDate}
       equipmentRowsRef={equipmentRowsRef}
-      handleTimelineScroll={handleScroll}
+      handleTimelineScroll={(e) => {
+        // Handle scroll only - unified system manages sync
+        handleScroll(e);
+      }}
       handleTimelineMouseMove={handleMouseMove}
       handleMouseDown={handleMouseDown}
       handleMouseUp={handleMouseUp}
@@ -256,6 +269,7 @@ export function UnifiedCalendar({
       showProblemsOnly={showProblemsOnly}
       visibleTimelineStart={timelineStart}
       visibleTimelineEnd={timelineEnd}
+      isWithinScrollContainer={isWithinScrollContainer}
     />
   );
 }
