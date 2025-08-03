@@ -7,9 +7,8 @@ interface UseSharedTimelineProps {
 }
 
 export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
-  // STABLE timeline range - prevent "pop" by using consistent initial date
+  // SIMPLE: Always start timeline centered on today - no need for complex scroll logic
   const [timelineStart, setTimelineStart] = useState(() => {
-    // Use today's date for stable initialization, not the passed selectedDate which might change
     const today = new Date();
     return addDays(today, -35);
   });
@@ -27,7 +26,7 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
   const lastSelectedDate = useRef(selectedDate);
   const animationRef = useRef<number | null>(null);
   
-  // Track if we've done initial scroll to today
+  // Track initial scroll to center today once
   const hasInitialScrolled = useRef(false);
 
   // Generate timeline dates - memoized for performance
@@ -112,19 +111,24 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     }, 200);
   }, []);
 
-  // Simple scroll to center the selected date
+  // FAST: Scroll to center the selected date (NO expensive formatting!)
   const scrollToDate = useCallback((targetDate: Date, animate = true) => {
-    const targetDateStr = format(targetDate, 'yyyy-MM-dd');
-    const targetIndex = timelineDates.findIndex(date => 
-      format(date, 'yyyy-MM-dd') === targetDateStr
-    );
+    // PERFORMANCE: Use fast date comparison instead of expensive string formatting
+    const target = new Date(targetDate);
+    target.setHours(0, 0, 0, 0);
+    
+    const targetIndex = timelineDates.findIndex(date => {
+      const timelineDate = new Date(date);
+      timelineDate.setHours(0, 0, 0, 0);
+      return timelineDate.getTime() === target.getTime();
+    });
     
     if (targetIndex === -1 || !timelineRowsRef.current) return;
     
     const dayWidth = LAYOUT.DAY_CELL_WIDTH;
     const targetPosition = targetIndex * dayWidth;
     const containerWidth = timelineRowsRef.current.clientWidth;
-    const scrollLeft = targetPosition - (containerWidth / 2) + (dayWidth / 2);
+    const scrollLeft = Math.max(0, targetPosition - (containerWidth / 2) + (dayWidth / 2));
     
     // Scroll both timeline and header
     if (animate) {
@@ -146,72 +150,74 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     }
   }, [timelineDates]);
   
-  // Unified scroll logic:
-  // 1. On page load → scroll to today (with smooth animation)
-  // 2. When selectedDate changes → scroll to that date (with animation)
-  // 3. Timeline state persists across equipment/crew tab switches
-  
-  // FIXED: Separate timeline range from scroll operations to prevent racing
-  
-  // 1. Initialize timeline range once on mount
+  // FAST: Set initial scroll position to center today (NO expensive date formatting!)
   useEffect(() => {
-    if (!hasInitialScrolled.current) {
+    if (timelineDates.length > 0 && !hasInitialScrolled.current && timelineRowsRef.current) {
       hasInitialScrolled.current = true;
+      
+      // PERFORMANCE: Use simple date arithmetic instead of expensive formatting
       const today = new Date();
-      setTimelineStart(addDays(today, -35));
-      setTimelineEnd(addDays(today, 35));
+      today.setHours(0, 0, 0, 0); // Normalize to start of day
+      
+      // Find today's index using fast date comparison (no string formatting!)
+      const todayIndex = timelineDates.findIndex(date => {
+        const timelineDate = new Date(date);
+        timelineDate.setHours(0, 0, 0, 0);
+        return timelineDate.getTime() === today.getTime();
+      });
+      
+      if (todayIndex !== -1) {
+        const dayWidth = LAYOUT.DAY_CELL_WIDTH;
+        const targetPosition = todayIndex * dayWidth;
+        const containerWidth = timelineRowsRef.current.clientWidth;
+        const scrollLeft = Math.max(0, targetPosition - (containerWidth / 2) + (dayWidth / 2));
+        
+        // Set position directly - instant, no lag
+        timelineRowsRef.current.scrollLeft = scrollLeft;
+        if (stickyHeadersRef.current) {
+          stickyHeadersRef.current.scrollLeft = scrollLeft;
+        }
+      }
     }
-  }, []); // No dependencies - run once on mount
-  
-  // 2. Scroll to initial date after timeline is built (only once) - WITH ANIMATION
-  const hasScrolledToInitial = useRef(false);
-  useEffect(() => {
-    if (hasInitialScrolled.current && timelineDates.length > 0 && !hasScrolledToInitial.current) {
-      hasScrolledToInitial.current = true;
-      const timer = setTimeout(() => {
-        scrollToDate(new Date(), true); // ✅ Enable animation for beautiful initial scroll
-      }, 150); // Slightly longer delay to ensure smooth animation visibility
-      return () => clearTimeout(timer);
-    }
-  }, [timelineDates.length > 0 ? 'ready' : 'loading']); // Stable dependency
+  }, [timelineDates.length]);
 
-  // 3. Handle date selection (scroll only, don't change timeline range)
+  // Handle user date selection changes (with animation)
   useEffect(() => {
     if (hasInitialScrolled.current) {
       scrollToDate(selectedDate, true);
     }
-  }, [selectedDate]);
+  }, [selectedDate, scrollToDate]);
 
-  // Pre-format dates for performance - avoid repeated format() calls
-  const baseDates = useMemo(() => {
-    return timelineDates.map(date => ({
-      date,
-      dateStr: format(date, 'yyyy-MM-dd'),
-      isoString: date.toISOString(),
-      isWeekendDay: isWeekend(date),
-      monthYear: format(date, 'yyyy-MM')
-    }));
-  }, [timelineDates]);
-
+  // FAST: Lightweight date formatting - only what's needed!
   const formattedDates = useMemo(() => {
     const today = new Date();
-    const todayStr = format(today, 'yyyy-MM-dd');
-    const selectedDateStr = format(selectedDate, 'yyyy-MM-dd');
+    today.setHours(0, 0, 0, 0);
+    const selectedDateNormalized = new Date(selectedDate);
+    selectedDateNormalized.setHours(0, 0, 0, 0);
     
-    return baseDates.map(baseDate => ({
-      ...baseDate,
-      isToday: baseDate.dateStr === todayStr,
-      isSelected: baseDate.dateStr === selectedDateStr
-    }));
-  }, [baseDates, selectedDate]);
+    return timelineDates.map(date => {
+      const normalizedDate = new Date(date);
+      normalizedDate.setHours(0, 0, 0, 0);
+      
+      return {
+        date,
+        dateStr: format(date, 'yyyy-MM-dd'), // Only format when actually needed
+        isToday: normalizedDate.getTime() === today.getTime(),
+        isSelected: normalizedDate.getTime() === selectedDateNormalized.getTime(),
+        isWeekendDay: isWeekend(date)
+      };
+    });
+  }, [timelineDates, selectedDate]);
 
   // Month sections with alternating backgrounds - enhanced for year transitions
   const monthSections = useMemo(() => {
     const sections = [];
     let currentSection = null;
     
-    baseDates.forEach((dateInfo, index) => {
-      if (!currentSection || currentSection.monthYear !== dateInfo.monthYear) {
+    timelineDates.forEach((date, index) => {
+      const monthYear = format(date, 'yyyy-MM'); // Only format when building sections
+      
+      if (!currentSection || currentSection.monthYear !== monthYear) {
         // Finish previous section
         if (currentSection) {
           currentSection.endIndex = index - 1;
@@ -221,12 +227,12 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
         
         // Check if this is a new year for enhanced styling
         const isNewYear = sections.length > 0 && 
-          dateInfo.date.getFullYear() !== sections[sections.length - 1].date.getFullYear();
+          date.getFullYear() !== sections[sections.length - 1].date.getFullYear();
         
         // Start new section
         currentSection = {
-          monthYear: dateInfo.monthYear,
-          date: dateInfo.date,
+          monthYear,
+          date: date,
           startIndex: index,
           endIndex: index,
           width: 0,
@@ -238,13 +244,13 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     
     // Don't forget the last section
     if (currentSection) {
-      currentSection.endIndex = baseDates.length - 1;
+      currentSection.endIndex = timelineDates.length - 1;
       currentSection.width = (currentSection.endIndex - currentSection.startIndex + 1) * LAYOUT.DAY_CELL_WIDTH;
       sections.push(currentSection);
     }
     
     return sections;
-  }, [baseDates]);
+  }, [timelineDates]);
 
   // Cleanup animation on unmount
   useEffect(() => {
