@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { 
@@ -8,7 +9,9 @@ import {
   Package, 
   Search,
   ArrowRight,
-  Building
+  Building,
+  Eye,
+  Mail
 } from "lucide-react";
 import { SearchResult, GlobalSearchResults } from "@/hooks/useGlobalSearch";
 
@@ -22,9 +25,11 @@ interface SearchResultItemProps {
   result: SearchResult;
   onItemClick: () => void;
   onWarningClick?: () => void;
+  onAvailabilityClick?: () => void;
+  onPrimaryActionClick?: () => void;
 }
 
-function SearchResultItem({ result, onItemClick, onWarningClick }: SearchResultItemProps) {
+function SearchResultItem({ result, onItemClick, onWarningClick, onAvailabilityClick, onPrimaryActionClick }: SearchResultItemProps) {
   const getIcon = () => {
     switch (result.type) {
       case 'project':
@@ -49,6 +54,12 @@ function SearchResultItem({ result, onItemClick, onWarningClick }: SearchResultI
         return 'text-red-500 bg-red-500/10 border-red-500/20';
       case 'low_stock':
         return 'text-amber-500 bg-amber-500/10 border-amber-500/20';
+      case 'double_booked':
+        return 'text-red-500 bg-red-500/10 border-red-500/20 hover:bg-red-500/20';
+      case 'missing_roles':
+        return 'text-orange-500 bg-orange-500/10 border-orange-500/20 hover:bg-orange-500/20';
+      case 'equipment_conflicts':
+        return 'text-red-500 bg-red-500/10 border-red-500/20 hover:bg-red-500/20';
       default:
         return '';
     }
@@ -87,6 +98,22 @@ function SearchResultItem({ result, onItemClick, onWarningClick }: SearchResultI
         {result.subtitle && (
           <p className="text-xs text-muted-foreground truncate">{result.subtitle}</p>
         )}
+        {/* Role badges for crew members */}
+        {result.type === 'crew' && result.roles && result.roles.length > 0 && (
+          <div className="flex gap-1 flex-wrap mt-1">
+            {result.roles.map((role, index) => (
+              <Badge 
+                key={index} 
+                className="text-xs py-1 px-2 text-white border-0"
+                style={{
+                  backgroundColor: role.color
+                }}
+              >
+                {role.name}
+              </Badge>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Warning Column - Clickable if actionable */}
@@ -110,6 +137,40 @@ function SearchResultItem({ result, onItemClick, onWarningClick }: SearchResultI
         </div>
       )}
 
+      {/* View Availability Column */}
+      {result.availabilityAction && onAvailabilityClick && (
+        <div className="flex-shrink-0">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onAvailabilityClick();
+            }}
+            className="px-3 py-1.5 rounded-md text-xs font-medium border border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors cursor-pointer"
+          >
+            <Eye className="h-3 w-3 inline mr-1" />
+            View Availability
+          </button>
+        </div>
+      )}
+
+      {/* Action Column */}
+      {result.primaryAction && onPrimaryActionClick && (
+        <div className="flex-shrink-0">
+          {result.primaryAction.type === 'email' && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onPrimaryActionClick();
+              }}
+              className="p-1.5 rounded-md border border-border/50 bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-colors cursor-pointer"
+              title="Send Email"
+            >
+              <Mail className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Arrow */}
       <ArrowRight className="h-4 w-4 text-muted-foreground" />
     </div>
@@ -121,13 +182,17 @@ function SearchSection({
   icon: Icon, 
   results, 
   onItemClick,
-  onWarningClick
+  onWarningClick,
+  onAvailabilityClick,
+  onPrimaryActionClick
 }: {
   title: string;
   icon: any;
   results: SearchResult[];
   onItemClick: (result: SearchResult) => void;
   onWarningClick: (result: SearchResult) => void;
+  onAvailabilityClick: (result: SearchResult) => void;
+  onPrimaryActionClick: (result: SearchResult) => void;
 }) {
   if (results.length === 0) return null;
 
@@ -146,6 +211,8 @@ function SearchSection({
             result={result}
             onItemClick={() => onItemClick(result)}
             onWarningClick={result.warning?.route ? () => onWarningClick(result) : undefined}
+            onAvailabilityClick={result.availabilityAction ? () => onAvailabilityClick(result) : undefined}
+            onPrimaryActionClick={result.primaryAction ? () => onPrimaryActionClick(result) : undefined}
           />
         ))}
       </div>
@@ -186,6 +253,18 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
   const handleWarningClick = (result: SearchResult) => {
     if (result.warning?.route) {
       navigate(result.warning.route);
+    }
+  };
+
+  const handleAvailabilityClick = (result: SearchResult) => {
+    if (result.availabilityAction?.route) {
+      navigate(result.availabilityAction.route);
+    }
+  };
+
+  const handlePrimaryActionClick = (result: SearchResult) => {
+    if (result.primaryAction?.type === 'email' && result.primaryAction.href) {
+      window.location.href = result.primaryAction.href;
     }
   };
 
@@ -259,6 +338,8 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
           results={results.projects}
           onItemClick={handleItemClick}
           onWarningClick={handleWarningClick}
+          onAvailabilityClick={handleAvailabilityClick}
+          onPrimaryActionClick={handlePrimaryActionClick}
         />
         
         <SearchSection
@@ -267,6 +348,8 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
           results={results.crew}
           onItemClick={handleItemClick}
           onWarningClick={handleWarningClick}
+          onAvailabilityClick={handleAvailabilityClick}
+          onPrimaryActionClick={handlePrimaryActionClick}
         />
         
         <SearchSection
@@ -275,6 +358,8 @@ export function GlobalSearchResults({ results, isLoading, query }: GlobalSearchR
           results={results.equipment}
           onItemClick={handleItemClick}
           onWarningClick={handleWarningClick}
+          onAvailabilityClick={handleAvailabilityClick}
+          onPrimaryActionClick={handlePrimaryActionClick}
         />
       </div>
     </div>

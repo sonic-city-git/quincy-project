@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Database } from "lucide-react";
 
 // Import the custom header and table components
@@ -9,8 +10,14 @@ import { AddMemberDialog } from "@/components/crew/AddMemberDialog";
 import { AddEquipmentDialog } from "@/components/equipment/AddEquipmentDialog";
 
 const Resources = () => {
-  // Initialize activeTab from localStorage, fallback to 'equipment'
+  const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Initialize activeTab from URL or localStorage
   const [activeTab, setActiveTab] = useState<'equipment' | 'crew'>(() => {
+    const urlType = searchParams.get('type');
+    if (urlType === 'crew' || urlType === 'equipment') {
+      return urlType;
+    }
     try {
       const savedTab = localStorage.getItem('resources-active-tab');
       return (savedTab === 'crew' || savedTab === 'equipment') ? savedTab : 'equipment';
@@ -29,6 +36,43 @@ const Resources = () => {
   // Dialog states
   const [showAddMemberDialog, setShowAddMemberDialog] = useState(false);
   const [showAddEquipmentDialog, setShowAddEquipmentDialog] = useState(false);
+
+  // State to track target item for scrolling
+  const [targetScrollItem, setTargetScrollItem] = useState<{
+    type: 'equipment' | 'crew';
+    id: string;
+  } | null>(null);
+
+  // Handle URL parameters for direct navigation and scrolling
+  useEffect(() => {
+    const urlType = searchParams.get('type');
+    const scrollToId = searchParams.get('scrollTo');
+
+    if (urlType && (urlType === 'crew' || urlType === 'equipment')) {
+      setActiveTab(urlType);
+    }
+
+    if (scrollToId && urlType) {
+      setTargetScrollItem({ type: urlType as 'equipment' | 'crew', id: scrollToId });
+      
+      // Clear URL parameters after processing
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('type');
+      newParams.delete('scrollTo');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  // Clear target scroll item after a delay to allow tables to render
+  useEffect(() => {
+    if (targetScrollItem) {
+      const timer = setTimeout(() => {
+        setTargetScrollItem(null);
+      }, 2000); // Give tables time to load and render
+      
+      return () => clearTimeout(timer);
+    }
+  }, [targetScrollItem]);
 
   // Persist activeTab to localStorage whenever it changes
   useEffect(() => {
@@ -75,9 +119,15 @@ const Resources = () => {
         {/* Table Content - Structured like planner timeline */}
         <div className="space-y-4">
           {activeTab === 'crew' ? (
-            <ResourceCrewTable filters={filters} />
+            <ResourceCrewTable 
+              filters={filters} 
+              targetScrollItem={targetScrollItem?.type === 'crew' ? targetScrollItem : null}
+            />
           ) : (
-            <ResourceEquipmentTable filters={filters} />
+            <ResourceEquipmentTable 
+              filters={filters} 
+              targetScrollItem={targetScrollItem?.type === 'equipment' ? targetScrollItem : null}
+            />
           )}
         </div>
       </div>

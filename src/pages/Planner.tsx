@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Calendar } from "lucide-react";
 import { UnifiedCalendar } from "@/components/planner/UnifiedCalendar";
 import { useSharedTimeline } from "@/components/planner/shared/hooks/useSharedTimeline";
@@ -8,6 +9,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 const Planner = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   // On page refresh, always start with today selected
@@ -43,6 +45,56 @@ const Planner = () => {
     equipmentType: '',
     crewRole: ''
   });
+
+  // Handle URL parameters for direct navigation to specific equipment/crew
+  useEffect(() => {
+    const equipmentId = searchParams.get('equipment');
+    const crewId = searchParams.get('crew');
+    const projectId = searchParams.get('project');
+
+    if (equipmentId) {
+      // Switch to equipment tab and set target for scrolling
+      setActiveTab('equipment');
+      setTargetScrollItem({ type: 'equipment', id: equipmentId });
+      
+      // Clear URL parameter
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('equipment');
+      setSearchParams(newParams, { replace: true });
+    } else if (crewId) {
+      // Switch to crew tab and set target for scrolling
+      setActiveTab('crew');
+      setTargetScrollItem({ type: 'crew', id: crewId });
+      
+      // Clear URL parameter
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('crew');
+      setSearchParams(newParams, { replace: true });
+    } else if (projectId) {
+      // For projects, we can filter by project owner or name
+      // This is more complex and might need additional implementation
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('project');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  // State to track target item for scrolling
+  const [targetScrollItem, setTargetScrollItem] = useState<{
+    type: 'equipment' | 'crew';
+    id: string;
+  } | null>(null);
+
+  // Clear target scroll item after a delay to allow planner to process it
+  useEffect(() => {
+    if (targetScrollItem) {
+      const timer = setTimeout(() => {
+        setTargetScrollItem(null);
+      }, 2000); // Give planner components time to load and scroll
+      
+      return () => clearTimeout(timer);
+    }
+  }, [targetScrollItem]);
 
   // Separate state for problems-only mode
   const [showProblemsOnly, setShowProblemsOnly] = useState(false);
@@ -131,6 +183,7 @@ const Planner = () => {
           resourceType={activeTab}
           filters={filters}
           showProblemsOnly={showProblemsOnly}
+          targetScrollItem={targetScrollItem}
         />
       </div>
 

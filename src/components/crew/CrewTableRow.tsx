@@ -6,10 +6,11 @@ import { useCrewRoles } from "@/hooks/useCrewRoles";
 interface CrewTableRowProps {
   member: CrewMember;
   isSelected: boolean;
+  isHighlighted?: boolean;
   onSelect: () => void;
 }
 
-export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps) {
+export function CrewTableRow({ member, isSelected, isHighlighted, onSelect }: CrewTableRowProps) {
   const { roles: allRoles } = useCrewRoles();
   
   const memberRoles = allRoles.filter(role => 
@@ -18,8 +19,11 @@ export function CrewTableRow({ member, isSelected, onSelect }: CrewTableRowProps
 
   return (
     <TableRow 
-      className={`hover:bg-zinc-800/50 cursor-pointer select-none ${
+      data-crew-id={member.id}
+      className={`hover:bg-zinc-800/50 cursor-pointer select-none transition-colors duration-300 ${
         isSelected ? 'bg-zinc-800/75' : ''
+      } ${
+        isHighlighted ? 'bg-blue-500/20 border border-blue-500/50' : ''
       }`}
       onDoubleClick={onSelect}
     >

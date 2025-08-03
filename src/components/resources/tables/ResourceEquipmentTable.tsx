@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
 import { useEquipment } from "@/hooks/useEquipment";
 import { useFolders } from "@/hooks/useFolders";
@@ -11,13 +11,55 @@ import { ResourceFilters } from "../ResourcesHeader";
 
 interface ResourceEquipmentTableProps {
   filters: ResourceFilters;
+  targetScrollItem?: {
+    type: 'equipment';
+    id: string;
+  } | null;
 }
 
-export function ResourceEquipmentTable({ filters }: ResourceEquipmentTableProps) {
+export function ResourceEquipmentTable({ filters, targetScrollItem }: ResourceEquipmentTableProps) {
   const { equipment = [], loading } = useEquipment();
   const { folders = [] } = useFolders();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
+  const [highlightedItem, setHighlightedItem] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  // Handle scrolling to target item when targetScrollItem is provided
+  useEffect(() => {
+    if (targetScrollItem && targetScrollItem.id && equipment.length > 0) {
+      const timer = setTimeout(() => {
+        try {
+          // Look for the target item in the DOM
+          const targetElement = document.querySelector(`[data-equipment-id="${targetScrollItem.id}"]`);
+          
+          if (targetElement) {
+            // Highlight the item
+            setHighlightedItem(targetScrollItem.id);
+            
+            // Scroll to the target element
+            targetElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'nearest'
+            });
+            
+            // Remove highlight after 3 seconds
+            setTimeout(() => {
+              setHighlightedItem(null);
+            }, 3000);
+            
+            console.log(`Scrolled to equipment: ${targetScrollItem.id}`);
+          } else {
+            console.warn(`Could not find equipment with ID: ${targetScrollItem.id}`);
+          }
+        } catch (error) {
+          console.error('Error scrolling to target equipment:', error);
+        }
+      }, 500); // Wait for render
+      
+      return () => clearTimeout(timer);
+    }
+  }, [targetScrollItem, equipment]);
 
   if (loading) {
     return (
@@ -152,6 +194,7 @@ export function ResourceEquipmentTable({ filters }: ResourceEquipmentTableProps)
                   equipment={groupedEquipment[folderPath]}
                   selectedItem={selectedItem}
                   onItemSelect={handleItemSelect}
+                  highlightedItem={highlightedItem}
                 />
               </div>
             )
