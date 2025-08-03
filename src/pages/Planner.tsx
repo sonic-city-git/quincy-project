@@ -131,16 +131,6 @@ const Planner = () => {
       iconColor="text-blue-500"
     >
       <div className="space-y-4">
-        {/* DEBUG: Test scroll to far date */}
-        <div className="mb-4">
-          <button 
-            onClick={timelineScroll.jumpToFarDate}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            🚀 Test Jump +20 Days (Debug)
-          </button>
-        </div>
-
         {/* Standard header with filters and tabs */}
         <TimelineHeader
           formattedDates={timelineScroll.formattedDates}

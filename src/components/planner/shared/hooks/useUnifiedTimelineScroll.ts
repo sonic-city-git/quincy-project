@@ -497,14 +497,6 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // ========================
   // RETURN EVERYTHING
   // ========================
-  
-  // DEBUG: Test function to jump to a date far away
-  const jumpToFarDate = useCallback(() => {
-    const farDate = new Date();
-    farDate.setDate(farDate.getDate() + 20); // 20 days from today
-    console.log('🚀 JUMPING TO FAR DATE:', farDate.toISOString().split('T')[0]);
-    scrollToDate(farDate);
-  }, [scrollToDate]);
 
   return {
     // Timeline state
@@ -524,7 +516,6 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
     scrollTo,
     scrollToDate,
     navigate,
-    jumpToFarDate, // DEBUG function
     
     // Drag state  
     isDragging,
