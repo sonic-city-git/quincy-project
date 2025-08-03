@@ -7,14 +7,14 @@ interface UseSharedTimelineProps {
 }
 
 export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
-  // OPTIMIZED: Start with 30 days total (-15/+15) for faster initial load
+  // OPTIMIZED: Start with 40 days total (-20/+20) for fastest initial load
   const [timelineStart, setTimelineStart] = useState(() => {
     const today = new Date();
-    return addDays(today, -15);
+    return addDays(today, -20);
   });
   const [timelineEnd, setTimelineEnd] = useState(() => {
     const today = new Date();
-    return addDays(today, 15);
+    return addDays(today, 20);
   });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, scrollLeft: 0 });
@@ -150,7 +150,7 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
     }
   }, [timelineDates]);
   
-  // OPTIMIZED: Set initial scroll position to center today (30-day timeline)
+  // OPTIMIZED: Set initial scroll position to center today (40-day timeline)
   useEffect(() => {
     if (timelineDates.length > 0 && !hasInitialScrolled.current && timelineRowsRef.current) {
       hasInitialScrolled.current = true;
@@ -159,7 +159,7 @@ export function useSharedTimeline({ selectedDate }: UseSharedTimelineProps) {
       const today = new Date();
       today.setHours(0, 0, 0, 0); // Normalize to start of day
       
-      // Find today's index using fast date comparison (today should be at index ~15)
+      // Find today's index using fast date comparison (today should be at index ~20)
       const todayIndex = timelineDates.findIndex(date => {
         const timelineDate = new Date(date);
         timelineDate.setHours(0, 0, 0, 0);
