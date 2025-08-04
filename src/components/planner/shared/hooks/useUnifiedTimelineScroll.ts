@@ -297,8 +297,28 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
 
   const dragScroll = useCallback((deltaX: number) => {
     const newPosition = dragStart.scrollLeft - deltaX;
-    scrollTo(newPosition, { smooth: false, source: 'drag' });
-  }, [dragStart.scrollLeft, scrollTo]);
+    
+    // Cancel any pending animation frame
+    if (scrollAnimationFrameRef.current) {
+      cancelAnimationFrame(scrollAnimationFrameRef.current);
+    }
+    
+    // Update position state immediately
+    setScrollPosition(newPosition);
+    
+    // Use RAF for smooth synchronization
+    scrollAnimationFrameRef.current = requestAnimationFrame(() => {
+      // Update both containers
+      if (equipmentRowsRef.current) {
+        equipmentRowsRef.current.scrollLeft = newPosition;
+      }
+      if (stickyHeadersRef.current) {
+        stickyHeadersRef.current.scrollLeft = newPosition;
+      }
+      
+      scrollAnimationFrameRef.current = null;
+    });
+  }, [dragStart.scrollLeft]);
 
   const navigate = useCallback((direction: 'prev' | 'next', amount: 'day' | 'week' | 'month') => {
     const dayWidth = LAYOUT.DAY_CELL_WIDTH;
@@ -362,6 +382,10 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // Debounced scroll handler for performance
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Track the last scroll source to prevent loops
+  const lastScrollSourceRef = useRef<HTMLDivElement | null>(null);
+  const scrollAnimationFrameRef = useRef<number | null>(null);
+
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;
     const { scrollLeft, scrollWidth, clientWidth } = element;
@@ -370,26 +394,36 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
     if (isScrollingRef.current || activeOperationRef.current) {
       return;
     }
-    
-    // Update position ref immediately for responsive feel
-    scrollPositionRef.current = scrollLeft;
-    // Debounce the React state update
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-    scrollTimeoutRef.current = setTimeout(() => {
-      setScrollPosition(scrollLeft);
-    }, 16);
-    
-    // Always sync scroll positions between timeline and header
-    if (stickyHeadersRef.current) {
-      stickyHeadersRef.current.scrollLeft = scrollLeft;
-    }
-    if (equipmentRowsRef.current) {
-      equipmentRowsRef.current.scrollLeft = scrollLeft;
+
+    // Cancel any pending animation frame to prevent rapid updates
+    if (scrollAnimationFrameRef.current) {
+      cancelAnimationFrame(scrollAnimationFrameRef.current);
     }
     
-    // Debounce ONLY expensive operations (infinite scroll)
+    // Update scroll position state immediately for the current element
+    setScrollPosition(scrollLeft);
+    
+    // Only sync if this is a new scroll source
+    if (lastScrollSourceRef.current !== element) {
+      lastScrollSourceRef.current = element;
+      
+      // Use RAF for smooth synchronization
+      scrollAnimationFrameRef.current = requestAnimationFrame(() => {
+        // Only update the element that didn't trigger the scroll
+        if (stickyHeadersRef.current && element !== stickyHeadersRef.current) {
+          stickyHeadersRef.current.scrollLeft = scrollLeft;
+        }
+        if (equipmentRowsRef.current && element !== equipmentRowsRef.current) {
+          equipmentRowsRef.current.scrollLeft = scrollLeft;
+        }
+        
+        // Clear the scroll source after sync
+        lastScrollSourceRef.current = null;
+        scrollAnimationFrameRef.current = null;
+      });
+    }
+    
+    // Debounce infinite scroll detection
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
@@ -403,8 +437,8 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
         const direction = scrollLeft < FETCH_THRESHOLD ? 'start' : 'end';
         expandTimeline(direction);
       }
-    }, 200); // Only debounce infinite scroll
-  }, [expandTimeline]); // Removed isScrolling dependency since we use ref
+    }, 200);
+  }, [expandTimeline]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!equipmentRowsRef.current) return;
@@ -527,12 +561,19 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   
   useEffect(() => {
     return () => {
+      // Clear all timeouts and animation frames
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
       if (scrollingTimeoutRef.current) {
         clearTimeout(scrollingTimeoutRef.current);
       }
+      if (scrollAnimationFrameRef.current) {
+        cancelAnimationFrame(scrollAnimationFrameRef.current);
+      }
+      // Reset refs
+      lastScrollSourceRef.current = null;
+      scrollAnimationFrameRef.current = null;
     };
   }, []);
 
