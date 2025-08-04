@@ -285,29 +285,31 @@ export function UnifiedCalendar({
   // Return TimelineHeader (sticky) and TimelineContent (scrollable) 
   return (
     <div className="border border-border rounded-lg overflow-hidden bg-background">
-      {/* Fixed Page Header with filters/tabs */}
-      <TimelineHeader
-        formattedDates={formattedDates}
-        virtualTimeline={virtualTimeline}
-        monthSections={monthSections}
-        onDateChange={onDateChange}
-        timelineScroll={{
-          handleScroll,
-          scrollPosition,
-          isDragging
-        }}
-        stickyHeadersRef={stickyHeadersRef}
-        resourceType={resourceType}
-        activeTab={resourceType}
-        onTabChange={onTabChange}
-        filters={filters}
-        onFiltersChange={onFiltersChange}
-        showProblemsOnly={showProblemsOnly}
-        onToggleProblemsOnly={onToggleProblemsOnly}
-      />
+      {/* Sticky Timeline Header - Stays visible during vertical scroll */}
+      <div className="sticky top-0 z-30 bg-background border-b border-border">
+        <TimelineHeader
+          formattedDates={formattedDates}
+          virtualTimeline={virtualTimeline}
+          monthSections={monthSections}
+          onDateChange={onDateChange}
+          timelineScroll={{
+            handleScroll,
+            scrollPosition,
+            isDragging
+          }}
+          stickyHeadersRef={stickyHeadersRef}
+          resourceType={resourceType}
+          activeTab={resourceType}
+          onTabChange={onTabChange}
+          filters={filters}
+          onFiltersChange={onFiltersChange}
+          showProblemsOnly={showProblemsOnly}
+          onToggleProblemsOnly={onToggleProblemsOnly}
+        />
+      </div>
       
-      {/* Scrollable content area with proper height constraint */}
-      <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 290px)' }}>
+      {/* Scrollable content area - Adjusted height to account for sticky header */}
+      <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 402px)' }}>
         <TimelineContent
         equipmentGroups={equipmentGroups}
         expandedGroups={expandedGroups}
