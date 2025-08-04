@@ -35,6 +35,11 @@ const getCrewAvailabilityColor = (booking: any, isCrew: boolean = false) => {
     const assignment = assignments[0];
     const eventTypeColor = assignment.eventTypeColor || '#6B7280';
     
+    // Debug final color
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🎨 Using event color: ${eventTypeColor} for ${assignment.eventType}`);
+    }
+    
     return {
       backgroundColor: eventTypeColor,
       color: HEATMAP.TEXT_COLORS.WHITE
@@ -190,7 +195,7 @@ const TimelineDayCellComponent = ({
           {/* Display content based on crew vs equipment */}
           <span className="text-xs font-medium leading-none">
             {isCrew ? (
-              // Crew: no counters, just color
+              // Crew: no numbers, just color coding by event type
               ''
             ) : (
               // Equipment: show available stock
@@ -198,8 +203,8 @@ const TimelineDayCellComponent = ({
             )}
           </span>
           
-          {/* Conflict/Overbooked indicator - only for equipment */}
-          {isConflict && !isCrew && (
+          {/* Conflict/Overbooked indicator for both crew and equipment */}
+          {isConflict && (
             <AlertTriangle className="absolute top-0 right-0 h-2 w-2 text-white opacity-80" />
           )}
         </div>
