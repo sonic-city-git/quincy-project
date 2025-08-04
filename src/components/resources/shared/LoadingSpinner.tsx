@@ -6,6 +6,7 @@
  */
 
 import { Loader2 } from "lucide-react";
+import { cn } from "@/design-system";
 
 interface LoadingSpinnerProps {
   message?: string;
@@ -17,10 +18,10 @@ interface LoadingSpinnerProps {
  */
 export function LoadingSpinner({ 
   message = "Loading...", 
-  className = "min-h-[400px]" 
+  className 
 }: LoadingSpinnerProps) {
   return (
-    <div className={`flex items-center justify-center ${className}`}>
+    <div className={cn("flex items-center justify-center min-h-[400px]", className)}>
       <div className="flex flex-col items-center gap-2">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         {message && (

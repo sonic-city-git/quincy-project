@@ -1,14 +1,12 @@
-import { TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { COMPONENT_CLASSES, cn } from "@/design-system";
 
 export function EquipmentTableHeader() {
   return (
-    <TableHeader>
-      <TableRow className="flex flex-col md:table-row">
-        <TableHead className="w-full md:w-[300px]">Name</TableHead>
-        <TableHead className="w-full md:w-[120px]">Code</TableHead>
-        <TableHead className="w-[80px] text-right hidden md:table-cell">Stock</TableHead>
-        <TableHead className="w-[100px] text-right hidden md:table-cell">Rental Price</TableHead>
-      </TableRow>
-    </TableHeader>
+    <div className={cn("grid grid-cols-[2fr_120px_100px] sm:grid-cols-[2fr_120px_80px_100px] gap-3 sm:gap-4 p-3 sm:p-4 font-semibold text-sm", COMPONENT_CLASSES.table.header)}>
+      <div>Name</div>
+      <div>Code</div>
+      <div className="hidden sm:block text-right">Stock</div>
+      <div className="text-right">Price</div>
+    </div>
   );
 }

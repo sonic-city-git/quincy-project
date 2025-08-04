@@ -1,4 +1,3 @@
-import { TableBody } from "@/components/ui/table";
 import { CrewTableRow } from "./CrewTableRow";
 import { CrewMember } from "@/types/crew";
 
@@ -11,7 +10,7 @@ interface CrewTableProps {
 
 export function CrewTable({ crew, selectedItem, onItemSelect, highlightedItem }: CrewTableProps) {
   return (
-    <TableBody>
+    <div className="divide-y divide-border">
       {crew.map((member) => (
         <CrewTableRow
           key={member.id}
@@ -21,6 +20,6 @@ export function CrewTable({ crew, selectedItem, onItemSelect, highlightedItem }:
           onSelect={() => onItemSelect(member.id)}
         />
       ))}
-    </TableBody>
+    </div>
   );
 }

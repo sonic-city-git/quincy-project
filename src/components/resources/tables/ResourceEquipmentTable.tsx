@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { useEquipment } from "@/hooks/useEquipment";
 import { useFolders } from "@/hooks/useFolders";
 import { EquipmentTable } from "../equipment/EquipmentTable";
-import { Table } from "../../ui/table";
+
 import { EquipmentTableHeader } from "../equipment/EquipmentTableHeader";
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from "@/utils/folderSort";
 import { EditEquipmentDialog } from "../equipment/EditEquipmentDialog";
@@ -15,6 +15,10 @@ import { ResourceFilters } from "../ResourcesHeader";
 import { useScrollToTarget } from "../shared/hooks/useScrollToTarget";
 import { LoadingSpinner } from "../shared/LoadingSpinner";
 import { useResourceFiltering } from "../shared/hooks/useResourceFiltering";
+import { COMPONENT_CLASSES, cn } from "@/design-system";
+import { Package, ChevronRight } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { usePersistentExpandedGroups } from "@/hooks/usePersistentExpandedGroups";
 
 interface ResourceEquipmentTableProps {
   filters: ResourceFilters;
@@ -29,6 +33,9 @@ export function ResourceEquipmentTable({ filters, targetScrollItem }: ResourceEq
   const { folders = [] } = useFolders();
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  
+  // Persistent expansion state for folders
+  const { expandedGroups, toggleGroup } = usePersistentExpandedGroups('resourceEquipmentExpandedGroups');
 
   // Use consolidated hooks
   const { highlightedItem, isHighlighted } = useScrollToTarget(
@@ -129,33 +136,92 @@ export function ResourceEquipmentTable({ filters, targetScrollItem }: ResourceEq
     setSelectedItem(null);
   };
 
+  if (filteredEquipment.length === 0) {
+    const getEmptyMessage = () => {
+      if (filters.search) {
+        return 'No equipment matches your search';
+      }
+      if (filters.equipmentType) {
+        return 'No equipment found for this type';
+      }
+      return 'No equipment found. Add your first equipment to get started!';
+    };
+
+    return (
+      <div className="w-full">
+        {/* Sticky table header */}
+        <div className={cn("sticky top-[124px] z-30", COMPONENT_CLASSES.table.container)}>
+          <EquipmentTableHeader />
+        </div>
+
+        {/* Empty state content */}
+        <div className={cn("rounded-b-lg", COMPONENT_CLASSES.table.container)}>
+          <div className="text-center py-12 text-muted-foreground">
+            <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p className="text-lg font-medium mb-2">{getEmptyMessage()}</p>
+            {!filters.search && !filters.equipmentType && (
+              <p className="text-sm">Equipment helps you organize gear and track availability for your projects.</p>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Sticky table header positioned right after ResourcesHeader */}
-              <div className="sticky top-[124px] z-30 bg-background border-x border-b border-border">
-        <Table>
-          <EquipmentTableHeader />
-        </Table>
+      <div className={cn("sticky top-[124px] z-30", COMPONENT_CLASSES.table.container)}>
+        <EquipmentTableHeader />
       </div>
       
       {/* Table content */}
-      <div className="border-x border-b border-border rounded-b-lg bg-background">
+      <div className={cn("rounded-b-lg", COMPONENT_CLASSES.table.container)}>
         <div className="divide-y divide-border">
-          {allSortedFolders.map((folderPath) => (
-            groupedEquipment[folderPath] && (
-              <div key={folderPath}>
-                <div className="bg-muted/50 px-4 py-2 font-medium text-sm text-muted-foreground">
-                  {folderPath}
-                </div>
-                <EquipmentTable 
-                  equipment={groupedEquipment[folderPath]}
-                  selectedItem={selectedItem}
-                  onItemSelect={handleItemSelect}
-                  highlightedItem={highlightedItem}
-                />
-              </div>
-            )
-          ))}
+          {orderedFolders.map(({ path, level, isSubfolder, equipment: folderEquipment }) => {
+            if (!folderEquipment) return null;
+            
+            const isExpanded = expandedGroups.has(path);
+            const mainFolderPath = path.split('/')[0];
+            
+            // Get all subfolder paths for this main folder (for Cmd+click)
+            const availableSubfolders = orderedFolders
+              .filter(f => f.path.startsWith(mainFolderPath + '/'))
+              .map(f => f.path);
+            
+            return (
+              <Collapsible key={path} open={isExpanded}>
+                <CollapsibleTrigger 
+                  className="w-full group/folder"
+                  onClick={(e) => {
+                    // Cmd+click to expand all subfolders (like planner)
+                    const expandAllSubfolders = e.metaKey || e.ctrlKey;
+                    toggleGroup(path, expandAllSubfolders, availableSubfolders);
+                  }}
+                >
+                  <div 
+                    className="flex items-center gap-2 bg-muted/50 hover:bg-muted transition-colors py-2 font-medium text-sm text-muted-foreground"
+                    style={{ 
+                      paddingLeft: `${16 + (level * 24)}px`, // Indentation for subfolders
+                      paddingRight: '16px'
+                    }}
+                  >
+                    <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]/folder:rotate-90" />
+                    <span>{isSubfolder ? path.split('/')[1] : path}</span>
+                    <span className="ml-auto text-xs opacity-60">({folderEquipment.length})</span>
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <EquipmentTable 
+                    equipment={folderEquipment}
+                    selectedItem={selectedItem}
+                    onItemSelect={handleItemSelect}
+                    highlightedItem={highlightedItem}
+                  />
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })}
         </div>
       </div>
 

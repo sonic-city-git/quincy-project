@@ -485,8 +485,18 @@ export function useTimelineHub({
         return indexA - indexB;
       });
     } else {
-      // Crew sorting (by department)
-      return groups.sort((a, b) => a.mainFolder.localeCompare(b.mainFolder));
+      // Crew sorting with Sonic City → Associates → Freelancers priority
+      const CREW_FOLDER_ORDER = ["Sonic City", "Associates", "Freelancers"];
+      return groups.sort((a, b) => {
+        const indexA = CREW_FOLDER_ORDER.indexOf(a.mainFolder);
+        const indexB = CREW_FOLDER_ORDER.indexOf(b.mainFolder);
+        
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        
+        return a.mainFolder.localeCompare(b.mainFolder);
+      });
     }
   }, [resourceData?.resources, expandedGroups, resourceType]);
 
