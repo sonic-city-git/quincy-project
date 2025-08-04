@@ -23,7 +23,6 @@ const Planner = () => {
   const [selectedDate, setSelectedDate] = useState(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    // console.log('🔄 Planner initializing with today:', today.toISOString().split('T')[0]);
     return today;
   });
   

@@ -70,7 +70,7 @@ export function UnifiedCalendar({
   // console.log('UnifiedCalendar render', { selectedDate: selectedDate.toISOString() });
 
   // SIMPLIFIED: Use single consolidated scroll hook
-  const timelineScroll = useTimelineScroll({ selectedDate });
+  const timelineScroll = useTimelineScroll({ selectedDate, targetScrollItem });
   
   const {
     timelineStart,
@@ -210,30 +210,7 @@ export function UnifiedCalendar({
     return () => clearTimeout(timer);
   }, []);
 
-  // Handle scrolling to target item when targetScrollItem is provided
-  useEffect(() => {
-    if (targetScrollItem && targetScrollItem.type === resourceType && equipmentGroups.length > 0) {
-      const timer = setTimeout(() => {
-        try {
-          const targetElement = document.querySelector(`[data-resource-id="${targetScrollItem.id}"]`);
-          
-          if (targetElement && equipmentRowsRef.current) {
-            targetElement.scrollIntoView({
-              behavior: 'smooth',
-              block: 'center',
-              inline: 'nearest'
-            });
-          } else {
-            // TODO: Implement proper error handling for scroll target not found
-          }
-        } catch (error) {
-          // TODO: Implement proper error handling for scroll errors
-        }
-      }, 100);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [targetScrollItem, resourceType, equipmentGroups, equipmentRowsRef]);
+  // NOTE: All scroll handling now consolidated in useSimpleInfiniteScroll hook
 
   // Simple loading state
   const shouldShowLoading = !isEquipmentReady;
