@@ -82,6 +82,7 @@ export function UnifiedCalendar({
     updateContainerWidth,
     scrollPosition,
     equipmentRowsRef,
+    setEquipmentRowsRef,
     stickyHeadersRef,
     scrollToDate,
     isDragging,
@@ -345,6 +346,7 @@ export function UnifiedCalendar({
         getProjectQuantityForDate={getProjectQuantityForDate}
         getCrewRoleForDate={getCrewRoleForDate}
         equipmentRowsRef={equipmentRowsRef}
+        setEquipmentRowsRef={setEquipmentRowsRef}
         handleTimelineScroll={handleScroll}
         handleTimelineMouseMove={handleMouseMove}
         handleMouseDown={handleMouseDown}
@@ -362,24 +364,6 @@ export function UnifiedCalendar({
         visibleTimelineEnd={timelineEnd}
         isWithinScrollContainer={isWithinScrollContainer}
       />
-      
-      {/* Simple debug info for development */}
-      {process.env.NODE_ENV === 'development' && (
-        <div className="fixed top-4 right-4 bg-black bg-opacity-80 text-white p-4 rounded-lg font-mono text-xs z-50 max-w-sm">
-          <div className="text-green-400 font-bold mb-2">🎯 Simple Infinite Scroll</div>
-          
-          <div className="mb-3">
-            <div className="text-blue-400 font-semibold">Timeline:</div>
-            <div>Total Days: {formattedDates.length}</div>
-            <div>Scroll Position: {scrollPosition.toFixed(0)}px</div>
-            <div>Container: {containerWidth}px</div>
-          </div>
-          
-          <div className="text-xs text-gray-400">
-            Clean infinite scroll without complexity
-          </div>
-        </div>
-      )}
       </div>
     </div>
   );
