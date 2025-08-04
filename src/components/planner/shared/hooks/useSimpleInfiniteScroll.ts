@@ -14,9 +14,13 @@ import { LAYOUT } from '../constants';
 
 interface UseSimpleInfiniteScrollProps {
   selectedDate: Date;
+  targetScrollItem?: {
+    type: 'equipment' | 'crew';
+    id: string;
+  } | null;
 }
 
-export function useSimpleInfiniteScroll({ selectedDate }: UseSimpleInfiniteScrollProps) {
+export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseSimpleInfiniteScrollProps) {
   
   // ========================
   // SIMPLE STATE
@@ -28,17 +32,32 @@ export function useSimpleInfiniteScroll({ selectedDate }: UseSimpleInfiniteScrol
     return date;
   }, []);
 
-  // Start with reasonable buffer around today
-  const [timelineStart, setTimelineStart] = useState(() => addDays(today, -30));
+  // Start with LARGER buffer to avoid immediate expansion
+  const [timelineStart, setTimelineStart] = useState(() => addDays(today, -60)); // More buffer
   const [timelineEnd, setTimelineEnd] = useState(() => addDays(today, 90));
-  const [scrollPosition, setScrollPosition] = useState(0);
-  const [containerWidth, setContainerWidth] = useState(0);
   
-  // Simple refs - no complex tracking
+  // Start near today to prevent initial jump
+  const initialScroll = 60 * LAYOUT.DAY_CELL_WIDTH; // today is 60 days from start (60 * 48 = 2880px > 2000px threshold)
+  const [scrollPosition, setScrollPosition] = useState(initialScroll);
+  
+  // Container readiness state
+  const [containerMounted, setContainerMounted] = useState(false);
+  
+  // Refs with callback to detect mounting
   const equipmentRowsRef = useRef<HTMLDivElement>(null);
   const stickyHeadersRef = useRef<HTMLDivElement>(null);
-  const scrollPositionRef = useRef(0);
+  const scrollPositionRef = useRef(initialScroll);
   const isExpandingRef = useRef(false);
+  const hasInitialScrolledRef = useRef(false);
+  
+  // Ref callback to detect when container is ready
+  const setEquipmentRowsRef = useCallback((element: HTMLDivElement | null) => {
+    equipmentRowsRef.current = element;
+    if (element?.clientWidth > 0) {
+      console.log('📦 Container just mounted with width:', element.clientWidth);
+      setContainerMounted(true);
+    }
+  }, []);
   
   // ========================
   // TIMELINE DATES
@@ -164,19 +183,8 @@ export function useSimpleInfiniteScroll({ selectedDate }: UseSimpleInfiniteScrol
     });
     
     if (targetIndex === -1) {
-      // Date not found - expand timeline once and retry
-      const firstDate = timelineDates[0];
-      const lastDate = timelineDates[timelineDates.length - 1];
-      
-      if (target < firstDate) {
-        const daysDiff = Math.ceil(differenceInDays(firstDate, target));
-        expandTimeline('start', Math.max(42, daysDiff + 14));
-        setTimeout(() => scrollToDate(targetDate, smooth), 200); // Single retry
-      } else if (target > lastDate) {
-        const daysDiff = Math.ceil(differenceInDays(target, lastDate));
-        expandTimeline('end', Math.max(42, daysDiff + 14));
-        setTimeout(() => scrollToDate(targetDate, smooth), 200); // Single retry
-      }
+      // Date not in timeline - should not happen for today's date since we start with today ± buffer
+      console.warn('📍 Date not found in timeline:', targetDate.toISOString().split('T')[0]);
       return;
     }
     
@@ -197,11 +205,6 @@ export function useSimpleInfiniteScroll({ selectedDate }: UseSimpleInfiniteScrol
     scrollPositionRef.current = scrollLeft;
     setScrollPosition(scrollLeft);
     
-    // Track container width changes for scroll timing
-    if (clientWidth !== containerWidth) {
-      setContainerWidth(clientWidth);
-    }
-    
     // Sync other scroll containers
     if (element !== equipmentRowsRef.current && equipmentRowsRef.current) {
       equipmentRowsRef.current.scrollLeft = scrollLeft;
@@ -212,47 +215,64 @@ export function useSimpleInfiniteScroll({ selectedDate }: UseSimpleInfiniteScrol
     
     // Check for infinite scroll expansion
     checkForExpansion(scrollLeft, scrollWidth, clientWidth);
-  }, [checkForExpansion, containerWidth]);
+  }, [checkForExpansion]);
 
   // ========================
-  // SIMPLE: SCROLL TO SELECTED DATE WHEN READY
+  // SCROLL TO TODAY WHEN READY
   // ========================
   
+  // SIMPLE: Single effect that waits for everything to be ready
   useEffect(() => {
-    // Wait for everything to be ready: timeline dates, container width, and selected date
-    if (timelineDates.length > 0 && containerWidth > 0 && selectedDate) {
-      console.log('📍 Scrolling to selectedDate when ready:', selectedDate.toISOString().split('T')[0]);
-      scrollToDate(selectedDate);
-    }
-  }, [timelineDates.length, containerWidth, selectedDate.getTime(), scrollToDate]);
-
-  // Simple container width detection - check when timeline or ref changes
-  useEffect(() => {
-    if (timelineDates.length > 0 && equipmentRowsRef.current) {
-      const currentWidth = equipmentRowsRef.current.clientWidth;
-      if (currentWidth > 0 && currentWidth !== containerWidth) {
-        setContainerWidth(currentWidth);
-      }
-    }
-  }, [timelineDates.length, containerWidth]);
-
-  // Also check container width immediately after any render
-  useEffect(() => {
-    const checkWidth = () => {
-      if (equipmentRowsRef.current) {
-        const currentWidth = equipmentRowsRef.current.clientWidth;
-        if (currentWidth > 0 && currentWidth !== containerWidth) {
-          setContainerWidth(currentWidth);
-        }
-      }
-    };
-
-    // Check immediately and on next frame
-    checkWidth();
-    const frameId = requestAnimationFrame(checkWidth);
+    console.log('📊 Readiness check:', {
+      timelineDatesLength: timelineDates.length,
+      containerMounted,
+      containerWidth: equipmentRowsRef.current?.clientWidth,
+      hasInitialScrolled: hasInitialScrolledRef.current,
+      selectedDate: format(selectedDate, 'MMM dd'),
+      initialScroll
+    });
     
-    return () => cancelAnimationFrame(frameId);
-  });
+    // Wait for timeline data AND containers to be ready
+    if (timelineDates.length > 0 && containerMounted && equipmentRowsRef.current) {
+      
+      // For initial load: set position to prevent jump, then scroll to today
+      if (!hasInitialScrolledRef.current) {
+        console.log('🎯 INITIAL LOAD: Setting position and scrolling to', format(selectedDate, 'MMM dd'));
+        
+        // Set initial position first (prevent jump)
+        if (stickyHeadersRef.current) {
+          equipmentRowsRef.current.scrollLeft = initialScroll;
+          stickyHeadersRef.current.scrollLeft = initialScroll;
+          console.log('✅ Set initial scroll position to:', initialScroll);
+        }
+        
+        hasInitialScrolledRef.current = true;
+      } else {
+        console.log('🎯 DATE CHANGE: Scrolling to', format(selectedDate, 'MMM dd'));
+      }
+      
+      // Always scroll to selected date (handles both initial + date changes)
+      setTimeout(() => scrollToDate(selectedDate), 10);
+    }
+  }, [timelineDates.length, containerMounted, selectedDate, initialScroll]); // Everything that matters
+
+  // Handle targetScrollItem (moved from UnifiedCalendar for single scroll location)
+  useEffect(() => {
+    if (targetScrollItem && equipmentRowsRef.current) {
+      const timer = setTimeout(() => {
+        const targetElement = document.querySelector(`[data-resource-id="${targetScrollItem.id}"]`);
+        if (targetElement) {
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest'
+          });
+        }
+      }, 200); // After initial scroll
+      
+      return () => clearTimeout(timer);
+    }
+  }, [targetScrollItem]);
 
   // ========================
   // RETURN CLEAN INTERFACE
@@ -275,7 +295,7 @@ export function useSimpleInfiniteScroll({ selectedDate }: UseSimpleInfiniteScrol
     
     // Scroll state
     scrollPosition,
-    equipmentRowsRef,
+    equipmentRowsRef: setEquipmentRowsRef, // Use callback ref for proper mounting detection
     stickyHeadersRef,
     
     // Functions

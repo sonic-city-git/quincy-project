@@ -26,7 +26,6 @@ const FolderWarningRow = ({
   getBookingForEquipment: (equipmentId: string, dateStr: string) => any;
   onDateSelect: (date: string) => void;
   onExpandFolder: (folderPath: string) => void;
-  onScrollToDate: (date: string) => void;
   resourceType?: 'equipment' | 'crew';
 }) => {
   return (
@@ -104,9 +103,8 @@ const FolderWarningRow = ({
                     e.preventDefault();
                     e.stopPropagation();
                     
-                    // IMMEDIATE: Select date and scroll right away for responsive feel
-                    onDateSelect(dateInfo.dateStr);
-                    onScrollToDate(dateInfo.dateStr);
+                    // IMMEDIATE: Select date for responsive feel (scroll handled by useSimpleInfiniteScroll)
+                    onDateSelect && onDateSelect(dateInfo.dateStr);
                     
                     // Expand folder (can be async)
                     onExpandFolder(folderPath);
@@ -149,7 +147,7 @@ interface TimelineSectionProps {
   isUnfilledRolesSection?: boolean; // New: identifies unfilled roles sections
   filters?: any;
   onDateSelect?: (date: string) => void;
-  onScrollToDate?: (date: string) => void;
+
 }
 
 const TimelineSectionComponent = ({
@@ -166,8 +164,7 @@ const TimelineSectionComponent = ({
   resourceType = 'equipment',
   isUnfilledRolesSection = false,
   filters,
-  onDateSelect,
-  onScrollToDate
+  onDateSelect
 }: TimelineSectionProps) => {
   const { mainFolder, equipment: mainEquipment, subFolders } = equipmentGroup;
   
@@ -250,7 +247,7 @@ const TimelineSectionComponent = ({
                             dateStr={dateInfo.dateStr}
                             onRoleClick={(roleId, date) => {
                               onDateSelect?.(date);
-                              onScrollToDate?.(date);
+
                             }}
                           />
                         </div>
@@ -383,7 +380,7 @@ const TimelineSectionComponent = ({
                             dateStr={dateInfo.dateStr}
                             onRoleClick={(roleId, date) => {
                               onDateSelect?.(date);
-                              onScrollToDate?.(date);
+
                             }}
                           />
                         </div>
