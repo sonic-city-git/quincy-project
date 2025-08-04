@@ -174,30 +174,40 @@ export function TimelineHeader({
 
   // Additional timeline content
   const timelineContent = (
-    <>
-      {/* Column Headers */}
-      <div className="flex border-b border-border">
+    <div style={{ height: `${LAYOUT.MONTH_HEADER_HEIGHT + LAYOUT.DATE_HEADER_HEIGHT}px` }}>
+      {/* Column Headers - Fixed height container */}
+      <div className="flex border-b border-border" style={{ height: `${LAYOUT.MONTH_HEADER_HEIGHT + LAYOUT.DATE_HEADER_HEIGHT}px` }}>
         {/* Left Header - Resource Names */}
         <div 
           className="flex-shrink-0 bg-muted/90 backdrop-blur-sm border-r border-border"
-          style={{ width: LAYOUT.EQUIPMENT_NAME_WIDTH }}
+          style={{ 
+            width: LAYOUT.EQUIPMENT_NAME_WIDTH,
+            height: `${LAYOUT.MONTH_HEADER_HEIGHT + LAYOUT.DATE_HEADER_HEIGHT}px` // Match timeline header height (100px total)
+          }}
         >
-                      <div className="h-[57px] py-4 px-4 border-b border-border/50 flex flex-col justify-center">
-              <div className="text-sm font-semibold text-foreground">{resourceLabel}</div>
-              <div className="text-xs text-muted-foreground mt-1">{resourceSubtitle}</div>
-            </div>
+          <div className="h-full py-4 px-4 flex flex-col justify-center">
+            <div className="text-sm font-semibold text-foreground">{resourceLabel}</div>
+            <div className="text-xs text-muted-foreground mt-1">{resourceSubtitle}</div>
+          </div>
         </div>
         
-        {/* Middle Header - Timeline */}
+        {/* Middle Header - Timeline (fixed header, horizontally scrollable) */}
         <div 
           ref={stickyHeadersRef}
-          className="flex-1 bg-muted/90 backdrop-blur-sm overflow-x-auto scrollbar-hide"
-          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          className="flex-1 bg-muted/90 backdrop-blur-sm overflow-x-auto overflow-y-hidden scrollbar-hide"
+          style={{ 
+            scrollbarWidth: 'none', 
+            msOverflowStyle: 'none',
+            height: `${LAYOUT.MONTH_HEADER_HEIGHT + LAYOUT.DATE_HEADER_HEIGHT}px` // 100px (50px + 50px)
+          }}
           onScroll={timelineScroll.handleScroll}
         >
-          <div style={{ width: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px` }}>
+          <div style={{ 
+            width: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`, 
+            height: '100%' // Fill container exactly
+          }}>
             {/* Month Header */}
-            <div style={{ height: LAYOUT.MONTH_HEADER_HEIGHT }} className="border-b border-border/50">
+            <div style={{ height: LAYOUT.MONTH_HEADER_HEIGHT }}>
               <div className="flex h-full">
                 {monthSections.map((section, index) => {
                   // Check if this is a year transition (different year from previous section)
@@ -271,7 +281,8 @@ export function TimelineHeader({
                     position: 'absolute',
                     left: virtualTimeline?.offsetLeft || 0,
                     display: 'flex',
-                    alignItems: 'center'
+                    alignItems: 'center',
+                    height: '100%' // Ensure full height for proper centering
                   }}
                 >
                   {(virtualTimeline?.virtualDates || formattedDates).map((dateInfo, index) => {
@@ -286,7 +297,7 @@ export function TimelineHeader({
                 const showMonthDivider = isNewMonth || index === 0;
                 
                 return (
-                  <div key={dateInfo.date.toISOString()} className="relative" style={{ width: LAYOUT.DAY_CELL_WIDTH }}>
+                  <div key={dateInfo.date.toISOString()} className="relative flex items-center" style={{ width: LAYOUT.DAY_CELL_WIDTH, height: LAYOUT.DATE_HEADER_HEIGHT }}>
                     {/* Month/Year dividers */}
                     {showMonthDivider && (
                       <div className={`absolute left-0 top-0 bottom-0 w-[1px] ${
@@ -295,7 +306,7 @@ export function TimelineHeader({
                     )}
                     
                     <div
-                      className={`h-9 px-1 flex flex-col items-center justify-center text-sm font-medium transition-colors cursor-pointer select-none relative ${
+                      className={`w-full px-1 flex flex-col items-center justify-center text-sm font-medium transition-colors cursor-pointer select-none relative ${
                         dateInfo.isToday
                           ? 'bg-blue-500 text-white shadow-md rounded-md' 
                           : dateInfo.isSelected
@@ -306,6 +317,7 @@ export function TimelineHeader({
                           ? 'text-red-600 hover:bg-muted/30 rounded-sm'
                           : 'text-muted-foreground hover:bg-muted/50 rounded-sm'
                       }`}
+                      style={{ height: LAYOUT.DATE_HEADER_HEIGHT }}
                       onClick={(e) => {
                         e.stopPropagation();
                         // Add a small delay to wait for potential double click
@@ -359,7 +371,7 @@ export function TimelineHeader({
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 
   // Standard component render

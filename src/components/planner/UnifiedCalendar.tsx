@@ -305,9 +305,10 @@ export function UnifiedCalendar({
     );
   }
 
-  // Return TimelineHeader and TimelineContent with debug overlay
+  // Return TimelineHeader (sticky) and TimelineContent (scrollable) 
   return (
-    <>
+    <div className="border border-border rounded-lg overflow-hidden bg-background">
+      {/* Fixed Page Header with filters/tabs */}
       <TimelineHeader
         formattedDates={formattedDates}
         virtualTimeline={virtualTimeline}
@@ -328,7 +329,9 @@ export function UnifiedCalendar({
         onToggleProblemsOnly={onToggleProblemsOnly}
       />
       
-      <TimelineContent
+      {/* Scrollable content area with proper height constraint */}
+      <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 290px)' }}>
+        <TimelineContent
         equipmentGroups={equipmentGroups}
         expandedGroups={expandedGroups}
         expandedEquipment={expandedEquipment}
@@ -376,6 +379,7 @@ export function UnifiedCalendar({
           </div>
         </div>
       )}
-    </>
+      </div>
+    </div>
   );
 }

@@ -17,9 +17,9 @@ export const LAYOUT = {
   PROJECT_ROW_HEIGHT: 40, // Height per project row in expanded equipment view
   PROJECT_QUANTITY_CELL_HEIGHT: 32, // Height of quantity indicator cells
   
-  // Header heights
-  MONTH_HEADER_HEIGHT: 57, // Height for month section including year
-  DATE_HEADER_HEIGHT: 48, // Height for date cells
+  // Header heights - Adjusted for content
+  MONTH_HEADER_HEIGHT: 60, // Height for month section including year (needs space for 2 lines + padding)
+  DATE_HEADER_HEIGHT: 45, // Height for date cells
   STICKY_HEADER_TOP_OFFSET: 72,
 } as const;
 
