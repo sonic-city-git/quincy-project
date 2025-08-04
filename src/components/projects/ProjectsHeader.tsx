@@ -1,15 +1,16 @@
-import { Clock, CheckCircle, Plus } from "lucide-react";
+import { Clock, Archive, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProjects } from "@/hooks/useProjects";
 import { useOwnerOptions } from "@/hooks/useOwnerOptions";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import type { Tab } from "@/components/shared/SectionHeader";
+import { OwnerFilters } from "@/types/ui-common";
+import { COMPONENT_CLASSES, cn } from "@/design-system";
 
-// Filter types
-export interface ProjectFilters {
-  search: string;
-  owner: string;
+// Consolidated filter types using common interface
+export interface ProjectFilters extends OwnerFilters {
+  // Project-specific filters can be added here
 }
 
 interface ProjectsHeaderProps {
@@ -31,7 +32,7 @@ export function ProjectsHeader({
   const getTabConfig = () => {
     switch (activeTab) {
       case 'archived':
-        return { title: 'Archived Projects', icon: CheckCircle, color: 'text-green-500' };
+        return { title: 'Archived Projects', icon: Archive, color: 'text-green-500' };
       default:
         return { title: 'Active Projects', icon: Clock, color: 'text-blue-500' };
     }
@@ -51,7 +52,7 @@ export function ProjectsHeader({
   // Tab configuration
   const tabs: Tab<'active' | 'archived'>[] = [
     { value: 'active', label: 'Active', icon: Clock, color: 'text-blue-500' },
-    { value: 'archived', label: 'Archived', icon: CheckCircle, color: 'text-green-500' }
+    { value: 'archived', label: 'Archived', icon: Archive, color: 'text-green-500' }
   ];
 
   // Update filters helper
@@ -86,7 +87,7 @@ export function ProjectsHeader({
         options: tabs
       }}
       search={{
-        placeholder: "Search projects...",
+        placeholder: window.innerWidth < 640 ? "Search..." : "Search projects...",
         value: filters.search,
         onChange: (value) => updateFilters({ search: value })
       }}
@@ -98,7 +99,7 @@ export function ProjectsHeader({
           <Button
             onClick={onAddClick}
             size="sm"
-            className="h-7 sm:h-8 px-1.5 sm:px-2 md:px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap"
+            className={cn("h-7 sm:h-8 px-1.5 sm:px-2 md:px-3 text-xs whitespace-nowrap", COMPONENT_CLASSES.button.primary)}
             title="Add Project"
           >
             <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
@@ -111,9 +112,11 @@ export function ProjectsHeader({
       <div className="flex items-center gap-1">
         <Select value={filters.owner || 'all'} onValueChange={(value) => updateFilters({ owner: value })}>
           <SelectTrigger 
-            className={`w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors ${
-              filters.owner && filters.owner !== 'all' ? 'ring-2 ring-blue-500/50 border-blue-500/50 bg-blue-50/50' : ''
-            }`}
+            className={cn(
+              "w-auto min-w-[140px] h-8 text-xs",
+              COMPONENT_CLASSES.input.filter,
+              filters.owner && filters.owner !== 'all' && "ring-2 ring-primary/50 border-primary/50"
+            )}
           >
             <div className="flex items-center gap-2">
               {filters.owner && filters.owner !== 'all' ? (

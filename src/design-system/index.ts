@@ -1,233 +1,261 @@
 /**
- * QUINCY Nordic Design System - Simplified
+ * 🎨 QUINCY DESIGN SYSTEM - UNIFIED
  * 
- * PHILOSOPHY: CSS Variables + Tailwind + Minimal JavaScript
- * - All colors defined in CSS variables (index.css)
- * - This file only for complex calculations or custom components
- * - shadcn/ui works naturally with CSS variables
- * - Easy to change entire app theme by updating CSS
+ * Works with your existing CSS variables and dark theme
+ * Provides JavaScript access to design tokens for complex calculations
  */
 
-// ===== SIMPLE COLOR REFERENCE =====
-// These reference the CSS variables defined in index.css
-// Use these ONLY when you need the actual hex values in JavaScript
+// ========== CSS VARIABLE REFERENCES ==========
+// These reference your actual CSS variables from index.css
 
-export const COLORS = {
-  // Backgrounds (light & airy)
-  WHITE: 'var(--nordic-white)',
-  GRAY_50: 'var(--nordic-gray-50)',
-  GRAY_100: 'var(--nordic-gray-100)',
-  GRAY_200: 'var(--nordic-gray-200)',
-  GRAY_300: 'var(--nordic-gray-300)',
-  GRAY_400: 'var(--nordic-gray-400)',
-  GRAY_500: 'var(--nordic-gray-500)',
-  GRAY_600: 'var(--nordic-gray-600)',
-  GRAY_700: 'var(--nordic-gray-700)',
-  GRAY_800: 'var(--nordic-gray-800)',
-  GRAY_900: 'var(--nordic-gray-900)',
+export const CSS_VARS = {
+  // Core theme colors (from your index.css)
+  background: 'hsl(var(--background))',           // Dark background
+  foreground: 'hsl(var(--foreground))',           // Text color
+  card: 'hsl(var(--card))',                       // Card background
+  cardForeground: 'hsl(var(--card-foreground))', // Card text
   
-  // Brand colors (vibrant yet calming)
-  PRIMARY: 'var(--nordic-primary)',     // Indigo
-  SECONDARY: 'var(--nordic-secondary)', // Cyan  
-  ACCENT: 'var(--nordic-accent)',       // Purple
+  // Your brand colors
+  primary: 'hsl(var(--primary))',                 // Purple #9b87f5
+  primaryForeground: 'hsl(var(--primary-foreground))',
+  secondary: 'hsl(var(--secondary))',             // Deep purple #7E69AB
+  secondaryForeground: 'hsl(var(--secondary-foreground))',
+  accent: 'hsl(var(--accent))',                   // Orange #F97316
+  accentForeground: 'hsl(var(--accent-foreground))',
+  
+  // UI colors
+  muted: 'hsl(var(--muted))',                     // Zinc-800 equivalent
+  mutedForeground: 'hsl(var(--muted-foreground))', // Muted text
+  border: 'hsl(var(--border))',                   // Border color
+  input: 'hsl(var(--input))',                     // Input background
+  ring: 'hsl(var(--ring))',                       // Focus ring
   
   // Status colors
-  SUCCESS: 'var(--nordic-success)',     // Emerald
-  WARNING: 'var(--nordic-warning)',     // Amber
-  ERROR: 'var(--nordic-error)',         // Red
-  INFO: 'var(--nordic-info)',           // Blue
-} as const
+  destructive: 'hsl(var(--destructive))',         // Error red
+  destructiveForeground: 'hsl(var(--destructive-foreground))',
+  
+  // Business status colors (mapped to design system)
+  success: 'hsl(var(--secondary))',    // Secondary purple - completed/invoiced
+  warning: 'hsl(var(--accent))',       // Primary accent orange - action needed  
+  info: 'hsl(var(--primary))',         // Primary purple - active/in progress
+  neutral: 'hsl(var(--primary))',      // Primary purple - planning/neutral
+  danger: 'hsl(var(--destructive))'    // Destructive red - urgent/overdue
+} as const;
 
-// ===== SIMPLIFIED FOUNDATION =====
-// Keep only what we actually use in JavaScript
+// ========== SEMANTIC COLOR MAPPING ==========
+// Map your CSS variables to semantic names for easier use
 
-export const FOUNDATION = {
-  BACKGROUND: {
-    PRIMARY: COLORS.WHITE,
-    SECONDARY: COLORS.GRAY_50,
-    TERTIARY: COLORS.GRAY_100,
+export const THEME = {
+  // Backgrounds (using your actual variables)
+  bg: {
+    primary: CSS_VARS.background,      // Main app background
+    secondary: CSS_VARS.card,          // Card backgrounds
+    muted: CSS_VARS.muted,            // Subtle backgrounds
+    input: CSS_VARS.input             // Input backgrounds
   },
   
-  GRAY: {
-    50: COLORS.GRAY_50,
-    100: COLORS.GRAY_100,
-    200: COLORS.GRAY_200,
-    300: COLORS.GRAY_300,
-    400: COLORS.GRAY_400,
-    500: COLORS.GRAY_500,
-    600: COLORS.GRAY_600,
-    700: COLORS.GRAY_700,
-    800: COLORS.GRAY_800,
-    900: COLORS.GRAY_900,
+  // Text colors
+  text: {
+    primary: CSS_VARS.foreground,      // Main text
+    secondary: CSS_VARS.mutedForeground, // Muted text
+    muted: CSS_VARS.mutedForeground,   // Very muted text
+    inverse: CSS_VARS.primaryForeground // Dark text on light bg
   },
   
-  STATUS: {
-    SUCCESS: { 500: COLORS.SUCCESS, 600: COLORS.SUCCESS },
-    WARNING: { 500: COLORS.WARNING, 600: COLORS.WARNING },
-    ERROR: { 500: COLORS.ERROR, 600: COLORS.ERROR },
-    INFO: { 500: COLORS.INFO, 600: COLORS.INFO },
+  // Interactive colors (your brand)
+  interactive: {
+    primary: CSS_VARS.primary,         // Purple buttons
+    secondary: CSS_VARS.secondary,     // Deep purple
+    accent: CSS_VARS.accent,           // Orange accent
+    destructive: CSS_VARS.destructive  // Error/delete
   },
   
-  ACCENT: {
-    PRIMARY: COLORS.PRIMARY,
-    SECONDARY: COLORS.SECONDARY,
+  // Borders
+  border: {
+    default: CSS_VARS.border,          // Main borders
+    input: CSS_VARS.border,            // Input borders
+    focus: CSS_VARS.ring              // Focus borders
   }
-}
+} as const;
 
-// ===== TYPOGRAPHY =====
-// Simple font weights and sizes
+// ========== CONSISTENT CLASS BUILDERS ==========
+// Build consistent classes using your theme
 
-export const TYPOGRAPHY = {
-  WEIGHT: {
-    LIGHT: 300,
-    NORMAL: 400,
-    MEDIUM: 500,
-    SEMIBOLD: 600,
-    BOLD: 700,
+export const COMPONENT_CLASSES = {
+  // Card patterns (matches your dashboard)
+  card: {
+    default: 'bg-card text-card-foreground border border-border rounded-lg shadow-sm',
+    subtle: 'bg-muted/50 text-card-foreground border border-border/50 rounded-lg',
+    hover: 'bg-card text-card-foreground border border-border rounded-lg shadow-sm hover:bg-muted/30 transition-colors'
   },
   
-  SIZE: {
-    XS: '12px',
-    SM: '14px',
-    BASE: '16px',
-    LG: '18px',
-    XL: '20px',
-    '2XL': '24px',
+  // Button patterns (using your CSS variables)
+  button: {
+    primary: 'bg-primary text-primary-foreground hover:bg-primary/90 transition-colors',
+    secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors',
+    outline: 'border border-border bg-background hover:bg-muted/50 transition-colors',
+    ghost: 'hover:bg-muted/50 hover:text-foreground transition-colors'
+  },
+  
+  // Input patterns
+  input: {
+    default: 'bg-input border border-border text-foreground placeholder:text-muted-foreground focus:border-ring transition-colors',
+    filter: 'bg-muted/50 border border-border/50 text-muted-foreground hover:text-foreground transition-colors'
+  },
+  
+  // Table patterns (matches your current style)
+  table: {
+    container: 'border border-border rounded-lg overflow-hidden',
+    header: 'bg-muted/50 border-b border-border',
+    row: 'border-b border-border/50 hover:bg-muted/30 transition-colors',
+    cell: 'p-4 text-sm'
   }
-}
+} as const;
 
-// ===== SPACING =====
-// Reference to Tailwind's spacing scale
+// ========== STATUS PATTERNS ==========
+// Consistent status styling (like your StatusCard)
+
+export const STATUS_PATTERNS = {
+  critical: {
+    bg: 'bg-gradient-to-br from-red-50/10 to-red-100/10',
+    border: 'border-red-200/20',
+    text: 'text-red-500',
+    accent: 'bg-gradient-to-r from-red-500 to-red-600'
+  },
+  warning: {
+    bg: 'bg-gradient-to-br from-orange-50/10 to-orange-100/10',
+    border: 'border-orange-200/20',
+    text: 'text-orange-500',
+    accent: 'bg-gradient-to-r from-orange-500 to-orange-600'
+  },
+  success: {
+    bg: 'bg-gradient-to-br from-green-50/10 to-green-100/10',
+    border: 'border-green-200/20',
+    text: 'text-green-500',
+    accent: 'bg-gradient-to-r from-green-500 to-green-600'
+  },
+  info: {
+    bg: 'bg-gradient-to-br from-blue-50/10 to-blue-100/10',
+    border: 'border-blue-200/20',
+    text: 'text-blue-500',
+    accent: 'bg-gradient-to-r from-blue-500 to-blue-600'
+  },
+  operational: {
+    bg: 'bg-gradient-to-br from-slate-50/10 to-slate-100/10',
+    border: 'border-slate-200/20',
+    text: 'text-slate-500',
+    accent: 'bg-gradient-to-r from-slate-500 to-slate-600'
+  }
+} as const;
+
+// ========== SPACING & LAYOUT ==========
+// Consistent spacing using Tailwind's scale
 
 export const SPACING = {
-  0: '0px',
-  1: '4px',
-  2: '8px',
-  3: '12px',
-  4: '16px',
-  5: '20px',
-  6: '24px',
-  8: '32px',
-  12: '48px',
-  16: '64px',
-  20: '80px',
-}
-
-// ===== LAYOUT =====
-// Simple layout constants
+  xs: '0.5rem',    // 8px
+  sm: '0.75rem',   // 12px
+  md: '1rem',      // 16px
+  lg: '1.5rem',    // 24px
+  xl: '2rem',      // 32px
+  '2xl': '3rem',   // 48px
+  '3xl': '4rem'    // 64px
+} as const;
 
 export const LAYOUT = {
-  BORDER: {
-    WIDTH: '1px',
-    WIDTH_THIN: '0.5px',
-    COLOR: COLORS.GRAY_200,
-    COLOR_MEDIUM: COLORS.GRAY_300,
+  borderRadius: {
+    sm: '0.25rem',   // 4px
+    md: '0.5rem',    // 8px - your default
+    lg: '0.75rem',   // 12px
+    xl: '1rem'       // 16px
   },
   
-  RADIUS: {
-    SM: '4px',
-    DEFAULT: '6px',
-    MD: '8px',
-    LG: '12px',
-    XL: '16px',
+  shadow: {
+    sm: '0 1px 2px 0 rgb(0 0 0 / 0.05)',
+    md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+    lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'
   },
   
-  SHADOW: {
-    XS: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
-    SM: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-    DEFAULT: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-    LG: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
-    XL: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-  },
-  
-  CONTAINER: {
-    MAX_WIDTH: '1400px',
+  zIndex: {
+    dropdown: 10,
+    header: 20,
+    modal: 50,
+    toast: 100
   }
+} as const;
+
+// ========== UTILITY FUNCTIONS ==========
+
+/**
+ * Build component classes easily
+ */
+export function cn(...classes: (string | undefined | false)[]): string {
+  return classes.filter(Boolean).join(' ');
 }
 
-// ===== DOMAIN-SPECIFIC COMPONENTS =====
-// Only for complex business logic components
+/**
+ * Create card with consistent styling
+ */
+export function createCard(variant: keyof typeof COMPONENT_CLASSES.card = 'default'): string {
+  return COMPONENT_CLASSES.card[variant];
+}
+
+/**
+ * Create button with consistent styling
+ */
+export function createButton(variant: keyof typeof COMPONENT_CLASSES.button = 'primary'): string {
+  return COMPONENT_CLASSES.button[variant];
+}
+
+/**
+ * Create status styling
+ */
+export function createStatus(status: keyof typeof STATUS_PATTERNS): string {
+  const pattern = STATUS_PATTERNS[status];
+  return cn(pattern.bg, pattern.border, pattern.text);
+}
+
+// ========== RESPONSIVE HELPERS ==========
+
+export const RESPONSIVE = {
+  grid: {
+    cards: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4',
+    stats: 'grid grid-cols-2 md:grid-cols-4 gap-3',
+    table: 'overflow-x-auto'
+  },
+  
+  flex: {
+    header: 'flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4',
+    actions: 'flex flex-col sm:flex-row gap-2'
+  },
+  
+  spacing: {
+    section: 'space-y-4 md:space-y-6',
+    items: 'space-y-2 md:space-y-3'
+  }
+} as const;
+
+// ========== EQUIPMENT/DOMAIN SPECIFIC ==========
+// Keep your domain-specific styling
 
 export const EQUIPMENT_STATUS = {
-  AVAILABLE: COLORS.SUCCESS,
-  BOOKED: COLORS.WARNING,
-  MAINTENANCE: COLORS.ERROR,
-  TRANSIT: COLORS.INFO,
-}
+  available: 'bg-green-500/10 text-green-500 border-green-500/20',
+  booked: 'bg-orange-500/10 text-orange-500 border-orange-500/20',
+  maintenance: 'bg-red-500/10 text-red-500 border-red-500/20',
+  transit: 'bg-blue-500/10 text-blue-500 border-blue-500/20'
+} as const;
 
-// ===== APP LAYOUT =====
-// Navigation and page layout styling
-
-export const APP_LAYOUT = {
-  NAVIGATION: {
-    BACKGROUND: COLORS.WHITE,
-    BORDER_BOTTOM: `1px solid ${COLORS.GRAY_200}`,
-    SHADOW: LAYOUT.SHADOW.SM,
-    HEIGHT: '64px',
-    PADDING: SPACING[4],
-    
-    LOGO: {
-      COLOR: COLORS.PRIMARY,
-      SIZE: TYPOGRAPHY.SIZE['2XL'],
-      WEIGHT: TYPOGRAPHY.WEIGHT.SEMIBOLD,
-    },
-    
-    LINK: {
-      COLOR: COLORS.GRAY_600,
-      COLOR_HOVER: COLORS.GRAY_800,
-      COLOR_ACTIVE: COLORS.PRIMARY,
-      BACKGROUND_HOVER: COLORS.GRAY_50,
-      TRANSITION: 'all 200ms ease',
-    },
-  },
-  
-  PAGE: {
-    SPACING: SPACING[6],
-    TITLE_SIZE: TYPOGRAPHY.SIZE['2XL'],
-    TITLE_WEIGHT: TYPOGRAPHY.WEIGHT.SEMIBOLD,
-    TITLE_COLOR: COLORS.GRAY_800,
-    SUBTITLE_COLOR: COLORS.GRAY_600,
-  },
-  
-  MAIN: {
-    PADDING: SPACING[6],
-    MAX_WIDTH: LAYOUT.CONTAINER.MAX_WIDTH,
-    MARGIN: '0 auto',
-  }
-} as const
-
-// ===== LEGACY COMPATIBILITY =====
-// For components that still use the old structure
+// ========== LEGACY COMPATIBILITY ==========
+// For existing components that import from design-system
 
 export const QUINCY_DESIGN_SYSTEM = {
-  FOUNDATION,
-  TYPOGRAPHY,
+  THEME,
+  COMPONENT_CLASSES,
+  STATUS_PATTERNS,
   SPACING,
   LAYOUT,
-  APP_LAYOUT,
-  EQUIPMENT_PLANNER: {
-    HEADER: {
-      BACKGROUND: COLORS.WHITE,
-      BORDER: COLORS.GRAY_200,
-      HEIGHT: '60px',
-    },
-    FOLDER: {
-      BACKGROUND: COLORS.GRAY_50,
-      BORDER: COLORS.GRAY_200,
-    },
-  },
-  COMPONENTS: {
-    EQUIPMENT_STATUS: {
-      AVAILABLE: { BACKGROUND: COLORS.SUCCESS },
-      BOOKED: { BACKGROUND: COLORS.WARNING },
-      MAINTENANCE: { BACKGROUND: COLORS.ERROR },
-      TRANSIT: { BACKGROUND: COLORS.INFO },
-      WEEKEND: { BACKGROUND: COLORS.GRAY_100 },
-    },
-    CARD: {
-      BACKGROUND: COLORS.GRAY_50,
-      BORDER: COLORS.GRAY_200,
-      SHADOW: LAYOUT.SHADOW.SM,
-    }
-  }
-}
+  RESPONSIVE,
+  EQUIPMENT_STATUS
+} as const;
+
+// Default export for easier importing
+export default QUINCY_DESIGN_SYSTEM;

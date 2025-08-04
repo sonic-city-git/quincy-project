@@ -132,7 +132,7 @@ export function ResourceEquipmentTable({ filters, targetScrollItem }: ResourceEq
   return (
     <>
       {/* Sticky table header positioned right after ResourcesHeader */}
-      <div className="sticky top-[136px] z-20 bg-background border-x border-b border-border">
+              <div className="sticky top-[124px] z-30 bg-background border-x border-b border-border">
         <Table>
           <EquipmentTableHeader />
         </Table>
