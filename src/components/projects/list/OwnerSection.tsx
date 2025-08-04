@@ -4,6 +4,7 @@ import { getInitials } from "@/utils/stringUtils";
 import { COMPONENT_CLASSES, cn } from "@/design-system";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
+import { getSimplifiedProjectStatus, getInvoiceStatusStyles } from "@/utils/invoiceStatusColors";
 
 interface OwnerSectionProps {
   owner: {
@@ -17,21 +18,10 @@ interface OwnerSectionProps {
 function ProjectListItem({ project }: { project: Project }) {
   const navigate = useNavigate();
   
-  const getProjectColorStyles = (color: string | null) => {
-    if (!color) {
-      return {
-        backgroundColor: 'hsl(var(--muted))', 
-        color: 'hsl(var(--muted-foreground))',
-        border: '1px solid hsl(var(--border))'
-      };
-    }
-    
-    return {
-      backgroundColor: color,
-      color: '#FFFFFF',
-      border: `1px solid ${color}`,
-      boxShadow: `0 0 0 1px ${color}20`
-    };
+  // Use invoice status based styling
+  const getProjectColorStyles = (project: any) => {
+    const statusKey = getSimplifiedProjectStatus(project);
+    return getInvoiceStatusStyles(statusKey);
   };
 
   return (
@@ -43,7 +33,7 @@ function ProjectListItem({ project }: { project: Project }) {
         <div className="flex items-center gap-3">
           <div 
             className="px-3 py-1.5 rounded-md text-sm font-medium"
-            style={getProjectColorStyles(project.color)}
+            style={getProjectColorStyles(project)}
           >
             {project.name}
           </div>

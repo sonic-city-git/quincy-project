@@ -32,7 +32,14 @@ export const CSS_VARS = {
   
   // Status colors
   destructive: 'hsl(var(--destructive))',         // Error red
-  destructiveForeground: 'hsl(var(--destructive-foreground))'
+  destructiveForeground: 'hsl(var(--destructive-foreground))',
+  
+  // Business status colors (mapped to design system)
+  success: 'hsl(var(--secondary))',    // Secondary purple - completed/invoiced
+  warning: 'hsl(var(--accent))',       // Primary accent orange - action needed  
+  info: 'hsl(var(--primary))',         // Primary purple - active/in progress
+  neutral: 'hsl(var(--primary))',      // Primary purple - planning/neutral
+  danger: 'hsl(var(--destructive))'    // Destructive red - urgent/overdue
 } as const;
 
 // ========== SEMANTIC COLOR MAPPING ==========

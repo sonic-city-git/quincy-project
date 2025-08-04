@@ -1,4 +1,4 @@
-import { Clock, CheckCircle, Plus } from "lucide-react";
+import { Clock, Archive, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProjects } from "@/hooks/useProjects";
@@ -32,7 +32,7 @@ export function ProjectsHeader({
   const getTabConfig = () => {
     switch (activeTab) {
       case 'archived':
-        return { title: 'Archived Projects', icon: CheckCircle, color: 'text-green-500' };
+        return { title: 'Archived Projects', icon: Archive, color: 'text-green-500' };
       default:
         return { title: 'Active Projects', icon: Clock, color: 'text-blue-500' };
     }
@@ -52,7 +52,7 @@ export function ProjectsHeader({
   // Tab configuration
   const tabs: Tab<'active' | 'archived'>[] = [
     { value: 'active', label: 'Active', icon: Clock, color: 'text-blue-500' },
-    { value: 'archived', label: 'Archived', icon: CheckCircle, color: 'text-green-500' }
+    { value: 'archived', label: 'Archived', icon: Archive, color: 'text-green-500' }
   ];
 
   // Update filters helper
@@ -87,7 +87,7 @@ export function ProjectsHeader({
         options: tabs
       }}
       search={{
-        placeholder: "Search projects...",
+        placeholder: window.innerWidth < 640 ? "Search..." : "Search projects...",
         value: filters.search,
         onChange: (value) => updateFilters({ search: value })
       }}

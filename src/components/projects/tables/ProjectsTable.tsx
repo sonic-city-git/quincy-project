@@ -2,13 +2,14 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Calendar, DollarSign } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProjects } from "@/hooks/useProjects";
 import { ProjectFilters } from "../ProjectsHeader";
 import { COMPONENT_CLASSES, cn } from "@/design-system";
 import { useBatchProjectPGA } from "@/hooks/useProjectPGA";
 import { formatPGA } from "@/utils/pgaCalculation";
+import { getSimplifiedProjectStatus, getInvoiceStatusStyles, INVOICE_STATUS_SCHEMES } from "@/utils/invoiceStatusColors";
 
 // Extended project type with joined data
 type ProjectWithJoins = {
@@ -54,23 +55,10 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
   const projectIds = projects?.map(p => p.id) || [];
   const { data: pgaData, isLoading: pgaLoading } = useBatchProjectPGA(projectIds);
 
-  // Project color badge styling using design system
-  const getProjectColorStyles = (color: string | null | undefined) => {
-    if (!color) {
-      // Fallback using CSS variables
-      return {
-        backgroundColor: 'hsl(var(--muted))', 
-        color: 'hsl(var(--muted-foreground))',
-        border: '1px solid hsl(var(--border))'
-      };
-    }
-    
-    return {
-      backgroundColor: color,
-      color: '#FFFFFF',
-      border: `1px solid ${color}`,
-      boxShadow: `0 0 0 1px ${color}20`
-    };
+  // Invoice status based styling with standardized text
+  const getProjectColorStyles = (project: any) => {
+    const statusKey = getSimplifiedProjectStatus(project);
+    return getInvoiceStatusStyles(statusKey);
   };
 
   const handleProjectClick = (projectId: string) => {
@@ -188,8 +176,10 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
       <div className={cn("rounded-b-lg", COMPONENT_CLASSES.table.container)}>
         <div className="divide-y divide-border">
           {filteredProjects.map((project) => {
-            const projectColorStyles = getProjectColorStyles(project.color);
+            const projectColorStyles = getProjectColorStyles(project);
             const projectPGA = pgaData?.[project.id] || null;
+            const statusKey = getSimplifiedProjectStatus(project);
+            const statusScheme = INVOICE_STATUS_SCHEMES[statusKey];
             
             return (
               <div 
@@ -197,7 +187,7 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
                 className={cn("grid grid-cols-[2fr_120px_140px] sm:grid-cols-[2fr_180px_160px] gap-3 sm:gap-4 p-3 sm:p-4 cursor-pointer group border-l-4 border-l-transparent", COMPONENT_CLASSES.table.row)}
                 style={{}}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderLeftColor = project.color || 'hsl(var(--muted-foreground))';
+                  e.currentTarget.style.borderLeftColor = statusScheme.accent;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderLeftColor = 'transparent';
@@ -209,6 +199,7 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
                   <div
                     className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-sm sm:text-base font-semibold transition-all duration-200 group-hover:shadow-md max-w-fit"
                     style={projectColorStyles}
+                    title={`${statusScheme.name}: ${statusScheme.description}`}
                   >
                     <span className="truncate block">{project.name}</span>
                   </div>

@@ -146,17 +146,18 @@ export function SectionHeader<TTab = string, TFilters = Record<string, any>>({
           {/* Search and Filters - Responsive Priority */}
           {(search || children) && (
             <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 min-w-0 flex-1">
-              {/* Search Bar - Always visible, responsive width */}
+              {/* Search Bar - Always visible, responsive width and placeholder */}
               {search && (
-                <div className="relative flex-1 max-w-[120px] xs:max-w-[140px] sm:max-w-[160px] md:max-w-[224px]">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <div className="relative flex-1 min-w-[100px] max-w-[120px] xs:max-w-[140px] sm:max-w-[180px] md:max-w-[240px] lg:max-w-[280px]">
+                  <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 h-3.5 w-3.5 sm:h-4 sm:w-4 text-muted-foreground" />
                   <Input
                     ref={searchInputRef}
                     placeholder={search.placeholder}
                     value={localSearchValue}
                     onChange={(e) => setLocalSearchValue(e.target.value)}
                     className={`
-                      pl-9 h-8 transition-colors w-full
+                      pl-8 sm:pl-9 h-8 transition-colors w-full text-xs sm:text-sm
+                      placeholder:text-xs sm:placeholder:text-sm
                       ${localSearchValue ? 'ring-2 ring-blue-500/50 border-blue-500/50 bg-blue-50/50' : ''}
                     `}
                   />
