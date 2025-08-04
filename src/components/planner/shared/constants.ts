@@ -19,7 +19,8 @@ export const LAYOUT = {
   
   // Header heights - Adjusted for content
   MONTH_HEADER_HEIGHT: 60, // Height for month section including year (needs space for 2 lines + padding)
-  DATE_HEADER_HEIGHT: 45, // Height for date cells
+  DATE_HEADER_HEIGHT: 52, // Height for date cells container
+  DATE_CONTENT_HEIGHT: 42, // Height for actual date content (keeps highlights compact)
   STICKY_HEADER_TOP_OFFSET: 72,
 } as const;
 

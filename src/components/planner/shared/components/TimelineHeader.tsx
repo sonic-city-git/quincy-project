@@ -317,7 +317,7 @@ export function TimelineHeader({
                           ? 'text-red-600 hover:bg-muted/30 rounded-sm'
                           : 'text-muted-foreground hover:bg-muted/50 rounded-sm'
                       }`}
-                      style={{ height: LAYOUT.DATE_HEADER_HEIGHT }}
+                      style={{ height: LAYOUT.DATE_CONTENT_HEIGHT }}
                       onClick={(e) => {
                         e.stopPropagation();
                         // Add a small delay to wait for potential double click
