@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Package, Plus, X } from "lucide-react";
 import { useFolders } from "@/hooks/useFolders";
-import { sortFolders } from "@/utils/folderSort";
+import { sortEquipmentFolders } from "@/utils/equipmentFolderSort";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const formSchema = z.object({
@@ -203,7 +203,7 @@ export function AddEquipmentDialog({ open: externalOpen, onOpenChange: externalO
                         </FormControl>
                         <SelectContent>
                           <ScrollArea className="h-[200px]">
-                            {sortFolders(folders).map((folder) => (
+                            {sortEquipmentFolders(folders).map((folder) => (
                               <SelectItem 
                                 key={folder.id} 
                                 value={folder.id}

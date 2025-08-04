@@ -6,12 +6,7 @@ const SONIC_CITY_FOLDER_ID = "34f3469f-02bd-4ecf-82f9-11a4e88c2d77";
 const ASSOCIATE_FOLDER_ID = "c37d9b68-fe80-4d24-b63d-3c95f880d6f5";
 const FREELANCE_FOLDER_ID = "9d50e080-4d0c-4ddb-b5e1-10fadd3e48b5";
 
-// Map folder names to IDs for legacy support
-const FOLDER_NAME_TO_ID: Record<string, string> = {
-  "Sonic City": SONIC_CITY_FOLDER_ID,
-  "Associates": ASSOCIATE_FOLDER_ID, 
-  "Freelancers": FREELANCE_FOLDER_ID
-};
+// Legacy folder IDs for backward compatibility
 
 export function useCrewSort() {
   const sortCrew = (crew: CrewMember[]) => {

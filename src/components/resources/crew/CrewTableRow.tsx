@@ -2,7 +2,7 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import { CrewMember } from "@/types/crew";
 import { Badge } from "@/components/ui/badge";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
-import { COMPONENT_CLASSES, cn } from "@/design-system";
+import { COMPONENT_CLASSES, cn, getRoleBadgeClasses } from "@/design-system";
 
 interface CrewTableRowProps {
   member: CrewMember;
@@ -41,8 +41,7 @@ export function CrewTableRow({ member, isSelected, isHighlighted, onSelect }: Cr
         {memberRoles.map((role) => (
           <Badge
             key={role.id}
-            style={{ backgroundColor: role.color }}
-            className="text-white text-xs whitespace-nowrap flex-shrink-0"
+            className={getRoleBadgeClasses(role.name)}
           >
             {role.name}
           </Badge>

@@ -9,7 +9,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { ChevronDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState, useMemo } from "react";
-import { FOLDER_ORDER, SUBFOLDER_ORDER } from "@/utils/folderSort";
+import { FOLDER_ORDER, SUBFOLDER_ORDER } from "@/utils/equipmentFolderSort";
 
 interface EquipmentSelectorProps {
   onSelect: (equipment: Equipment) => void;

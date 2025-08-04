@@ -1,6 +1,6 @@
 /**
- * CONSOLIDATED: ResourceCrewTable - Now using shared hooks and components  
- * Reduced from 128 lines to ~60 lines (53% reduction)
+ * CONSOLIDATED: ResourceCrewTable with priority folder organization
+ * Features: Sonic City → Associates → Freelancers sorting, collapsible structure
  */
 
 import { useState, useEffect } from "react";
@@ -134,10 +134,26 @@ export function ResourceCrewTable({ filters, targetScrollItem }: ResourceCrewTab
                     toggleGroup(folderName, expandAllSubfolders);
                   }}
                 >
-                  <div className="flex items-center gap-2 bg-muted/50 hover:bg-muted transition-colors px-4 py-2 font-medium text-sm text-muted-foreground">
-                    <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]/folder:rotate-90" />
-                    <span>{folderName}</span>
-                    <span className="ml-auto text-xs opacity-60">({folderCrew.length})</span>
+                  <div 
+                    className={cn(
+                      "grid grid-cols-[2fr_200px_120px] sm:grid-cols-[2fr_200px_160px_120px] gap-3 sm:gap-4 bg-muted/50 hover:bg-muted transition-colors py-2 font-medium text-sm text-muted-foreground",
+                      "p-3 sm:p-4"
+                    )}
+                  >
+                    {/* Name column */}
+                    <div className="flex items-center gap-2 min-w-0">
+                      <ChevronRight className="h-4 w-4 transition-transform group-data-[state=open]/folder:rotate-90 flex-shrink-0" />
+                      <span className="truncate">{folderName}</span>
+                    </div>
+                    
+                    {/* Roles column - empty for folder headers */}
+                    <div></div>
+                    
+                    {/* Email column - hidden on mobile, empty for folder headers */}
+                    <div className="hidden sm:block"></div>
+                    
+                    {/* Phone column - empty for folder headers */}
+                    <div className="hidden sm:block text-right"></div>
                   </div>
                 </CollapsibleTrigger>
                 <CollapsibleContent>

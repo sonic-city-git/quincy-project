@@ -18,7 +18,7 @@ import { format, addDays } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { OVERBOOKING_WARNING_DAYS, getWarningTimeframe } from '@/constants/timeframes';
 import { usePersistentExpandedGroups } from '@/hooks/usePersistentExpandedGroups';
-import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/utils/folderSort';
+import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/utils/equipmentFolderSort';
 import { PERFORMANCE } from '../constants';
 
 interface UseTimelineHubProps {

@@ -5,6 +5,8 @@
  * Provides JavaScript access to design tokens for complex calculations
  */
 
+import React from 'react';
+
 // ========== CSS VARIABLE REFERENCES ==========
 // These reference your actual CSS variables from index.css
 
@@ -214,6 +216,33 @@ export function createStatus(status: keyof typeof STATUS_PATTERNS): string {
   return cn(pattern.bg, pattern.border, pattern.text);
 }
 
+/**
+ * Get role color scheme based on role name
+ * Falls back to primary color if role name not found
+ */
+export function getRoleColor(roleName: string): typeof ROLE_COLORS[keyof typeof ROLE_COLORS] {
+  const colorKey = ROLE_COLOR_MAP[roleName] || 'primary';
+  return ROLE_COLORS[colorKey];
+}
+
+/**
+ * Get role badge classes for consistent styling
+ * Replaces hardcoded database colors with design system colors
+ */
+export function getRoleBadgeClasses(roleName: string): string {
+  const roleColor = getRoleColor(roleName);
+  return cn('text-xs py-1 px-2 whitespace-nowrap flex-shrink-0', roleColor.classes);
+}
+
+/**
+ * Get role badge style object for components that need inline styles
+ * Provides fallback for gradual migration from database colors
+ */
+export function getRoleBadgeStyle(roleName: string): React.CSSProperties {
+  const roleColor = getRoleColor(roleName);
+  return roleColor.style || { backgroundColor: roleColor.bg, color: roleColor.text };
+}
+
 // ========== RESPONSIVE HELPERS ==========
 
 export const RESPONSIVE = {
@@ -244,6 +273,112 @@ export const EQUIPMENT_STATUS = {
   transit: 'bg-blue-500/10 text-blue-500 border-blue-500/20'
 } as const;
 
+// ========== ROLE BADGES ==========
+// Standardized role badge colors using design system CSS variables
+
+export const ROLE_COLORS = {
+  // Primary roles - using brand colors
+  primary: {
+    bg: 'hsl(var(--primary))',           // Purple
+    text: 'hsl(var(--primary-foreground))',
+    classes: 'bg-primary text-primary-foreground border-0'
+  },
+  secondary: {
+    bg: 'hsl(var(--secondary))',         // Deep purple
+    text: 'hsl(var(--secondary-foreground))',
+    classes: 'bg-secondary text-secondary-foreground border-0'
+  },
+  accent: {
+    bg: 'hsl(var(--accent))',            // Orange
+    text: 'hsl(var(--accent-foreground))',
+    classes: 'bg-accent text-accent-foreground border-0'
+  },
+  
+  // Extended palette for more role variety
+  green: {
+    bg: 'hsl(142 76% 36%)',             // Green-600
+    text: 'hsl(0 0% 98%)',              // White
+    classes: 'text-white border-0',
+    style: { backgroundColor: 'hsl(142 76% 36%)' }
+  },
+  blue: {
+    bg: 'hsl(221 83% 53%)',             // Blue-600
+    text: 'hsl(0 0% 98%)',              // White
+    classes: 'text-white border-0',
+    style: { backgroundColor: 'hsl(221 83% 53%)' }
+  },
+  red: {
+    bg: 'hsl(0 84% 60%)',               // Red-500
+    text: 'hsl(0 0% 98%)',              // White
+    classes: 'text-white border-0',
+    style: { backgroundColor: 'hsl(0 84% 60%)' }
+  },
+  yellow: {
+    bg: 'hsl(45 93% 47%)',              // Yellow-500
+    text: 'hsl(0 0% 9%)',               // Near black
+    classes: 'text-gray-900 border-0',
+    style: { backgroundColor: 'hsl(45 93% 47%)' }
+  },
+  pink: {
+    bg: 'hsl(330 81% 60%)',             // Pink-500
+    text: 'hsl(0 0% 98%)',              // White
+    classes: 'text-white border-0',
+    style: { backgroundColor: 'hsl(330 81% 60%)' }
+  },
+  indigo: {
+    bg: 'hsl(239 84% 67%)',             // Indigo-500
+    text: 'hsl(0 0% 98%)',              // White
+    classes: 'text-white border-0',
+    style: { backgroundColor: 'hsl(239 84% 67%)' }
+  },
+  teal: {
+    bg: 'hsl(173 80% 40%)',             // Teal-600
+    text: 'hsl(0 0% 98%)',              // White
+    classes: 'text-white border-0',
+    style: { backgroundColor: 'hsl(173 80% 40%)' }
+  }
+} as const;
+
+// Role name to color mapping - standardized across the app
+export const ROLE_COLOR_MAP: Record<string, keyof typeof ROLE_COLORS> = {
+  // Production roles
+  'Producer': 'primary',
+  'Director': 'secondary',
+  'Stage Manager': 'accent',
+  'Production Manager': 'primary',
+  'Assistant Director': 'secondary',
+  
+  // Technical roles
+  'Sound Engineer': 'blue',
+  'Monitor Engineer': 'blue',
+  'RF Technician': 'blue',
+  'Audio Technician': 'blue',
+  'FOH Engineer': 'blue',
+  
+  // Video/Lighting
+  'Video Engineer': 'green',
+  'Lighting Engineer': 'green',
+  'Camera Operator': 'green',
+  'Lighting Technician': 'green',
+  'Video Technician': 'green',
+  
+  // Crew
+  'Stagehand': 'teal',
+  'Loader': 'teal',
+  'Runner': 'teal',
+  'Security': 'red',
+  'Driver': 'yellow',
+  
+  // Creative
+  'Artist': 'pink',
+  'Musician': 'pink',
+  'Performer': 'pink',
+  
+  // Other
+  'Freelancer': 'indigo',
+  'Consultant': 'indigo'
+} as const;
+
 // ========== LEGACY COMPATIBILITY ==========
 // For existing components that import from design-system
 
@@ -254,7 +389,9 @@ export const QUINCY_DESIGN_SYSTEM = {
   SPACING,
   LAYOUT,
   RESPONSIVE,
-  EQUIPMENT_STATUS
+  EQUIPMENT_STATUS,
+  ROLE_COLORS,
+  ROLE_COLOR_MAP
 } as const;
 
 // Default export for easier importing

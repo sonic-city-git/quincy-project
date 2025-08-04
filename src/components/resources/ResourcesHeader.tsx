@@ -1,4 +1,4 @@
-import { Package, Users, Mic, Volume2, Lightbulb, Video, Cable, Building, Settings, Plus } from "lucide-react";
+import { Package, Users, Mic, Volume2, Lightbulb, Video, Cable, Settings, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCrewRoles } from "@/hooks/useCrewRoles";

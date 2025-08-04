@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { sortRoles } from "@/utils/roleUtils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getRoleBadgeStyle } from "@/design-system";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -193,7 +194,7 @@ export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOp
                         <div 
                           key={role.id} 
                           className="flex items-center space-x-2 rounded p-2 transition-colors"
-                          style={{ backgroundColor: role.color, opacity: 1 }}
+                          style={getRoleBadgeStyle(role.name)}
                         >
                           <Checkbox
                             id={role.id}

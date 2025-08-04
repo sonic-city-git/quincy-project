@@ -159,10 +159,8 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
         <Card key={role.id} className="p-4 bg-zinc-900/50">
           <div className="grid grid-cols-[200px_1fr_48px] gap-4 items-center">
             <span 
-              className="inline-flex items-center justify-center w-32 px-3 py-1.5 rounded-md text-sm font-medium text-white"
-              style={{ 
-                backgroundColor: role.role?.color
-              }}
+              className="inline-flex items-center justify-center w-32 px-3 py-1.5 rounded-md text-sm font-medium"
+              style={role.role?.name ? getRoleBadgeStyle(role.role.name) : {}}
             >
               {role.role?.name}
             </span>

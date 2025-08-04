@@ -8,6 +8,7 @@ import { sortRoles } from "@/utils/roleUtils";
 import { UseFormReturn } from "react-hook-form";
 import { Folder } from "@/types/folders";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getRoleBadgeStyle } from "@/design-system";
 
 interface EditMemberFormProps {
   form: UseFormReturn<any>;
@@ -123,7 +124,7 @@ export function EditMemberForm({
                     <div 
                       key={role.id} 
                       className="flex items-center space-x-2 rounded p-2 transition-colors"
-                      style={{ backgroundColor: role.color, opacity: 1 }}
+                      style={getRoleBadgeStyle(role.name)}
                     >
                       <Checkbox
                         id={role.id}
