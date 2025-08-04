@@ -32,13 +32,13 @@ export function useSimpleInfiniteScroll({ selectedDate }: UseSimpleInfiniteScrol
   const [timelineStart, setTimelineStart] = useState(() => addDays(today, -30));
   const [timelineEnd, setTimelineEnd] = useState(() => addDays(today, 90));
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
   
   // Simple refs - no complex tracking
   const equipmentRowsRef = useRef<HTMLDivElement>(null);
   const stickyHeadersRef = useRef<HTMLDivElement>(null);
   const scrollPositionRef = useRef(0);
   const isExpandingRef = useRef(false);
-  const lastScrolledDateRef = useRef('');
   
   // ========================
   // TIMELINE DATES
@@ -197,6 +197,11 @@ export function useSimpleInfiniteScroll({ selectedDate }: UseSimpleInfiniteScrol
     scrollPositionRef.current = scrollLeft;
     setScrollPosition(scrollLeft);
     
+    // Track container width changes for scroll timing
+    if (clientWidth !== containerWidth) {
+      setContainerWidth(clientWidth);
+    }
+    
     // Sync other scroll containers
     if (element !== equipmentRowsRef.current && equipmentRowsRef.current) {
       equipmentRowsRef.current.scrollLeft = scrollLeft;
@@ -207,27 +212,47 @@ export function useSimpleInfiniteScroll({ selectedDate }: UseSimpleInfiniteScrol
     
     // Check for infinite scroll expansion
     checkForExpansion(scrollLeft, scrollWidth, clientWidth);
-  }, [checkForExpansion]);
+  }, [checkForExpansion, containerWidth]);
 
   // ========================
-  // DATE CHANGE EFFECT
+  // SIMPLE: SCROLL TO SELECTED DATE WHEN READY
   // ========================
   
   useEffect(() => {
-    const dateStr = selectedDate.toISOString().split('T')[0];
-    
-    // Only scroll if date actually changed
-    if (lastScrolledDateRef.current === dateStr) {
-      return;
-    }
-    
-    // Only scroll if container is ready
-    if (timelineDates.length > 0 && equipmentRowsRef.current?.clientWidth > 0) {
-      console.log('📍 Scrolling to selectedDate:', dateStr);
+    // Wait for everything to be ready: timeline dates, container width, and selected date
+    if (timelineDates.length > 0 && containerWidth > 0 && selectedDate) {
+      console.log('📍 Scrolling to selectedDate when ready:', selectedDate.toISOString().split('T')[0]);
       scrollToDate(selectedDate);
-      lastScrolledDateRef.current = dateStr;
     }
-  }, [selectedDate.getTime(), timelineDates.length, scrollToDate]);
+  }, [timelineDates.length, containerWidth, selectedDate.getTime(), scrollToDate]);
+
+  // Simple container width detection - check when timeline or ref changes
+  useEffect(() => {
+    if (timelineDates.length > 0 && equipmentRowsRef.current) {
+      const currentWidth = equipmentRowsRef.current.clientWidth;
+      if (currentWidth > 0 && currentWidth !== containerWidth) {
+        setContainerWidth(currentWidth);
+      }
+    }
+  }, [timelineDates.length, containerWidth]);
+
+  // Also check container width immediately after any render
+  useEffect(() => {
+    const checkWidth = () => {
+      if (equipmentRowsRef.current) {
+        const currentWidth = equipmentRowsRef.current.clientWidth;
+        if (currentWidth > 0 && currentWidth !== containerWidth) {
+          setContainerWidth(currentWidth);
+        }
+      }
+    };
+
+    // Check immediately and on next frame
+    checkWidth();
+    const frameId = requestAnimationFrame(checkWidth);
+    
+    return () => cancelAnimationFrame(frameId);
+  });
 
   // ========================
   // RETURN CLEAN INTERFACE
