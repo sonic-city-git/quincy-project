@@ -5,11 +5,12 @@ import { useProjects } from "@/hooks/useProjects";
 import { useOwnerOptions } from "@/hooks/useOwnerOptions";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import type { Tab } from "@/components/shared/SectionHeader";
+import { OwnerFilters } from "@/types/ui-common";
+import { COMPONENT_VARIANTS, TRANSITIONS } from "@/constants/theme";
 
-// Filter types
-export interface ProjectFilters {
-  search: string;
-  owner: string;
+// Consolidated filter types using common interface
+export interface ProjectFilters extends OwnerFilters {
+  // Project-specific filters can be added here
 }
 
 interface ProjectsHeaderProps {
@@ -111,7 +112,7 @@ export function ProjectsHeader({
       <div className="flex items-center gap-1">
         <Select value={filters.owner || 'all'} onValueChange={(value) => updateFilters({ owner: value })}>
           <SelectTrigger 
-            className={`w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors ${
+            className={`w-auto min-w-[140px] h-8 text-xs ${COMPONENT_VARIANTS.filter} ${TRANSITIONS.default} ${
               filters.owner && filters.owner !== 'all' ? 'ring-2 ring-blue-500/50 border-blue-500/50 bg-blue-50/50' : ''
             }`}
           >
