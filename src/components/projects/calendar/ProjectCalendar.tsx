@@ -2,7 +2,7 @@
 import { useCalendarDate } from "@/hooks/useCalendarDate";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
-import { useCalendarEvents } from "@/hooks/useCalendarEvents";
+import { useCalendarEvents } from "@/hooks/useConsolidatedEvents";
 import { CalendarView } from "./CalendarView";
 import { Card } from "@/components/ui/card";
 import { CalendarEvent } from "@/types/events";
@@ -17,6 +17,7 @@ interface ProjectCalendarProps {
 export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   const { currentDate, setCurrentDate } = useCalendarDate();
   const { data: eventTypes } = useEventTypes();
+  // PERFORMANCE OPTIMIZATION: Use consolidated events hook with drag functionality
   const {
     events,
     isLoading,
