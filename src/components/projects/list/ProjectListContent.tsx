@@ -19,6 +19,14 @@ export function ProjectListContent({ loading, groupedProjects }: ProjectListCont
     return <LoadingSpinner message="Loading projects..." />;
   }
 
+  if (!groupedProjects || Object.keys(groupedProjects).length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        No projects found
+      </div>
+    );
+  }
+
   // Sort owner names alphabetically
   const sortedOwners = Object.values(groupedProjects).sort((a, b) => 
     a.name.localeCompare(b.name)

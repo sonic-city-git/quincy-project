@@ -1,6 +1,7 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCrew } from "@/hooks/useCrew";
 import { useCrewSort } from "@/components/crew/useCrewSort";
+import { SONIC_CITY_FOLDER_ID } from "@/constants/organizations";
 
 interface CrewMemberSelectProps {
   value: string;
@@ -8,7 +9,8 @@ interface CrewMemberSelectProps {
 }
 
 export function CrewMemberSelect({ value, onChange }: CrewMemberSelectProps) {
-  const { crew } = useCrew();
+  // PERFORMANCE OPTIMIZATION: Use consistent folder ID for crew data
+  const { crew } = useCrew(SONIC_CITY_FOLDER_ID);
   const { sortCrew } = useCrewSort();
   const sortedCrew = sortCrew(crew || []);
 

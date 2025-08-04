@@ -11,6 +11,7 @@ import { useProjectDetails } from "@/hooks/useProjectDetails";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { CrewMemberSelectContent } from "@/components/crew/CrewMemberSelectContent";
+import { SONIC_CITY_FOLDER_ID } from "@/constants/organizations";
 
 interface ProjectRoleListProps {
   projectId: string;
@@ -18,7 +19,8 @@ interface ProjectRoleListProps {
 
 export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
   const { roles, isLoading, refetch } = useProjectRoles(projectId);
-  const { crew } = useCrew();
+  // PERFORMANCE OPTIMIZATION: Use consistent folder ID for crew data
+  const { crew } = useCrew(SONIC_CITY_FOLDER_ID);
   const [isUpdating, setIsUpdating] = useState(false);
   const { project } = useProjectDetails(projectId);
   const [roleToDelete, setRoleToDelete] = useState<string | null>(null);

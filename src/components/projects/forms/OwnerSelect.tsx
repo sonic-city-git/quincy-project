@@ -7,6 +7,7 @@ import { useCrew } from "@/hooks/useCrew";
 import { DataSelect } from "../../shared/forms/SearchableSelect";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import type { SelectOption } from "../../shared/forms/SearchableSelect";
+import { SONIC_CITY_FOLDER_ID, SONIC_CITY_EXCLUDED_EMAILS } from "@/constants/organizations";
 
 interface OwnerSelectProps {
   value?: string;
@@ -17,12 +18,13 @@ interface OwnerSelectProps {
 }
 
 export function OwnerSelect({ value, onChange, error, required, className }: OwnerSelectProps) {
-  // Use the Sonic City folder ID directly
-  const sonicCityFolderId = "34f3469f-02bd-4ecf-82f9-11a4e88c2d77";
-  const { crew, loading } = useCrew(sonicCityFolderId);
+  // PERFORMANCE OPTIMIZATION: Use centralized constant and filtering
+  const { crew, loading } = useCrew(SONIC_CITY_FOLDER_ID);
   
-  // Filter out the dev@soniccity.no email
-  const filteredCrew = crew?.filter(member => member.email !== 'dev@soniccity.no') || [];
+  // Filter out excluded emails using centralized constant
+  const filteredCrew = crew?.filter(member => 
+    !SONIC_CITY_EXCLUDED_EMAILS.includes(member.email || '')
+  ) || [];
 
   // Custom render function for crew members with avatars
   const renderCrewOption = (option: SelectOption) => (

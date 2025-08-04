@@ -19,6 +19,7 @@ import { CrewMemberSelectContent } from "@/components/crew/CrewMemberSelectConte
 import { LocationInput } from "./LocationInput";
 import { EquipmentIcon } from "./components/EquipmentIcon";
 import { Separator } from "@/components/ui/separator";
+import { SONIC_CITY_FOLDER_ID } from "@/constants/organizations";
 
 interface EventManagementDialogProps {
   isOpen: boolean;
@@ -43,8 +44,8 @@ export function EventManagementDialog({
   const [location, setLocation] = useState(event?.location || "");
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [isPending, setIsPending] = useState(false);
-  const { crew = [] } = useCrew();
-  // PERFORMANCE OPTIMIZATION: Use consolidated sync status hook for both equipment and crew
+  // PERFORMANCE OPTIMIZATION: Use consistent folder ID and consolidated sync status hook
+  const { crew = [] } = useCrew(SONIC_CITY_FOLDER_ID);
   const { isEquipmentSynced, isCrewSynced, hasProjectEquipment, hasProjectRoles, roles } = useEventSyncStatus(event);
   const isCheckingEquipment = false; // No loading with consolidated data
   const isCheckingCrew = false;

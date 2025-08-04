@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCrew } from "@/hooks/useCrew";
 import { useState } from "react";
 import { useEventConflicts } from "@/hooks/useProjectConflicts";
+import { SONIC_CITY_FOLDER_ID } from "@/constants/organizations";
 
 interface EventCardIconsProps {
   event: CalendarEvent;
@@ -27,7 +28,8 @@ export function EventCardIcons({
   const [isCrewPopoverOpen, setIsCrewPopoverOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const queryClient = useQueryClient();
-  const { crew } = useCrew();
+  // PERFORMANCE OPTIMIZATION: Use consistent folder ID for crew data
+  const { crew } = useCrew(SONIC_CITY_FOLDER_ID);
   const showEquipmentIcon = event.type.needs_equipment;
   const showCrewIcon = event.type.needs_crew;
   
