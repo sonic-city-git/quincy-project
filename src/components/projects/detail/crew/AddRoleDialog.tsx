@@ -10,9 +10,10 @@ import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCrew } from "@/hooks/useCrew";
-import { useCrewSort } from "@/components/crew/useCrewSort";
+import { useCrewSort } from "@/components/resources/crew/useCrewSort";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQueryClient } from "@tanstack/react-query";
+import { SONIC_CITY_FOLDER_ID } from "@/constants/organizations";
 
 interface AddRoleDialogProps {
   isOpen: boolean;
@@ -30,7 +31,8 @@ interface FormData {
 
 export function AddRoleDialog({ isOpen, onClose, project }: AddRoleDialogProps) {
   const { roles } = useCrewRoles();
-  const { crew } = useCrew();
+  // PERFORMANCE OPTIMIZATION: Use consistent folder ID for crew data
+  const { crew } = useCrew(SONIC_CITY_FOLDER_ID);
   const { sortCrew } = useCrewSort();
   const queryClient = useQueryClient();
 

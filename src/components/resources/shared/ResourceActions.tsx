@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { useCrew } from "@/hooks/useCrew";
 import { useEquipment } from "@/hooks/useEquipment";
-import { EditMemberDialog } from "@/components/crew/EditMemberDialog";
-import { EditEquipmentDialog } from "@/components/equipment/EditEquipmentDialog";
+import { EditMemberDialog } from "@/components/resources/crew/EditMemberDialog";
+import { EditEquipmentDialog } from "@/components/resources/equipment/EditEquipmentDialog";
 import { useState } from "react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Pencil, Trash2, AlertCircle } from "lucide-react";

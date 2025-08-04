@@ -8,7 +8,8 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useCrew } from "@/hooks/useCrew";
+import { useProjects } from "@/hooks/useProjects";
+import { useOwnerOptions } from "@/hooks/useOwnerOptions";
 import { getInitials } from "@/utils/stringUtils";
 
 interface ProjectOwnerFilterProps {
@@ -16,10 +17,13 @@ interface ProjectOwnerFilterProps {
   onChange: (value: string) => void;
 }
 
-const SONIC_CITY_FOLDER_ID = "34f3469f-02bd-4ecf-82f9-11a4e88c2d77";
-
 export function ProjectOwnerFilter({ value, onChange }: ProjectOwnerFilterProps) {
-  const { crew, loading } = useCrew(SONIC_CITY_FOLDER_ID);
+  // PERFORMANCE OPTIMIZATION: Use consolidated useOwnerOptions instead of manual crew processing
+  const { projects } = useProjects();
+  const ownerOptions = useOwnerOptions(projects, { 
+    keyBy: 'name', 
+    includeAvatars: true 
+  });
 
   return (
     <DropdownMenu>
@@ -39,27 +43,27 @@ export function ProjectOwnerFilter({ value, onChange }: ProjectOwnerFilterProps)
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-56">
-        {crew.map((member) => (
+        {ownerOptions.map((owner) => (
           <DropdownMenuCheckboxItem
-            key={member.id}
-            checked={value === member.id}
-            onCheckedChange={() => onChange(value === member.id ? '' : member.id)}
+            key={owner.name}
+            checked={value === owner.name}
+            onCheckedChange={() => onChange(value === owner.name ? '' : owner.name)}
             className="flex items-center gap-2"
           >
             <Avatar className="h-6 w-6 flex-shrink-0">
-              {member.avatar_url ? (
+              {owner.avatar_url ? (
                 <AvatarImage 
-                  src={member.avatar_url} 
-                  alt={member.name} 
+                  src={owner.avatar_url} 
+                  alt={owner.name} 
                   className="object-cover"
                 />
               ) : (
                 <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
-                  {getInitials(member.name)}
+                  {getInitials(owner.name)}
                 </AvatarFallback>
               )}
             </Avatar>
-            <span className="truncate">{member.name}</span>
+            <span className="truncate">{owner.name}</span>
           </DropdownMenuCheckboxItem>
         ))}
       </DropdownMenuContent>

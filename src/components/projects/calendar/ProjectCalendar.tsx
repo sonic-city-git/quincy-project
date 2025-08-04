@@ -2,13 +2,12 @@
 import { useCalendarDate } from "@/hooks/useCalendarDate";
 import { useEventDialog } from "@/hooks/useEventDialog";
 import { useEventTypes } from "@/hooks/useEventTypes";
-import { useCalendarEvents } from "@/hooks/useCalendarEvents";
+import { useCalendarEvents } from "@/hooks/useConsolidatedEvents";
 import { CalendarView } from "./CalendarView";
 import { Card } from "@/components/ui/card";
 import { CalendarEvent } from "@/types/events";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { EventManagementDialog } from "./EventManagementDialog";
-import { AddEventDialog } from "./AddEventDialog";
+import { EventFormDialog, type EventFormData } from "../shared/EventFormDialog";
 
 interface ProjectCalendarProps {
   projectId: string;
@@ -17,6 +16,7 @@ interface ProjectCalendarProps {
 export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
   const { currentDate, setCurrentDate } = useCalendarDate();
   const { data: eventTypes } = useEventTypes();
+  // PERFORMANCE OPTIMIZATION: Use consolidated events hook with drag functionality
   const {
     events,
     isLoading,
@@ -62,6 +62,40 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     }
   };
 
+  // CONSOLIDATED: Event form handlers for both add and edit modes
+  const handleEventFormSubmit = async (data: EventFormData) => {
+    try {
+      if (selectedEvent) {
+        // Edit mode
+        await updateEvent(selectedEvent, {
+          name: data.name,
+          type_id: data.typeId,
+          status: data.status,
+          location: data.location,
+        });
+        closeEditDialog();
+      } else if (selectedDate) {
+        // Add mode  
+        const eventType = eventTypes?.find(t => t.id === data.typeId);
+        if (eventType) {
+          await addEvent(selectedDate, data.name, eventType, data.status);
+          closeAddDialog();
+        }
+      }
+    } catch (error) {
+      console.error('Error saving event:', error);
+    }
+  };
+
+  const handleEventDelete = async (event: CalendarEvent) => {
+    try {
+      await deleteEvent(event);
+      closeEditDialog();
+    } catch (error) {
+      console.error('Error deleting event:', error);
+    }
+  };
+
   if (isLoading) {
     return (
       <Card className="w-full p-6">
@@ -89,21 +123,22 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
           onEditEvent={handleEditEvent}
         />
 
-        {/* Add Dialog */}
-        <AddEventDialog
-          isOpen={isAddDialogOpen}
-          onClose={closeAddDialog}
-          selectedDate={selectedDate}
-          onAddEvent={addEvent}
-        />
-
-        {/* Edit Dialog */}
-        <EventManagementDialog
-          isOpen={isEditDialogOpen}
-          onClose={closeEditDialog}
+        {/* CONSOLIDATED: Single event form dialog for both add and edit */}
+        <EventFormDialog
+          open={isAddDialogOpen || isEditDialogOpen}
+          onOpenChange={(open) => {
+            if (!open) {
+              closeAddDialog();
+              closeEditDialog();
+            }
+          }}
+          mode={selectedEvent ? 'edit' : 'add'}
+          title={selectedEvent ? 'Edit Event' : 'Add Event'}
           event={selectedEvent}
-          onUpdateEvent={updateEvent}
-          onDeleteEvent={deleteEvent}
+          selectedDate={selectedDate}
+          eventTypes={eventTypes || []}
+          onSubmit={handleEventFormSubmit}
+          onDelete={selectedEvent ? handleEventDelete : undefined}
         />
       </div>
     </TooltipProvider>

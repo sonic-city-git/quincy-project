@@ -3,9 +3,9 @@ import { OwnerSelect } from "@/components/projects/forms/OwnerSelect";
 import { formatDisplayDate } from "@/utils/dateFormatters";
 import { Project } from "@/types/projects";
 import { ProjectInvoiceButton } from "./ProjectInvoiceButton";
-import { useState } from "react";
 import { InvoiceDialog } from "../invoice/InvoiceDialog";
 import { CalendarEvent } from "@/types/events";
+import { useProjectTabActions } from "../shared/hooks/useProjectTabActions";
 
 interface ProjectInfoProps {
   project: Project;
@@ -14,7 +14,9 @@ interface ProjectInfoProps {
 }
 
 export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInfoProps) {
-  const [isInvoiceDialogOpen, setIsInvoiceDialogOpen] = useState(false);
+  // PERFORMANCE OPTIMIZATION: Use consolidated dialog state management
+  const { addAction } = useProjectTabActions(['invoiceDialog']);
+  const invoiceDialog = addAction('invoiceDialog');
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
@@ -75,12 +77,12 @@ export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInf
       </div>
 
       <div className="flex justify-end pt-4">
-        <ProjectInvoiceButton onClick={() => setIsInvoiceDialogOpen(true)} />
+        <ProjectInvoiceButton onClick={() => invoiceDialog.setActive(true)} />
       </div>
 
       <InvoiceDialog 
-        isOpen={isInvoiceDialogOpen}
-        onClose={() => setIsInvoiceDialogOpen(false)}
+        isOpen={invoiceDialog.isActive}
+        onClose={() => invoiceDialog.setActive(false)}
         events={events}
         onStatusChange={onStatusChange}
       />

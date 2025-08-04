@@ -14,8 +14,8 @@ import { Loader2, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { CalendarEvent, EventType } from "@/types/events";
-import { ConfirmationDialog } from "../dialogs/ConfirmationDialog";
-import { LocationInput } from "../../calendar/LocationInput";
+import { ConfirmationDialog } from "../../shared/dialogs/ConfirmationDialog";
+import { LocationInput } from "../calendar/LocationInput";
 
 export interface EventFormData {
   name: string;

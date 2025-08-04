@@ -8,11 +8,8 @@ import { ProjectTabCard } from "../shared/ProjectTabCard";
 import { ProjectCalendar } from "@/components/projects/calendar/ProjectCalendar";
 import { EventList } from "@/components/projects/calendar/EventList";
 import { Project } from "@/types/projects";
-import { useQuery } from "@tanstack/react-query";
-import { fetchEvents } from "@/utils/eventQueries";
-import { useEffect } from "react";
 import { ProjectInfo } from "./ProjectInfo";
-import { useEventUpdate } from "@/hooks/useEventUpdate";
+import { useProjectEvents } from "@/hooks/useConsolidatedEvents";
 import { SyncCrewDataButton } from "./SyncCrewDataButton";
 
 interface ProjectGeneralTabProps {
@@ -21,28 +18,15 @@ interface ProjectGeneralTabProps {
 }
 
 export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps) {
-  const { updateEvent } = useEventUpdate(projectId);
-  
-  const { data: events = [], isLoading, refetch } = useQuery({
-    queryKey: ['events', projectId],
-    queryFn: () => fetchEvents(projectId),
-    enabled: !!projectId
-  });
-
-  useEffect(() => {
-    if (projectId) {
-  
-      refetch();
-    }
-  }, [projectId, refetch]);
+  // PERFORMANCE OPTIMIZATION: Use consolidated events hook instead of separate hooks + queries
+  const { events, isLoading, updateEventStatus } = useProjectEvents(projectId);
 
   const handleStatusChange = async (event, newStatus) => {
-    const updatedEvent = { ...event, status: newStatus };
-    await updateEvent(updatedEvent);
+    await updateEventStatus(event, newStatus);
   };
 
   const handleEditEvent = (event) => {
-    
+    // TODO: Implement edit functionality
   };
 
   return (

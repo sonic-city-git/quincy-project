@@ -3,8 +3,8 @@ import { ProjectOwnerFilter } from "./filters/ProjectOwnerFilter";
 import { ProjectFilterClear } from "./filters/ProjectFilterClear";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { useState } from "react";
-import { AddProjectDialog } from "./AddProjectDialog";
+import { AddProjectDialog } from "./dialogs/AddProjectDialog";
+import { useCommonProjectTabActions } from "./shared/hooks/useProjectTabActions";
 
 interface ProjectListHeaderProps {
   searchQuery: string;
@@ -19,7 +19,8 @@ export function ProjectListHeader({
   ownerFilter,
   onOwnerFilterChange,
 }: ProjectListHeaderProps) {
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  // PERFORMANCE OPTIMIZATION: Use consolidated dialog state management
+  const { addDialog } = useCommonProjectTabActions();
   const hasActiveFilters = ownerFilter || searchQuery;
 
   return (
@@ -46,14 +47,14 @@ export function ProjectListHeader({
         variant="default"
         size="default"
         className="gap-2"
-        onClick={() => setAddDialogOpen(true)}
+        onClick={() => addDialog.setActive(true)}
       >
         <Plus className="h-4 w-4" />
         Add Project
       </Button>
       <AddProjectDialog 
-        open={addDialogOpen}
-        onOpenChange={setAddDialogOpen}
+        open={addDialog.isActive}
+        onOpenChange={addDialog.setActive}
       />
     </div>
   );

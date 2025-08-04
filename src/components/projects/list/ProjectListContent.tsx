@@ -1,6 +1,6 @@
-import { ProjectTable } from "../ProjectTable";
+import { ProjectTable } from "../tables/ProjectTable";
 import { Table } from "@/components/ui/table";
-import { TableHeader } from "../TableHeader";
+import { TableHeader } from "../tables/TableHeader";
 import { OwnerSection } from "./OwnerSection";
 import { LoadingSpinner } from "@/components/resources/shared/LoadingSpinner";
 import { Project } from "@/types/projects";
@@ -17,6 +17,14 @@ interface ProjectListContentProps {
 export function ProjectListContent({ loading, groupedProjects }: ProjectListContentProps) {
   if (loading) {
     return <LoadingSpinner message="Loading projects..." />;
+  }
+
+  if (!groupedProjects || Object.keys(groupedProjects).length === 0) {
+    return (
+      <div className="text-center py-8 text-muted-foreground">
+        No projects found
+      </div>
+    );
   }
 
   // Sort owner names alphabetically
