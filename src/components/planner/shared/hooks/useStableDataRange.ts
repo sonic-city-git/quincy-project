@@ -25,11 +25,11 @@ interface StableDataRange {
 export function useStableDataRange({
   periodStart,
   periodEnd,
-  bufferDays = 70
+  bufferDays = 40
 }: UseStableDataRangeProps): StableDataRange {
   
   const stableDataRange = useMemo(() => {
-    // Use a wider, more stable range that doesn't change on every expansion
+    // Use a stable range that matches timeline buffer (20 days before + 20 days after = 40 total)
     const centerDate = new Date();
     const stableStart = new Date(centerDate);
     stableStart.setDate(centerDate.getDate() - bufferDays);
@@ -45,7 +45,7 @@ export function useStableDataRange({
       return { 
         start: stableStart, 
         end: stableEnd, 
-        dayCount: bufferDays * 2 
+        dayCount: bufferDays * 2 // 40 days total (20 before + 20 after) 
       };
     }
     
