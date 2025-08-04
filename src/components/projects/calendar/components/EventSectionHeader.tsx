@@ -122,27 +122,95 @@ export function EventSectionHeader({
     if (!events.length) return;
 
     try {
-      // Sync preferred crew for all events in this section  
+      let totalAssigned = 0;
+      let totalConflicts = 0;
+
+      // Process each event separately
       for (const event of events) {
-        // Get project roles with preferred crew members
-        const { data: projectRoles } = await supabase
-          .from('project_roles')
-          .select('*')
-          .eq('project_id', event.project_id)
-          .not('preferred_id', 'is', null);
+        // Step 1: Create event roles if they don't exist (this auto-assigns preferred crew)
+        const { createRoleAssignments } = await import('@/utils/roleAssignments');
+        const createdRoles = await createRoleAssignments(event.project_id, event.id);
+        
+        if (createdRoles.length > 0) {
+          
+          // Check for conflicts in the newly created assignments
+          const { checkMultipleCrewConflicts } = await import('@/utils/crewConflictDetection');
+          const conflictChecks = createdRoles
+            .filter(role => role.crew_member_id) // Only check assigned roles
+            .map(role => ({
+              crewMemberId: role.crew_member_id,
+              date: event.date
+            }));
 
-        if (projectRoles && projectRoles.length > 0) {
-          // Update event roles with preferred crew members
-          for (const projectRole of projectRoles) {
-            const { error } = await supabase
-              .from('project_event_roles')
-              .update({ crew_member_id: projectRole.preferred_id })
-              .eq('event_id', event.id)
-              .eq('role_id', projectRole.role_id)
-              .is('crew_member_id', null); // Only update unassigned roles
-
-            if (error) {
-              console.error('Error syncing preferred crew for event:', event.id, error);
+          if (conflictChecks.length > 0) {
+            const conflictResults = await checkMultipleCrewConflicts(conflictChecks);
+            const conflictsFound = Array.from(conflictResults.values()).filter(result => result.hasConflict);
+            
+            if (conflictsFound.length > 0) {
+              
+              // Remove crew assignments that have conflicts
+              for (const role of createdRoles) {
+                if (role.crew_member_id) {
+                  const conflictResult = conflictResults.get(role.crew_member_id);
+                  if (conflictResult?.hasConflict) {
+                    await supabase
+                      .from('project_event_roles')
+                      .update({ crew_member_id: null })
+                      .eq('id', role.id);
+                    totalConflicts++;
+                  } else {
+                    totalAssigned++;
+                  }
+                }
+              }
+            } else {
+              totalAssigned += createdRoles.filter(role => role.crew_member_id).length;
+            }
+          } else {
+            totalAssigned += createdRoles.filter(role => role.crew_member_id).length;
+          }
+        } else {
+          // Step 2: Handle existing unassigned roles
+          const { data: existingEventRoles } = await supabase
+            .from('project_event_roles')
+            .select(`
+              id,
+              role_id,
+              crew_member_id,
+              project_roles!inner (
+                preferred_id,
+                preferred_crew:crew_members!preferred_id (
+                  id,
+                  name
+                )
+              )
+            `)
+            .eq('event_id', event.id)
+            .is('crew_member_id', null) // Only unassigned roles
+            .not('project_roles.preferred_id', 'is', null); // Only roles with preferred crew
+          
+          if (existingEventRoles?.length > 0) {
+            // Check for conflicts in preferred crew assignments
+            const { checkMultipleCrewConflicts } = await import('@/utils/crewConflictDetection');
+            const conflictChecks = existingEventRoles.map(role => ({
+              crewMemberId: role.project_roles.preferred_id,
+              date: event.date
+            }));
+            
+            const conflictResults = await checkMultipleCrewConflicts(conflictChecks);
+            
+            // Assign non-conflicted preferred crew
+            for (const role of existingEventRoles) {
+              const conflictResult = conflictResults.get(role.project_roles.preferred_id);
+              if (conflictResult?.hasConflict) {
+                totalConflicts++;
+              } else {
+                await supabase
+                  .from('project_event_roles')
+                  .update({ crew_member_id: role.project_roles.preferred_id })
+                  .eq('id', role.id);
+                totalAssigned++;
+              }
             }
           }
         }
@@ -151,7 +219,29 @@ export function EventSectionHeader({
       // Invalidate queries to refresh the data
       await queryClient.invalidateQueries({ queryKey: ['events', events[0].project_id] });
       await queryClient.invalidateQueries({ queryKey: ['project-event-roles'] });
-      toast.success('Preferred crew synced successfully');
+      await queryClient.invalidateQueries({ queryKey: ['crew-sync-status'] });
+      
+      // Invalidate HeaderCrewIcon specific queries
+      await queryClient.invalidateQueries({ queryKey: ['event-roles'] });
+      await queryClient.invalidateQueries({ queryKey: ['crew-conflicts'] });
+      
+      // Invalidate individual event crew status queries
+      for (const event of events) {
+        await queryClient.invalidateQueries({ queryKey: ['crew-sync-status', event.id] });
+        await queryClient.invalidateQueries({ queryKey: ['crew-conflict-single', event.id] });
+      }
+
+      // Provide feedback
+      if (totalAssigned > 0 && totalConflicts === 0) {
+        toast.success(`✅ Assigned ${totalAssigned} preferred crew members`);
+      } else if (totalAssigned > 0 && totalConflicts > 0) {
+        toast.warning(`⚠️ Assigned ${totalAssigned}, but ${totalConflicts} had conflicts`);
+      } else if (totalConflicts > 0) {
+        toast.error(`❌ All ${totalConflicts} preferred crew members have scheduling conflicts`);
+      } else {
+        toast.info('All preferred crew are already assigned');
+      }
+
     } catch (error) {
       console.error('Error in handleSyncPreferredCrew:', error);
       toast.error('Failed to sync preferred crew');

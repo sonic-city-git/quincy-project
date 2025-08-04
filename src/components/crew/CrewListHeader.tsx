@@ -3,7 +3,6 @@ import { CrewRoleFilter } from "./filters/CrewRoleFilter";
 import { CrewFilterClear } from "./filters/CrewFilterClear";
 import { CrewActions } from "./CrewActions";
 import { AddMemberDialog } from "./AddMemberDialog";
-import { SyncAvatarsButton } from "./SyncAvatarsButton";
 import { CrewRole } from "@/hooks/useCrewRoles";
 
 interface CrewListHeaderProps {

@@ -104,19 +104,21 @@ export const createEvent = async (
       }
     }
 
-    // Only create role assignments if the event type needs crew
+    // Only sync crew if the event type needs crew (includes role creation + cost calculation)
     if (eventType.needs_crew) {
-      console.log('Event needs crew, creating role assignments');
-      try {
-        const roleAssignments = await createRoleAssignments(projectId, eventData.id);
-        console.log('Created role assignments:', roleAssignments);
-      } catch (roleError) {
-        console.error('Error creating role assignments:', roleError);
+      console.log('Event needs crew, syncing crew roles and calculating cost');
+      const { error: crewError } = await supabase.rpc('sync_event_crew', {
+        p_event_id: eventData.id,
+        p_project_id: projectId
+      });
+
+      if (crewError) {
+        console.error('Error syncing crew:', crewError);
       }
     }
 
-    // Wait longer for database triggers to complete price calculations
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Wait for database triggers to complete price calculations
+    await new Promise(resolve => setTimeout(resolve, 300));
 
     // Fetch the updated event with calculated prices
     const { data: updatedEvent, error: fetchError } = await supabase

@@ -1,10 +1,17 @@
-import { MapPin, Users } from "lucide-react";
+import { MapPin, Users, RefreshCw } from "lucide-react";
 import { CalendarEvent } from "@/types/events";
 import { useSyncStatus } from "@/hooks/useSyncStatus";
 import { useSyncCrewStatus } from "@/hooks/useSyncCrewStatus";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { Select, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EquipmentIcon } from "./EquipmentIcon";
+import { CrewMemberSelectContent } from "@/components/crew/CrewMemberSelectContent";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useCrew } from "@/hooks/useCrew";
+import { useState } from "react";
 
 interface EventCardIconsProps {
   event: CalendarEvent;
@@ -17,10 +24,111 @@ export function EventCardIcons({
   isEditingDisabled,
   sectionTitle
 }: EventCardIconsProps) {
+  const [isCrewPopoverOpen, setIsCrewPopoverOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const queryClient = useQueryClient();
+  const { crew } = useCrew();
   const showEquipmentIcon = event.type.needs_equipment;
   const showCrewIcon = event.type.needs_crew;
   const { isSynced: isEquipmentSynced, isChecking: isCheckingEquipment, hasProjectEquipment } = useSyncStatus(event);
   const { hasProjectRoles, isSynced: isCrewSynced, isChecking, roles = [] } = useSyncCrewStatus(event);
+
+  // Check for conflicts in actually assigned crew for this specific event
+  const { data: conflictData } = useQuery({
+    queryKey: ['crew-conflict-single', event.id, roles.map(r => r.assigned?.id).join(',')],
+    queryFn: async () => {
+      if (!event.project_id) return { hasConflicts: false };
+
+      try {
+        // Get actual crew assignments for this event
+        const { data: eventRoles } = await supabase
+          .from('project_event_roles')
+          .select('crew_member_id')
+          .eq('event_id', event.id)
+          .not('crew_member_id', 'is', null);
+
+        if (!eventRoles?.length) {
+          return { hasConflicts: false };
+        }
+
+        // Check for conflicts for actually assigned crew on this event's date
+        const { checkCrewConflicts } = await import('@/utils/crewConflictDetection');
+        
+        let hasConflicts = false;
+        for (const role of eventRoles) {
+          const conflictResult = await checkCrewConflicts(role.crew_member_id, [event.date.toISOString().split('T')[0]]);
+          
+          // Filter out conflicts from the SAME event (not actual conflicts)
+          const actualConflicts = conflictResult.conflictingEvents.filter(
+            conflictEvent => conflictEvent.eventId !== event.id
+          );
+          
+          if (actualConflicts.length > 0) {
+            hasConflicts = true;
+            break;
+          }
+        }
+
+        return { hasConflicts };
+      } catch (error) {
+        console.error('Error checking single event crew conflicts:', error);
+        return { hasConflicts: false };
+      }
+    },
+    enabled: !!event.project_id && showCrewIcon
+  });
+
+  // Handle syncing preferred crew
+  const handleSyncPreferredCrew = async () => {
+    if (!event.project_id) return;
+
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.rpc('sync_event_crew', {
+        p_event_id: event.id,
+        p_project_id: event.project_id
+      });
+
+      if (error) {
+        console.error('Error syncing crew:', error);
+        return;
+      }
+
+      // Invalidate queries to refresh UI
+      await queryClient.invalidateQueries({ queryKey: ['crew-conflict-single', event.id] });
+      await queryClient.invalidateQueries({ queryKey: ['crew-sync-status', event.id] });
+      await queryClient.invalidateQueries({ queryKey: ['project-events'] });
+      
+      setIsCrewPopoverOpen(false);
+    } catch (error) {
+      console.error('Error in crew sync:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle manual crew assignment
+  const handleAssignCrew = async (roleId: string, crewMemberId: string | null) => {
+    try {
+      const { error } = await supabase
+        .from('project_event_roles')
+        .update({ crew_member_id: crewMemberId || null })
+        .eq('event_id', event.id)
+        .eq('role_id', roleId);
+
+      if (error) {
+        console.error('Error assigning crew:', error);
+        return;
+      }
+
+      // Invalidate queries to refresh UI
+      await queryClient.invalidateQueries({ queryKey: ['crew-conflict-single', event.id] });
+      await queryClient.invalidateQueries({ queryKey: ['crew-sync-status', event.id] });
+      await queryClient.invalidateQueries({ queryKey: ['project-events'] });
+    } catch (error) {
+      console.error('Error in crew assignment:', error);
+    }
+  };
 
   return (
     <>
@@ -40,38 +148,76 @@ export function EventCardIcons({
             eventId={event.id}
             projectId={event.project_id}
             hasProjectEquipment={hasProjectEquipment}
-            eventDate={event.date}
+            eventDate={event.date.toISOString().split('T')[0]}
           />
         )}
       </div>
 
-      <div className="flex justify-center items-center cursor-default">
+      <div className="flex justify-center items-center">
         {showCrewIcon && hasProjectRoles && (
-          <Tooltip>
-            <TooltipTrigger>
-              <Users 
-                className={cn(
-                  "h-6 w-6",
-                  isCrewSynced ? "text-green-500" : "text-blue-500"
-                )}
-              />
-            </TooltipTrigger>
-            <TooltipContent className="max-w-[300px]">
-              <div className="space-y-2">
-                <p className="font-medium">Crew Assignments</p>
-                <div className="space-y-1">
-                  {roles.map(role => (
-                    <div key={role.id} className="text-sm flex justify-between gap-4">
-                      <span>{role.name}:</span>
-                      <span className="text-muted-foreground">
-                        {role.assigned?.name || "Unassigned"}
-                      </span>
+          <Popover open={isCrewPopoverOpen} onOpenChange={setIsCrewPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="h-8 w-8 p-0 hover:bg-zinc-700/50"
+                disabled={isEditingDisabled}
+              >
+                <Users 
+                  className={cn(
+                    "h-6 w-6",
+                    // Priority: Red (conflicts) > Green (all assigned) > Blue (unassigned)
+                    conflictData?.hasConflicts ? "text-red-500" :
+                    isCrewSynced ? "text-green-500" : "text-blue-500"
+                  )}
+                />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-80 p-4" align="center">
+              <div className="space-y-4">
+                {/* Header */}
+                <div>
+                  <h4 className="font-semibold text-sm">Crew Management</h4>
+                  <p className="text-xs text-muted-foreground">
+                    {roles.filter(r => r.assigned?.id).length}/{roles.length} assigned
+                    {conflictData?.hasConflicts && " • Conflicts detected"}
+                  </p>
+                </div>
+
+                {/* Sync Button */}
+                <Button 
+                  onClick={handleSyncPreferredCrew}
+                  disabled={isLoading}
+                  className="w-full"
+                  size="sm"
+                >
+                  <RefreshCw className={cn("h-4 w-4 mr-2", isLoading && "animate-spin")} />
+                  Sync Preferred Crew
+                </Button>
+
+                {/* Individual Role Assignments */}
+                <div className="space-y-3">
+                  <h5 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                    Manual Assignment
+                  </h5>
+                  {roles.map((role) => (
+                    <div key={role.id} className="space-y-1">
+                      <label className="text-sm font-medium">{role.name}</label>
+                      <Select
+                        value={role.assigned?.id || ""}
+                        onValueChange={(value) => handleAssignCrew(role.id, value || null)}
+                      >
+                        <SelectTrigger className="h-9">
+                          <SelectValue placeholder="Select crew member" />
+                        </SelectTrigger>
+                        <CrewMemberSelectContent crew={crew || []} />
+                      </Select>
                     </div>
                   ))}
                 </div>
               </div>
-            </TooltipContent>
-          </Tooltip>
+            </PopoverContent>
+          </Popover>
         )}
       </div>
     </>
