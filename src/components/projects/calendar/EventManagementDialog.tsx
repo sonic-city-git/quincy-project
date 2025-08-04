@@ -2,8 +2,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { CalendarEvent, EventType } from "@/types/events";
 import { useState, useEffect } from "react";
 import { useEventTypes } from "@/hooks/useEventTypes";
-import { useSyncStatus } from "@/hooks/useSyncStatus";
-import { useSyncCrewStatus } from "@/hooks/useSyncCrewStatus";
+import { useEventSyncStatus } from "@/hooks/useConsolidatedSyncStatus";
+// Removed - now using consolidated sync status hook
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,8 +44,10 @@ export function EventManagementDialog({
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const { crew = [] } = useCrew();
-  const { isSynced: isEquipmentSynced, isChecking: isCheckingEquipment, hasProjectEquipment } = useSyncStatus(event);
-  const { hasProjectRoles, roles = [], isChecking: isCheckingCrew } = useSyncCrewStatus(event);
+  // PERFORMANCE OPTIMIZATION: Use consolidated sync status hook for both equipment and crew
+  const { isEquipmentSynced, isCrewSynced, hasProjectEquipment, hasProjectRoles, roles } = useEventSyncStatus(event);
+  const isCheckingEquipment = false; // No loading with consolidated data
+  const isCheckingCrew = false;
 
   // Reset form when dialog opens/closes
   useEffect(() => {

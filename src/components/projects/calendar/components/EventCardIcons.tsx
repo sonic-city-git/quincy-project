@@ -1,7 +1,6 @@
 import { MapPin, Users, RefreshCw } from "lucide-react";
 import { CalendarEvent } from "@/types/events";
-import { useSyncStatus } from "@/hooks/useSyncStatus";
-import { useSyncCrewStatus } from "@/hooks/useSyncCrewStatus";
+import { useEventSyncStatus } from "@/hooks/useConsolidatedSyncStatus";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -12,6 +11,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCrew } from "@/hooks/useCrew";
 import { useState } from "react";
+import { useEventConflicts } from "@/hooks/useProjectConflicts";
 
 interface EventCardIconsProps {
   event: CalendarEvent;
@@ -30,53 +30,14 @@ export function EventCardIcons({
   const { crew } = useCrew();
   const showEquipmentIcon = event.type.needs_equipment;
   const showCrewIcon = event.type.needs_crew;
-  const { isSynced: isEquipmentSynced, isChecking: isCheckingEquipment, hasProjectEquipment } = useSyncStatus(event);
-  const { hasProjectRoles, isSynced: isCrewSynced, isChecking, roles = [] } = useSyncCrewStatus(event);
+  
+  // PERFORMANCE OPTIMIZATION: Use consolidated sync status instead of separate hooks
+  const { isEquipmentSynced, isCrewSynced, hasProjectEquipment, hasProjectRoles, roles } = useEventSyncStatus(event);
+  const isCheckingEquipment = false; // No loading with consolidated data
+  const isChecking = false;
 
-  // Check for conflicts in actually assigned crew for this specific event
-  const { data: conflictData } = useQuery({
-    queryKey: ['crew-conflict-single', event.id, roles.map(r => r.assigned?.id).join(',')],
-    queryFn: async () => {
-      if (!event.project_id) return { hasConflicts: false };
-
-      try {
-        // Get actual crew assignments for this event
-        const { data: eventRoles } = await supabase
-          .from('project_event_roles')
-          .select('crew_member_id')
-          .eq('event_id', event.id)
-          .not('crew_member_id', 'is', null);
-
-        if (!eventRoles?.length) {
-          return { hasConflicts: false };
-        }
-
-        // Check for conflicts for actually assigned crew on this event's date
-        const { checkCrewConflicts } = await import('@/utils/crewConflictDetection');
-        
-        let hasConflicts = false;
-        for (const role of eventRoles) {
-          const conflictResult = await checkCrewConflicts(role.crew_member_id, [event.date.toISOString().split('T')[0]]);
-          
-          // Filter out conflicts from the SAME event (not actual conflicts)
-          const actualConflicts = conflictResult.conflictingEvents.filter(
-            conflictEvent => conflictEvent.eventId !== event.id
-          );
-          
-          if (actualConflicts.length > 0) {
-            hasConflicts = true;
-            break;
-          }
-        }
-
-        return { hasConflicts };
-      } catch (error) {
-        console.error('Error checking single event crew conflicts:', error);
-        return { hasConflicts: false };
-      }
-    },
-    enabled: !!event.project_id && showCrewIcon
-  });
+  // PERFORMANCE OPTIMIZATION: Use pre-calculated conflicts instead of individual queries
+  const conflictData = useEventConflicts(event.id, event.date);
 
   // Handle syncing preferred crew
   const handleSyncPreferredCrew = async () => {
