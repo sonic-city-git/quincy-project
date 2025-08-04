@@ -9,6 +9,7 @@ import { useProjects } from "@/hooks/useProjects";
 import { useFilterState } from "@/hooks/useFilterState";
 import { UnifiedCalendar } from "@/components/planner/UnifiedCalendar";
 import { PlannerFilters } from "@/components/planner/shared/components/TimelineHeader";
+import { PlannerHeader } from "@/components/planner/PlannerHeader";
 
 
 
@@ -108,19 +109,29 @@ const Planner = () => {
       description="Global resource availability and scheduling across all projects"
       iconColor="text-blue-500"
     >
-      {/* Simplified: UnifiedCalendar now handles everything internally */}
-      <UnifiedCalendar 
-        selectedDate={selectedDate} 
-        onDateChange={setSelectedDate}
-        selectedOwner={filters.selectedOwner}
-        resourceType={activeTab}
-        onTabChange={setActiveTab}
-        filters={filters}
-        onFiltersChange={setFilters}
-        showProblemsOnly={showProblemsOnly}
-        onToggleProblemsOnly={() => setShowProblemsOnly(!showProblemsOnly)}
-        targetScrollItem={targetScrollItem}
-      />
+      <div className="space-y-4">
+        {/* Planner Header with Tab Switching and Filters */}
+        <PlannerHeader
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          filters={filters}
+          onFiltersChange={setFilters}
+          showProblemsOnly={showProblemsOnly}
+          onToggleProblemsOnly={() => setShowProblemsOnly(!showProblemsOnly)}
+        />
+
+        {/* Timeline Calendar Content */}
+        <UnifiedCalendar 
+          selectedDate={selectedDate} 
+          onDateChange={setSelectedDate}
+          selectedOwner={filters.selectedOwner}
+          resourceType={activeTab}
+          filters={filters}
+          showProblemsOnly={showProblemsOnly}
+          targetScrollItem={targetScrollItem}
+          renderOnlyTimeline={true}
+        />
+      </div>
     </PageLayout>
   );
 };

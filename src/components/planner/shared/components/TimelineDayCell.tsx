@@ -35,11 +35,6 @@ const getCrewAvailabilityColor = (booking: any, isCrew: boolean = false) => {
     const assignment = assignments[0];
     const eventTypeColor = assignment.eventTypeColor || '#6B7280';
     
-    // Debug final color
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🎨 Using event color: ${eventTypeColor} for ${assignment.eventType}`);
-    }
-    
     return {
       backgroundColor: eventTypeColor,
       color: HEATMAP.TEXT_COLORS.WHITE

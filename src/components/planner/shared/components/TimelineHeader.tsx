@@ -374,6 +374,12 @@ export function TimelineHeader({
     </div>
   );
 
+  // Conditional rendering based on renderOnlyTimeline flag
+  if (renderOnlyTimeline) {
+    // Only render the timeline content (month/date headers)
+    return timelineContent;
+  }
+
   // Standard component render
   return (
     <SectionHeader
