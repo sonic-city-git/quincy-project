@@ -55,6 +55,7 @@ interface TimelineContentProps {
   resourceType?: 'equipment' | 'crew'; // Added prop to indicate resource type
   filters?: PlannerFilters; // Add filters prop
   showProblemsOnly?: boolean; // Add problems-only filter prop
+  warnings?: any[]; // PERFORMANCE: Pre-calculated warnings for optimized problems view
   visibleTimelineStart?: Date; // Visible timeline start for performance
   visibleTimelineEnd?: Date; // Visible timeline end for performance
   isWithinScrollContainer?: boolean; // Flag to remove own scroll area when within unified container
@@ -87,6 +88,7 @@ const TimelineContentComponent = ({
   resourceType = 'equipment',
   filters,
   showProblemsOnly = false,
+  warnings, // PERFORMANCE: Pre-calculated warnings
   visibleTimelineStart,
   visibleTimelineEnd,
   isWithinScrollContainer = false
@@ -131,7 +133,12 @@ const TimelineContentComponent = ({
     const isCrewMode = resourceType === 'crew';
     const shouldExpand = new Set<string>();
     
-    // Inline problems detection to avoid stale closures
+    // PERFORMANCE OPTIMIZATION: Use pre-calculated warnings instead of expensive date loops
+    const problemsLookup = useMemo(() => {
+      if (!warnings?.length) return new Set();
+      return new Set(warnings.map(w => w.resourceId));
+    }, [warnings]);
+
     const hasProblems = (item: any) => {
       if (!hasProblemsFilter) {
         return true; // If not filtering by problems, include all
@@ -140,33 +147,8 @@ const TimelineContentComponent = ({
       // For unfilled roles: they are always a "problem" since they need to be filled
       if (item?.availability === 'needed') return true;
       
-      // BUGFIX: Check ALL dates, not just visible ones for reliable problems detection
-      if (!item?.id || formattedDates.length === 0) {
-        return false;
-      }
-      
-      // Check ALL dates for problems (not just visible ones)
-      for (const dateInfo of formattedDates) {
-        if (dateInfo?.dateStr) {
-          const booking = getBookingForEquipment(item.id, dateInfo.dateStr);
-          if (booking && booking.bookings && booking.bookings.length > 0) { // Only check items with actual bookings
-            if (isCrewMode) {
-              // For crew: check for actual problems
-              if (booking.isOverbooked || (booking.totalUsed && booking.totalUsed > 1)) {
-                return true;
-              }
-            } else {
-              // For equipment: check for actual problems
-              if (booking.isOverbooked || (booking.totalUsed > booking.stock) || 
-                  (booking.conflict && booking.conflict.severity !== 'resolved')) {
-                return true;
-              }
-            }
-          }
-        }
-      }
-      
-      return false;
+      // OPTIMIZED: Use pre-calculated warnings lookup instead of scanning all dates
+      return problemsLookup.has(item.id);
     };
     
     const filtered = equipmentGroups.map(group => {
@@ -281,8 +263,7 @@ const TimelineContentComponent = ({
     filters?.crewRole, 
     resourceType, 
     showProblemsOnly,
-    formattedDates, // BUGFIX: Use formattedDates instead of visibleDates for problems detection
-    getBookingForEquipment
+    warnings // PERFORMANCE: Use pre-calculated warnings instead of expensive date loops
   ]);
   
   // Auto-expand folders that contain filtered results (only when filters are active)

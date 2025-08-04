@@ -181,6 +181,7 @@ export function UnifiedCalendar({
     equipmentById,
     bookingsData,
     conflicts,
+    warnings, // Add warnings for optimized problems view
     expandedGroups,
     expandedEquipment,
     equipmentProjectUsage,
@@ -360,6 +361,7 @@ export function UnifiedCalendar({
         resourceType={resourceType}
         filters={filters}
         showProblemsOnly={showProblemsOnly}
+        warnings={warnings} // PERFORMANCE: Pass pre-calculated warnings for optimized problems view
         visibleTimelineStart={timelineStart}
         visibleTimelineEnd={timelineEnd}
         isWithinScrollContainer={isWithinScrollContainer}

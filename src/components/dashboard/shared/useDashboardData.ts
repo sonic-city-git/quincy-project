@@ -8,6 +8,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getWarningTimeframe } from "@/constants/timeframes";
+import { useConsolidatedConflicts } from "@/hooks/useConsolidatedConflicts";
 
 // Common query options for dashboard data
 const DASHBOARD_QUERY_OPTIONS = {
@@ -53,122 +54,21 @@ function buildOwnerFilteredQuery(
 
 /**
  * Operational alerts data (conflicts, overbookings, etc.)
+ * 
+ * PERFORMANCE FIX: Now uses consolidated hook that leverages planner's existing
+ * calculations instead of running duplicate Supabase queries.
  */
 export function useOperationalAlerts(selectedOwnerId?: string) {
-  return useQuery({
-    queryKey: ['operational-alerts', selectedOwnerId],
-    queryFn: async () => {
-      const { startDate, endDate } = getWarningTimeframe();
-      let projectIds: string[] = [];
-
-      // Get project IDs if owner filter is applied
-      if (selectedOwnerId) {
-        projectIds = await getProjectIdsForOwner(selectedOwnerId);
-        if (projectIds.length === 0) {
-          return { equipmentConflicts: 0, crewConflicts: 0 };
-        }
-      }
-
-      // Equipment conflicts query
-      let equipmentQuery = supabase
-        .from('project_event_equipment')
-        .select(`
-          equipment_id,
-          quantity,
-          equipment:equipment_id!inner (
-            name,
-            stock
-          ),
-          project_events!inner (
-            date,
-            project:projects!inner (
-              owner_id
-            )
-          )
-        `)
-        .gte('project_events.date', startDate)
-        .lte('project_events.date', endDate);
-
-      equipmentQuery = buildOwnerFilteredQuery(
-        equipmentQuery, 
-        selectedOwnerId, 
-        projectIds,
-        'project_events.project.owner_id'
-      );
-
-      // Crew conflicts query  
-      let crewConflictQuery = supabase
-        .from('project_event_roles')
-        .select(`
-          crew_member_id,
-          project_events!inner (
-            date,
-            name,
-            project:projects!inner (
-              name,
-              owner_id
-            )
-          )
-        `)
-        .not('crew_member_id', 'is', null)
-        .gte('project_events.date', startDate)
-        .lte('project_events.date', endDate);
-
-      crewConflictQuery = buildOwnerFilteredQuery(
-        crewConflictQuery,
-        selectedOwnerId,
-        projectIds, 
-        'project_events.project.owner_id'
-      );
-
-      const [equipmentResult, crewResult] = await Promise.all([
-        equipmentQuery,
-        crewConflictQuery
-      ]);
-
-      if (equipmentResult.error) throw equipmentResult.error;
-      if (crewResult.error) throw crewResult.error;
-
-      // Process equipment conflicts
-      const equipmentBookings = new Map<string, { date: string; totalQuantity: number; stock: number }>();
-      
-      equipmentResult.data?.forEach(booking => {
-        const key = `${booking.equipment_id}-${booking.project_events.date}`;
-        const existing = equipmentBookings.get(key);
-        const stock = booking.equipment?.stock || 0;
-        
-        if (existing) {
-          existing.totalQuantity += booking.quantity || 0;
-        } else {
-          equipmentBookings.set(key, {
-            date: booking.project_events.date,
-            totalQuantity: booking.quantity || 0,
-            stock
-          });
-        }
-      });
-
-      const equipmentConflicts = Array.from(equipmentBookings.values())
-        .filter(booking => booking.totalQuantity > booking.stock).length;
-
-      // Process crew conflicts  
-      const crewBookings = new Map<string, Set<string>>();
-      
-      crewResult.data?.forEach(role => {
-        const key = `${role.crew_member_id}-${role.project_events.date}`;
-        if (!crewBookings.has(key)) {
-          crewBookings.set(key, new Set());
-        }
-        crewBookings.get(key)!.add(role.project_events.name);
-      });
-
-      const crewConflicts = Array.from(crewBookings.values())
-        .filter(events => events.size > 1).length;
-
-      return { equipmentConflicts, crewConflicts };
-    },
-    ...DASHBOARD_QUERY_OPTIONS
+  const { equipmentConflicts, crewConflicts, isLoading } = useConsolidatedConflicts({
+    selectedOwner: selectedOwnerId
   });
+
+  // Transform to React Query format for API compatibility
+  return {
+    data: { equipmentConflicts, crewConflicts },
+    isLoading,
+    error: null
+  };
 }
 
 /**

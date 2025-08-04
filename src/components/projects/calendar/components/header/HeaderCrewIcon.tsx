@@ -1,6 +1,6 @@
 import { Users } from "lucide-react";
 import { CalendarEvent } from "@/types/events";
-import { useSyncCrewStatus } from "@/hooks/useSyncCrewStatus";
+import { useEventSyncStatus } from "@/hooks/useConsolidatedSyncStatus";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +12,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useMemo } from "react";
+import { useSectionConflicts } from "@/hooks/useProjectConflicts";
 
 interface HeaderCrewIconProps {
   events: CalendarEvent[];
@@ -22,7 +23,9 @@ export function HeaderCrewIcon({ events, onSyncPreferredCrew }: HeaderCrewIconPr
   // Always get first event but don't early return (hooks must be called consistently)
   const firstEvent = events[0];
 
-  const { hasProjectRoles, isSynced: firstEventSynced, isChecking } = useSyncCrewStatus(firstEvent);
+  // PERFORMANCE OPTIMIZATION: Use consolidated sync status hook
+  const { hasProjectRoles, isCrewSynced: firstEventSynced } = useEventSyncStatus(firstEvent);
+  const isChecking = false; // No loading with consolidated data
 
   // Get crew assignments for all events
   const { data: eventRoles } = useQuery({
@@ -37,67 +40,20 @@ export function HeaderCrewIcon({ events, onSyncPreferredCrew }: HeaderCrewIconPr
     enabled: events.length > 0
   });
 
-  // Check for conflicts in actually assigned crew
-  const { data: conflictsData, isLoading: isCheckingConflicts } = useQuery({
-    queryKey: ['crew-conflicts', events.map(e => e.id), eventRoles?.map(r => r.crew_member_id).join(',')],
-    queryFn: async () => {
-      if (!firstEvent?.project_id || !eventRoles?.length) return { hasConflicts: false, conflictCount: 0 };
+  // PERFORMANCE OPTIMIZATION: Use pre-calculated crew conflicts instead of individual queries
+  const assignedCrewIds = useMemo(() => {
+    if (!eventRoles?.length) return [];
+    return [...new Set(
+      eventRoles
+        .filter(role => role.crew_member_id)
+        .map(role => role.crew_member_id)
+    )];
+  }, [eventRoles]);
 
-      try {
-        // Get unique assigned crew members across all events
-        const assignedCrewIds = [...new Set(
-          eventRoles
-            .filter(role => role.crew_member_id)
-            .map(role => role.crew_member_id)
-        )];
-
-        if (!assignedCrewIds.length) {
-          return { hasConflicts: false, conflictCount: 0 };
-        }
-
-        // Check for conflicts among actually assigned crew on event dates
-        // BUT exclude conflicts from events in this same section (not actual conflicts!)
-        const { checkCrewConflicts } = await import('@/utils/crewConflictDetection');
-        const eventIds = new Set(events.map(e => e.id));
-        
-        let conflictCount = 0;
-        for (const crewMemberId of assignedCrewIds) {
-          // Check each event date individually to avoid false positives from same-section assignments
-          for (const event of events) {
-            // Only check this crew member if they're assigned to this specific event
-            const isAssignedToThisEvent = eventRoles?.some(
-              er => er.event_id === event.id && er.crew_member_id === crewMemberId
-            );
-            
-            if (!isAssignedToThisEvent) continue;
-            
-            const conflictResult = await checkCrewConflicts(crewMemberId, [event.date]);
-            
-            // Filter out conflicts from events in THIS SAME SECTION (not actual conflicts)
-            const actualConflicts = conflictResult.conflictingEvents.filter(
-              conflictEvent => !eventIds.has(conflictEvent.eventId)
-            );
-            
-            if (actualConflicts.length > 0) {
-              conflictCount++;
-              break; // Found a real conflict, no need to check more
-            }
-          }
-          
-          if (conflictCount > 0) break; // Exit outer loop if conflict found
-        }
-
-        return { 
-          hasConflicts: conflictCount > 0, 
-          conflictCount 
-        };
-      } catch (error) {
-        console.error('Error checking crew conflicts:', error);
-        return { hasConflicts: false, conflictCount: 0 };
-      }
-    },
-    enabled: !!firstEvent?.project_id && events.length > 0 && !!eventRoles
-  });
+  const { hasConflicts, conflictCount } = useSectionConflicts(events, assignedCrewIds);
+  
+  const conflictsData = { hasConflicts, conflictCount };
+  const isCheckingConflicts = false; // No loading since we use pre-calculated data
 
   // Simple check: Are all existing event roles assigned? (ignoring project roles completely)
   const allEventsSynced = useMemo(() => {
@@ -137,7 +93,7 @@ export function HeaderCrewIcon({ events, onSyncPreferredCrew }: HeaderCrewIconPr
   // Show nothing if there are no events, no crew needed, or no project roles
   if (!firstEvent || !firstEvent.type.needs_crew || !hasProjectRoles) return null;
 
-  const hasConflicts = conflictsData?.hasConflicts || false;
+  // hasConflicts already defined from useSectionConflicts above
   const isLoading = isChecking || isCheckingConflicts;
   
   // Debug logging for section header

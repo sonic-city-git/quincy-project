@@ -6,11 +6,11 @@
 import { useState, useEffect } from "react";
 import { useEquipment } from "@/hooks/useEquipment";
 import { useFolders } from "@/hooks/useFolders";
-import { EquipmentTable } from "../../equipment/EquipmentTable";
+import { EquipmentTable } from "../equipment/EquipmentTable";
 import { Table } from "../../ui/table";
-import { EquipmentTableHeader } from "../../equipment/EquipmentTableHeader";
+import { EquipmentTableHeader } from "../equipment/EquipmentTableHeader";
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from "@/utils/folderSort";
-import { EditEquipmentDialog } from "../../equipment/EditEquipmentDialog";
+import { EditEquipmentDialog } from "../equipment/EditEquipmentDialog";
 import { ResourceFilters } from "../ResourcesHeader";
 import { useScrollToTarget } from "../shared/hooks/useScrollToTarget";
 import { LoadingSpinner } from "../shared/LoadingSpinner";

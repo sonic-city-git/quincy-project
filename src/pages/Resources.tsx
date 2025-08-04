@@ -9,8 +9,8 @@ import { useFilterState } from "@/hooks/useFilterState";
 import { ResourcesHeader, ResourceFilters } from "@/components/resources/ResourcesHeader";
 import { ResourceCrewTable } from "@/components/resources/tables/ResourceCrewTable";
 import { ResourceEquipmentTable } from "@/components/resources/tables/ResourceEquipmentTable";
-import { AddMemberDialog } from "@/components/crew/AddMemberDialog";
-import { AddEquipmentDialog } from "@/components/equipment/AddEquipmentDialog";
+import { AddMemberDialog } from "@/components/resources/crew/AddMemberDialog";
+import { AddEquipmentDialog } from "@/components/resources/equipment/AddEquipmentDialog";
 
 const Resources = () => {
   const [searchParams, setSearchParams] = useSearchParams();
