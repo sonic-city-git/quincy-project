@@ -19,26 +19,8 @@ import { Button } from "@/components/ui/button";
 const Planner = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // PERFORMANCE: Initialize with today's date directly, no useEffect needed
-  const [selectedDate, setSelectedDate] = useState(() => {
-    // Try to restore from localStorage first, fallback to today
-    try {
-      const stored = localStorage.getItem('planner-selected-date');
-      if (stored) {
-        const date = new Date(stored);
-        // Only use stored date if it's valid and recent (within 30 days)
-        if (!isNaN(date.getTime())) {
-          const daysDiff = Math.abs((new Date().getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-          if (daysDiff <= 30) {
-            return date;
-          }
-        }
-      }
-    } catch (error) {
-      // Fall through to default
-    }
-    return new Date();
-  });
+  // ALWAYS start with today's date for better UX
+  const [selectedDate, setSelectedDate] = useState(new Date());
   
   // Use consolidated tab persistence hook
   const [activeTab, setActiveTab] = useTabPersistence(
@@ -116,6 +98,8 @@ const Planner = () => {
   // UNIFIED: One scroll system to rule them all
   const timelineScroll = useUnifiedTimelineScroll({ selectedDate });
   const { projects } = useProjects();
+
+
   const ownerOptions = useOwnerOptions(projects, { 
     keyBy: 'id', 
     includeEmails: true 
@@ -131,7 +115,7 @@ const Planner = () => {
       iconColor="text-blue-500"
     >
       <div className="space-y-4">
-        {/* Standard header with filters and tabs */}
+        {/* Fixed header with filters and tabs */}
         <TimelineHeader
           formattedDates={timelineScroll.formattedDates}
           monthSections={timelineScroll.monthSections}
@@ -141,9 +125,7 @@ const Planner = () => {
             // Then update state
             setSelectedDate(date);
           }}
-          onHeaderScroll={() => {
-            // No sync needed - unified scroll system handles this
-          }}
+          timelineScroll={timelineScroll}
           stickyHeadersRef={timelineScroll.stickyHeadersRef}
           resourceType={activeTab}
           activeTab={activeTab}
@@ -154,7 +136,7 @@ const Planner = () => {
           onToggleProblemsOnly={() => setShowProblemsOnly(!showProblemsOnly)}
         />
         
-        {/* Main timeline content with its own scroll that syncs back to header */}
+        {/* Main timeline content */}
         <UnifiedCalendar 
           selectedDate={selectedDate} 
           onDateChange={(date) => {

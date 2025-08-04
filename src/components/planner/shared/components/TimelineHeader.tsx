@@ -39,7 +39,11 @@ interface TimelineHeaderProps {
   formattedDates: FormattedDate[];
   monthSections: MonthSection[];
   onDateChange: (date: Date) => void;
-  onHeaderScroll: (e: React.UIEvent<HTMLDivElement>) => void;
+  timelineScroll: {
+    handleScroll: (e: React.UIEvent<HTMLDivElement>) => void;
+    scrollPosition: number;
+    isDragging: boolean;
+  };
   stickyHeadersRef: React.RefObject<HTMLDivElement>;
   resourceType?: 'equipment' | 'crew';
   activeTab?: 'equipment' | 'crew';
@@ -55,9 +59,6 @@ interface TimelineHeaderProps {
   showProblemsOnly?: boolean;
   onToggleProblemsOnly?: () => void;
   
-  // NEW: Timeline scroll system for integrated scroll handling
-  timelineScroll?: any;
-  
   // NEW: Render mode flags
   renderOnlyLeft?: boolean;
   renderOnlyTimeline?: boolean;
@@ -67,7 +68,7 @@ export function TimelineHeader({
   formattedDates,
   monthSections,
   onDateChange,
-  onHeaderScroll,
+  timelineScroll,
   stickyHeadersRef,
   resourceType = 'equipment',
   activeTab,
@@ -77,7 +78,6 @@ export function TimelineHeader({
   showProblemsOnly = false,
   onToggleProblemsOnly,
   isWithinScrollContainer = false,
-  timelineScroll,
   renderOnlyLeft = false,
   renderOnlyTimeline = false
 }: TimelineHeaderProps) {
@@ -184,7 +184,7 @@ export function TimelineHeader({
           ref={stickyHeadersRef}
           className="flex-1 bg-muted/90 backdrop-blur-sm overflow-x-auto scrollbar-hide"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          onScroll={onHeaderScroll}
+          onScroll={timelineScroll.handleScroll}
         >
           <div style={{ width: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px` }}>
             {/* Month Header */}
@@ -284,17 +284,36 @@ export function TimelineHeader({
                       }`}
                       onClick={(e) => {
                         e.stopPropagation();
-                        onDateChange(dateInfo.date);
+                        // Add a small delay to wait for potential double click
+                        const clickTimer = setTimeout(() => {
+                          onDateChange(dateInfo.date);
+                        }, 200); // 200ms delay to wait for double click
+
+                        // Store the timer in the element's dataset
+                        const element = e.currentTarget;
+                        // Clear any existing timer
+                        const existingTimer = element.dataset.clickTimer;
+                        if (existingTimer) {
+                          clearTimeout(Number(existingTimer));
+                        }
+                        element.dataset.clickTimer = String(clickTimer);
                       }}
                       onDoubleClick={(e) => {
                         e.stopPropagation();
-                        // Only handle double-click if this day is already selected
-                        if (dateInfo.isSelected) {
-                          const today = new Date();
-                          onDateChange(today);
+                        // Clear any pending single click timer
+                        const element = e.currentTarget;
+                        const existingTimer = element.dataset.clickTimer;
+                        if (existingTimer) {
+                          clearTimeout(Number(existingTimer));
+                          delete element.dataset.clickTimer;
                         }
+                        
+                        // Double-click anywhere in date header goes to today
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0); // Normalize to start of day
+                        onDateChange(today);
                       }}
-                      title={`${format(dateInfo.date, 'EEEE, MMMM d, yyyy')}${dateInfo.isToday ? ' (Today)' : ''}${dateInfo.isSelected ? ' (Selected - Double-click to go to Today)' : ''}`}
+                      title={`${format(dateInfo.date, 'EEEE, MMMM d, yyyy')}${dateInfo.isToday ? ' (Today)' : ''} - Double-click any date to go to Today`}
                     >
                       <div className="text-xs leading-none mb-0.5">{format(dateInfo.date, 'EEE')[0]}</div>
                       <div className="text-sm font-semibold leading-none">

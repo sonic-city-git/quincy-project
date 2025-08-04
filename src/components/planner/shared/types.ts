@@ -99,7 +99,7 @@ export interface EquipmentProjectUsage {
 }
 
 // Note: EquipmentSerialNumber now imported from main types to eliminate duplication
-// import { EquipmentSerialNumber } from '@/types/equipment';
+
 
 export interface SerialNumberBooking {
   id: string;
