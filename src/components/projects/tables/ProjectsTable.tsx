@@ -7,6 +7,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useProjects } from "@/hooks/useProjects";
 import { ProjectFilters } from "../ProjectsHeader";
 import { COMPONENT_CLASSES, cn } from "@/design-system";
+import { useBatchProjectPGA } from "@/hooks/useProjectPGA";
+import { formatPGA } from "@/utils/pgaCalculation";
 
 // Extended project type with joined data
 type ProjectWithJoins = {
@@ -47,6 +49,10 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
   const { projects, loading } = useProjects();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const navigate = useNavigate();
+  
+  // Get PGA data for all projects
+  const projectIds = projects?.map(p => p.id) || [];
+  const { data: pgaData, isLoading: pgaLoading } = useBatchProjectPGA(projectIds);
 
   // Project color badge styling using design system
   const getProjectColorStyles = (color: string | null | undefined) => {
@@ -111,7 +117,7 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
         <div className="border-x border-b border-border rounded-b-lg bg-background">
           <div className="divide-y divide-border">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="grid grid-cols-[2fr_120px_120px] sm:grid-cols-[2fr_180px_120px] gap-3 sm:gap-4 p-3 sm:p-4">
+              <div key={i} className="grid grid-cols-[2fr_120px_140px] sm:grid-cols-[2fr_180px_160px] gap-3 sm:gap-4 p-3 sm:p-4">
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-3 w-2/3 sm:w-2/3" />
@@ -120,7 +126,7 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
                   <Skeleton className="h-6 w-6 rounded-full sm:w-24 sm:h-4 sm:rounded" />
                 </div>
                 <div className="flex justify-end">
-                  <Skeleton className="h-4 w-12 sm:w-16" />
+                  <Skeleton className="h-4 w-16 sm:w-20" />
                 </div>
               </div>
             ))}
@@ -146,7 +152,7 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
       <div className="w-full">
         {/* Sticky table header positioned right after ProjectsHeader */}
         <div className="sticky top-[124px] z-30 bg-background border-x border-b border-border">
-          <div className="grid grid-cols-[2fr_120px_120px] sm:grid-cols-[2fr_180px_120px] gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/50 font-semibold text-sm">
+          <div className="grid grid-cols-[2fr_120px_140px] sm:grid-cols-[2fr_180px_160px] gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/50 font-semibold text-sm">
             <div>Project Name</div>
             <div className="text-center sm:text-left">Owner</div>
             <div className="text-right">PGA</div>
@@ -171,7 +177,7 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
     <div className="w-full">
       {/* Sticky table header positioned right after ProjectsHeader */}
       <div className={cn("sticky top-[124px] z-30", COMPONENT_CLASSES.table.container)}>
-        <div className={cn("grid grid-cols-[2fr_120px_120px] sm:grid-cols-[2fr_180px_120px] gap-3 sm:gap-4 p-3 sm:p-4 font-semibold text-sm", COMPONENT_CLASSES.table.header)}>
+        <div className={cn("grid grid-cols-[2fr_120px_140px] sm:grid-cols-[2fr_180px_160px] gap-3 sm:gap-4 p-3 sm:p-4 font-semibold text-sm", COMPONENT_CLASSES.table.header)}>
           <div>Project Name</div>
           <div className="text-center sm:text-left">Owner</div>
           <div className="text-right">PGA</div>
@@ -183,11 +189,12 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
         <div className="divide-y divide-border">
           {filteredProjects.map((project) => {
             const projectColorStyles = getProjectColorStyles(project.color);
+            const projectPGA = pgaData?.[project.id] || null;
             
             return (
               <div 
                 key={project.id}
-                className={cn("grid grid-cols-[2fr_120px_120px] sm:grid-cols-[2fr_180px_120px] gap-3 sm:gap-4 p-3 sm:p-4 cursor-pointer group border-l-4 border-l-transparent", COMPONENT_CLASSES.table.row)}
+                className={cn("grid grid-cols-[2fr_120px_140px] sm:grid-cols-[2fr_180px_160px] gap-3 sm:gap-4 p-3 sm:p-4 cursor-pointer group border-l-4 border-l-transparent", COMPONENT_CLASSES.table.row)}
                 style={{}}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderLeftColor = project.color || 'hsl(var(--muted-foreground))';
@@ -241,13 +248,14 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
                 </div>
                 
                 {/* PGA (Per Gig Average) - RIGHT ALIGNED */}
-                <div className="flex items-center justify-end gap-0.5 sm:gap-1">
-                  <span className="text-xs sm:text-sm font-medium">
-                    {project.to_be_invoiced ? `${(project.to_be_invoiced / 1000).toFixed(0)}k` : (
-                      <span className="text-muted-foreground italic text-xs">—</span>
-                    )}
-                  </span>
-                  <DollarSign className="h-3 w-3 text-muted-foreground ml-0.5" />
+                <div className="flex items-center justify-end">
+                  {pgaLoading ? (
+                    <Skeleton className="h-4 w-16" />
+                  ) : (
+                    <span className="text-xs sm:text-sm font-medium">
+                      {formatPGA(projectPGA)}
+                    </span>
+                  )}
                 </div>
               </div>
             );
