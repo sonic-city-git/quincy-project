@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Edit, Plus } from "lucide-react";
-import { useState } from "react";
 import { AddProjectDialog } from "./AddProjectDialog";
 import { useProjects } from "@/hooks/useProjects";
+import { useCommonProjectTabActions } from "./shared/hooks/useProjectTabActions";
 
 interface ProjectActionsProps {
   selectedItems: string[];
@@ -10,8 +10,8 @@ interface ProjectActionsProps {
 }
 
 export function ProjectActions({ selectedItems, onProjectDeleted }: ProjectActionsProps) {
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  // PERFORMANCE OPTIMIZATION: Use consolidated dialog state management
+  const { addDialog, editDialog } = useCommonProjectTabActions();
   const { projects } = useProjects();
   
   const selectedProject = projects.find(project => project.id === selectedItems[0]);
@@ -23,7 +23,7 @@ export function ProjectActions({ selectedItems, onProjectDeleted }: ProjectActio
           variant="outline" 
           size="sm"
           className="gap-2 text-muted-foreground hover:text-foreground"
-          onClick={() => setEditDialogOpen(true)}
+          onClick={() => editDialog.setActive(true)}
         >
           <Edit className="h-4 w-4" />
           Edit
@@ -33,14 +33,14 @@ export function ProjectActions({ selectedItems, onProjectDeleted }: ProjectActio
         variant="default"
         size="sm"
         className="gap-2"
-        onClick={() => setAddDialogOpen(true)}
+        onClick={() => addDialog.setActive(true)}
       >
         <Plus className="h-4 w-4" />
         Add Project
       </Button>
       <AddProjectDialog 
-        open={addDialogOpen}
-        onOpenChange={setAddDialogOpen}
+        open={addDialog.isActive}
+        onOpenChange={addDialog.setActive}
       />
     </div>
   );
