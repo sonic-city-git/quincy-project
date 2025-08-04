@@ -19,21 +19,15 @@ import { Button } from "@/components/ui/button";
 const Planner = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // ALWAYS start with today's date for better UX - fresh date on every refresh
+  // STABLE: Initialize once with today's date and don't change it on mount
   const [selectedDate, setSelectedDate] = useState(() => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    console.log('🔄 Planner initializing with today:', today.toISOString().split('T')[0]);
+    // console.log('🔄 Planner initializing with today:', today.toISOString().split('T')[0]);
     return today;
   });
   
-  // Force today's date on component mount (handles refresh case)
-  useEffect(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    console.log('🔄 Planner mounted, ensuring today is selected:', today.toISOString().split('T')[0]);
-    setSelectedDate(today);
-  }, []); // Empty dependency array = only run on mount
+  // Remove the aggressive useEffect that was causing double date setting
   
   // Use consolidated tab persistence hook
   const [activeTab, setActiveTab] = useTabPersistence(

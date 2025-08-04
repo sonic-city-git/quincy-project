@@ -11,7 +11,7 @@ import { LAYOUT, PERFORMANCE } from './shared/constants';
 // Shared timeline components
 import { PlannerFilters, TimelineHeader } from './shared/components/TimelineHeader';
 import { TimelineContent } from './shared/components/TimelineContent';
-import { useTimelineScroll } from './shared/hooks/useTimelineScroll';
+import { useSimpleInfiniteScroll as useTimelineScroll } from './shared/hooks/useSimpleInfiniteScroll';
 
 interface UnifiedCalendarProps {
   selectedDate: Date;
@@ -359,38 +359,20 @@ export function UnifiedCalendar({
         isWithinScrollContainer={isWithinScrollContainer}
       />
       
-      {/* Debug overlay for development */}
-      {process.env.NODE_ENV === 'development' && timelineScroll.debug && (
+      {/* Simple debug info for development */}
+      {process.env.NODE_ENV === 'development' && (
         <div className="fixed top-4 right-4 bg-black bg-opacity-80 text-white p-4 rounded-lg font-mono text-xs z-50 max-w-sm">
-          <div className="text-green-400 font-bold mb-2">🚀 Ultimate Timeline Debug</div>
+          <div className="text-green-400 font-bold mb-2">🎯 Simple Infinite Scroll</div>
           
           <div className="mb-3">
-            <div className="text-blue-400 font-semibold">Scroll Metrics:</div>
-            <div>Velocity: {timelineScroll.debug.metrics.velocity.toFixed(2)} px/ms</div>
-            <div>Direction: <span className={`${
-              timelineScroll.debug.metrics.direction === 'left' ? 'text-orange-400' : 
-              timelineScroll.debug.metrics.direction === 'right' ? 'text-blue-400' : 
-              'text-gray-400'
-            }`}>{timelineScroll.debug.metrics.direction}</span></div>
-            <div>Expansions: {timelineScroll.debug.expansions}</div>
-            <div>Expanding: <span className={`${
-              timelineScroll.debug.isExpanding ? 'text-red-400' : 'text-green-400'
-            }`}>{timelineScroll.debug.isExpanding ? 'Yes' : 'No'}</span></div>
-          </div>
-
-          <div className="mb-3">
-            <div className="text-purple-400 font-semibold">Virtual Timeline:</div>
-            <div>Total Days: {timelineScroll.debug.virtualInfo?.totalDates || 0}</div>
-            <div>Rendered: <span className="text-yellow-400">{timelineScroll.debug.virtualInfo?.virtualDates || 0}</span></div>
-            <div>Virtualized: <span className={`${
-              timelineScroll.debug.virtualInfo?.isVirtualized ? 'text-green-400' : 'text-red-400'
-            }`}>{timelineScroll.debug.virtualInfo?.isVirtualized ? 'Yes' : 'No'}</span></div>
-            <div>Range: {timelineScroll.debug.virtualInfo?.virtualRange || 'N/A'}</div>
+            <div className="text-blue-400 font-semibold">Timeline:</div>
+            <div>Total Days: {formattedDates.length}</div>
+            <div>Scroll Position: {scrollPosition.toFixed(0)}px</div>
             <div>Container: {containerWidth}px</div>
           </div>
           
           <div className="text-xs text-gray-400">
-            Velocity-based predictive infinite scroll with virtualization
+            Clean infinite scroll without complexity
           </div>
         </div>
       )}

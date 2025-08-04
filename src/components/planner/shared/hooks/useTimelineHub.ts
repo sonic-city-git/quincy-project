@@ -41,58 +41,18 @@ export function useTimelineHub({
   enabled = true
 }: UseTimelineHubProps) {
 
-  // SLIDING WINDOW DATA MANAGEMENT - Ultimate Performance
+  // SIMPLE DATA RANGE - No sliding window complexity
   const stableDataRange = useMemo(() => {
-    const centerDate = new Date();
-    const baseBufferDays = 40;
-    const maxWindowDays = PERFORMANCE.MAX_RENDERED_DAYS; // 90 days max
+    // Simple: timeline range + 1 week buffer on each side
+    const bufferDays = 7;
+    const start = new Date(periodStart.getTime() - bufferDays * 24 * 60 * 60 * 1000);
+    const end = new Date(periodEnd.getTime() + bufferDays * 24 * 60 * 60 * 1000);
     
-    // Calculate the current timeline span
-    const timelineSpanDays = Math.ceil((periodEnd.getTime() - periodStart.getTime()) / (24 * 60 * 60 * 1000));
-    
-    // SLIDING WINDOW: Limit total data range to prevent unlimited growth
-    const effectiveBuffer = Math.min(baseBufferDays, maxWindowDays / 2);
-    
-    // Calculate adaptive buffer based on timeline size, but cap it
-    const adaptiveBuffer = Math.min(
-      Math.max(effectiveBuffer, timelineSpanDays * 0.3),
-      maxWindowDays / 2
-    );
-    
-    // Create sliding window centered on visible timeline
-    const visibleCenter = new Date((periodStart.getTime() + periodEnd.getTime()) / 2);
-    const windowStart = new Date(visibleCenter.getTime() - adaptiveBuffer * 24 * 60 * 60 * 1000);
-    const windowEnd = new Date(visibleCenter.getTime() + adaptiveBuffer * 24 * 60 * 60 * 1000);
-    
-    // Always include visible timeline with small margin
-    const marginDays = 14; // 2 weeks margin
-    const finalStart = new Date(Math.min(
-      periodStart.getTime() - marginDays * 24 * 60 * 60 * 1000,
-      windowStart.getTime()
-    ));
-    const finalEnd = new Date(Math.max(
-      periodEnd.getTime() + marginDays * 24 * 60 * 60 * 1000,
-      windowEnd.getTime()
-    ));
-    
-    // Ensure we don't exceed max window size
-    const totalDays = Math.ceil((finalEnd.getTime() - finalStart.getTime()) / (24 * 60 * 60 * 1000));
-    if (totalDays > maxWindowDays) {
-      // Trim from the furthest edge
-      const excess = totalDays - maxWindowDays;
-      const trimDays = Math.ceil(excess / 2);
-      
-      return {
-        start: new Date(finalStart.getTime() + trimDays * 24 * 60 * 60 * 1000),
-        end: new Date(finalEnd.getTime() - trimDays * 24 * 60 * 60 * 1000)
-      };
-    }
-    
-    return { start: finalStart, end: finalEnd };
+    return { start, end };
   }, [
-    // Use 3-day buckets for responsive updates while maintaining stability
-    Math.floor(periodStart.getTime() / (3 * 24 * 60 * 60 * 1000)), 
-    Math.floor(periodEnd.getTime() / (3 * 24 * 60 * 60 * 1000))
+    // Simple weekly boundaries for stable caching
+    Math.floor(periodStart.getTime() / (7 * 24 * 60 * 60 * 1000)), 
+    Math.floor(periodEnd.getTime() / (7 * 24 * 60 * 60 * 1000))
   ]);
 
   // EXPANSION STATE
@@ -224,13 +184,9 @@ export function useTimelineHub({
     if (eventsError) throw eventsError;
     if (!events?.length) return new Map();
 
-    // SMART FOLDER OPTIMIZATION: Only fetch bookings for expanded equipment
+    // Smart folder: Only fetch if equipment is expanded
     if (expandedIds.length === 0) {
-      // No folders expanded = no bookings to fetch
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🎯 SMART FOLDER: No expanded folders, skipping booking fetch');
-      }
-      return new Map();
+      return new Map(); // No expanded folders = no bookings needed
     }
 
     // Get equipment bookings - FILTERED to expanded equipment only
@@ -247,8 +203,9 @@ export function useTimelineHub({
     const { data: equipmentBookings, error: equipmentError } = await equipmentQuery;
     if (equipmentError) throw equipmentError;
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🎯 SMART FOLDER: Fetched ${equipmentBookings?.length || 0} bookings for ${expandedIds.length} expanded equipment items`);
+    // Simplified logging
+    if (process.env.NODE_ENV === 'development' && equipmentBookings?.length) {
+      console.log(`📦 Loaded ${equipmentBookings.length} bookings`);
     }
 
     // Transform to booking map
@@ -409,29 +366,31 @@ export function useTimelineHub({
       }
     });
     
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🎯 SMART FOLDER: ${expandedIds.length} equipment items in expanded folders out of ${resourceData?.resources?.length || 0} total`);
+    // Clean logging
+    if (process.env.NODE_ENV === 'development' && expandedIds.length > 0) {
+      console.log(`📂 ${expandedIds.length} items expanded`);
     }
     
     return expandedIds;
   }, [resourceData?.resources, expandedGroups]);
 
-  // BOOKING/ASSIGNMENT DATA - Smart folder optimized with expanded equipment dependency
+  // SIMPLIFIED BOOKING DATA - Stable query with longer cache times
   const { data: rawBookingsData, isLoading: isLoadingBookings } = useQuery({
     queryKey: [
       `timeline-${resourceType}-bookings`,
       format(stableDataRange.start, 'yyyy-MM-dd'),
       format(stableDataRange.end, 'yyyy-MM-dd'),
       selectedOwner,
-      expandedEquipmentIds.join(',') // Add expanded equipment as dependency
+      // Stable expanded equipment key - only changes when folders expand/collapse
+      expandedEquipmentIds.length > 0 ? expandedEquipmentIds.sort().join(',') : 'none'
     ],
     queryFn: () => resourceType === 'equipment' 
       ? fetchEquipmentBookings(expandedEquipmentIds) 
       : fetchCrewAssignments(),
-    enabled: enabled && expandedEquipmentIds.length > 0, // Only fetch if folders are expanded
-    staleTime: 60 * 1000, // 1 minute
-    gcTime: 5 * 60 * 1000,
-    placeholderData: (previousData) => previousData, // Keep previous data while refetching
+    enabled: enabled && (resourceType === 'crew' || expandedEquipmentIds.length > 0),
+    staleTime: 5 * 60 * 1000, // 5 minutes - longer cache
+    gcTime: 15 * 60 * 1000, // 15 minutes - keep in memory longer
+    placeholderData: (previousData) => previousData,
     refetchOnWindowFocus: false,
     refetchInterval: false,
   });
@@ -520,24 +479,14 @@ export function useTimelineHub({
     }
   }, [resourceData?.resources, expandedGroups, resourceType]);
 
-  // PROJECT USAGE (scroll-aware and folder-optimized)
+  // SIMPLIFIED PROJECT USAGE - No complex filtering
   const projectUsage = useMemo(() => {
     if (!bookingsData) return new Map();
 
-    const timelineStart = visibleTimelineStart?.toISOString().split('T')[0] || stableDataRange.start.toISOString().split('T')[0];
-    const timelineEnd = visibleTimelineEnd?.toISOString().split('T')[0] || stableDataRange.end.toISOString().split('T')[0];
-
-    // OPTIMIZATION: Only process bookings for expanded equipment
-    const expandedIdsSet = new Set(expandedEquipmentIds);
-    const filteredBookings = Array.from(bookingsData.values()).filter(booking => 
-      booking.date >= timelineStart && 
-      booking.date <= timelineEnd &&
-      expandedIdsSet.has(booking.resourceId) // Only expanded equipment
-    );
-
     const usage = new Map();
     
-    filteredBookings.forEach(booking => {
+    // Process all bookings - simpler and more reliable
+    Array.from(bookingsData.values()).forEach(booking => {
       const resourceId = booking.resourceId;
       
       if (!usage.has(resourceId)) {
@@ -577,7 +526,7 @@ export function useTimelineHub({
     });
 
     return usage;
-  }, [bookingsData, visibleTimelineStart, visibleTimelineEnd, stableDataRange, resourceType]);
+  }, [bookingsData, resourceType]);
 
   // WARNINGS (30-day window)
   const warnings = useMemo(() => {
