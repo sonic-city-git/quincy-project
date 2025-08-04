@@ -2,10 +2,14 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { MoreHorizontal, Calendar, DollarSign } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProjects } from "@/hooks/useProjects";
 import { ProjectFilters } from "../ProjectsHeader";
+import { COMPONENT_CLASSES, cn } from "@/design-system";
+import { useBatchProjectPGA } from "@/hooks/useProjectPGA";
+import { formatPGA } from "@/utils/pgaCalculation";
+import { getSimplifiedProjectStatus, getInvoiceStatusStyles, INVOICE_STATUS_SCHEMES } from "@/utils/invoiceStatusColors";
 
 // Extended project type with joined data
 type ProjectWithJoins = {
@@ -46,24 +50,15 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
   const { projects, loading } = useProjects();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const navigate = useNavigate();
+  
+  // Get PGA data for all projects
+  const projectIds = projects?.map(p => p.id) || [];
+  const { data: pgaData, isLoading: pgaLoading } = useBatchProjectPGA(projectIds);
 
-  // Project color badge styling
-  const getProjectColorStyles = (color: string | null | undefined) => {
-    if (!color) {
-      // Fallback color if project has no color
-      return {
-        backgroundColor: '#64748b', // slate-500
-        color: '#FFFFFF',
-        border: '1px solid #475569'
-      };
-    }
-    
-    return {
-      backgroundColor: color, // Full project color
-      color: '#FFFFFF',
-      border: `1px solid ${color}`,
-      boxShadow: `0 0 0 1px ${color}20` // Subtle glow effect
-    };
+  // Invoice status based styling with standardized text
+  const getProjectColorStyles = (project: any) => {
+    const statusKey = getSimplifiedProjectStatus(project);
+    return getInvoiceStatusStyles(statusKey);
   };
 
   const handleProjectClick = (projectId: string) => {
@@ -97,7 +92,7 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
     return (
       <div className="w-full">
         {/* Sticky table header */}
-        <div className="sticky top-[136px] z-20 bg-background border-x border-b border-border">
+        <div className={cn("sticky top-[136px] z-20", COMPONENT_CLASSES.table.header)}>
           <div className="grid grid-cols-[240px_2fr_160px_80px] gap-6 p-4 bg-muted/50 font-semibold text-sm">
             <div>Owner</div>
             <div className="text-center">Project Name</div>
@@ -110,14 +105,17 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
         <div className="border-x border-b border-border rounded-b-lg bg-background">
           <div className="divide-y divide-border">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="grid grid-cols-[240px_2fr_160px_80px] gap-6 p-4">
-                <Skeleton className="h-4 w-32" />
+              <div key={i} className="grid grid-cols-[2fr_120px_140px] sm:grid-cols-[2fr_180px_160px] gap-3 sm:gap-4 p-3 sm:p-4">
                 <div className="space-y-2">
                   <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-3 w-2/3" />
+                  <Skeleton className="h-3 w-2/3 sm:w-2/3" />
                 </div>
-                <Skeleton className="h-4 w-20" />
-                <Skeleton className="h-4 w-8" />
+                <div className="flex justify-center sm:justify-start">
+                  <Skeleton className="h-6 w-6 rounded-full sm:w-24 sm:h-4 sm:rounded" />
+                </div>
+                <div className="flex justify-end">
+                  <Skeleton className="h-4 w-16 sm:w-20" />
+                </div>
               </div>
             ))}
           </div>
@@ -141,12 +139,11 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
     return (
       <div className="w-full">
         {/* Sticky table header positioned right after ProjectsHeader */}
-        <div className="sticky top-[136px] z-20 bg-background border-x border-b border-border">
-          <div className="grid grid-cols-[240px_2fr_160px_80px] gap-6 p-4 bg-muted/50 font-semibold text-sm">
-            <div>Owner</div>
-            <div className="text-center">Project Name</div>
-                            <div>Amount</div>
-            <div></div>
+        <div className="sticky top-[124px] z-30 bg-background border-x border-b border-border">
+          <div className="grid grid-cols-[2fr_120px_140px] sm:grid-cols-[2fr_180px_160px] gap-3 sm:gap-4 p-3 sm:p-4 bg-muted/50 font-semibold text-sm">
+            <div>Project Name</div>
+            <div className="text-center sm:text-left">Owner</div>
+            <div className="text-right">PGA</div>
           </div>
         </div>
         
@@ -167,86 +164,89 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
   return (
     <div className="w-full">
       {/* Sticky table header positioned right after ProjectsHeader */}
-      <div className="sticky top-[136px] z-20 bg-background border-x border-b border-border">
-        <div className="grid grid-cols-[240px_2fr_160px_80px] gap-6 p-4 bg-muted/50 font-semibold text-sm">
-          <div>Owner</div>
+      <div className={cn("sticky top-[124px] z-30", COMPONENT_CLASSES.table.container)}>
+        <div className={cn("grid grid-cols-[2fr_120px_140px] sm:grid-cols-[2fr_180px_160px] gap-3 sm:gap-4 p-3 sm:p-4 font-semibold text-sm", COMPONENT_CLASSES.table.header)}>
           <div>Project Name</div>
-                          <div>Amount</div>
-          <div></div>
+          <div className="text-center sm:text-left">Owner</div>
+          <div className="text-right">PGA</div>
         </div>
       </div>
       
       {/* Table content */}
-      <div className="border-x border-b border-border rounded-b-lg bg-background">
+      <div className={cn("rounded-b-lg", COMPONENT_CLASSES.table.container)}>
         <div className="divide-y divide-border">
           {filteredProjects.map((project) => {
-            const projectColorStyles = getProjectColorStyles(project.color);
+            const projectColorStyles = getProjectColorStyles(project);
+            const projectPGA = pgaData?.[project.id] || null;
+            const statusKey = getSimplifiedProjectStatus(project);
+            const statusScheme = INVOICE_STATUS_SCHEMES[statusKey];
             
             return (
               <div 
                 key={project.id}
-                className="grid grid-cols-[240px_2fr_160px_80px] gap-6 p-4 cursor-pointer hover:bg-muted/50 transition-all duration-200 group border-l-4 border-l-transparent"
+                className={cn("grid grid-cols-[2fr_120px_140px] sm:grid-cols-[2fr_180px_160px] gap-3 sm:gap-4 p-3 sm:p-4 cursor-pointer group border-l-4 border-l-transparent", COMPONENT_CLASSES.table.row)}
                 style={{}}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.borderLeftColor = project.color || '#64748b';
+                  e.currentTarget.style.borderLeftColor = statusScheme.accent;
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.borderLeftColor = 'transparent';
                 }}
                 onClick={() => handleProjectClick(project.id)}
               >
-                {/* Owner */}
-                <div className="flex items-center gap-2">
-                  {project.owner?.avatar_url && (
+                {/* Project Name - LEFT & PRIMARY */}
+                <div className="flex flex-col space-y-1.5 min-w-0">
+                  <div
+                    className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-md text-sm sm:text-base font-semibold transition-all duration-200 group-hover:shadow-md max-w-fit"
+                    style={projectColorStyles}
+                    title={`${statusScheme.name}: ${statusScheme.description}`}
+                  >
+                    <span className="truncate block">{project.name}</span>
+                  </div>
+                  <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap">
+                      #{String(project.project_number).padStart(4, '0')}
+                    </span>
+                    {project.project_type && (
+                      <Badge variant="outline" className="text-xs px-1 sm:px-1.5 py-0 hidden sm:inline-flex">
+                        {project.project_type.name}
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+
+                {/* Owner - Responsive: Avatar only on mobile, Avatar + Name on desktop */}
+                <div className="flex items-center justify-center sm:justify-start gap-2 min-w-0">
+                  {project.owner?.avatar_url ? (
                     <img 
                       src={project.owner.avatar_url} 
                       alt={project.owner.name}
-                      className="h-6 w-6 rounded-full ring-2 ring-background shadow-sm"
+                      className="h-6 w-6 sm:h-6 sm:w-6 rounded-full ring-2 ring-background shadow-sm flex-shrink-0"
+                      title={project.owner.name} // Tooltip for mobile
                     />
+                  ) : (
+                    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {project.owner?.name ? project.owner.name.charAt(0).toUpperCase() : '?'}
+                      </span>
+                    </div>
                   )}
-                  <span className="text-sm font-medium truncate">
+                  <span className="hidden sm:inline text-sm font-medium truncate">
                     {project.owner?.name || (
                       <span className="text-muted-foreground italic">No Owner</span>
                     )}
                   </span>
                 </div>
-
-                                {/* Project Name - CENTER & LARGER */}
-                <div className="flex flex-col space-y-2 items-center">
-                  <div
-                    className="px-4 py-2 rounded-lg text-lg font-bold transition-all duration-200 group-hover:shadow-lg"
-                    style={projectColorStyles}
-                  >
-                    {project.name}
-                  </div>
-                  <p className="text-sm text-muted-foreground text-center">
-                    Project #{String(project.project_number).padStart(4, '0')}
-                  </p>
-                </div>
                 
-                {/* Invoice Amount */}
-                <div className="flex items-center gap-1">
-                  <DollarSign className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-sm font-medium">
-                    {project.to_be_invoiced ? `${(project.to_be_invoiced / 1000).toFixed(0)}k` : (
-                      <span className="text-muted-foreground italic">Not set</span>
-                    )}
-                  </span>
-                </div>
-                
-                {/* Actions */}
-                <div className="flex justify-center">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Handle menu click
-                    }}
-                  >
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
+                {/* PGA (Per Gig Average) - RIGHT ALIGNED */}
+                <div className="flex items-center justify-end">
+                  {pgaLoading ? (
+                    <Skeleton className="h-4 w-16" />
+                  ) : (
+                    <span className="text-xs sm:text-sm font-medium">
+                      {formatPGA(projectPGA)}
+                    </span>
+                  )}
                 </div>
               </div>
             );

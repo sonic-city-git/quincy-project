@@ -1,8 +1,9 @@
 import { TableHead, TableHeader as TableHeaderRoot, TableRow } from "@/components/ui/table";
+import { COMPONENT_CLASSES, cn } from "@/design-system";
 
 export function TableHeader() {
   return (
-    <TableHeaderRoot className="bg-zinc-900/50 border-b border-zinc-800">
+    <TableHeaderRoot className={cn(COMPONENT_CLASSES.table.header)}>
       <TableRow>
         <TableHead className="w-[100px]">Project #</TableHead>
         <TableHead className="w-[345px]">Name</TableHead>
