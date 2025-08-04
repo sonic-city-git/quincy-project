@@ -105,19 +105,24 @@ export function useTimelineHub({
   }, []);
 
   const fetchCrewData = useCallback(async () => {
-    const [crewResult, memberRolesResult, crewRolesResult] = await Promise.all([
+    const [crewResult, memberRolesResult, crewRolesResult, foldersResult] = await Promise.all([
       supabase.from('crew_members').select('id, name, email, phone, folder_id, avatar_url'),
       supabase.from('crew_member_roles').select('*'),
-      supabase.from('crew_roles').select('*')
+      supabase.from('crew_roles').select('*'),
+      supabase.from('crew_folders').select('id, name')
     ]);
 
     if (crewResult.error) throw crewResult.error;
     if (memberRolesResult.error) throw memberRolesResult.error;
     if (crewRolesResult.error) throw crewRolesResult.error;
+    if (foldersResult.error) throw foldersResult.error;
 
     // Role mappings
     const roleIdToName = new Map(crewRolesResult.data?.map(role => [role.id, role.name]) || []);
     const memberIdToRoles = new Map();
+    
+    // Folder mappings
+    const folderIdToName = new Map(foldersResult.data?.map(folder => [folder.id, folder.name]) || []);
     
     memberRolesResult.data?.forEach(cmr => {
       if (cmr.crew_member_id && cmr.role_id) {
@@ -136,12 +141,13 @@ export function useTimelineHub({
 
     crewResult.data?.forEach(crew => {
       const memberRoles = memberIdToRoles.get(crew.id) || [];
+      const folderName = folderIdToName.get(crew.folder_id) || 'Unassigned';
       const resource = {
         id: crew.id,
         name: crew.name,
         role: memberRoles[0] || 'Crew Member',
         roles: memberRoles,
-        department: 'Sonic City', // Default
+        department: folderName,
         level: 'mid',
         availability: 'available',
         hourlyRate: 75,
@@ -151,8 +157,8 @@ export function useTimelineHub({
           phone: crew.phone
         },
         avatarUrl: crew.avatar_url,
-        mainFolder: 'Sonic City', // For grouping
-        folderPath: 'Sonic City'
+        mainFolder: folderName, // Use actual folder name for grouping
+        folderPath: folderName
       };
 
       resources.push(resource);
@@ -281,14 +287,17 @@ export function useTimelineHub({
       }
       
       const assignment = assignmentsByKey.get(key);
+      const eventTypeColor = role.project_events.event_types?.color || '#6B7280';
+      const eventTypeName = role.project_events.event_types?.name || 'Unknown';
+      
       assignment.assignments.push({
         id: role.id,
         role: role.crew_roles?.name || 'Unknown',
         projectName: role.project_events.projects?.name || 'Unknown',
         eventName: role.project_events.name || 'Unknown',
         dailyRate: role.daily_rate,
-        eventType: role.project_events.event_types?.name || 'Unknown',
-        eventTypeColor: role.project_events.event_types?.color || '#6B7280',
+        eventType: eventTypeName,
+        eventTypeColor: eventTypeColor,
         location: role.project_events.location
       });
       assignment.totalAssignments = assignment.assignments.length;
@@ -414,6 +423,8 @@ export function useTimelineHub({
       } else if (resourceType === 'crew' && resource) {
         processedBooking.resourceName = resource.name;
         processedBooking.department = resource.department;
+        // CRITICAL: Ensure crew assignments are available as 'bookings' for UI compatibility
+        processedBooking.bookings = processedBooking.assignments || [];
       }
       
       processedBookings.set(key, processedBooking);
@@ -604,7 +615,8 @@ export function useTimelineHub({
         date: dateStr,
         department: resource.department,
         role: resource.role,
-        assignments: booking.assignments || [],
+        bookings: booking.assignments || [], // UI expects 'bookings' not 'assignments'
+        assignments: booking.assignments || [], // Keep for compatibility
         totalAssignments: booking.totalAssignments || 0,
         isOverbooked: booking.isOverbooked || false,
         availability: booking.assignments?.length > 0 ? 'busy' : 'available'
