@@ -1,4 +1,4 @@
-import { Search, X } from "lucide-react";
+import { Search, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LucideIcon } from "lucide-react";
@@ -135,43 +135,46 @@ export function SectionHeader<TTab = string, TFilters = Record<string, any>>({
   return (
     <div className="sticky top-[72px] z-40 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-sm">
       {/* Header with Title, Filters, and Tab Toggle */}
-      <div className="flex items-center justify-between py-3 px-4 bg-background border-b border-border/30">
-        <div className="flex items-center gap-4">
-          {/* Icon + Title */}
-          <div className="flex items-center gap-2">
-            <IconComponent className={`h-5 w-5 ${iconColor}`} />
-            <h3 className="text-lg font-semibold">{title}</h3>
+      <div className="flex items-center justify-between py-2 px-3 sm:py-3 sm:px-4 bg-background border-b border-border/30">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4 min-w-0 flex-1">
+          {/* Icon + Title - Responsive */}
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+            <IconComponent className={`h-5 w-5 ${iconColor} flex-shrink-0`} />
+            <h3 className="text-lg font-semibold truncate">{title}</h3>
           </div>
           
-          {/* Search and Filters */}
+          {/* Search and Filters - Responsive Priority */}
           {(search || children) && (
-            <div className="flex items-center gap-2">
-              {/* Search Bar */}
+            <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 min-w-0 flex-1">
+              {/* Search Bar - Always visible, responsive width */}
               {search && (
-                <div className="relative">
+                <div className="relative flex-1 max-w-[120px] xs:max-w-[140px] sm:max-w-[160px] md:max-w-[224px]">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     ref={searchInputRef}
                     placeholder={search.placeholder}
                     value={localSearchValue}
                     onChange={(e) => setLocalSearchValue(e.target.value)}
-                    className={`pl-9 w-56 h-8 transition-colors ${
-                      localSearchValue ? 'ring-2 ring-blue-500/50 border-blue-500/50 bg-blue-50/50' : ''
-                    }`}
+                    className={`
+                      pl-9 h-8 transition-colors w-full
+                      ${localSearchValue ? 'ring-2 ring-blue-500/50 border-blue-500/50 bg-blue-50/50' : ''}
+                    `}
                   />
                 </div>
               )}
 
-              {/* Custom Filter Components */}
-              {children}
+              {/* Custom Filter Components - Hide on small screens */}
+              <div className="hidden lg:flex lg:items-center lg:gap-2">
+                {children}
+              </div>
 
-              {/* Clear Filters Button */}
+              {/* Clear Filters Button - Hide on mobile, show on larger screens */}
               {onClearFilters && (search?.value || (filters && Object.values(filters).some(v => v))) && (
                 <Button
                   onClick={onClearFilters}
                   variant="ghost"
                   size="sm"
-                  className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                  className="hidden md:flex h-8 px-2 text-muted-foreground hover:text-foreground"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -180,14 +183,18 @@ export function SectionHeader<TTab = string, TFilters = Record<string, any>>({
           )}
         </div>
 
-        {/* Right side: Actions and Tab Toggle */}
-        <div className="flex items-center gap-2">
-          {/* Action Buttons */}
-          {actions}
+        {/* Right side: Actions and Tab Toggle - Always visible but responsive */}
+        <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2 flex-shrink-0">
+          {/* Action Buttons - Always visible but responsive styling */}
+          {actions && (
+            <div className="flex items-center gap-1">
+              {actions}
+            </div>
+          )}
 
-          {/* Tab Toggle */}
+          {/* Tab Toggle - Always visible but responsive sizing */}
           {tabs && (
-            <div className="flex items-center bg-muted/50 rounded-lg p-1 border border-border/50">
+            <div className="flex items-center bg-muted/50 rounded-lg p-0.5 sm:p-1 border border-border/50">
               {tabs.options.map((tab) => {
                 const isActive = tabs.activeTab === tab.value;
                 const TabIcon = tab.icon;
@@ -198,7 +205,9 @@ export function SectionHeader<TTab = string, TFilters = Record<string, any>>({
                     variant="ghost"
                     size="sm"
                     className={`
-                      h-9 px-4 text-sm font-medium transition-all
+                      h-8 sm:h-9 transition-all
+                      px-1.5 sm:px-2.5 md:px-4
+                      text-xs sm:text-sm font-medium
                       ${isActive 
                         ? 'bg-background text-foreground shadow-sm border border-border/50' 
                         : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
@@ -206,9 +215,9 @@ export function SectionHeader<TTab = string, TFilters = Record<string, any>>({
                     `}
                   >
                     {TabIcon && (
-                      <TabIcon className={`h-4 w-4 mr-2 ${tab.color || ''}`} />
+                      <TabIcon className={`h-3.5 w-3.5 sm:h-4 sm:w-4 ${tab.color || ''} ${tab.label ? 'mr-1 sm:mr-1.5 md:mr-2' : ''}`} />
                     )}
-                    {tab.label}
+                    <span className="hidden xs:inline">{tab.label}</span>
                   </Button>
                 );
               })}
@@ -216,6 +225,33 @@ export function SectionHeader<TTab = string, TFilters = Record<string, any>>({
           )}
         </div>
       </div>
+
+      {/* Mobile Filter Panel - Collapsible for filters when hidden */}
+      {children && (
+        <div className="lg:hidden border-t border-border/30">
+          <details className="group">
+            <summary className="px-3 py-1.5 sm:px-4 sm:py-2 text-sm text-muted-foreground hover:text-foreground cursor-pointer flex items-center gap-2">
+              <span>Filters</span>
+              <ChevronDown className="h-3 w-3 transition-transform group-open:rotate-180" />
+            </summary>
+            <div className="px-3 pb-2 sm:px-4 sm:pb-3 flex flex-wrap items-center gap-1.5 sm:gap-2">
+              {children}
+              {/* Mobile Clear Filters Button */}
+              {onClearFilters && (filters && Object.values(filters).some(v => v)) && (
+                <Button
+                  onClick={onClearFilters}
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 sm:h-8 px-1.5 sm:px-2 text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Clear
+                </Button>
+              )}
+            </div>
+          </details>
+        </div>
+      )}
 
       {/* Additional Content (e.g., timeline headers) */}
       {additionalContent}
