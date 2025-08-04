@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { format, isWeekend, isSameDay } from "date-fns";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Skeleton } from "../ui/skeleton";
 
-import { useEquipmentHub } from './shared/hooks/useEquipmentHub';
-import { useCrewHub } from './shared/hooks/useCrewHub';
+// Option to test unified system
+import { useTimelineHub } from './shared/hooks/useTimelineHub';
 
 
 import { LAYOUT, PERFORMANCE } from './shared/constants';
@@ -33,14 +32,7 @@ interface UnifiedCalendarProps {
   renderOnlyTimeline?: boolean;
 }
 
-// Performance metrics for monitoring
-interface PlannerMetrics {
-  dataLoadTime: number;
-  renderTime: number;
-  activeResourceType: 'equipment' | 'crew';
-  totalResources: number;
-  visibleDateRange: number; // days
-}
+  // Performance metrics interface for potential future monitoring
 
 /**
  * UnifiedCalendar - Clean Architecture Implementation
@@ -72,6 +64,9 @@ export function UnifiedCalendar({
   const loadStartTime = useRef(performance.now());
   const renderStartTime = useRef(performance.now());
   
+  // Remove excessive logging for better performance
+  // console.log('UnifiedCalendar render', { selectedDate: selectedDate.toISOString() });
+
   // UNIFIED: Use unified timeline scroll system
   const {
     timelineStart,
@@ -102,27 +97,18 @@ export function UnifiedCalendar({
   const stableDataRange = useMemo(() => ({
     start: timelineStart,
     end: timelineEnd
-  }), [timelineStart, timelineEnd]);
+  }), [timelineStart?.getTime(), timelineEnd?.getTime()]); // Use timestamps for more stable dependencies
 
-  // PERFORMANCE FIX: Use enabled flag to control data fetching
-  const baseConfig = {
+  // SINGLE HUB FOR EVERYTHING
+  const currentHub = useTimelineHub({
+    resourceType,
     periodStart: stableDataRange.start,
     periodEnd: stableDataRange.end,
     selectedOwner,
     visibleTimelineStart: timelineStart,
     visibleTimelineEnd: timelineEnd,
-  };
-
-  // Only fetch data for the active resource type
-  const equipmentHubConfig = { ...baseConfig, enabled: resourceType === 'equipment' };
-  const crewHubConfig = { ...baseConfig, enabled: resourceType === 'crew' };
-
-  // Always call both hooks (Rules of Hooks) but only fetch data for active type
-  const equipmentHub = useEquipmentHub(equipmentHubConfig);
-  const crewHub = useCrewHub(crewHubConfig);
-  
-  // Get the current active hub
-  const currentHub = resourceType === 'equipment' ? equipmentHub : crewHub;
+    enabled: true
+  });
   
   const {
     equipmentGroups,
@@ -151,6 +137,14 @@ export function UnifiedCalendar({
 
   // REMOVED: Performance metrics logging to reduce console spam
 
+  // Delay stale state cleanup to avoid interfering with initial scroll
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      clearStaleStates();
+    }, 5000); // Wait 5 seconds after mount before starting cleanup
+    return () => clearTimeout(timer);
+  }, []);
+
   // Handle scrolling to target item when targetScrollItem is provided
   useEffect(() => {
     if (targetScrollItem && targetScrollItem.type === resourceType && equipmentGroups.length > 0) {
@@ -165,10 +159,10 @@ export function UnifiedCalendar({
               inline: 'nearest'
             });
           } else {
-            console.warn(`Could not find ${targetScrollItem.type} with ID: ${targetScrollItem.id}`);
+            // TODO: Implement proper error handling for scroll target not found
           }
         } catch (error) {
-          console.error('Error scrolling to target item:', error);
+          // TODO: Implement proper error handling for scroll errors
         }
       }, 100);
       
@@ -179,16 +173,21 @@ export function UnifiedCalendar({
   // Simple loading state
   const shouldShowLoading = !isEquipmentReady;
   
-  // Cleanup stale states periodically
+  // Cleanup stale states periodically (but delay initial cleanup to avoid scroll artifacts)
   const clearStaleStatesRef = useRef(clearStaleStates);
   clearStaleStatesRef.current = clearStaleStates;
   
   useEffect(() => {
-    const interval = setInterval(() => {
-      clearStaleStatesRef.current();
-    }, PERFORMANCE.CACHE_CLEANUP_INTERVAL);
+    // Delay first cleanup to avoid interfering with initial load and scroll positioning
+    const initialDelay = setTimeout(() => {
+      const interval = setInterval(() => {
+        clearStaleStatesRef.current();
+      }, PERFORMANCE.CACHE_CLEANUP_INTERVAL);
 
-    return () => clearInterval(interval);
+      return () => clearInterval(interval);
+    }, 10000); // Wait 10 seconds before starting cleanup cycle
+
+    return () => clearTimeout(initialDelay);
   }, []);
 
   // Note: formattedDates and monthSections are now provided by useSharedTimeline
@@ -212,8 +211,12 @@ export function UnifiedCalendar({
     };
   }, [getBookingForEquipment, resourceType]);
 
-  // Optimized availability calculation
-  const dateStrings = useMemo(() => formattedDates.map(d => d.dateStr), [formattedDates]);
+  // Optimized availability calculation - only depends on date range, not selection
+  const dateStrings = useMemo(() => formattedDates.map(d => d.dateStr), [
+    formattedDates.length, 
+    formattedDates[0]?.dateStr, 
+    formattedDates[formattedDates.length - 1]?.dateStr
+  ]); // Only recalculate when date range changes, not when selection changes
   
   const getAvailableCapacityForResource = useCallback((resourceId: string) => {
     return getLowestAvailable(resourceId, dateStrings);
@@ -251,10 +254,7 @@ export function UnifiedCalendar({
       getProjectQuantityForDate={getProjectQuantityForDate}
       getCrewRoleForDate={getCrewRoleForDate}
       equipmentRowsRef={equipmentRowsRef}
-      handleTimelineScroll={(e) => {
-        // Handle scroll only - unified system manages sync
-        handleScroll(e);
-      }}
+      handleTimelineScroll={handleScroll}
       handleTimelineMouseMove={handleMouseMove}
       handleMouseDown={handleMouseDown}
       handleMouseUp={handleMouseUp}

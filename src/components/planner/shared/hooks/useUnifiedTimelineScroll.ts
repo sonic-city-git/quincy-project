@@ -24,14 +24,18 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // TIMELINE STATE
   // ========================
   
-  const [timelineStart, setTimelineStart] = useState(() => {
-    const today = new Date();
-    return addDays(today, -20);
-  });
-  const [timelineEnd, setTimelineEnd] = useState(() => {
-    const today = new Date();
-    return addDays(today, 20);
-  });
+  // Use a single "today" reference
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
+
+  // Load asymmetric date range to match 25/75 viewport split
+  const [timelineStart, setTimelineStart] = useState(() => addDays(today, -10));  // 10 days in the past
+  const [timelineEnd, setTimelineEnd] = useState(() => addDays(today, 30));   // 30 days into the future
+
+
 
   // ========================
   // CENTRAL SCROLL STATE
@@ -70,12 +74,15 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // ========================
   
   const timelineDates = useMemo(() => {
+    // Remove console logs for better performance
+    // console.log('Calculating timeline dates', { timelineStart, timelineEnd });
     const dates = [];
     let currentDate = new Date(timelineStart);
     while (currentDate <= timelineEnd) {
       dates.push(new Date(currentDate));
       currentDate = addDays(currentDate, 1);
     }
+    // console.log('Timeline dates calculated', { length: dates.length });
     return dates;
   }, [timelineStart, timelineEnd]);
 
@@ -103,7 +110,7 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
     
     // Only log for important scroll operations
     if (source === 'date' || source === 'navigation') {
-      console.log('⚡ SCROLL:', source, smooth ? 'physics-smooth' : 'instant', 'to', clampedPosition);
+      // Removed console.log for production performance
     }
     
     if (smooth) {
@@ -201,7 +208,7 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
             scrollingTimeoutRef.current = null;
           }
           
-          console.log('✅ CENTERED WITH SMOOTH PHYSICS');
+          // Removed console.log for production performance
         }
       };
       
@@ -228,6 +235,13 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // ========================
   
   const scrollToDate = useCallback((targetDate: Date) => {
+    // Remove debug logging for better performance
+    // console.log('scrollToDate called', {
+    //   targetDate,
+    //   timelineDatesLength: timelineDates.length,
+    //   hasRef: !!equipmentRowsRef.current,
+    //   width: equipmentRowsRef.current?.clientWidth
+    // });
     if (!timelineDates.length || !equipmentRowsRef.current) return;
     
     const containerWidth = equipmentRowsRef.current.clientWidth;
@@ -244,27 +258,79 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
     });
     
     if (targetIndex === -1) {
-      console.log('🔍 scrollToDate: Date not found in timeline', target.toISOString().split('T')[0]);
+      // Date not found in timeline - expanding timeline range
       return;
     }
     
-    // Calculate centered scroll position
+    // Position the date at 25% of the viewport (leaving 75% for future dates)
     const dayWidth = LAYOUT.DAY_CELL_WIDTH;
     const targetPosition = targetIndex * dayWidth;
-    const centeredPosition = targetPosition - (containerWidth / 2) + (dayWidth / 2);
+    const quarterWidth = containerWidth * 0.25;
+    const scrollPosition = targetPosition - quarterWidth + (dayWidth / 2);
     
-    // Debug: Only log on date scroll attempts
+    // Centering date in timeline view
     if (targetIndex >= 0) {
-      console.log('📅 CENTERING DATE:', target.toISOString().split('T')[0], 'at position', centeredPosition);
+      // Removed console.log for production performance
     }
     
-    scrollTo(centeredPosition, { smooth: true, source: 'date' });
+    scrollTo(scrollPosition, { smooth: true, source: 'date' });
   }, [timelineDates, scrollTo]);
+
+  // ========================
+  // INITIAL CENTERING ON SELECTED DATE
+  // ========================
+  
+  // Track initial centering
+  const initialCenteringDone = useRef(false);
+
+  // Center on selectedDate when timeline and ref are ready
+  const selectedDateRef = useRef(selectedDate);
+  selectedDateRef.current = selectedDate;
+
+  useEffect(() => {
+    if (!initialCenteringDone.current && timelineDates.length > 0 && equipmentRowsRef.current) {
+      // Wait for next frame to ensure DOM is ready
+      requestAnimationFrame(() => {
+        if (equipmentRowsRef.current?.clientWidth) {
+          initialCenteringDone.current = true;
+          scrollToDate(selectedDateRef.current);
+        }
+      });
+    }
+  }, [timelineDates.length, equipmentRowsRef.current]); // Remove selectedDate dependency
+
 
   const dragScroll = useCallback((deltaX: number) => {
     const newPosition = dragStart.scrollLeft - deltaX;
-    scrollTo(newPosition, { smooth: false, source: 'drag' });
-  }, [dragStart.scrollLeft, scrollTo]);
+    
+    // Cancel any pending animation frame
+    if (scrollAnimationFrameRef.current) {
+      cancelAnimationFrame(scrollAnimationFrameRef.current);
+    }
+    
+    // Update ref immediately (no re-render during drag)
+    scrollPositionRef.current = newPosition;
+    
+    // Use RAF for smooth synchronization
+    scrollAnimationFrameRef.current = requestAnimationFrame(() => {
+      // Update both containers
+      if (equipmentRowsRef.current) {
+        equipmentRowsRef.current.scrollLeft = newPosition;
+      }
+      if (stickyHeadersRef.current) {
+        stickyHeadersRef.current.scrollLeft = newPosition;
+      }
+      
+      // Only update React state occasionally during drag for performance
+      const now = performance.now();
+      if (now - lastScrollUpdateRef.current > 16) { // ~60fps max during drag
+        setScrollPosition(newPosition);
+        lastScrollUpdateRef.current = now;
+      }
+      
+      scrollAnimationFrameRef.current = null;
+    });
+  }, [dragStart.scrollLeft]);
 
   const navigate = useCallback((direction: 'prev' | 'next', amount: 'day' | 'week' | 'month') => {
     const dayWidth = LAYOUT.DAY_CELL_WIDTH;
@@ -328,6 +394,14 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // Debounced scroll handler for performance
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   
+  // Track the last scroll source to prevent loops
+  const lastScrollSourceRef = useRef<HTMLDivElement | null>(null);
+  const scrollAnimationFrameRef = useRef<number | null>(null);
+
+  // Add ref to track scroll position without triggering re-renders
+  const scrollPositionRef = useRef(0);
+  const lastScrollUpdateRef = useRef(0);
+
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;
     const { scrollLeft, scrollWidth, clientWidth } = element;
@@ -336,18 +410,46 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
     if (isScrollingRef.current || activeOperationRef.current) {
       return;
     }
-    
-    // Update position immediately for responsive feel
-    setScrollPosition(scrollLeft);
-    
-    // IMMEDIATE sync for smooth manual scrolling (no lag)
-    if (element === equipmentRowsRef.current && stickyHeadersRef.current) {
-      stickyHeadersRef.current.scrollLeft = scrollLeft;
-    } else if (element === stickyHeadersRef.current && equipmentRowsRef.current) {
-      equipmentRowsRef.current.scrollLeft = scrollLeft;
+
+    // Update ref immediately (no re-render)
+    scrollPositionRef.current = scrollLeft;
+
+    // Cancel any pending animation frame to prevent rapid updates
+    if (scrollAnimationFrameRef.current) {
+      cancelAnimationFrame(scrollAnimationFrameRef.current);
     }
     
-    // Debounce ONLY expensive operations (infinite scroll)
+    // Throttle React state updates to reduce re-renders
+    const now = performance.now();
+    const shouldUpdateState = now - lastScrollUpdateRef.current > 50; // Max 20fps for state updates
+    
+    // Only sync if this is a new scroll source
+    if (lastScrollSourceRef.current !== element) {
+      lastScrollSourceRef.current = element;
+      
+      // Use RAF for smooth synchronization
+      scrollAnimationFrameRef.current = requestAnimationFrame(() => {
+        // Only update the element that didn't trigger the scroll
+        if (stickyHeadersRef.current && element !== stickyHeadersRef.current) {
+          stickyHeadersRef.current.scrollLeft = scrollLeft;
+        }
+        if (equipmentRowsRef.current && element !== equipmentRowsRef.current) {
+          equipmentRowsRef.current.scrollLeft = scrollLeft;
+        }
+        
+        // Update React state only if enough time has passed (throttling)
+        if (shouldUpdateState) {
+          setScrollPosition(scrollLeft);
+          lastScrollUpdateRef.current = now;
+        }
+        
+        // Clear the scroll source after sync
+        lastScrollSourceRef.current = null;
+        scrollAnimationFrameRef.current = null;
+      });
+    }
+    
+    // Debounce infinite scroll detection
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
@@ -361,8 +463,8 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
         const direction = scrollLeft < FETCH_THRESHOLD ? 'start' : 'end';
         expandTimeline(direction);
       }
-    }, 200); // Only debounce infinite scroll
-  }, [expandTimeline]); // Removed isScrolling dependency since we use ref
+    }, 200);
+  }, [expandTimeline]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!equipmentRowsRef.current) return;
@@ -485,12 +587,19 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   
   useEffect(() => {
     return () => {
+      // Clear all timeouts and animation frames
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
       if (scrollingTimeoutRef.current) {
         clearTimeout(scrollingTimeoutRef.current);
       }
+      if (scrollAnimationFrameRef.current) {
+        cancelAnimationFrame(scrollAnimationFrameRef.current);
+      }
+      // Reset refs
+      lastScrollSourceRef.current = null;
+      scrollAnimationFrameRef.current = null;
     };
   }, []);
 
