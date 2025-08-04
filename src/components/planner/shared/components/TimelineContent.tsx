@@ -325,12 +325,12 @@ const TimelineContentComponent = ({
         {/* Middle Column - Timeline */}
         <div 
           ref={equipmentRowsRef}
-          className={`flex-1 ${isWithinScrollContainer ? '' : 'overflow-x-auto scrollbar-hide'} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          className={`flex-1 overflow-x-auto scrollbar-hide ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           onScroll={handleTimelineScroll}
-          onMouseDown={isWithinScrollContainer ? undefined : handleMouseDown}
-          onMouseMove={isWithinScrollContainer ? undefined : handleTimelineMouseMove}
-          onMouseUp={isWithinScrollContainer ? undefined : handleMouseUp}
-          onMouseLeave={isWithinScrollContainer ? undefined : handleMouseLeave}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleTimelineMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseLeave}
         >
           <div style={{ minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px` }}>
             {filteredEquipmentGroups.map((group) => (

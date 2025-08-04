@@ -74,14 +74,15 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // ========================
   
   const timelineDates = useMemo(() => {
-    console.log('Calculating timeline dates', { timelineStart, timelineEnd });
+    // Remove console logs for better performance
+    // console.log('Calculating timeline dates', { timelineStart, timelineEnd });
     const dates = [];
     let currentDate = new Date(timelineStart);
     while (currentDate <= timelineEnd) {
       dates.push(new Date(currentDate));
       currentDate = addDays(currentDate, 1);
     }
-    console.log('Timeline dates calculated', { length: dates.length });
+    // console.log('Timeline dates calculated', { length: dates.length });
     return dates;
   }, [timelineStart, timelineEnd]);
 
@@ -234,12 +235,13 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // ========================
   
   const scrollToDate = useCallback((targetDate: Date) => {
-    console.log('scrollToDate called', {
-      targetDate,
-      timelineDatesLength: timelineDates.length,
-      hasRef: !!equipmentRowsRef.current,
-      width: equipmentRowsRef.current?.clientWidth
-    });
+    // Remove debug logging for better performance
+    // console.log('scrollToDate called', {
+    //   targetDate,
+    //   timelineDatesLength: timelineDates.length,
+    //   hasRef: !!equipmentRowsRef.current,
+    //   width: equipmentRowsRef.current?.clientWidth
+    // });
     if (!timelineDates.length || !equipmentRowsRef.current) return;
     
     const containerWidth = equipmentRowsRef.current.clientWidth;
@@ -282,17 +284,20 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   const initialCenteringDone = useRef(false);
 
   // Center on selectedDate when timeline and ref are ready
+  const selectedDateRef = useRef(selectedDate);
+  selectedDateRef.current = selectedDate;
+
   useEffect(() => {
     if (!initialCenteringDone.current && timelineDates.length > 0 && equipmentRowsRef.current) {
       // Wait for next frame to ensure DOM is ready
       requestAnimationFrame(() => {
         if (equipmentRowsRef.current?.clientWidth) {
           initialCenteringDone.current = true;
-          scrollToDate(selectedDate);
+          scrollToDate(selectedDateRef.current);
         }
       });
     }
-  }, [timelineDates.length, equipmentRowsRef.current]);
+  }, [timelineDates.length, equipmentRowsRef.current]); // Remove selectedDate dependency
 
 
   const dragScroll = useCallback((deltaX: number) => {
@@ -303,8 +308,8 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
       cancelAnimationFrame(scrollAnimationFrameRef.current);
     }
     
-    // Update position state immediately
-    setScrollPosition(newPosition);
+    // Update ref immediately (no re-render during drag)
+    scrollPositionRef.current = newPosition;
     
     // Use RAF for smooth synchronization
     scrollAnimationFrameRef.current = requestAnimationFrame(() => {
@@ -314,6 +319,13 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
       }
       if (stickyHeadersRef.current) {
         stickyHeadersRef.current.scrollLeft = newPosition;
+      }
+      
+      // Only update React state occasionally during drag for performance
+      const now = performance.now();
+      if (now - lastScrollUpdateRef.current > 16) { // ~60fps max during drag
+        setScrollPosition(newPosition);
+        lastScrollUpdateRef.current = now;
       }
       
       scrollAnimationFrameRef.current = null;
@@ -386,6 +398,10 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   const lastScrollSourceRef = useRef<HTMLDivElement | null>(null);
   const scrollAnimationFrameRef = useRef<number | null>(null);
 
+  // Add ref to track scroll position without triggering re-renders
+  const scrollPositionRef = useRef(0);
+  const lastScrollUpdateRef = useRef(0);
+
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;
     const { scrollLeft, scrollWidth, clientWidth } = element;
@@ -395,13 +411,17 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
       return;
     }
 
+    // Update ref immediately (no re-render)
+    scrollPositionRef.current = scrollLeft;
+
     // Cancel any pending animation frame to prevent rapid updates
     if (scrollAnimationFrameRef.current) {
       cancelAnimationFrame(scrollAnimationFrameRef.current);
     }
     
-    // Update scroll position state immediately for the current element
-    setScrollPosition(scrollLeft);
+    // Throttle React state updates to reduce re-renders
+    const now = performance.now();
+    const shouldUpdateState = now - lastScrollUpdateRef.current > 50; // Max 20fps for state updates
     
     // Only sync if this is a new scroll source
     if (lastScrollSourceRef.current !== element) {
@@ -415,6 +435,12 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
         }
         if (equipmentRowsRef.current && element !== equipmentRowsRef.current) {
           equipmentRowsRef.current.scrollLeft = scrollLeft;
+        }
+        
+        // Update React state only if enough time has passed (throttling)
+        if (shouldUpdateState) {
+          setScrollPosition(scrollLeft);
+          lastScrollUpdateRef.current = now;
         }
         
         // Clear the scroll source after sync

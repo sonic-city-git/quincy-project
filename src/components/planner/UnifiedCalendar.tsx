@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Skeleton } from "../ui/skeleton";
 
-import { useEquipmentHub } from './shared/hooks/useEquipmentHub';
-import { useCrewHub } from './shared/hooks/useCrewHub';
+// Option to test unified system
+import { useTimelineHub } from './shared/hooks/useTimelineHub';
 
 
 import { LAYOUT, PERFORMANCE } from './shared/constants';
@@ -64,7 +64,8 @@ export function UnifiedCalendar({
   const loadStartTime = useRef(performance.now());
   const renderStartTime = useRef(performance.now());
   
-  console.log('UnifiedCalendar render', { selectedDate: selectedDate.toISOString() });
+  // Remove excessive logging for better performance
+  // console.log('UnifiedCalendar render', { selectedDate: selectedDate.toISOString() });
 
   // UNIFIED: Use unified timeline scroll system
   const {
@@ -96,27 +97,18 @@ export function UnifiedCalendar({
   const stableDataRange = useMemo(() => ({
     start: timelineStart,
     end: timelineEnd
-  }), [timelineStart, timelineEnd]);
+  }), [timelineStart?.getTime(), timelineEnd?.getTime()]); // Use timestamps for more stable dependencies
 
-  // PERFORMANCE FIX: Use enabled flag to control data fetching
-  const baseConfig = {
+  // SINGLE HUB FOR EVERYTHING
+  const currentHub = useTimelineHub({
+    resourceType,
     periodStart: stableDataRange.start,
     periodEnd: stableDataRange.end,
     selectedOwner,
     visibleTimelineStart: timelineStart,
     visibleTimelineEnd: timelineEnd,
-  };
-
-  // Only fetch data for the active resource type
-  const equipmentHubConfig = { ...baseConfig, enabled: resourceType === 'equipment' };
-  const crewHubConfig = { ...baseConfig, enabled: resourceType === 'crew' };
-
-  // Always call both hooks (Rules of Hooks) but only fetch data for active type
-  const equipmentHub = useEquipmentHub(equipmentHubConfig);
-  const crewHub = useCrewHub(crewHubConfig);
-  
-  // Get the current active hub
-  const currentHub = resourceType === 'equipment' ? equipmentHub : crewHub;
+    enabled: true
+  });
   
   const {
     equipmentGroups,
@@ -219,8 +211,12 @@ export function UnifiedCalendar({
     };
   }, [getBookingForEquipment, resourceType]);
 
-  // Optimized availability calculation
-  const dateStrings = useMemo(() => formattedDates.map(d => d.dateStr), [formattedDates]);
+  // Optimized availability calculation - only depends on date range, not selection
+  const dateStrings = useMemo(() => formattedDates.map(d => d.dateStr), [
+    formattedDates.length, 
+    formattedDates[0]?.dateStr, 
+    formattedDates[formattedDates.length - 1]?.dateStr
+  ]); // Only recalculate when date range changes, not when selection changes
   
   const getAvailableCapacityForResource = useCallback((resourceId: string) => {
     return getLowestAvailable(resourceId, dateStrings);
@@ -258,10 +254,7 @@ export function UnifiedCalendar({
       getProjectQuantityForDate={getProjectQuantityForDate}
       getCrewRoleForDate={getCrewRoleForDate}
       equipmentRowsRef={equipmentRowsRef}
-      handleTimelineScroll={(e) => {
-        // Handle scroll only - unified system manages sync
-        handleScroll(e);
-      }}
+      handleTimelineScroll={handleScroll}
       handleTimelineMouseMove={handleMouseMove}
       handleMouseDown={handleMouseDown}
       handleMouseUp={handleMouseUp}
