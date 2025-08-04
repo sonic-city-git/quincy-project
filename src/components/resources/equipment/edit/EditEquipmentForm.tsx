@@ -7,7 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Package, Plus, X } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { Folder } from "@/integrations/supabase/types/folder";
-import { sortFolders } from "@/utils/folderSort";
+import { sortEquipmentFolders } from "@/utils/equipmentFolderSort";
 
 interface EditEquipmentFormProps {
   form: UseFormReturn<any>;
@@ -114,7 +114,7 @@ export function EditEquipmentForm({
                     </FormControl>
                     <SelectContent>
                       <ScrollArea className="h-[200px]">
-                        {sortFolders(folders).map((folder) => (
+                        {sortEquipmentFolders(folders).map((folder) => (
                           <SelectItem 
                             key={folder.id} 
                             value={folder.id}

@@ -1,6 +1,7 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Equipment } from "@/integrations/supabase/types/equipment";
 import { formatPrice } from "@/utils/priceFormatters";
+import { COMPONENT_CLASSES, cn } from "@/design-system";
 
 interface EquipmentTableRowProps {
   item: Equipment;
@@ -11,35 +12,43 @@ interface EquipmentTableRowProps {
 
 export function EquipmentTableRow({ item, isSelected, isHighlighted, onSelect }: EquipmentTableRowProps) {
   return (
-    <TableRow 
+    <div 
       data-equipment-id={item.id}
-      className={`group hover:bg-zinc-800/50 cursor-pointer select-none flex flex-col md:table-row transition-colors duration-300 ${
-        isSelected ? 'bg-zinc-800/75' : ''
-      } ${
-        isHighlighted ? 'bg-blue-500/20 border border-blue-500/50' : ''
-      }`}
+      className={cn(
+        "grid grid-cols-[2fr_120px_100px] sm:grid-cols-[2fr_120px_80px_100px] gap-3 sm:gap-4 p-3 sm:p-4 cursor-pointer select-none transition-colors duration-300 group",
+        COMPONENT_CLASSES.table.row,
+        isSelected && "bg-muted/75",
+        isHighlighted && "bg-primary/20 border border-primary/50"
+      )}
       onDoubleClick={onSelect}
     >
-      <TableCell className="w-full md:w-[300px]">
+      {/* Name */}
+      <div className="flex flex-col space-y-1 min-w-0">
         <div className="text-sm font-medium truncate">
           {item.name}
         </div>
-      </TableCell>
-      <TableCell className="w-full md:w-[120px]">
-        <span className="text-sm text-muted-foreground truncate block">
+      </div>
+
+      {/* Code */}
+      <div className="flex items-center">
+        <span className="text-sm text-muted-foreground truncate">
           {item.code || '-'}
         </span>
-      </TableCell>
-      <TableCell className="w-[80px] text-right hidden md:table-cell">
+      </div>
+
+      {/* Stock - Hidden on mobile */}
+      <div className="hidden sm:flex items-center justify-end">
         <span className="text-sm text-muted-foreground">
           {item.stock || 0}
         </span>
-      </TableCell>
-      <TableCell className="w-[100px] text-right hidden md:table-cell">
+      </div>
+
+      {/* Price - Always visible, right aligned */}
+      <div className="flex items-center justify-end">
         <span className="text-sm text-muted-foreground">
           {item.rental_price ? formatPrice(item.rental_price) : '-'}
         </span>
-      </TableCell>
-    </TableRow>
+      </div>
+    </div>
   );
 }

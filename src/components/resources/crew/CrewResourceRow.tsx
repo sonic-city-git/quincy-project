@@ -52,7 +52,7 @@ export function CrewResourceRow({
       <TableCell>
         <div className="flex gap-1 flex-wrap">
           {resource.roles.map((role) => (
-            <Badge key={role} variant="outline">
+            <Badge key={role} className={getRoleBadgeClasses(role)}>
               {role}
             </Badge>
           ))}

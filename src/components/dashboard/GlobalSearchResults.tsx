@@ -123,10 +123,7 @@ function SearchResultItem({ result, onItemClick, onWarningClick, onAvailabilityC
             {result.roles.map((role, index) => (
               <Badge 
                 key={index} 
-                className="text-xs py-1 px-2 text-white border-0"
-                style={{
-                  backgroundColor: role.color
-                }}
+                className={getRoleBadgeClasses(role.name)}
               >
                 {role.name}
               </Badge>

@@ -1,10 +1,11 @@
-import { Package, Users, Mic, Volume2, Lightbulb, Video, Cable, Building, Settings, Plus } from "lucide-react";
+import { Package, Users, Mic, Volume2, Lightbulb, Video, Cable, Settings, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 import { useFolders } from "@/hooks/useFolders";
 import { FOLDER_ORDER } from "@/types/equipment";
 import { SectionHeader } from "@/components/shared/SectionHeader";
+import { COMPONENT_CLASSES, cn, CSS_VARS } from "@/design-system";
 import type { Tab } from "@/components/shared/SectionHeader";
 
 // Filter types
@@ -34,6 +35,7 @@ export function ResourcesHeader({
   const title = isCrewTab ? 'Crew Management' : 'Equipment Management';
   const icon = isCrewTab ? Users : Package;
   const IconComponent = icon;
+  // Use design system colors: warning (orange) for crew, success (green) for equipment
   const iconColor = isCrewTab ? 'text-orange-500' : 'text-green-500';
 
   // Dynamic equipment types from database, ordered by FOLDER_ORDER
@@ -54,7 +56,7 @@ export function ResourcesHeader({
   const { roles: crewRolesData, isLoading: crewRolesLoading } = useCrewRoles();
   const crewRoles = crewRolesData?.map(role => role.name) || [];
 
-  // Tab configuration
+  // Tab configuration - using design system colors
   const tabs: Tab<'equipment' | 'crew'>[] = [
     { value: 'equipment', label: 'Equipment', icon: Package, color: 'text-green-500' },
     { value: 'crew', label: 'Crew', icon: Users, color: 'text-orange-500' }
@@ -117,7 +119,9 @@ export function ResourcesHeader({
         options: tabs
       }}
       search={{
-        placeholder: `Search ${isCrewTab ? 'crew' : 'equipment'}...`,
+        placeholder: window.innerWidth < 640 
+          ? "Search..." 
+          : `Search ${isCrewTab ? 'crew' : 'equipment'}...`,
         value: filters.search,
         onChange: (value) => updateFilters({ search: value })
       }}
@@ -129,7 +133,7 @@ export function ResourcesHeader({
           <Button
             onClick={onAddClick}
             size="sm"
-            className="h-7 sm:h-8 px-1.5 sm:px-2 md:px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap"
+            className={cn("h-7 sm:h-8 px-1.5 sm:px-2 md:px-3 text-xs whitespace-nowrap", COMPONENT_CLASSES.button.primary)}
             title={`Add ${isCrewTab ? 'Member' : 'Equipment'}`}
           >
             <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
@@ -144,9 +148,11 @@ export function ResourcesHeader({
           // Crew Role Filter
           <Select value={filters.crewRole || 'all'} onValueChange={(value) => updateFilters({ crewRole: value })}>
             <SelectTrigger 
-              className={`w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors ${
-                filters.crewRole && filters.crewRole !== 'all' ? 'ring-2 ring-orange-500/50 border-orange-500/50 bg-orange-50/50' : ''
-              }`}
+              className={cn(
+                "w-auto min-w-[140px] h-8 text-xs",
+                COMPONENT_CLASSES.input.filter,
+                filters.crewRole && filters.crewRole !== 'all' && "ring-2 ring-primary/50 border-primary/50"
+              )}
             >
               <div className="flex items-center gap-2">
                 {filters.crewRole && filters.crewRole !== 'all' ? (
@@ -192,9 +198,11 @@ export function ResourcesHeader({
           // Equipment Type Filter
           <Select value={filters.equipmentType || 'all'} onValueChange={(value) => updateFilters({ equipmentType: value })}>
             <SelectTrigger 
-              className={`w-auto min-w-[140px] h-8 text-xs bg-muted/50 border-border/50 hover:bg-muted transition-colors ${
-                filters.equipmentType && filters.equipmentType !== 'all' ? 'ring-2 ring-green-500/50 border-green-500/50 bg-green-50/50' : ''
-              }`}
+              className={cn(
+                "w-auto min-w-[140px] h-8 text-xs",
+                COMPONENT_CLASSES.input.filter,
+                filters.equipmentType && filters.equipmentType !== 'all' && "ring-2 ring-primary/50 border-primary/50"
+              )}
             >
               <div className="flex items-center gap-2">
                 {filters.equipmentType && filters.equipmentType !== 'all' ? (

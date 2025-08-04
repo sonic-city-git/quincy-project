@@ -8,6 +8,7 @@ import { sortRoles } from "@/utils/roleUtils";
 import { UseFormReturn } from "react-hook-form";
 import { Folder } from "@/types/folders";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getRoleBadgeStyle } from "@/design-system";
 
 interface EditMemberFormProps {
   form: UseFormReturn<any>;
@@ -109,7 +110,7 @@ export function EditMemberForm({
           render={() => (
             <FormItem>
               <FormLabel>Roles</FormLabel>
-              <div className="grid grid-cols-2 gap-4 border rounded-lg p-4 bg-zinc-900/50">
+              <div className="grid grid-cols-2 gap-4 border rounded-lg p-4 bg-muted/50">
                 {rolesLoading ? (
                   <div className="col-span-2 flex items-center justify-center py-4">
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -123,7 +124,7 @@ export function EditMemberForm({
                     <div 
                       key={role.id} 
                       className="flex items-center space-x-2 rounded p-2 transition-colors"
-                      style={{ backgroundColor: role.color, opacity: 1 }}
+                      style={getRoleBadgeStyle(role.name)}
                     >
                       <Checkbox
                         id={role.id}

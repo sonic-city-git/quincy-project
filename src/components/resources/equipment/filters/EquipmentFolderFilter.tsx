@@ -104,7 +104,7 @@ export function EquipmentFolderFilter({
         <Button 
           variant="outline" 
           size="default" 
-          className="gap-2 bg-zinc-800/50 border-zinc-700 text-muted-foreground hover:text-foreground transition-colors"
+          className="gap-2 bg-muted/50 border-border text-muted-foreground hover:text-foreground transition-colors"
         >
           <Filter className="h-4 w-4" />
           Filter

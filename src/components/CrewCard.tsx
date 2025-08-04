@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Phone, Folder } from "lucide-react";
 import { CrewRole } from "@/hooks/useCrewRoles";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { getRoleBadgeStyle } from "@/design-system";
 
 interface CrewCardProps {
   name: string;
@@ -61,8 +62,8 @@ export function CrewCard({ name, email, phone, folderName, roles = [], avatar_ur
               {roles.map((role) => (
                 <div
                   key={role.id}
-                  className="text-xs px-2 py-1 rounded text-white"
-                  style={{ backgroundColor: role.color }}
+                  className="text-xs px-2 py-1 rounded"
+                  style={getRoleBadgeStyle(role.name)}
                 >
                   {role.name}
                 </div>
