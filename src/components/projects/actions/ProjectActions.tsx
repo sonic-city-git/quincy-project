@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { Edit, Plus } from "lucide-react";
-import { AddProjectDialog } from "./AddProjectDialog";
+import { AddProjectDialog } from "../dialogs/AddProjectDialog";
 import { useProjects } from "@/hooks/useProjects";
-import { useCommonProjectTabActions } from "./shared/hooks/useProjectTabActions";
+import { useCommonProjectTabActions } from "../shared/hooks/useProjectTabActions";
 
 interface ProjectActionsProps {
   selectedItems: string[];

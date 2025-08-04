@@ -7,7 +7,7 @@ import { useFilterState } from "@/hooks/useFilterState";
 // Import the new unified header and table components
 import { ProjectsHeader, ProjectFilters } from "@/components/projects/ProjectsHeader";
 import { ProjectsTable } from "@/components/projects/tables/ProjectsTable";
-import { AddProjectDialog } from "@/components/projects/AddProjectDialog";
+import { AddProjectDialog } from "@/components/projects/dialogs/AddProjectDialog";
 
 const ProjectList = () => {
   // Use consolidated tab persistence hook

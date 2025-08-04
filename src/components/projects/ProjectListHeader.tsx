@@ -3,7 +3,7 @@ import { ProjectOwnerFilter } from "./filters/ProjectOwnerFilter";
 import { ProjectFilterClear } from "./filters/ProjectFilterClear";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import { AddProjectDialog } from "./AddProjectDialog";
+import { AddProjectDialog } from "./dialogs/AddProjectDialog";
 import { useCommonProjectTabActions } from "./shared/hooks/useProjectTabActions";
 
 interface ProjectListHeaderProps {

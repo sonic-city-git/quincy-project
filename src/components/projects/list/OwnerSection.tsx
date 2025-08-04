@@ -1,5 +1,5 @@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ProjectTable } from "../ProjectTable";
+import { ProjectTable } from "../tables/ProjectTable";
 import { Project } from "@/types/projects";
 import { getInitials } from "@/utils/stringUtils";
 

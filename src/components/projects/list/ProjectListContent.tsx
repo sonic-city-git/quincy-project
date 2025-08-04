@@ -1,6 +1,6 @@
-import { ProjectTable } from "../ProjectTable";
+import { ProjectTable } from "../tables/ProjectTable";
 import { Table } from "@/components/ui/table";
-import { TableHeader } from "../TableHeader";
+import { TableHeader } from "../tables/TableHeader";
 import { OwnerSection } from "./OwnerSection";
 import { LoadingSpinner } from "@/components/resources/shared/LoadingSpinner";
 import { Project } from "@/types/projects";
