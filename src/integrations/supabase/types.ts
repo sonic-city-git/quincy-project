@@ -1081,6 +1081,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      sync_event_crew: {
+        Args: { p_event_id: string; p_project_id: string }
+        Returns: undefined
+      }
       sync_event_equipment: {
         Args: { p_event_id: string; p_project_id: string }
         Returns: undefined

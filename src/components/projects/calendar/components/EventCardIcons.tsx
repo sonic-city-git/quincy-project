@@ -56,7 +56,7 @@ export function EventCardIcons({
         
         let hasConflicts = false;
         for (const role of eventRoles) {
-          const conflictResult = await checkCrewConflicts(role.crew_member_id, [event.date]);
+          const conflictResult = await checkCrewConflicts(role.crew_member_id, [event.date.toISOString().split('T')[0]]);
           
           // Filter out conflicts from the SAME event (not actual conflicts)
           const actualConflicts = conflictResult.conflictingEvents.filter(
@@ -148,7 +148,7 @@ export function EventCardIcons({
             eventId={event.id}
             projectId={event.project_id}
             hasProjectEquipment={hasProjectEquipment}
-            eventDate={event.date}
+            eventDate={event.date.toISOString().split('T')[0]}
           />
         )}
       </div>

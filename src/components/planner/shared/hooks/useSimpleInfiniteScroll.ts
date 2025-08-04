@@ -295,7 +295,7 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
     
     // Scroll state
     scrollPosition,
-    equipmentRowsRef: setEquipmentRowsRef, // Use callback ref for proper mounting detection
+    equipmentRowsRef, // Return the actual ref object
     stickyHeadersRef,
     
     // Functions
