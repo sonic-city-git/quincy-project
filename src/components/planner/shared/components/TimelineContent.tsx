@@ -41,6 +41,7 @@ interface TimelineContentProps {
   getProjectQuantityForDate: (projectName: string, equipmentId: string, dateStr: string) => any; // New: project quantity function
   getCrewRoleForDate?: (projectName: string, crewMemberId: string, dateStr: string) => any; // New: crew role function
   equipmentRowsRef: React.RefObject<HTMLDivElement>;
+  setEquipmentRowsRef?: (element: HTMLDivElement | null) => void;
   handleTimelineScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   handleTimelineMouseMove: (e: React.MouseEvent) => void;
   handleMouseDown: (e: React.MouseEvent) => void;
@@ -72,6 +73,7 @@ const TimelineContentComponent = ({
   getProjectQuantityForDate,
   getCrewRoleForDate,
   equipmentRowsRef,
+  setEquipmentRowsRef,
   handleTimelineScroll,
   handleTimelineMouseMove,
   handleMouseDown,
@@ -89,6 +91,18 @@ const TimelineContentComponent = ({
   visibleTimelineEnd,
   isWithinScrollContainer = false
 }: TimelineContentProps) => {
+  
+  // Combined ref callback to handle both ref object and callback
+  const combinedRef = (element: HTMLDivElement | null) => {
+    // Set the ref object
+    if (equipmentRowsRef.current !== element) {
+      equipmentRowsRef.current = element;
+    }
+    // Call the callback ref for container detection
+    if (setEquipmentRowsRef) {
+      setEquipmentRowsRef(element);
+    }
+  };
   
   // Memoize visible dates calculation for performance
   const visibleDates = useMemo(() => {
@@ -336,7 +350,7 @@ const TimelineContentComponent = ({
 
         {/* Middle Column - Timeline (only horizontal scroll, vertical handled by parent) */}
         <div 
-          ref={equipmentRowsRef}
+          ref={combinedRef}
           className={`flex-1 overflow-x-auto scrollbar-hide ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           onScroll={handleTimelineScroll}

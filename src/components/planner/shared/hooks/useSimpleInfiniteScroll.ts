@@ -59,6 +59,14 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
     }
   }, []);
   
+  // Alternative: Watch for container mounting via ref changes
+  useEffect(() => {
+    if (equipmentRowsRef.current?.clientWidth && !containerMounted) {
+      console.log('📦 Container detected via ref with width:', equipmentRowsRef.current.clientWidth);
+      setContainerMounted(true);
+    }
+  }, [equipmentRowsRef.current, containerMounted]);
+  
   // ========================
   // TIMELINE DATES
   // ========================
@@ -295,7 +303,8 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
     
     // Scroll state
     scrollPosition,
-    equipmentRowsRef: setEquipmentRowsRef, // Use callback ref for proper mounting detection
+    equipmentRowsRef, // Return the actual ref object  
+    setEquipmentRowsRef, // Also provide callback ref for flexibility
     stickyHeadersRef,
     
     // Functions
