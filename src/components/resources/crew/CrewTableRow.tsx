@@ -1,6 +1,6 @@
 import { TableCell, TableRow } from "@/components/ui/table";
 import { CrewMember } from "@/types/crew";
-import { Badge } from "../ui/badge";
+import { Badge } from "@/components/ui/badge";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 
 interface CrewTableRowProps {

@@ -6,11 +6,11 @@
 import { useState, useEffect } from "react";
 import { useCrew } from "@/hooks/useCrew";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
-import { CrewTable } from "../../crew/CrewTable";
-import { useCrewSort } from "../../crew/useCrewSort";
+import { CrewTable } from "../crew/CrewTable";
+import { useCrewSort } from "../crew/useCrewSort";
 import { Table, TableHeader } from "../../ui/table";
-import { CrewTableHeader } from "../../crew/CrewTableHeader";
-import { EditMemberDialog } from "../../crew/EditMemberDialog";
+import { CrewTableHeader } from "../crew/CrewTableHeader";
+import { EditMemberDialog } from "../crew/EditMemberDialog";
 import { ResourceFilters } from "../ResourcesHeader";
 import { useScrollToTarget } from "../shared/hooks/useScrollToTarget";
 import { LoadingSpinner } from "../shared/LoadingSpinner";

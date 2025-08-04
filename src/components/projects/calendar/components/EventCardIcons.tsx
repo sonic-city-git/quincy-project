@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { EquipmentIcon } from "./EquipmentIcon";
-import { CrewMemberSelectContent } from "@/components/crew/CrewMemberSelectContent";
+import { CrewMemberSelectContent } from "@/components/resources/crew/CrewMemberSelectContent";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCrew } from "@/hooks/useCrew";

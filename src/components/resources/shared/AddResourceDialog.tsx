@@ -8,8 +8,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ResourceType } from "../types/resource";
-import { AddMemberDialog } from "@/components/crew/AddMemberDialog";
-import { AddEquipmentDialog } from "@/components/equipment/AddEquipmentDialog";
+import { AddMemberDialog } from "@/components/resources/crew/AddMemberDialog";
+import { AddEquipmentDialog } from "@/components/resources/equipment/AddEquipmentDialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 

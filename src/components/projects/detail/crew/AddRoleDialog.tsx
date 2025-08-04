@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCrew } from "@/hooks/useCrew";
-import { useCrewSort } from "@/components/crew/useCrewSort";
+import { useCrewSort } from "@/components/resources/crew/useCrewSort";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQueryClient } from "@tanstack/react-query";
 import { SONIC_CITY_FOLDER_ID } from "@/constants/organizations";

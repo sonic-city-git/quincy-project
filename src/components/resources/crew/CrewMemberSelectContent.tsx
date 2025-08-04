@@ -2,7 +2,7 @@ import { SelectContent, SelectItem } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CrewMember } from "@/types/crew";
-import { useCrewSort } from "@/components/crew/useCrewSort";
+import { useCrewSort } from "@/components/resources/crew/useCrewSort";
 
 interface CrewMemberSelectContentProps {
   crew: CrewMember[];
