@@ -62,7 +62,7 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
 
   return (
     <Card 
-      className={`relative p-1.5 transition-colors border-zinc-800/50 hover:bg-zinc-800/50 bg-zinc-800/50 group ${
+              className={`relative p-1.5 transition-colors border-border/50 hover:bg-muted/50 bg-muted/50 group ${
         isRemoving ? 'opacity-50' : ''
       }`}
       draggable
@@ -74,7 +74,7 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
             type="number"
             value={item.quantity}
             onChange={(e) => handleQuantityChange(e.target.value)}
-            className="w-10 h-7 bg-zinc-900/50 border-zinc-700 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-center"
+            className="w-10 h-7 bg-background border-border [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-center"
             min={1}
             disabled={isUpdating}
           />

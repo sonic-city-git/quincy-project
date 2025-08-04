@@ -156,7 +156,7 @@ export function ProjectRoleList({ projectId }: ProjectRoleListProps) {
       </div>
 
       {sortedRoles.map((role) => (
-        <Card key={role.id} className="p-4 bg-zinc-900/50">
+        <Card key={role.id} className="p-4 bg-muted/50">
           <div className="grid grid-cols-[200px_1fr_48px] gap-4 items-center">
             <span 
               className="inline-flex items-center justify-center w-32 px-3 py-1.5 rounded-md text-sm font-medium"

@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
-import { useDialogState } from "@/components/shared/dialogs/useDialogState";
+import { FormDialog } from "@/components/shared/dialogs/FormDialog";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -15,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { sortRoles } from "@/utils/roleUtils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getRoleBadgeStyle } from "@/design-system";
+import { getRoleBadgeStyle, FORM_PATTERNS } from "@/design-system";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -33,21 +32,26 @@ interface AddMemberDialogProps {
 }
 
 export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOpenChange }: AddMemberDialogProps = {}) {
-  // Use consolidated dialog state management
-  const { open, setOpen } = useDialogState({ 
-    open: externalOpen, 
-    onOpenChange: externalOnOpenChange 
-  });
   const { mutate: addMember, isPending } = useAddMember();
   const { folders, loading: foldersLoading } = useFolders();
   const { roles, isLoading: rolesLoading, refetch: refetchRoles } = useCrewRoles();
+  
+  // Internal state for when dialog is not externally controlled
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isExternallyControlled = externalOpen !== undefined;
+  const open = isExternallyControlled ? externalOpen : internalOpen;
 
   // Refetch roles when dialog opens
   const handleOpenChange = (newOpen: boolean) => {
     if (newOpen) {
       refetchRoles();
     }
-    setOpen(newOpen);
+    
+    if (isExternallyControlled && externalOnOpenChange) {
+      externalOnOpenChange(newOpen);
+    } else {
+      setInternalOpen(newOpen);
+    }
   };
 
   const form = useForm<FormData>({
@@ -72,7 +76,7 @@ export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOp
     
     addMember(memberData, {
       onSuccess: () => {
-        setOpen(false);
+        handleOpenChange(false);
         form.reset();
         toast.success("Crew member added successfully");
       },
@@ -85,28 +89,24 @@ export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOp
 
   const sortedRoles = sortRoles(roles);
 
-  // Show trigger button only when not externally controlled
-  const showTrigger = externalOpen === undefined;
-
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
-      {showTrigger && (
-        <DialogTrigger asChild>
-          <Button className="gap-2">
-            <UserPlus className="h-4 w-4" />
-            Add Member
-          </Button>
-        </DialogTrigger>
+    <>
+      {!isExternallyControlled && (
+        <Button className="gap-2" onClick={() => handleOpenChange(true)}>
+          <UserPlus className="h-4 w-4" />
+          Add Member
+        </Button>
       )}
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add New Crew Member</DialogTitle>
-          <DialogDescription>
-            Fill in the details below to add a new crew member to your team.
-          </DialogDescription>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      
+      <FormDialog
+        open={open}
+        onOpenChange={handleOpenChange}
+        title="Add New Crew Member"
+        description="Fill in the details below to add a new crew member to your team."
+        size="lg"
+      >
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className={FORM_PATTERNS.layout.singleColumn}>
             <FormField
               control={form.control}
               name="name"
@@ -180,57 +180,68 @@ export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOp
               render={() => (
                 <FormItem>
                   <FormLabel>Roles</FormLabel>
-                  <div className="grid grid-cols-2 gap-4 border rounded-lg p-4 bg-muted/50">
+                  <div className={FORM_PATTERNS.layout.fieldset}>
                     {rolesLoading ? (
-                      <div className="col-span-2 flex items-center justify-center py-4">
+                      <div className="flex items-center justify-center py-4">
                         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                       </div>
                     ) : sortedRoles.length === 0 ? (
-                      <div className="col-span-2 text-center py-4 text-muted-foreground">
+                      <div className="text-center py-4 text-muted-foreground">
                         No roles available
                       </div>
                     ) : (
-                      sortedRoles.map((role) => (
-                        <div 
-                          key={role.id} 
-                          className="flex items-center space-x-2 rounded p-2 transition-colors"
-                          style={getRoleBadgeStyle(role.name)}
-                        >
-                          <Checkbox
-                            id={role.id}
-                            checked={form.watch('role_ids')?.includes(role.id)}
-                            onCheckedChange={(checked) => {
-                              const currentRoles = form.watch('role_ids') || [];
-                              const newRoles = checked
-                                ? [...currentRoles, role.id]
-                                : currentRoles.filter(id => id !== role.id);
-                              form.setValue('role_ids', newRoles);
-                            }}
-                            className="data-[state=checked]:bg-white/90 data-[state=checked]:border-white/90 border-white/70"
-                          />
-                          <label
-                            htmlFor={role.id}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-white"
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {sortedRoles.map((role) => (
+                          <div 
+                            key={role.id} 
+                            className="flex items-center space-x-2 rounded p-2 transition-colors"
+                            style={getRoleBadgeStyle(role.name)}
                           >
-                            {role.name}
-                          </label>
-                        </div>
-                      ))
+                            <Checkbox
+                              id={role.id}
+                              checked={form.watch('role_ids')?.includes(role.id)}
+                              onCheckedChange={(checked) => {
+                                const currentRoles = form.watch('role_ids') || [];
+                                const newRoles = checked
+                                  ? [...currentRoles, role.id]
+                                  : currentRoles.filter(id => id !== role.id);
+                                form.setValue('role_ids', newRoles);
+                              }}
+                              className="data-[state=checked]:bg-white/90 data-[state=checked]:border-white/90 border-white/70"
+                              aria-describedby={`role-${role.id}-description`}
+                            />
+                            <label
+                              htmlFor={role.id}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-white"
+                            >
+                              {role.name}
+                            </label>
+                            <span id={`role-${role.id}-description`} className="sr-only">
+                              Select {role.name} role for this crew member
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <div className="flex justify-end">
-              <Button type="submit" disabled={isPending || rolesLoading || foldersLoading}>
+            
+            <div className={FORM_PATTERNS.dialog.footer}>
+              <Button 
+                type="submit" 
+                disabled={isPending || rolesLoading || foldersLoading}
+                className="min-w-[120px]"
+              >
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Add Member
               </Button>
             </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+      </FormDialog>
+    </>
   );
 }

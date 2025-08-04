@@ -31,7 +31,7 @@ export function ProjectOwnerFilter({ value, onChange }: ProjectOwnerFilterProps)
         <Button 
           variant="outline" 
           size="default"
-          className="gap-2 bg-zinc-800/50 border-zinc-700 text-muted-foreground hover:text-foreground transition-colors"
+          className="gap-2 bg-muted/50 border-border text-muted-foreground hover:text-foreground transition-colors"
         >
           <Filter className="h-4 w-4" />
           Filter
@@ -58,7 +58,7 @@ export function ProjectOwnerFilter({ value, onChange }: ProjectOwnerFilterProps)
                   className="object-cover"
                 />
               ) : (
-                <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
+                <AvatarFallback className="text-xs bg-muted text-muted-foreground">
                   {getInitials(owner.name)}
                 </AvatarFallback>
               )}

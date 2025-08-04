@@ -65,26 +65,38 @@ export function ConfirmationDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent
+        aria-labelledby="confirmation-title"
+        aria-describedby="confirmation-description"
+        role="alertdialog"
+      >
         <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription asChild={typeof description !== 'string'}>
+          <AlertDialogTitle id="confirmation-title">{title}</AlertDialogTitle>
+          <AlertDialogDescription id="confirmation-description" asChild={typeof description !== 'string'}>
             {typeof description === 'string' ? description : <div>{description}</div>}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending || disabled}>
+          <AlertDialogCancel 
+            disabled={isPending || disabled}
+            aria-label={`${cancelText} this action`}
+          >
             {cancelText}
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleConfirm}
             disabled={isPending || disabled}
             className={confirmButtonClass}
+            aria-label={`${confirmText} this action`}
+            aria-describedby={isPending ? "loading-status" : undefined}
           >
             {isPending && (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
             )}
-            {confirmText}
+            <span>{confirmText}</span>
+            {isPending && (
+              <span id="loading-status" className="sr-only">Loading...</span>
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -217,6 +217,30 @@ export function createStatus(status: keyof typeof STATUS_PATTERNS): string {
 }
 
 /**
+ * Create input styling with validation state
+ */
+export function createInputClasses(state: 'default' | 'error' | 'success' | 'disabled' = 'default'): string {
+  return cn(
+    'flex h-10 w-full rounded-md px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+    FORM_PATTERNS.input[state]
+  );
+}
+
+/**
+ * Create form field classes with consistent spacing
+ */
+export function createFieldClasses(layout: 'default' | 'group' | 'inline' = 'default'): string {
+  return FORM_PATTERNS.field[layout];
+}
+
+/**
+ * Create validation message classes
+ */
+export function createMessageClasses(type: 'error' | 'success' | 'info' | 'warning' = 'error'): string {
+  return FORM_PATTERNS.message[type];
+}
+
+/**
  * Get role color scheme based on role name
  * Falls back to primary color if role name not found
  */
@@ -242,6 +266,58 @@ export function getRoleBadgeStyle(roleName: string): React.CSSProperties {
   const roleColor = getRoleColor(roleName);
   return roleColor.style || { backgroundColor: roleColor.bg, color: roleColor.text };
 }
+
+// ========== FORM PATTERNS ==========
+// Standardized form and dialog patterns for consistent UX
+
+export const FORM_PATTERNS = {
+  // Field containers and spacing
+  field: {
+    default: 'space-y-2',
+    group: 'space-y-4',
+    inline: 'flex items-center space-x-2'
+  },
+  
+  // Input styling with design system integration
+  input: {
+    default: 'bg-background border border-border text-foreground placeholder:text-muted-foreground focus:border-ring transition-colors',
+    error: 'bg-background border border-destructive text-foreground placeholder:text-muted-foreground focus:border-destructive transition-colors',
+    success: 'bg-background border border-green-500 text-foreground placeholder:text-muted-foreground focus:border-green-500 transition-colors',
+    disabled: 'bg-muted border border-border text-muted-foreground cursor-not-allowed'
+  },
+  
+  // Label styling
+  label: {
+    default: 'text-sm font-medium text-foreground',
+    required: 'text-sm font-medium text-foreground after:content-["*"] after:text-destructive after:ml-1',
+    optional: 'text-sm font-medium text-muted-foreground'
+  },
+  
+  // Validation message styling
+  message: {
+    error: 'text-sm font-medium text-destructive',
+    success: 'text-sm font-medium text-green-600',
+    info: 'text-sm text-muted-foreground',
+    warning: 'text-sm font-medium text-orange-600'
+  },
+  
+  // Dialog structure
+  dialog: {
+    container: 'bg-card text-card-foreground border border-border rounded-lg shadow-lg',
+    header: 'border-b border-border pb-4 mb-6',
+    content: 'space-y-6',
+    footer: 'border-t border-border pt-4 mt-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 space-y-2 space-y-reverse sm:space-y-0',
+    overlay: 'fixed inset-0 z-50 bg-black/50 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0'
+  },
+  
+  // Form layout patterns
+  layout: {
+    singleColumn: 'space-y-4',
+    twoColumn: 'grid grid-cols-1 md:grid-cols-2 gap-4',
+    threeColumn: 'grid grid-cols-1 md:grid-cols-3 gap-4',
+    fieldset: 'space-y-4 p-4 border border-border rounded-lg bg-muted/50'
+  }
+} as const;
 
 // ========== RESPONSIVE HELPERS ==========
 
@@ -386,6 +462,7 @@ export const QUINCY_DESIGN_SYSTEM = {
   THEME,
   COMPONENT_CLASSES,
   STATUS_PATTERNS,
+  FORM_PATTERNS,
   SPACING,
   LAYOUT,
   RESPONSIVE,

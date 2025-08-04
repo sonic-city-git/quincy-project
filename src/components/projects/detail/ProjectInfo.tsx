@@ -47,7 +47,7 @@ export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInf
             value={project.customer_id || ''}
             onChange={() => {}}
             required={false}
-            className="bg-zinc-900/50 border-zinc-700 hover:border-zinc-600 transition-colors"
+            className="bg-muted/50 border-border hover:border-muted-foreground/50 transition-colors"
           />
         </div>
 
@@ -57,20 +57,20 @@ export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInf
             value={project.owner_id || ''}
             onChange={() => {}}
             required={false}
-            className="bg-zinc-900/50 border-zinc-700 hover:border-zinc-600 transition-colors"
+            className="bg-muted/50 border-border hover:border-muted-foreground/50 transition-colors"
           />
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">Last Invoiced</label>
-          <div className="text-sm bg-zinc-900/50 px-3 py-2 rounded-md border border-zinc-700">
+          <div className="text-sm bg-muted/50 px-3 py-2 rounded-md border border-border">
             {formatDate(project.created_at)}
           </div>
         </div>
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">To be Invoiced</label>
-          <div className="text-sm font-medium bg-zinc-900/50 px-3 py-2 rounded-md border border-zinc-700">
+          <div className="text-sm font-medium bg-muted/50 px-3 py-2 rounded-md border border-border">
             {formatCurrency(project.to_be_invoiced)}
           </div>
         </div>

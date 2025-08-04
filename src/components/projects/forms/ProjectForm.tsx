@@ -1,10 +1,12 @@
-import { Form } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { CustomerSelect } from "./CustomerSelect";
 import { OwnerSelect } from "./OwnerSelect";
-import { useForm } from "react-hook-form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
+import { FORM_PATTERNS } from "@/design-system";
 
 interface ProjectFormData {
   name: string;
@@ -31,65 +33,86 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4" autoComplete="off">
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Input
-              placeholder="Project name"
-              autoComplete="off"
-              {...form.register('name', { required: "Project name is required" })}
-            />
-            {form.formState.errors.name && (
-              <p className="text-sm text-red-500">{form.formState.errors.name.message}</p>
-            )}
-          </div>
+      <form onSubmit={form.handleSubmit(onSubmit)} className={FORM_PATTERNS.layout.singleColumn} autoComplete="off">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={FORM_PATTERNS.label.required}>Project Name</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Enter project name"
+                  autoComplete="off"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <div className="space-y-2">
-            <CustomerSelect
-              value={form.watch('customer_id')}
-              onChange={(value) => form.setValue('customer_id', value)}
-              error={form.formState.errors.customer_id?.message}
-              required
-            />
-            {form.formState.errors.customer_id && (
-              <p className="text-sm text-red-500">Customer is required</p>
-            )}
-          </div>
+        <FormField
+          control={form.control}
+          name="customer_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={FORM_PATTERNS.label.required}>Customer</FormLabel>
+              <FormControl>
+                <CustomerSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  required
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <div className="space-y-2">
-            <OwnerSelect
-              value={form.watch('crew_member_id')}
-              onChange={(value) => form.setValue('crew_member_id', value)}
-              error={form.formState.errors.crew_member_id?.message}
-              required
-            />
-            {form.formState.errors.crew_member_id && (
-              <p className="text-sm text-red-500">Owner is required</p>
-            )}
-          </div>
+        <FormField
+          control={form.control}
+          name="crew_member_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={FORM_PATTERNS.label.required}>Project Owner</FormLabel>
+              <FormControl>
+                <OwnerSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  required
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <div className="space-y-2">
-            <Select
-              value={form.watch('project_type')}
-              onValueChange={(value) => form.setValue('project_type', value as ProjectFormData['project_type'])}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select project type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="artist">Artist</SelectItem>
-                <SelectItem value="corporate">Corporate</SelectItem>
-                <SelectItem value="broadcast">Broadcast</SelectItem>
-                <SelectItem value="dry_hire">Dry Hire</SelectItem>
-              </SelectContent>
-            </Select>
-            {form.formState.errors.project_type && (
-              <p className="text-sm text-red-500">Project type is required</p>
-            )}
-          </div>
-        </div>
+        <FormField
+          control={form.control}
+          name="project_type"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className={FORM_PATTERNS.label.required}>Project Type</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select project type" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="artist">Artist</SelectItem>
+                  <SelectItem value="corporate">Corporate</SelectItem>
+                  <SelectItem value="broadcast">Broadcast</SelectItem>
+                  <SelectItem value="dry_hire">Dry Hire</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div className="flex justify-end gap-2">
+        <div className={FORM_PATTERNS.dialog.footer}>
           <Button
             type="button"
             variant="outline"
@@ -97,8 +120,15 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
           >
             Cancel
           </Button>
-          <Button type="submit">
-            Add Project
+          <Button 
+            type="submit"
+            disabled={form.formState.isSubmitting}
+            className="min-w-[120px]"
+          >
+            {form.formState.isSubmitting && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            Create Project
           </Button>
         </div>
       </form>

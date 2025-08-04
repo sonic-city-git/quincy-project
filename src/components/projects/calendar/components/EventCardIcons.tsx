@@ -123,7 +123,7 @@ export function EventCardIcons({
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="h-8 w-8 p-0 hover:bg-zinc-700/50"
+                className="h-8 w-8 p-0 hover:bg-muted/50"
                 disabled={isEditingDisabled}
               >
                 <Users 

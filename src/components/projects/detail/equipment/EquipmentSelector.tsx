@@ -153,7 +153,7 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
           placeholder="Search equipment..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-zinc-900/50"
+          className="w-full bg-muted/50"
         />
       </div>
       <ScrollArea className={cn("flex-1", className)}>

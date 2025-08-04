@@ -69,18 +69,22 @@ export function FormDialog({
       onOpenChange={handleOpenChange}
       modal={closeOnOverlayClick}
     >
-      <DialogContent className={`${sizeClasses[size]} ${contentClassName || ''}`}>
+      <DialogContent 
+        className={`${sizeClasses[size]} ${contentClassName || ''}`}
+        aria-labelledby="dialog-title"
+        aria-describedby={description ? "dialog-description" : undefined}
+      >
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle id="dialog-title">{title}</DialogTitle>
           {description && (
-            <DialogDescription asChild={typeof description !== 'string'}>
+            <DialogDescription id="dialog-description" asChild={typeof description !== 'string'}>
               {typeof description === 'string' ? description : <div>{description}</div>}
             </DialogDescription>
           )}
         </DialogHeader>
         
         {/* Form content */}
-        <div className={className}>
+        <div className={className} role="form">
           {children}
         </div>
       </DialogContent>
