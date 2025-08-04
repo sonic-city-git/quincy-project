@@ -142,7 +142,7 @@ export function useEquipmentHub({
             };
           }
         } catch (e) {
-          console.warn('Failed to parse cached equipment data');
+          // TODO: Implement proper error handling for cache parsing
         }
       }
       
@@ -207,7 +207,7 @@ export function useEquipmentHub({
         timestamp: Date.now()
       }));
     } catch (e) {
-      console.warn('Failed to cache equipment data');
+                // TODO: Implement proper error handling for cache storage
     }
 
     return result;

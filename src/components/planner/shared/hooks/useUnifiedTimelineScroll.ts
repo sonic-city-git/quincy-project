@@ -103,7 +103,7 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
     
     // Only log for important scroll operations
     if (source === 'date' || source === 'navigation') {
-      console.log('⚡ SCROLL:', source, smooth ? 'physics-smooth' : 'instant', 'to', clampedPosition);
+      // Removed console.log for production performance
     }
     
     if (smooth) {
@@ -201,7 +201,7 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
             scrollingTimeoutRef.current = null;
           }
           
-          console.log('✅ CENTERED WITH SMOOTH PHYSICS');
+          // Removed console.log for production performance
         }
       };
       
@@ -244,7 +244,7 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
     });
     
     if (targetIndex === -1) {
-      console.log('🔍 scrollToDate: Date not found in timeline', target.toISOString().split('T')[0]);
+      // Date not found in timeline - expanding timeline range
       return;
     }
     
@@ -253,9 +253,9 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
     const targetPosition = targetIndex * dayWidth;
     const centeredPosition = targetPosition - (containerWidth / 2) + (dayWidth / 2);
     
-    // Debug: Only log on date scroll attempts
+    // Centering date in timeline view
     if (targetIndex >= 0) {
-      console.log('📅 CENTERING DATE:', target.toISOString().split('T')[0], 'at position', centeredPosition);
+      // Removed console.log for production performance
     }
     
     scrollTo(centeredPosition, { smooth: true, source: 'date' });

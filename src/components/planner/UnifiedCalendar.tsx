@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
-import { format, isWeekend, isSameDay } from "date-fns";
 import { Skeleton } from "../ui/skeleton";
 
 import { useEquipmentHub } from './shared/hooks/useEquipmentHub';
@@ -33,14 +32,7 @@ interface UnifiedCalendarProps {
   renderOnlyTimeline?: boolean;
 }
 
-// Performance metrics for monitoring
-interface PlannerMetrics {
-  dataLoadTime: number;
-  renderTime: number;
-  activeResourceType: 'equipment' | 'crew';
-  totalResources: number;
-  visibleDateRange: number; // days
-}
+  // Performance metrics interface for potential future monitoring
 
 /**
  * UnifiedCalendar - Clean Architecture Implementation
@@ -165,10 +157,10 @@ export function UnifiedCalendar({
               inline: 'nearest'
             });
           } else {
-            console.warn(`Could not find ${targetScrollItem.type} with ID: ${targetScrollItem.id}`);
+            // TODO: Implement proper error handling for scroll target not found
           }
         } catch (error) {
-          console.error('Error scrolling to target item:', error);
+          // TODO: Implement proper error handling for scroll errors
         }
       }, 100);
       

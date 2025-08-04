@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '../../../../integrations/supabase/client';
 import { usePersistentExpandedGroups } from '../../../../hooks/usePersistentExpandedGroups';
 import { format } from 'date-fns';
+import { handleError } from '../utils/errorHandling';
 import { 
   CrewGroup, 
   CrewMember, 
@@ -109,7 +110,7 @@ export function useCrewHub({
         .select('id, name, email, phone, folder_id, avatar_url');
 
       if (crewError) {
-        console.error('Error fetching crew:', crewError);
+        handleError.crewFetch(crewError);
         throw crewError;
       }
 
@@ -121,10 +122,10 @@ export function useCrewHub({
       ]);
 
       if (crewMemberRolesResult.error) {
-        console.error('Error fetching crew member roles:', crewMemberRolesResult.error);
+        // TODO: Implement proper error handling for crew roles fetch
       }
       if (crewRolesResult.error) {
-        console.error('Error fetching crew roles:', crewRolesResult.error);
+        // TODO: Implement proper error handling for crew roles fetch
       }
 
       // Create lookup maps for roles
@@ -217,7 +218,7 @@ export function useCrewHub({
         .lte('project_events.date', stableDataRange.end.toISOString().split('T')[0]);
 
       if (assignmentsError) {
-        console.error('Error fetching crew assignments:', assignmentsError);
+        // TODO: Implement proper error handling for crew assignments fetch
         return { assignments: [], unfilledRoles: [] };
       }
 
