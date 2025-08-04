@@ -1,9 +1,10 @@
-import { ProjectTable } from "../tables/ProjectTable";
+// ProjectTable removed - using consolidated ProjectsTable instead
 import { Table } from "@/components/ui/table";
 import { TableHeader } from "../tables/TableHeader";
 import { OwnerSection } from "./OwnerSection";
 import { LoadingSpinner } from "@/components/resources/shared/LoadingSpinner";
 import { Project } from "@/types/projects";
+import { COMPONENT_CLASSES, cn } from "@/design-system";
 
 interface ProjectListContentProps {
   loading: boolean;
@@ -33,14 +34,14 @@ export function ProjectListContent({ loading, groupedProjects }: ProjectListCont
   );
 
   return (
-    <div className="rounded-lg overflow-hidden border border-zinc-800 flex-1 min-h-0 flex flex-col">
-      <div className="sticky top-0 z-20 bg-zinc-900 border-b border-zinc-800">
+    <div className={cn("flex-1 min-h-0 flex flex-col", COMPONENT_CLASSES.table.container)}>
+      <div className={cn("sticky top-0 z-20", COMPONENT_CLASSES.table.header)}>
         <Table>
           <TableHeader />
         </Table>
       </div>
       <div className="overflow-y-auto flex-1">
-        <div className="divide-y divide-zinc-800">
+        <div className="divide-y divide-border">
           {sortedOwners.map((owner) => (
             <OwnerSection 
               key={owner.name} 
