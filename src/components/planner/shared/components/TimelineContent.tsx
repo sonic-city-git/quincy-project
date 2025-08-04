@@ -324,9 +324,9 @@ const TimelineContentComponent = ({
 
         {/* Middle Column - Timeline */}
         <div 
-          ref={isWithinScrollContainer ? undefined : equipmentRowsRef}
+          ref={equipmentRowsRef}
           className={`flex-1 ${isWithinScrollContainer ? '' : 'overflow-x-auto scrollbar-hide'} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-          onScroll={isWithinScrollContainer ? undefined : handleTimelineScroll}
+          onScroll={handleTimelineScroll}
           onMouseDown={isWithinScrollContainer ? undefined : handleMouseDown}
           onMouseMove={isWithinScrollContainer ? undefined : handleTimelineMouseMove}
           onMouseUp={isWithinScrollContainer ? undefined : handleMouseUp}

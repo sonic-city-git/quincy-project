@@ -24,14 +24,18 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // TIMELINE STATE
   // ========================
   
-  const [timelineStart, setTimelineStart] = useState(() => {
-    const today = new Date();
-    return addDays(today, -20);
-  });
-  const [timelineEnd, setTimelineEnd] = useState(() => {
-    const today = new Date();
-    return addDays(today, 20);
-  });
+  // Use a single "today" reference
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
+
+  // Load asymmetric date range to match 25/75 viewport split
+  const [timelineStart, setTimelineStart] = useState(() => addDays(today, -10));  // 10 days in the past
+  const [timelineEnd, setTimelineEnd] = useState(() => addDays(today, 30));   // 30 days into the future
+
+
 
   // ========================
   // CENTRAL SCROLL STATE
@@ -70,12 +74,14 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // ========================
   
   const timelineDates = useMemo(() => {
+    console.log('Calculating timeline dates', { timelineStart, timelineEnd });
     const dates = [];
     let currentDate = new Date(timelineStart);
     while (currentDate <= timelineEnd) {
       dates.push(new Date(currentDate));
       currentDate = addDays(currentDate, 1);
     }
+    console.log('Timeline dates calculated', { length: dates.length });
     return dates;
   }, [timelineStart, timelineEnd]);
 
@@ -228,6 +234,12 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
   // ========================
   
   const scrollToDate = useCallback((targetDate: Date) => {
+    console.log('scrollToDate called', {
+      targetDate,
+      timelineDatesLength: timelineDates.length,
+      hasRef: !!equipmentRowsRef.current,
+      width: equipmentRowsRef.current?.clientWidth
+    });
     if (!timelineDates.length || !equipmentRowsRef.current) return;
     
     const containerWidth = equipmentRowsRef.current.clientWidth;
@@ -248,18 +260,40 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
       return;
     }
     
-    // Calculate centered scroll position
+    // Position the date at 25% of the viewport (leaving 75% for future dates)
     const dayWidth = LAYOUT.DAY_CELL_WIDTH;
     const targetPosition = targetIndex * dayWidth;
-    const centeredPosition = targetPosition - (containerWidth / 2) + (dayWidth / 2);
+    const quarterWidth = containerWidth * 0.25;
+    const scrollPosition = targetPosition - quarterWidth + (dayWidth / 2);
     
     // Centering date in timeline view
     if (targetIndex >= 0) {
       // Removed console.log for production performance
     }
     
-    scrollTo(centeredPosition, { smooth: true, source: 'date' });
+    scrollTo(scrollPosition, { smooth: true, source: 'date' });
   }, [timelineDates, scrollTo]);
+
+  // ========================
+  // INITIAL CENTERING ON SELECTED DATE
+  // ========================
+  
+  // Track initial centering
+  const initialCenteringDone = useRef(false);
+
+  // Center on selectedDate when timeline and ref are ready
+  useEffect(() => {
+    if (!initialCenteringDone.current && timelineDates.length > 0 && equipmentRowsRef.current) {
+      // Wait for next frame to ensure DOM is ready
+      requestAnimationFrame(() => {
+        if (equipmentRowsRef.current?.clientWidth) {
+          initialCenteringDone.current = true;
+          scrollToDate(selectedDate);
+        }
+      });
+    }
+  }, [timelineDates.length, equipmentRowsRef.current]);
+
 
   const dragScroll = useCallback((deltaX: number) => {
     const newPosition = dragStart.scrollLeft - deltaX;
@@ -337,13 +371,21 @@ export function useUnifiedTimelineScroll({ selectedDate }: UseUnifiedTimelineScr
       return;
     }
     
-    // Update position immediately for responsive feel
-    setScrollPosition(scrollLeft);
+    // Update position ref immediately for responsive feel
+    scrollPositionRef.current = scrollLeft;
+    // Debounce the React state update
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    scrollTimeoutRef.current = setTimeout(() => {
+      setScrollPosition(scrollLeft);
+    }, 16);
     
-    // IMMEDIATE sync for smooth manual scrolling (no lag)
-    if (element === equipmentRowsRef.current && stickyHeadersRef.current) {
+    // Always sync scroll positions between timeline and header
+    if (stickyHeadersRef.current) {
       stickyHeadersRef.current.scrollLeft = scrollLeft;
-    } else if (element === stickyHeadersRef.current && equipmentRowsRef.current) {
+    }
+    if (equipmentRowsRef.current) {
       equipmentRowsRef.current.scrollLeft = scrollLeft;
     }
     

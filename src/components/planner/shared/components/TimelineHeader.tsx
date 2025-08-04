@@ -184,7 +184,7 @@ export function TimelineHeader({
           ref={stickyHeadersRef}
           className="flex-1 bg-muted/90 backdrop-blur-sm overflow-x-auto scrollbar-hide"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          onScroll={onHeaderScroll}
+          onScroll={timelineScroll?.handleScroll}
         >
           <div style={{ width: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px` }}>
             {/* Month Header */}

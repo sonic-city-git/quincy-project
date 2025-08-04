@@ -64,6 +64,8 @@ export function UnifiedCalendar({
   const loadStartTime = useRef(performance.now());
   const renderStartTime = useRef(performance.now());
   
+  console.log('UnifiedCalendar render', { selectedDate: selectedDate.toISOString() });
+
   // UNIFIED: Use unified timeline scroll system
   const {
     timelineStart,
@@ -143,6 +145,14 @@ export function UnifiedCalendar({
 
   // REMOVED: Performance metrics logging to reduce console spam
 
+  // Delay stale state cleanup to avoid interfering with initial scroll
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      clearStaleStates();
+    }, 5000); // Wait 5 seconds after mount before starting cleanup
+    return () => clearTimeout(timer);
+  }, []);
+
   // Handle scrolling to target item when targetScrollItem is provided
   useEffect(() => {
     if (targetScrollItem && targetScrollItem.type === resourceType && equipmentGroups.length > 0) {
@@ -171,16 +181,21 @@ export function UnifiedCalendar({
   // Simple loading state
   const shouldShowLoading = !isEquipmentReady;
   
-  // Cleanup stale states periodically
+  // Cleanup stale states periodically (but delay initial cleanup to avoid scroll artifacts)
   const clearStaleStatesRef = useRef(clearStaleStates);
   clearStaleStatesRef.current = clearStaleStates;
   
   useEffect(() => {
-    const interval = setInterval(() => {
-      clearStaleStatesRef.current();
-    }, PERFORMANCE.CACHE_CLEANUP_INTERVAL);
+    // Delay first cleanup to avoid interfering with initial load and scroll positioning
+    const initialDelay = setTimeout(() => {
+      const interval = setInterval(() => {
+        clearStaleStatesRef.current();
+      }, PERFORMANCE.CACHE_CLEANUP_INTERVAL);
 
-    return () => clearInterval(interval);
+      return () => clearInterval(interval);
+    }, 10000); // Wait 10 seconds before starting cleanup cycle
+
+    return () => clearTimeout(initialDelay);
   }, []);
 
   // Note: formattedDates and monthSections are now provided by useSharedTimeline
