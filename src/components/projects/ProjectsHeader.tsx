@@ -98,10 +98,11 @@ export function ProjectsHeader({
           <Button
             onClick={onAddClick}
             size="sm"
-            className="h-7 px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+            className="h-7 sm:h-8 px-1.5 sm:px-2 md:px-3 text-xs bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap"
+            title="Add Project"
           >
-            <Plus className="h-3 w-3 mr-1.5" />
-            Add Project
+            <Plus className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
+            <span className="hidden md:inline ml-1 sm:ml-1.5">Add Project</span>
           </Button>
         )
       }

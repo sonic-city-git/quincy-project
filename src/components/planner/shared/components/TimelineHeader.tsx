@@ -407,17 +407,18 @@ export function TimelineHeader({
             onClick={onToggleProblemsOnly}
             variant={showProblemsOnly ? "default" : "outline"}
             size="sm"
-            className="h-7 px-3 text-xs"
+            className="h-7 sm:h-8 px-1.5 sm:px-2 md:px-3 text-xs whitespace-nowrap"
+            title={showProblemsOnly ? "Show All" : "View Problems"}
           >
             {showProblemsOnly ? (
               <>
-                <EyeOff className="h-3 w-3 mr-1.5" />
-                Show All
+                <EyeOff className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
+                <span className="hidden md:inline ml-1 sm:ml-1.5">Show All</span>
               </>
             ) : (
               <>
-                <Eye className="h-3 w-3 mr-1.5" />
-                View Problems
+                <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
+                <span className="hidden md:inline ml-1 sm:ml-1.5">View Problems</span>
               </>
             )}
           </Button>

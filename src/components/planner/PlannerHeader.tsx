@@ -1,4 +1,4 @@
-import { Calendar, Users, Eye, EyeOff } from "lucide-react";
+import { Calendar, Users, Eye, EyeOff, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import { PlannerFilters } from "./shared/components/TimelineHeader";
@@ -26,7 +26,7 @@ export function PlannerHeader({
     { 
       value: 'equipment' as const, 
       label: 'Equipment', 
-      icon: Calendar,
+      icon: Package,
       color: 'text-blue-500'
     },
     { 
@@ -39,7 +39,7 @@ export function PlannerHeader({
 
   // Determine current context
   const isCrewPlanner = activeTab === 'crew';
-  const IconComponent = isCrewPlanner ? Users : Calendar;
+  const IconComponent = isCrewPlanner ? Users : Package;
   const iconColor = isCrewPlanner ? 'text-green-500' : 'text-blue-500';
   const title = isCrewPlanner ? 'Crew Planner' : 'Equipment Planner';
 
@@ -83,17 +83,18 @@ export function PlannerHeader({
           onClick={onToggleProblemsOnly}
           variant={showProblemsOnly ? "default" : "outline"}
           size="sm"
-          className="h-7 px-3 text-xs"
+          className="h-7 sm:h-8 px-1.5 sm:px-2 md:px-3 text-xs whitespace-nowrap"
+          title={showProblemsOnly ? "Show All" : "View Problems"}
         >
           {showProblemsOnly ? (
             <>
-              <EyeOff className="h-3 w-3 mr-1.5" />
-              Show All
+              <EyeOff className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
+              <span className="hidden md:inline ml-1 sm:ml-1.5">Show All</span>
             </>
           ) : (
             <>
-              <Eye className="h-3 w-3 mr-1.5" />
-              View Problems
+              <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5 flex-shrink-0" />
+              <span className="hidden md:inline ml-1 sm:ml-1.5">View Problems</span>
             </>
           )}
         </Button>
