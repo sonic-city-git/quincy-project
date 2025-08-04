@@ -23,7 +23,7 @@ export const LAYOUT = {
   STICKY_HEADER_TOP_OFFSET: 72,
 } as const;
 
-// Timeline settings
+// Timeline settings - OPTIMIZED for infinite scroll
 export const TIMELINE = {
   // Initial date range (days before/after selected date)
   INITIAL_DATE_BUFFER: 35,
@@ -31,24 +31,37 @@ export const TIMELINE = {
   // Infinite scroll loading increments
   SCROLL_LOAD_INCREMENT: 14, // 2 weeks
   
-  // Scroll thresholds for loading more data
-  SCROLL_THRESHOLD: 0.3,
+  // OPTIMIZED: Enhanced scroll thresholds
+  BASE_PRELOAD_THRESHOLD: 2000,    // Base distance from edge to trigger preload (was 800px)
+  MAX_PRELOAD_THRESHOLD: 3500,     // Maximum threshold for high-velocity scrolling
+  VELOCITY_MULTIPLIER: 10,         // Additional threshold per unit velocity
   
-  // Debounce timing
-  SCROLL_DEBOUNCE_MS: 100,
+  // OPTIMIZED: Adaptive timing
+  BASE_COOLDOWN: 300,              // Base cooldown between expansions (was 1000ms)
+  MIN_COOLDOWN: 100,               // Minimum cooldown for high-velocity scrolling
+  VELOCITY_THRESHOLD: 2,           // Velocity threshold for faster cooldown
+  
+  // OPTIMIZED: Debounce timing
+  SCROLL_DEBOUNCE_MS: 16,          // 60fps throttling (was 100ms)
+  POSITION_SYNC_THROTTLE: 50,      // Throttle for position state updates
 } as const;
 
-// Performance settings
+// Performance settings - OPTIMIZED for memory management
 export const PERFORMANCE = {
-  // Cache cleanup interval
-  CACHE_CLEANUP_INTERVAL: 5 * 60 * 1000, // 5 minutes
+  // OPTIMIZED: More aggressive cache cleanup to prevent memory leaks
+  CACHE_CLEANUP_INTERVAL: 30 * 1000,     // 30 seconds (was 5 minutes)
+  STALE_DATA_THRESHOLD: 2 * 60 * 1000,   // 2 minutes before data considered stale
   
-  // Virtualization buffer
-  VIRTUALIZATION_BUFFER: 5,
-  HORIZONTAL_VIRTUALIZATION_BUFFER: 10,
+  // OPTIMIZED: Virtualization settings for large date ranges
+  VIRTUALIZATION_BUFFER: 5,               // Buffer for vertical virtualization
+  HORIZONTAL_VIRTUALIZATION_BUFFER: 50,   // INCREASED: More buffer for smooth scrolling (was 20)
+  MAX_RENDERED_DAYS: 180,                 // INCREASED: Higher threshold before virtualization kicks in (was 90)
+  VIRTUAL_UPDATE_THROTTLE: 16,            // 60fps throttling for virtual timeline updates
   
-  // Animation frame throttling
+  // OPTIMIZED: Animation frame optimization
   USE_REQUEST_ANIMATION_FRAME: true,
+  SCROLL_RAF_THROTTLE: true,              // Use RAF for scroll position updates
+  EXPANSION_RAF_RETRIES: 10,              // Max RAF retries for position adjustment
 } as const;
 
 // Visual settings

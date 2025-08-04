@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { Skeleton } from "../ui/skeleton";
+import { format } from "date-fns";
 
 // Option to test unified system
 import { useTimelineHub } from './shared/hooks/useTimelineHub';
@@ -8,26 +9,25 @@ import { useTimelineHub } from './shared/hooks/useTimelineHub';
 import { LAYOUT, PERFORMANCE } from './shared/constants';
 
 // Shared timeline components
-import { PlannerFilters } from './shared/components/TimelineHeader';
+import { PlannerFilters, TimelineHeader } from './shared/components/TimelineHeader';
 import { TimelineContent } from './shared/components/TimelineContent';
-import { useUnifiedTimelineScroll } from './shared/hooks/useUnifiedTimelineScroll';
+import { useTimelineScroll } from './shared/hooks/useTimelineScroll';
 
 interface UnifiedCalendarProps {
   selectedDate: Date;
   onDateChange: (date: Date) => void;
   selectedOwner?: string;
-  timelineScroll: ReturnType<typeof useUnifiedTimelineScroll>;
   resourceType: 'equipment' | 'crew';
+  onTabChange?: (tab: 'equipment' | 'crew') => void;
   filters?: PlannerFilters;
+  onFiltersChange?: (filters: PlannerFilters) => void;
   showProblemsOnly?: boolean;
+  onToggleProblemsOnly?: () => void;
   targetScrollItem?: {
     type: 'equipment' | 'crew';
     id: string;
   } | null;
-  // NEW: Flag to indicate if content is within a unified scroll container
   isWithinScrollContainer?: boolean;
-  
-  // NEW: Render mode flags
   renderOnlyLeft?: boolean;
   renderOnlyTimeline?: boolean;
 }
@@ -49,11 +49,13 @@ interface UnifiedCalendarProps {
 export function UnifiedCalendar({ 
   selectedDate, 
   onDateChange, 
-  selectedOwner, 
-  timelineScroll,
+  selectedOwner,
   resourceType,
+  onTabChange,
   filters,
+  onFiltersChange,
   showProblemsOnly = false,
+  onToggleProblemsOnly,
   targetScrollItem,
   isWithinScrollContainer = false,
   renderOnlyLeft = false,
@@ -67,21 +69,22 @@ export function UnifiedCalendar({
   // Remove excessive logging for better performance
   // console.log('UnifiedCalendar render', { selectedDate: selectedDate.toISOString() });
 
-  // UNIFIED: Use unified timeline scroll system
+  // SIMPLIFIED: Use single consolidated scroll hook
+  const timelineScroll = useTimelineScroll({ selectedDate });
+  
   const {
     timelineStart,
     timelineEnd,
     timelineDates,
     formattedDates,
-    monthSections,
-    isDragging,
-    setIsDragging,
-    dragStart,
-    setDragStart,
+    virtualTimeline,
+    containerWidth,
+    updateContainerWidth,
+    scrollPosition,
     equipmentRowsRef,
     stickyHeadersRef,
-    loadMoreDates,
     scrollToDate,
+    isDragging,
     handleScroll,
     handleMouseDown,
     handleMouseMove,
@@ -98,6 +101,68 @@ export function UnifiedCalendar({
     start: timelineStart,
     end: timelineEnd
   }), [timelineStart?.getTime(), timelineEnd?.getTime()]); // Use timestamps for more stable dependencies
+
+  // Calculate month sections for the header
+  const monthSections = useMemo(() => {
+    if (!formattedDates.length) return [];
+    
+    const sections: Array<{
+      date: Date;
+      monthYear: string;
+      width: number;
+      startIndex: number;
+      endIndex: number;
+      isEven: boolean;
+    }> = [];
+    
+    let currentMonth = -1;
+    let currentYear = -1;
+    let startIndex = 0;
+    let sectionCount = 0;
+    
+    formattedDates.forEach((dateInfo, index) => {
+      const month = dateInfo.date.getMonth();
+      const year = dateInfo.date.getFullYear();
+      
+      if (month !== currentMonth || year !== currentYear) {
+        // Finish previous section
+        if (currentMonth !== -1) {
+          const endIndex = index - 1;
+          const width = (endIndex - startIndex + 1) * LAYOUT.DAY_CELL_WIDTH;
+          sections.push({
+            date: formattedDates[startIndex].date,
+            monthYear: `${currentYear}-${currentMonth}`,
+            width,
+            startIndex,
+            endIndex,
+            isEven: sectionCount % 2 === 0
+          });
+          sectionCount++;
+        }
+        
+        // Start new section
+        currentMonth = month;
+        currentYear = year;
+        startIndex = index;
+      }
+    });
+    
+    // Add final section
+    if (currentMonth !== -1) {
+      const endIndex = formattedDates.length - 1;
+      const width = (endIndex - startIndex + 1) * LAYOUT.DAY_CELL_WIDTH;
+      sections.push({
+        date: formattedDates[startIndex].date,
+        monthYear: `${currentYear}-${currentMonth}`,
+        width,
+        startIndex,
+        endIndex,
+        isEven: sectionCount % 2 === 0
+      });
+    }
+    
+    return sections;
+  }, [formattedDates]);
 
   // SINGLE HUB FOR EVERYTHING
   const currentHub = useTimelineHub({
@@ -240,36 +305,95 @@ export function UnifiedCalendar({
     );
   }
 
-  // Simply return TimelineContent - no complex conditional rendering needed
+  // Return TimelineHeader and TimelineContent with debug overlay
   return (
-    <TimelineContent
-      equipmentGroups={equipmentGroups}
-      expandedGroups={expandedGroups}
-      expandedEquipment={expandedEquipment}
-      equipmentProjectUsage={equipmentProjectUsage}
-      toggleGroup={toggleGroup}
-      toggleEquipmentExpansion={toggleEquipmentExpansion}
-      formattedDates={formattedDates}
-      getBookingForEquipment={getBookingForEquipment}
-      getProjectQuantityForDate={getProjectQuantityForDate}
-      getCrewRoleForDate={getCrewRoleForDate}
-      equipmentRowsRef={equipmentRowsRef}
-      handleTimelineScroll={handleScroll}
-      handleTimelineMouseMove={handleMouseMove}
-      handleMouseDown={handleMouseDown}
-      handleMouseUp={handleMouseUp}
-      handleMouseLeave={handleMouseLeave}
-      isDragging={isDragging}
-      getBookingsForEquipment={getBookingsForResource}
-      getBookingState={getBookingState}
-      updateBookingState={updateBookingState}
-      getLowestAvailable={getAvailableCapacityForResource}
-      resourceType={resourceType}
-      filters={filters}
-      showProblemsOnly={showProblemsOnly}
-      visibleTimelineStart={timelineStart}
-      visibleTimelineEnd={timelineEnd}
-      isWithinScrollContainer={isWithinScrollContainer}
-    />
+    <>
+      <TimelineHeader
+        formattedDates={formattedDates}
+        virtualTimeline={virtualTimeline}
+        monthSections={monthSections}
+        onDateChange={onDateChange}
+        timelineScroll={{
+          handleScroll,
+          scrollPosition,
+          isDragging
+        }}
+        stickyHeadersRef={stickyHeadersRef}
+        resourceType={resourceType}
+        activeTab={resourceType}
+        onTabChange={onTabChange}
+        filters={filters}
+        onFiltersChange={onFiltersChange}
+        showProblemsOnly={showProblemsOnly}
+        onToggleProblemsOnly={onToggleProblemsOnly}
+      />
+      
+      <TimelineContent
+        equipmentGroups={equipmentGroups}
+        expandedGroups={expandedGroups}
+        expandedEquipment={expandedEquipment}
+        equipmentProjectUsage={equipmentProjectUsage}
+        toggleGroup={toggleGroup}
+        toggleEquipmentExpansion={toggleEquipmentExpansion}
+        formattedDates={formattedDates}
+        virtualTimeline={virtualTimeline}
+        getBookingForEquipment={getBookingForEquipment}
+        getProjectQuantityForDate={getProjectQuantityForDate}
+        getCrewRoleForDate={getCrewRoleForDate}
+        equipmentRowsRef={equipmentRowsRef}
+        handleTimelineScroll={handleScroll}
+        handleTimelineMouseMove={handleMouseMove}
+        handleMouseDown={handleMouseDown}
+        handleMouseUp={handleMouseUp}
+        handleMouseLeave={handleMouseLeave}
+        isDragging={isDragging}
+        getBookingsForEquipment={getBookingsForResource}
+        getBookingState={getBookingState}
+        updateBookingState={updateBookingState}
+        getLowestAvailable={getAvailableCapacityForResource}
+        resourceType={resourceType}
+        filters={filters}
+        showProblemsOnly={showProblemsOnly}
+        visibleTimelineStart={timelineStart}
+        visibleTimelineEnd={timelineEnd}
+        isWithinScrollContainer={isWithinScrollContainer}
+      />
+      
+      {/* Debug overlay for development */}
+      {process.env.NODE_ENV === 'development' && timelineScroll.debug && (
+        <div className="fixed top-4 right-4 bg-black bg-opacity-80 text-white p-4 rounded-lg font-mono text-xs z-50 max-w-sm">
+          <div className="text-green-400 font-bold mb-2">🚀 Ultimate Timeline Debug</div>
+          
+          <div className="mb-3">
+            <div className="text-blue-400 font-semibold">Scroll Metrics:</div>
+            <div>Velocity: {timelineScroll.debug.metrics.velocity.toFixed(2)} px/ms</div>
+            <div>Direction: <span className={`${
+              timelineScroll.debug.metrics.direction === 'left' ? 'text-orange-400' : 
+              timelineScroll.debug.metrics.direction === 'right' ? 'text-blue-400' : 
+              'text-gray-400'
+            }`}>{timelineScroll.debug.metrics.direction}</span></div>
+            <div>Expansions: {timelineScroll.debug.expansions}</div>
+            <div>Expanding: <span className={`${
+              timelineScroll.debug.isExpanding ? 'text-red-400' : 'text-green-400'
+            }`}>{timelineScroll.debug.isExpanding ? 'Yes' : 'No'}</span></div>
+          </div>
+
+          <div className="mb-3">
+            <div className="text-purple-400 font-semibold">Virtual Timeline:</div>
+            <div>Total Days: {timelineScroll.debug.virtualInfo?.totalDates || 0}</div>
+            <div>Rendered: <span className="text-yellow-400">{timelineScroll.debug.virtualInfo?.virtualDates || 0}</span></div>
+            <div>Virtualized: <span className={`${
+              timelineScroll.debug.virtualInfo?.isVirtualized ? 'text-green-400' : 'text-red-400'
+            }`}>{timelineScroll.debug.virtualInfo?.isVirtualized ? 'Yes' : 'No'}</span></div>
+            <div>Range: {timelineScroll.debug.virtualInfo?.virtualRange || 'N/A'}</div>
+            <div>Container: {containerWidth}px</div>
+          </div>
+          
+          <div className="text-xs text-gray-400">
+            Velocity-based predictive infinite scroll with virtualization
+          </div>
+        </div>
+      )}
+    </>
   );
 }

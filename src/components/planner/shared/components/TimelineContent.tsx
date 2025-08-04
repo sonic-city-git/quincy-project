@@ -25,6 +25,18 @@ interface TimelineContentProps {
     isSelected: boolean;
     isWeekendDay: boolean;
   }>;
+  virtualTimeline?: {
+    virtualDates: Array<{
+      date: Date;
+      dateStr: string;
+      isToday: boolean;
+      isSelected: boolean;
+      isWeekendDay: boolean;
+    }>;
+    totalWidth: number;
+    offsetLeft: number;
+    isVirtualized: boolean;
+  };
   getBookingForEquipment: (equipmentId: string, dateStr: string) => any; // Optimized function for day cells
   getProjectQuantityForDate: (projectName: string, equipmentId: string, dateStr: string) => any; // New: project quantity function
   getCrewRoleForDate?: (projectName: string, crewMemberId: string, dateStr: string) => any; // New: crew role function
@@ -55,6 +67,7 @@ const TimelineContentComponent = ({
   toggleGroup,
   toggleEquipmentExpansion,
   formattedDates,
+  virtualTimeline,
   getBookingForEquipment,
   getProjectQuantityForDate,
   getCrewRoleForDate,
@@ -332,7 +345,18 @@ const TimelineContentComponent = ({
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseLeave}
         >
-          <div style={{ minWidth: `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px` }}>
+          {/* VIRTUAL TIMELINE: Use virtual width when available for performance */}
+          <div style={{ 
+            width: virtualTimeline?.totalWidth || `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
+            position: 'relative'
+          }}>
+            <div style={{
+              position: virtualTimeline?.isVirtualized ? 'absolute' : 'static',
+              left: virtualTimeline?.offsetLeft || 0,
+              minWidth: virtualTimeline?.isVirtualized 
+                ? `${(virtualTimeline?.virtualDates || formattedDates).length * LAYOUT.DAY_CELL_WIDTH}px`
+                : '100%'
+            }}>
             {filteredEquipmentGroups.map((group) => (
                               <TimelineSection
                   key={`timeline-${group.mainFolder}`}
@@ -340,7 +364,7 @@ const TimelineContentComponent = ({
                   expandedGroups={expandedGroups}
                   expandedEquipment={expandedEquipment}
                   equipmentProjectUsage={equipmentProjectUsage}
-                  formattedDates={formattedDates}
+                  formattedDates={virtualTimeline?.virtualDates || formattedDates}
                   getBookingForEquipment={getBookingForEquipment}
                   getProjectQuantityForDate={getProjectQuantityForDate}
                   getCrewRoleForDate={getCrewRoleForDate}
@@ -351,6 +375,7 @@ const TimelineContentComponent = ({
                   isUnfilledRolesSection={(group as any).isUnfilledRolesSection}
                 />
             ))}
+            </div>
           </div>
         </div>
 

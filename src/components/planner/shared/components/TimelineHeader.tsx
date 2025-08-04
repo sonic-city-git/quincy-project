@@ -31,12 +31,19 @@ interface MonthSection {
 // Filter interfaces - reexport for backward compatibility
 export interface PlannerFilters {
   search: string;
+  selectedOwner: string;
   equipmentType: string;
   crewRole: string;
 }
 
 interface TimelineHeaderProps {
   formattedDates: FormattedDate[];
+  virtualTimeline?: {
+    virtualDates: FormattedDate[];
+    totalWidth: number;
+    offsetLeft: number;
+    isVirtualized: boolean;
+  };
   monthSections: MonthSection[];
   onDateChange: (date: Date) => void;
   timelineScroll: {
@@ -66,6 +73,7 @@ interface TimelineHeaderProps {
 
 export function TimelineHeader({
   formattedDates,
+  virtualTimeline,
   monthSections,
   onDateChange,
   timelineScroll,
@@ -131,9 +139,10 @@ export function TimelineHeader({
   // Clear all filters
   const clearAllFilters = useCallback(() => {
     if (!onFiltersChange) return;
-          onFiltersChange({
-            search: '',
-            equipmentType: '',
+    onFiltersChange({
+      search: '',
+      selectedOwner: '',
+      equipmentType: '',
       crewRole: ''
     });
   }, [onFiltersChange]);
@@ -250,7 +259,22 @@ export function TimelineHeader({
             
             {/* Date Header */}
             <div style={{ height: LAYOUT.DATE_HEADER_HEIGHT }} className="flex items-center relative">
-              {formattedDates.map((dateInfo, index) => {
+              {/* VIRTUAL TIMELINE: Use virtual dates when available for performance */}
+              <div 
+                style={{ 
+                  width: virtualTimeline?.totalWidth || `${formattedDates.length * LAYOUT.DAY_CELL_WIDTH}px`,
+                  position: 'relative'
+                }}
+              >
+                <div 
+                  style={{
+                    position: 'absolute',
+                    left: virtualTimeline?.offsetLeft || 0,
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                >
+                  {(virtualTimeline?.virtualDates || formattedDates).map((dateInfo, index) => {
                 // Check if this is the first day of a new year or month
                 const prevDate = index > 0 ? formattedDates[index - 1] : null;
                 const isNewYear = prevDate && 
@@ -329,6 +353,8 @@ export function TimelineHeader({
                   </div>
                 );
               })}
+                </div>
+              </div>
             </div>
           </div>
         </div>

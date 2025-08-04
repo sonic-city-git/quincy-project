@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { OVERBOOKING_WARNING_DAYS, getWarningTimeframe } from '@/constants/timeframes';
 import { usePersistentExpandedGroups } from '@/hooks/usePersistentExpandedGroups';
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/utils/folderSort';
+import { PERFORMANCE } from '../constants';
 
 interface UseTimelineHubProps {
   resourceType: 'equipment' | 'crew';
@@ -40,21 +41,58 @@ export function useTimelineHub({
   enabled = true
 }: UseTimelineHubProps) {
 
-  // STABLE DATA RANGE - Prevents cascade refetches
+  // SLIDING WINDOW DATA MANAGEMENT - Ultimate Performance
   const stableDataRange = useMemo(() => {
     const centerDate = new Date();
-    const bufferDays = 40;
-    const stableStart = new Date(centerDate.getTime() - bufferDays * 24 * 60 * 60 * 1000);
-    const stableEnd = new Date(centerDate.getTime() + bufferDays * 24 * 60 * 60 * 1000);
+    const baseBufferDays = 40;
+    const maxWindowDays = PERFORMANCE.MAX_RENDERED_DAYS; // 90 days max
     
-    // Expand if needed
-    const expandedStart = periodStart < stableStart ? periodStart : stableStart;
-    const expandedEnd = periodEnd > stableEnd ? periodEnd : stableEnd;
+    // Calculate the current timeline span
+    const timelineSpanDays = Math.ceil((periodEnd.getTime() - periodStart.getTime()) / (24 * 60 * 60 * 1000));
     
-    return { start: expandedStart, end: expandedEnd };
+    // SLIDING WINDOW: Limit total data range to prevent unlimited growth
+    const effectiveBuffer = Math.min(baseBufferDays, maxWindowDays / 2);
+    
+    // Calculate adaptive buffer based on timeline size, but cap it
+    const adaptiveBuffer = Math.min(
+      Math.max(effectiveBuffer, timelineSpanDays * 0.3),
+      maxWindowDays / 2
+    );
+    
+    // Create sliding window centered on visible timeline
+    const visibleCenter = new Date((periodStart.getTime() + periodEnd.getTime()) / 2);
+    const windowStart = new Date(visibleCenter.getTime() - adaptiveBuffer * 24 * 60 * 60 * 1000);
+    const windowEnd = new Date(visibleCenter.getTime() + adaptiveBuffer * 24 * 60 * 60 * 1000);
+    
+    // Always include visible timeline with small margin
+    const marginDays = 14; // 2 weeks margin
+    const finalStart = new Date(Math.min(
+      periodStart.getTime() - marginDays * 24 * 60 * 60 * 1000,
+      windowStart.getTime()
+    ));
+    const finalEnd = new Date(Math.max(
+      periodEnd.getTime() + marginDays * 24 * 60 * 60 * 1000,
+      windowEnd.getTime()
+    ));
+    
+    // Ensure we don't exceed max window size
+    const totalDays = Math.ceil((finalEnd.getTime() - finalStart.getTime()) / (24 * 60 * 60 * 1000));
+    if (totalDays > maxWindowDays) {
+      // Trim from the furthest edge
+      const excess = totalDays - maxWindowDays;
+      const trimDays = Math.ceil(excess / 2);
+      
+      return {
+        start: new Date(finalStart.getTime() + trimDays * 24 * 60 * 60 * 1000),
+        end: new Date(finalEnd.getTime() - trimDays * 24 * 60 * 60 * 1000)
+      };
+    }
+    
+    return { start: finalStart, end: finalEnd };
   }, [
-    Math.floor(periodStart.getTime() / (7 * 24 * 60 * 60 * 1000)), 
-    Math.floor(periodEnd.getTime() / (7 * 24 * 60 * 60 * 1000))
+    // Use 3-day buckets for responsive updates while maintaining stability
+    Math.floor(periodStart.getTime() / (3 * 24 * 60 * 60 * 1000)), 
+    Math.floor(periodEnd.getTime() / (3 * 24 * 60 * 60 * 1000))
   ]);
 
   // EXPANSION STATE
@@ -164,7 +202,7 @@ export function useTimelineHub({
     return { resources, resourceById };
   }, []);
 
-  const fetchEquipmentBookings = useCallback(async () => {
+  const fetchEquipmentBookings = useCallback(async (expandedIds: string[]) => {
     const dateStart = format(stableDataRange.start, 'yyyy-MM-dd');
     const dateEnd = format(stableDataRange.end, 'yyyy-MM-dd');
     
@@ -186,13 +224,32 @@ export function useTimelineHub({
     if (eventsError) throw eventsError;
     if (!events?.length) return new Map();
 
-    // Get equipment bookings
-    const { data: equipmentBookings, error: equipmentError } = await supabase
+    // SMART FOLDER OPTIMIZATION: Only fetch bookings for expanded equipment
+    if (expandedIds.length === 0) {
+      // No folders expanded = no bookings to fetch
+      if (process.env.NODE_ENV === 'development') {
+        console.log('🎯 SMART FOLDER: No expanded folders, skipping booking fetch');
+      }
+      return new Map();
+    }
+
+    // Get equipment bookings - FILTERED to expanded equipment only
+    let equipmentQuery = supabase
       .from('project_event_equipment')
       .select('event_id, equipment_id, quantity')
       .in('event_id', events.map(e => e.id));
 
+    // Apply equipment ID filter for expanded folders only
+    if (expandedIds.length > 0) {
+      equipmentQuery = equipmentQuery.in('equipment_id', expandedIds);
+    }
+
+    const { data: equipmentBookings, error: equipmentError } = await equipmentQuery;
     if (equipmentError) throw equipmentError;
+
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🎯 SMART FOLDER: Fetched ${equipmentBookings?.length || 0} bookings for ${expandedIds.length} expanded equipment items`);
+    }
 
     // Transform to booking map
     const eventMap = new Map(events.map(e => [e.id, e]));
@@ -294,16 +351,84 @@ export function useTimelineHub({
     refetchOnWindowFocus: false,
   });
 
-  // BOOKING/ASSIGNMENT DATA - Independent of resource data to prevent cascade
+  // EARLY CALCULATION: Get expanded equipment IDs before booking fetch for smart optimization
+  const expandedEquipmentIds = useMemo(() => {
+    if (!resourceData?.resources) return [];
+    
+    const expandedIds: string[] = [];
+    const groupsMap = new Map();
+    
+    // Build groups structure first
+    resourceData.resources.forEach(resource => {
+      const { mainFolder, subFolder } = resource;
+      
+      if (!groupsMap.has(mainFolder)) {
+        groupsMap.set(mainFolder, {
+          mainFolder,
+          equipment: [],
+          subFolders: [],
+          isExpanded: expandedGroups.has(mainFolder)
+        });
+      }
+      
+      const group = groupsMap.get(mainFolder);
+      
+      if (subFolder) {
+        let subFolderObj = group.subFolders.find(sf => sf.name === subFolder);
+        if (!subFolderObj) {
+          subFolderObj = {
+            name: subFolder,
+            mainFolder,
+            equipment: [],
+            isExpanded: expandedGroups.has(`${mainFolder}/${subFolder}`)
+          };
+          group.subFolders.push(subFolderObj);
+        }
+        subFolderObj.equipment.push(resource);
+      } else {
+        group.equipment.push(resource);
+      }
+    });
+    
+    // Extract IDs from expanded folders
+    Array.from(groupsMap.values()).forEach(group => {
+      if (group.isExpanded) {
+        // Add equipment from expanded main folders
+        group.equipment.forEach(equipment => {
+          expandedIds.push(equipment.id);
+        });
+        
+        // Add equipment from expanded subfolders
+        group.subFolders.forEach(subFolder => {
+          if (subFolder.isExpanded) {
+            subFolder.equipment.forEach(equipment => {
+              expandedIds.push(equipment.id);
+            });
+          }
+        });
+      }
+    });
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`🎯 SMART FOLDER: ${expandedIds.length} equipment items in expanded folders out of ${resourceData?.resources?.length || 0} total`);
+    }
+    
+    return expandedIds;
+  }, [resourceData?.resources, expandedGroups]);
+
+  // BOOKING/ASSIGNMENT DATA - Smart folder optimized with expanded equipment dependency
   const { data: rawBookingsData, isLoading: isLoadingBookings } = useQuery({
     queryKey: [
       `timeline-${resourceType}-bookings`,
       format(stableDataRange.start, 'yyyy-MM-dd'),
       format(stableDataRange.end, 'yyyy-MM-dd'),
-      selectedOwner
+      selectedOwner,
+      expandedEquipmentIds.join(',') // Add expanded equipment as dependency
     ],
-    queryFn: resourceType === 'equipment' ? fetchEquipmentBookings : fetchCrewAssignments,
-    enabled: enabled, // Remove dependency on resourceData to prevent cascade
+    queryFn: () => resourceType === 'equipment' 
+      ? fetchEquipmentBookings(expandedEquipmentIds) 
+      : fetchCrewAssignments(),
+    enabled: enabled && expandedEquipmentIds.length > 0, // Only fetch if folders are expanded
     staleTime: 60 * 1000, // 1 minute
     gcTime: 5 * 60 * 1000,
     placeholderData: (previousData) => previousData, // Keep previous data while refetching
@@ -395,15 +520,19 @@ export function useTimelineHub({
     }
   }, [resourceData?.resources, expandedGroups, resourceType]);
 
-  // PROJECT USAGE (scroll-aware)
+  // PROJECT USAGE (scroll-aware and folder-optimized)
   const projectUsage = useMemo(() => {
     if (!bookingsData) return new Map();
 
     const timelineStart = visibleTimelineStart?.toISOString().split('T')[0] || stableDataRange.start.toISOString().split('T')[0];
     const timelineEnd = visibleTimelineEnd?.toISOString().split('T')[0] || stableDataRange.end.toISOString().split('T')[0];
 
+    // OPTIMIZATION: Only process bookings for expanded equipment
+    const expandedIdsSet = new Set(expandedEquipmentIds);
     const filteredBookings = Array.from(bookingsData.values()).filter(booking => 
-      booking.date >= timelineStart && booking.date <= timelineEnd
+      booking.date >= timelineStart && 
+      booking.date <= timelineEnd &&
+      expandedIdsSet.has(booking.resourceId) // Only expanded equipment
     );
 
     const usage = new Map();
