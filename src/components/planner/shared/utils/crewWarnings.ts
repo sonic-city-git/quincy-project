@@ -6,6 +6,7 @@
  */
 
 import { EquipmentGroup } from '../types';
+import { analyzeWarnings, extractCrewIssues } from './warningAnalysis';
 
 export interface CrewWarning {
   hasDoubleBookings: boolean;

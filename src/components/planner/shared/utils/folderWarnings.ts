@@ -6,6 +6,7 @@
  */
 
 import { EquipmentGroup } from '../types';
+import { analyzeWarnings, extractEquipmentIssues } from './warningAnalysis';
 
 export interface FolderWarning {
   hasOverbookings: boolean;

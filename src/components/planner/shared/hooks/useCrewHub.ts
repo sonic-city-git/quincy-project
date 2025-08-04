@@ -4,6 +4,9 @@ import { supabase } from '../../../../integrations/supabase/client';
 import { usePersistentExpandedGroups } from '../../../../hooks/usePersistentExpandedGroups';
 import { format } from 'date-fns';
 import { handleError } from '../utils/errorHandling';
+import { useStableDataRange } from './useStableDataRange';
+import { useToggleGroupHandler } from './useToggleGroupHandler';
+import { useBookingStateManager } from './useBookingStateManager';
 import { 
   CrewGroup, 
   CrewMember, 
@@ -65,31 +68,8 @@ export function useCrewHub({
   enabled = true
 }: UseCrewHubProps): CrewHubReturn {
   
-  // FIXED: Stable date range to prevent cascade refetches during infinite scroll
-  const stableDataRange = useMemo(() => {
-    // Use a wider, more stable range that doesn't change on every expansion
-    const bufferDays = 70; // Wide buffer to reduce refetch frequency
-    const centerDate = new Date();
-    const stableStart = new Date(centerDate);
-    stableStart.setDate(centerDate.getDate() - bufferDays);
-    const stableEnd = new Date(centerDate);
-    stableEnd.setDate(centerDate.getDate() + bufferDays);
-    
-    // If the requested range is within our stable buffer, use stable range
-    if (periodStart >= stableStart && periodEnd <= stableEnd) {
-      return { start: stableStart, end: stableEnd };
-    }
-    
-    // If requested range exceeds buffer, expand the stable range incrementally
-    const expandedStart = periodStart < stableStart ? periodStart : stableStart;
-    const expandedEnd = periodEnd > stableEnd ? periodEnd : stableEnd;
-    
-    return { start: expandedStart, end: expandedEnd };
-  }, [
-    // Use weekly precision to reduce sensitivity to timeline expansions
-    Math.floor(periodStart.getTime() / (7 * 24 * 60 * 60 * 1000)), 
-    Math.floor(periodEnd.getTime() / (7 * 24 * 60 * 60 * 1000))
-  ]);
+  // CONSOLIDATED: Use shared stable data range hook
+  const stableDataRange = useStableDataRange({ periodStart, periodEnd });
 
   // Persistent expansion state management for crew
   const {
@@ -503,19 +483,11 @@ export function useCrewHub({
     return hasAnyAssignments ? 0 : 1; // 0 = busy, 1 = available
   }, [crewById, assignmentsData?.assignments]);
 
-  // Enhanced toggle group with subfolder support (similar to equipment)
-  const toggleGroup = useCallback((groupName: string, expandAllSubRoles?: boolean) => {
-    if (expandAllSubRoles) {
-      const group = crewGroups.find(g => g.mainFolder === groupName);
-      const subFolderKeys = group?.subFolders?.map(
-        (subFolder) => `${groupName}/${subFolder.name}`
-      ) || [];
-      
-      toggleGroupPersistent(groupName, expandAllSubRoles, subFolderKeys);
-    } else {
-      toggleGroupPersistent(groupName, false);
-    }
-  }, [crewGroups, toggleGroupPersistent]);
+  // CONSOLIDATED: Use shared toggle group handler
+  const toggleGroup = useToggleGroupHandler({
+    groups: crewGroups,
+    toggleGroupPersistent
+  });
 
   // Initialize default expanded state for crew folders
   useEffect(() => {
@@ -538,23 +510,13 @@ export function useCrewHub({
   }, []);
 
   // Placeholder functions for state management
-  const updateBookingState = useCallback((crewMemberId: string, dateStr: string, state: any) => {
-    // Implement crew assignment state updates
-    // Update crew assignment state
-  }, []);
-
-  const getBookingState = useCallback((crewMemberId: string, dateStr: string) => {
-    // Get crew assignment state
-    return null;
-  }, []);
-
-  const batchUpdateBookings = useCallback((updates: any[]) => {
-    // Batch update crew assignments
-  }, []);
-
-  const clearStaleStates = useCallback(() => {
-    // Clear stale crew assignment states
-  }, []);
+  // CONSOLIDATED: Use shared booking state manager
+  const {
+    updateBookingState,
+    getBookingState,
+    batchUpdateBookings,
+    clearStaleStates
+  } = useBookingStateManager();
 
   const resolveConflict = useCallback((conflict: CrewConflict) => {
     // Resolve crew scheduling conflict

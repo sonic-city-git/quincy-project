@@ -26,6 +26,9 @@ import {
   ProjectQuantityCell,
   sortEquipmentGroups
 } from '../types';
+import { useStableDataRange } from './useStableDataRange';
+import { useToggleGroupHandler } from './useToggleGroupHandler';
+import { useBookingStateManager } from './useBookingStateManager';
 
 interface UseEquipmentHubProps {
   periodStart: Date;
@@ -55,37 +58,8 @@ export function useEquipmentHub({
   enabled = true
 }: UseEquipmentHubProps) {
   
-  // FIXED: Truly stable range that doesn't change during infinite scroll expansions
-  const stableDataRange = useMemo(() => {
-    // Use a wider, more stable range that doesn't change on every expansion
-    // This prevents cascade refetches while still fetching needed data
-    const bufferDays = 70; // Wide buffer to reduce refetch frequency
-    const centerDate = new Date();
-    const stableStart = new Date(centerDate);
-    stableStart.setDate(centerDate.getDate() - bufferDays);
-    const stableEnd = new Date(centerDate);
-    stableEnd.setDate(centerDate.getDate() + bufferDays);
-    
-    // Only update stable range if current range extends far beyond our buffer
-    const currentStart = periodStart;
-    const currentEnd = periodEnd;
-    
-    // If the requested range is within our stable buffer, use stable range
-    if (currentStart >= stableStart && currentEnd <= stableEnd) {
-      return { start: stableStart, end: stableEnd, dayCount: bufferDays * 2 };
-    }
-    
-    // If requested range exceeds buffer, expand the stable range incrementally
-    const expandedStart = currentStart < stableStart ? currentStart : stableStart;
-    const expandedEnd = currentEnd > stableEnd ? currentEnd : stableEnd;
-    const dayCount = Math.ceil((expandedEnd.getTime() - expandedStart.getTime()) / (1000 * 60 * 60 * 24));
-    
-    return { start: expandedStart, end: expandedEnd, dayCount };
-  }, [
-    // Use weekly precision instead of daily to reduce sensitivity
-    Math.floor(periodStart.getTime() / (7 * 24 * 60 * 60 * 1000)), 
-    Math.floor(periodEnd.getTime() / (7 * 24 * 60 * 60 * 1000))
-  ]);
+  // CONSOLIDATED: Use shared stable data range hook
+  const stableDataRange = useStableDataRange({ periodStart, periodEnd });
 
   // Persistent expansion state management
   const {
@@ -111,12 +85,14 @@ export function useEquipmentHub({
   }, []);
 
   // Granular booking state management
-  const [bookingStates, setBookingStates] = useState<Map<string, { 
-    isLoading: boolean; 
-    data: any; 
-    lastUpdated: number;
-    error?: string;
-  }>>(new Map());
+  // CONSOLIDATED: Use shared booking state manager
+  const {
+    bookingStates,
+    updateBookingState,
+    getBookingState,
+    batchUpdateBookings,
+    clearStaleStates
+  } = useBookingStateManager();
 
   // CONSOLIDATED EQUIPMENT DATA FETCHING
   const { data: equipmentData, isLoading: isLoadingEquipment } = useQuery({
@@ -532,19 +508,11 @@ export function useEquipmentHub({
     return lowestAvailable;
   }, [equipmentData, bookingsData]); // Proper dependencies for updates
 
-  // Enhanced toggle group with subfolder support
-  const toggleGroup = useCallback((groupKey: string, expandAllSubfolders?: boolean) => {
-    if (expandAllSubfolders) {
-      const group = equipmentGroups.find(g => g.mainFolder === groupKey);
-      const subFolderKeys = group?.subFolders?.map(
-        (subFolder) => `${groupKey}/${subFolder.name}`
-      ) || [];
-      
-      toggleGroupPersistent(groupKey, expandAllSubfolders, subFolderKeys);
-    } else {
-      toggleGroupPersistent(groupKey, false);
-    }
-  }, [equipmentGroups, toggleGroupPersistent]);
+  // CONSOLIDATED: Use shared toggle group handler
+  const toggleGroup = useToggleGroupHandler({
+    groups: equipmentGroups,
+    toggleGroupPersistent
+  });
 
   // Initialize default expanded state
   useEffect(() => {
@@ -554,63 +522,7 @@ export function useEquipmentHub({
     }
   }, [equipmentGroups, initializeDefaultExpansion]);
 
-  // Granular booking state management functions
-  const updateBookingState = useCallback((equipmentId: string, dateStr: string, state: {
-    isLoading?: boolean;
-    data?: any;
-    error?: string;
-  }) => {
-    const key = `${equipmentId}-${dateStr}`;
-    setBookingStates(prev => {
-      const newMap = new Map(prev);
-      const existing = newMap.get(key) || { isLoading: false, data: null, lastUpdated: 0 };
-      newMap.set(key, {
-        ...existing,
-        ...state,
-        lastUpdated: Date.now()
-      });
-      return newMap;
-    });
-  }, []);
-
-  // FIXED: Direct state access for granular booking states
-  const getBookingState = useCallback((equipmentId: string, dateStr: string) => {
-    const key = `${equipmentId}-${dateStr}`;
-    return bookingStates.get(key) || { isLoading: false, data: null, lastUpdated: 0 };
-  }, [bookingStates]); // Proper dependency for real-time updates
-
-  const batchUpdateBookings = useCallback((updates: Array<{
-    equipmentId: string;
-    dateStr: string;
-    state: { isLoading?: boolean; data?: any; error?: string; };
-  }>) => {
-    setBookingStates(prev => {
-      const newMap = new Map(prev);
-      updates.forEach(({ equipmentId, dateStr, state }) => {
-        const key = `${equipmentId}-${dateStr}`;
-        const existing = newMap.get(key) || { isLoading: false, data: null, lastUpdated: 0 };
-        newMap.set(key, {
-          ...existing,
-          ...state,
-          lastUpdated: Date.now()
-        });
-      });
-      return newMap;
-    });
-  }, []);
-
-  const clearStaleStates = useCallback(() => {
-    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-    setBookingStates(prev => {
-      const newMap = new Map();
-      prev.forEach((value, key) => {
-        if (value.lastUpdated > fiveMinutesAgo) {
-          newMap.set(key, value);
-        }
-      });
-      return newMap;
-    });
-  }, []);
+  // CONSOLIDATED: Booking state management functions now provided by useBookingStateManager
 
   const isLoading = isLoadingEquipment || isLoadingBookings;
   const isEquipmentReady = !!equipmentData?.equipmentById;
