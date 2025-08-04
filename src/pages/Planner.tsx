@@ -8,9 +8,9 @@ import { useOwnerOptions } from "@/hooks/useOwnerOptions";
 import { useProjects } from "@/hooks/useProjects";
 import { useFilterState } from "@/hooks/useFilterState";
 import { UnifiedCalendar } from "@/components/planner/UnifiedCalendar";
-import { useUnifiedTimelineScroll } from "@/components/planner/shared/hooks/useUnifiedTimelineScroll";
-import { TimelineHeader, PlannerFilters } from "@/components/planner/shared/components/TimelineHeader";
-import { LAYOUT } from "@/components/planner/shared/constants";
+import { PlannerFilters } from "@/components/planner/shared/components/TimelineHeader";
+
+
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,8 +19,15 @@ import { Button } from "@/components/ui/button";
 const Planner = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // ALWAYS start with today's date for better UX
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  // STABLE: Initialize once with today's date and don't change it on mount
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    // console.log('🔄 Planner initializing with today:', today.toISOString().split('T')[0]);
+    return today;
+  });
+  
+  // Remove the aggressive useEffect that was causing double date setting
   
   // Use consolidated tab persistence hook
   const [activeTab, setActiveTab] = useTabPersistence(
@@ -29,18 +36,7 @@ const Planner = () => {
     ['equipment', 'crew'] as const
   );
 
-  // OPTIMIZED: Debounced localStorage persistence
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      try {
-        localStorage.setItem('planner-selected-date', selectedDate.toISOString());
-      } catch (error) {
-        // Silently handle localStorage errors (e.g., when in private mode)
-      }
-    }, 300); // Debounce rapid date changes
-    
-    return () => clearTimeout(timeoutId);
-  }, [selectedDate]);
+  // Note: Removed localStorage persistence - always start fresh with today's date on page refresh
   
   // Filter state
   const [filters, setFilters, updateFilters, clearFilters] = useFilterState<PlannerFilters>({
@@ -95,8 +91,7 @@ const Planner = () => {
   // Separate state for problems-only mode
   const [showProblemsOnly, setShowProblemsOnly] = useState(false);
 
-  // UNIFIED: One scroll system to rule them all
-  const timelineScroll = useUnifiedTimelineScroll({ selectedDate });
+  // SIMPLIFIED: Single scroll hook handles everything
   const { projects } = useProjects();
 
 
@@ -114,46 +109,19 @@ const Planner = () => {
       description="Global resource availability and scheduling across all projects"
       iconColor="text-blue-500"
     >
-      <div className="space-y-4">
-        {/* Fixed header with filters and tabs */}
-        <TimelineHeader
-          formattedDates={timelineScroll.formattedDates}
-          monthSections={timelineScroll.monthSections}
-          onDateChange={(date) => {
-            // Immediate scroll for instant feedback
-            timelineScroll.scrollToDate(date);
-            // Then update state
-            setSelectedDate(date);
-          }}
-          timelineScroll={timelineScroll}
-          stickyHeadersRef={timelineScroll.stickyHeadersRef}
-          resourceType={activeTab}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          filters={filters}
-          onFiltersChange={setFilters}
-          showProblemsOnly={showProblemsOnly}
-          onToggleProblemsOnly={() => setShowProblemsOnly(!showProblemsOnly)}
-        />
-        
-        {/* Main timeline content */}
-        <UnifiedCalendar 
-          selectedDate={selectedDate} 
-          onDateChange={(date) => {
-            // Immediate scroll for instant feedback
-            timelineScroll.scrollToDate(date);
-            // Then update state
-            setSelectedDate(date);
-          }}
-          selectedOwner={filters.selectedOwner}
-          timelineScroll={timelineScroll}
-          resourceType={activeTab}
-          filters={filters}
-          showProblemsOnly={showProblemsOnly}
-          targetScrollItem={targetScrollItem}
-          isWithinScrollContainer={false}
-        />
-      </div>
+      {/* Simplified: UnifiedCalendar now handles everything internally */}
+      <UnifiedCalendar 
+        selectedDate={selectedDate} 
+        onDateChange={setSelectedDate}
+        selectedOwner={filters.selectedOwner}
+        resourceType={activeTab}
+        onTabChange={setActiveTab}
+        filters={filters}
+        onFiltersChange={setFilters}
+        showProblemsOnly={showProblemsOnly}
+        onToggleProblemsOnly={() => setShowProblemsOnly(!showProblemsOnly)}
+        targetScrollItem={targetScrollItem}
+      />
     </PageLayout>
   );
 };

@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { OVERBOOKING_WARNING_DAYS, getWarningTimeframe } from '@/constants/timeframes';
 import { usePersistentExpandedGroups } from '@/hooks/usePersistentExpandedGroups';
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/utils/folderSort';
+import { PERFORMANCE } from '../constants';
 
 interface UseTimelineHubProps {
   resourceType: 'equipment' | 'crew';
@@ -40,19 +41,16 @@ export function useTimelineHub({
   enabled = true
 }: UseTimelineHubProps) {
 
-  // STABLE DATA RANGE - Prevents cascade refetches
+  // SIMPLE DATA RANGE - No sliding window complexity
   const stableDataRange = useMemo(() => {
-    const centerDate = new Date();
-    const bufferDays = 40;
-    const stableStart = new Date(centerDate.getTime() - bufferDays * 24 * 60 * 60 * 1000);
-    const stableEnd = new Date(centerDate.getTime() + bufferDays * 24 * 60 * 60 * 1000);
+    // Simple: timeline range + 1 week buffer on each side
+    const bufferDays = 7;
+    const start = new Date(periodStart.getTime() - bufferDays * 24 * 60 * 60 * 1000);
+    const end = new Date(periodEnd.getTime() + bufferDays * 24 * 60 * 60 * 1000);
     
-    // Expand if needed
-    const expandedStart = periodStart < stableStart ? periodStart : stableStart;
-    const expandedEnd = periodEnd > stableEnd ? periodEnd : stableEnd;
-    
-    return { start: expandedStart, end: expandedEnd };
+    return { start, end };
   }, [
+    // Simple weekly boundaries for stable caching
     Math.floor(periodStart.getTime() / (7 * 24 * 60 * 60 * 1000)), 
     Math.floor(periodEnd.getTime() / (7 * 24 * 60 * 60 * 1000))
   ]);
@@ -164,7 +162,7 @@ export function useTimelineHub({
     return { resources, resourceById };
   }, []);
 
-  const fetchEquipmentBookings = useCallback(async () => {
+  const fetchEquipmentBookings = useCallback(async (expandedIds: string[]) => {
     const dateStart = format(stableDataRange.start, 'yyyy-MM-dd');
     const dateEnd = format(stableDataRange.end, 'yyyy-MM-dd');
     
@@ -186,13 +184,29 @@ export function useTimelineHub({
     if (eventsError) throw eventsError;
     if (!events?.length) return new Map();
 
-    // Get equipment bookings
-    const { data: equipmentBookings, error: equipmentError } = await supabase
+    // Smart folder: Only fetch if equipment is expanded
+    if (expandedIds.length === 0) {
+      return new Map(); // No expanded folders = no bookings needed
+    }
+
+    // Get equipment bookings - FILTERED to expanded equipment only
+    let equipmentQuery = supabase
       .from('project_event_equipment')
       .select('event_id, equipment_id, quantity')
       .in('event_id', events.map(e => e.id));
 
+    // Apply equipment ID filter for expanded folders only
+    if (expandedIds.length > 0) {
+      equipmentQuery = equipmentQuery.in('equipment_id', expandedIds);
+    }
+
+    const { data: equipmentBookings, error: equipmentError } = await equipmentQuery;
     if (equipmentError) throw equipmentError;
+
+    // Simplified logging
+    if (process.env.NODE_ENV === 'development' && equipmentBookings?.length) {
+      console.log(`📦 Loaded ${equipmentBookings.length} bookings`);
+    }
 
     // Transform to booking map
     const eventMap = new Map(events.map(e => [e.id, e]));
@@ -294,19 +308,89 @@ export function useTimelineHub({
     refetchOnWindowFocus: false,
   });
 
-  // BOOKING/ASSIGNMENT DATA - Independent of resource data to prevent cascade
+  // EARLY CALCULATION: Get expanded equipment IDs before booking fetch for smart optimization
+  const expandedEquipmentIds = useMemo(() => {
+    if (!resourceData?.resources) return [];
+    
+    const expandedIds: string[] = [];
+    const groupsMap = new Map();
+    
+    // Build groups structure first
+    resourceData.resources.forEach(resource => {
+      const { mainFolder, subFolder } = resource;
+      
+      if (!groupsMap.has(mainFolder)) {
+        groupsMap.set(mainFolder, {
+          mainFolder,
+          equipment: [],
+          subFolders: [],
+          isExpanded: expandedGroups.has(mainFolder)
+        });
+      }
+      
+      const group = groupsMap.get(mainFolder);
+      
+      if (subFolder) {
+        let subFolderObj = group.subFolders.find(sf => sf.name === subFolder);
+        if (!subFolderObj) {
+          subFolderObj = {
+            name: subFolder,
+            mainFolder,
+            equipment: [],
+            isExpanded: expandedGroups.has(`${mainFolder}/${subFolder}`)
+          };
+          group.subFolders.push(subFolderObj);
+        }
+        subFolderObj.equipment.push(resource);
+      } else {
+        group.equipment.push(resource);
+      }
+    });
+    
+    // Extract IDs from expanded folders
+    Array.from(groupsMap.values()).forEach(group => {
+      if (group.isExpanded) {
+        // Add equipment from expanded main folders
+        group.equipment.forEach(equipment => {
+          expandedIds.push(equipment.id);
+        });
+        
+        // Add equipment from expanded subfolders
+        group.subFolders.forEach(subFolder => {
+          if (subFolder.isExpanded) {
+            subFolder.equipment.forEach(equipment => {
+              expandedIds.push(equipment.id);
+            });
+          }
+        });
+      }
+    });
+    
+    // Clean logging
+    if (process.env.NODE_ENV === 'development' && expandedIds.length > 0) {
+      console.log(`📂 ${expandedIds.length} items expanded`);
+    }
+    
+    return expandedIds;
+  }, [resourceData?.resources, expandedGroups]);
+
+  // SIMPLIFIED BOOKING DATA - Stable query with longer cache times
   const { data: rawBookingsData, isLoading: isLoadingBookings } = useQuery({
     queryKey: [
       `timeline-${resourceType}-bookings`,
       format(stableDataRange.start, 'yyyy-MM-dd'),
       format(stableDataRange.end, 'yyyy-MM-dd'),
-      selectedOwner
+      selectedOwner,
+      // Stable expanded equipment key - only changes when folders expand/collapse
+      expandedEquipmentIds.length > 0 ? expandedEquipmentIds.sort().join(',') : 'none'
     ],
-    queryFn: resourceType === 'equipment' ? fetchEquipmentBookings : fetchCrewAssignments,
-    enabled: enabled, // Remove dependency on resourceData to prevent cascade
-    staleTime: 60 * 1000, // 1 minute
-    gcTime: 5 * 60 * 1000,
-    placeholderData: (previousData) => previousData, // Keep previous data while refetching
+    queryFn: () => resourceType === 'equipment' 
+      ? fetchEquipmentBookings(expandedEquipmentIds) 
+      : fetchCrewAssignments(),
+    enabled: enabled && (resourceType === 'crew' || expandedEquipmentIds.length > 0),
+    staleTime: 5 * 60 * 1000, // 5 minutes - longer cache
+    gcTime: 15 * 60 * 1000, // 15 minutes - keep in memory longer
+    placeholderData: (previousData) => previousData,
     refetchOnWindowFocus: false,
     refetchInterval: false,
   });
@@ -395,20 +479,14 @@ export function useTimelineHub({
     }
   }, [resourceData?.resources, expandedGroups, resourceType]);
 
-  // PROJECT USAGE (scroll-aware)
+  // SIMPLIFIED PROJECT USAGE - No complex filtering
   const projectUsage = useMemo(() => {
     if (!bookingsData) return new Map();
 
-    const timelineStart = visibleTimelineStart?.toISOString().split('T')[0] || stableDataRange.start.toISOString().split('T')[0];
-    const timelineEnd = visibleTimelineEnd?.toISOString().split('T')[0] || stableDataRange.end.toISOString().split('T')[0];
-
-    const filteredBookings = Array.from(bookingsData.values()).filter(booking => 
-      booking.date >= timelineStart && booking.date <= timelineEnd
-    );
-
     const usage = new Map();
     
-    filteredBookings.forEach(booking => {
+    // Process all bookings - simpler and more reliable
+    Array.from(bookingsData.values()).forEach(booking => {
       const resourceId = booking.resourceId;
       
       if (!usage.has(resourceId)) {
@@ -448,7 +526,7 @@ export function useTimelineHub({
     });
 
     return usage;
-  }, [bookingsData, visibleTimelineStart, visibleTimelineEnd, stableDataRange, resourceType]);
+  }, [bookingsData, resourceType]);
 
   // WARNINGS (30-day window)
   const warnings = useMemo(() => {
