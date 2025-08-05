@@ -60,7 +60,8 @@ export function useTimelineHub({
   const {
     expandedGroups,
     toggleGroup: toggleGroupPersistent,
-    initializeDefaultExpansion
+    initializeDefaultExpansion,
+    setExpandedGroups
   } = usePersistentExpandedGroups(storageKey);
   
   const [expandedResources, setExpandedResources] = useState<Set<string>>(new Set());
@@ -732,6 +733,7 @@ export function useTimelineHub({
     getLowestAvailable,
     toggleGroup,
     toggleEquipmentExpansion,
+    setExpandedGroups, // ADDED: For efficient batch expansion state updates
     
     // Crew-specific (when resourceType === 'crew')
     getCrewRoleForDate: getProjectQuantityForDate, // Alias for compatibility

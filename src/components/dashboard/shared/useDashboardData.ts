@@ -8,7 +8,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getWarningTimeframe } from "@/constants/timeframes";
-import { useConsolidatedConflicts } from "@/hooks/useConsolidatedConflicts";
+import { useDashboardConflicts } from "@/hooks/useDashboardConflicts";
 
 // Common query options for dashboard data
 const DASHBOARD_QUERY_OPTIONS = {
@@ -55,19 +55,26 @@ function buildOwnerFilteredQuery(
 /**
  * Operational alerts data (conflicts, overbookings, etc.)
  * 
- * PERFORMANCE FIX: Now uses consolidated hook that leverages planner's existing
- * calculations instead of running duplicate Supabase queries.
+ * CRITICAL FIX: Now uses dashboard-specific conflict detection that fetches ALL equipment
+ * conflicts regardless of planner folder expansion state. The previous implementation 
+ * only showed conflicts for expanded folders, making dashboard metrics unreliable.
  */
 export function useOperationalAlerts(selectedOwnerId?: string) {
-  const { equipmentConflicts, crewConflicts, isLoading } = useConsolidatedConflicts({
-    selectedOwner: selectedOwnerId
-  });
-
-  // Transform to React Query format for API compatibility
-  return {
-    data: { equipmentConflicts, crewConflicts },
+  const { 
+    equipmentConflictCount, 
+    crewConflictCount, 
     isLoading,
-    error: null
+    error 
+  } = useDashboardConflicts(selectedOwnerId);
+
+  // Transform to match expected interface
+  return {
+    data: { 
+      equipmentConflicts: equipmentConflictCount, 
+      crewConflicts: crewConflictCount 
+    },
+    isLoading,
+    error
   };
 }
 
