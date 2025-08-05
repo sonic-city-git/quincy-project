@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="64" height="64" fill="#0a0a0a" rx="12"/>
+  
+  <!-- Logo Icon - Interconnected hexagons representing logistics network -->
+  <g transform="translate(12, 12)">
+    <!-- Main hexagon -->
+    <polygon points="20,8 28,12 28,20 20,24 12,20 12,12" 
+             fill="#9b87f5" 
+             stroke="#9b87f5" 
+             stroke-width="1"/>
+    
+    <!-- Connected hexagons -->
+    <polygon points="32,16 36,18 36,22 32,24 28,22 28,18" 
+             fill="none" 
+             stroke="#9b87f5" 
+             stroke-width="2" 
+             opacity="0.7"/>
+    
+    <polygon points="8,16 12,18 12,22 8,24 4,22 4,18" 
+             fill="none" 
+             stroke="#9b87f5" 
+             stroke-width="2" 
+             opacity="0.7"/>
+    
+    <polygon points="20,28 24,30 24,34 20,36 16,34 16,30" 
+             fill="none" 
+             stroke="#9b87f5" 
+             stroke-width="2" 
+             opacity="0.5"/>
+    
+    <!-- Connection lines -->
+    <line x1="26" y1="16" x2="30" y2="18" stroke="#9b87f5" stroke-width="1.5" opacity="0.6"/>
+    <line x1="14" y1="16" x2="10" y2="18" stroke="#9b87f5" stroke-width="1.5" opacity="0.6"/>
+    <line x1="20" y1="22" x2="20" y2="28" stroke="#9b87f5" stroke-width="1.5" opacity="0.4"/>
+  </g>
+</svg>

@@ -87,24 +87,14 @@ const ProjectRowComponent = ({
           return (
             <div
               key={dateInfo.date.toISOString()}
-              className={`px-1 relative flex items-center justify-center ${
-                dateInfo.isSelected || dateInfo.isToday ? 'z-10' : ''
-              }`}
+              className="px-1 relative flex items-center justify-center"
               style={{ width: LAYOUT.DAY_CELL_WIDTH }}
             >
-              {/* Today indicator */}
-              {dateInfo.isToday && (
-                <div className="absolute inset-0 bg-gray-500/70 rounded-sm pointer-events-none" />
-              )}
-              {/* Selected indicator */}
-              {dateInfo.isSelected && (
-                <div className="absolute inset-0 border border-gray-300 rounded-sm pointer-events-none" />
-              )}
               
               {/* Data indicator - quantity for equipment, role for crew */}
               {hasData && (
                 <div
-                  className="min-w-[20px] h-5 px-2 rounded-full bg-gray-900 flex items-center justify-center"
+                  className="min-w-[20px] h-5 px-2 rounded-full bg-gray-600 flex items-center justify-center"
                   title={formatPlannerTooltip({
                     date: dateInfo.dateStr,
                     // Crew project row data
@@ -123,7 +113,7 @@ const ProjectRowComponent = ({
                     })
                   })}
                 >
-                  <span className="text-[10px] font-bold text-white leading-none">
+                  <span className="text-xs font-medium text-white leading-[0] text-center" style={{ transform: 'translateY(-0.5px)' }}>
                     {isCrew ? role : quantity}
                   </span>
                 </div>
