@@ -210,14 +210,15 @@ export const VARIANT_CONSTANTS = {
   MAX_VARIANT_NAME_LENGTH: 50,
   MAX_DISPLAY_NAME_LENGTH: 100,
   MAX_VARIANTS_PER_PROJECT: 10,
-  VALID_VARIANT_NAME_PATTERN: /^[a-z0-9_]+$/,
+  VALID_VARIANT_NAME_PATTERN: /^[a-zA-Z0-9\s\-_]+$/,
 } as const;
 
 // Utility functions
 export function validateVariantName(name: string): boolean {
-  return name.length > 0 && 
-    name.length <= VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH &&
-    VARIANT_CONSTANTS.VALID_VARIANT_NAME_PATTERN.test(name);
+  const trimmedName = name.trim();
+  return trimmedName.length > 0 && 
+    trimmedName.length <= VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH &&
+    VARIANT_CONSTANTS.VALID_VARIANT_NAME_PATTERN.test(trimmedName);
 }
 
 export function generateVariantName(displayName: string): string {

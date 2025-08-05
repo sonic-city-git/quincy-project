@@ -67,15 +67,18 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
   // Create variant mutation
   const createVariantMutation = useMutation({
     mutationFn: async (data: CreateVariantPayload): Promise<ProjectVariant> => {
+      // Trim the variant name
+      const trimmedName = data.variant_name.trim();
+      
       // Validate input
-      if (!validateVariantName(data.variant_name)) {
-        throw new Error('Invalid variant name. Use only lowercase letters, numbers, and underscores.');
+      if (!validateVariantName(trimmedName)) {
+        throw new Error('Invalid variant name. Please use letters, numbers, spaces, hyphens, or underscores only.');
       }
 
       // Check for duplicate names
-      const existingVariant = variants.find(v => v.variant_name === data.variant_name);
+      const existingVariant = variants.find(v => v.variant_name.toLowerCase() === trimmedName.toLowerCase());
       if (existingVariant) {
-        throw new Error(`Variant "${data.variant_name}" already exists.`);
+        throw new Error(`Variant "${trimmedName}" already exists.`);
       }
 
       // Calculate sort order if not provided
@@ -95,7 +98,7 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
         .from('project_variants')
         .insert({
           project_id: projectId,
-          variant_name: data.variant_name,
+          variant_name: trimmedName,
           display_name: data.display_name,
           description: data.description,
           is_default: shouldBeDefault,
