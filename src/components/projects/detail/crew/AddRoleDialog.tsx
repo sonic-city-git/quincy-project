@@ -159,7 +159,7 @@ export function AddRoleDialog({ isOpen, onClose, project }: AddRoleDialogProps) 
                                 className="object-cover"
                               />
                             ) : (
-                              <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">
+                              <AvatarFallback className="text-xs bg-muted text-muted-foreground">
                                 {initials}
                               </AvatarFallback>
                             )}

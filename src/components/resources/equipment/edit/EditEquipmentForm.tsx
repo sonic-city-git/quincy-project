@@ -8,6 +8,7 @@ import { Loader2, Package, Plus, X } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { Folder } from "@/integrations/supabase/types/folder";
 import { sortEquipmentFolders } from "@/utils/equipmentFolderSort";
+import { FORM_PATTERNS, createCurrencyInput } from "@/design-system";
 
 interface EditEquipmentFormProps {
   form: UseFormReturn<any>;
@@ -86,15 +87,26 @@ export function EditEquipmentForm({
             <FormField
               control={form.control}
               name="rental_price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Rental Price</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="Enter rental price" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                const currencyInput = createCurrencyInput();
+                return (
+                  <FormItem>
+                    <FormLabel className={FORM_PATTERNS.label.optional}>Rental Price</FormLabel>
+                    <FormControl>
+                      <div className={currencyInput.container}>
+                        <span className={currencyInput.symbol}>kr</span>
+                        <Input 
+                          type="number" 
+                          placeholder="0.00"
+                          className={currencyInput.input}
+                          {...field} 
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
             <FormField
               control={form.control}

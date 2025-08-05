@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useFolders } from "@/hooks/useFolders";
+import { useCrewFolders } from "@/hooks/useCrewFolders";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -37,7 +37,7 @@ export function EditMemberDialog({
 }: EditMemberDialogProps) {
   const [isPending, setIsPending] = useState(false);
   const [showDeleteAlert, setShowDeleteAlert] = useState(false);
-  const { folders = [], loading: foldersLoading } = useFolders();
+  const { folders = [], loading: foldersLoading } = useCrewFolders();
   const { roles = [], isLoading: rolesLoading } = useCrewRoles();
   const queryClient = useQueryClient();
 

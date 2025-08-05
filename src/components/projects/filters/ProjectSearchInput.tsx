@@ -11,7 +11,7 @@ export function ProjectSearchInput({ value, onChange }: ProjectSearchInputProps)
       placeholder="Search projects..."
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="w-[200px] bg-zinc-800/50"
+              className="w-[200px] bg-muted/50"
     />
   );
 }

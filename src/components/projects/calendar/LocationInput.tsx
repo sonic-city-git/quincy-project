@@ -128,11 +128,11 @@ export function LocationInput({ value, onChange, disabled }: LocationInputProps)
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         </div>
       )}
-      {error && (
-        <p className="mt-1 text-sm text-red-500">
-          {error}
-        </p>
-      )}
+              {error && (
+          <p className="mt-1 text-sm font-medium text-destructive">
+            {error}
+          </p>
+        )}
     </div>
   );
 }

@@ -21,7 +21,7 @@ export function CrewMemberSelectContent({ crew = [], onSelect, showNoneOption = 
           {showNoneOption && (
             <SelectItem 
               value="_none"
-              className="flex items-center gap-3 py-2 px-3 cursor-pointer rounded-sm hover:bg-accent"
+              className="flex items-center gap-3 py-2 px-3 cursor-pointer rounded-sm hover:bg-muted"
               onClick={() => onSelect?.("")}
             >
               <span className="truncate">None</span>
@@ -38,7 +38,7 @@ export function CrewMemberSelectContent({ crew = [], onSelect, showNoneOption = 
               <SelectItem 
                 key={member.id} 
                 value={member.id}
-                className="flex items-center gap-3 py-2 px-3 cursor-pointer rounded-sm hover:bg-accent"
+                className="flex items-center gap-3 py-2 px-3 cursor-pointer rounded-sm hover:bg-muted"
                 onClick={() => onSelect?.(member.id)}
               >
                 <div className="flex items-center gap-3 w-full">

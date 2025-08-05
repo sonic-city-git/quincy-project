@@ -91,12 +91,13 @@ export const COMPONENT_CLASSES = {
     hover: 'bg-card text-card-foreground border border-border rounded-lg shadow-sm hover:bg-muted/30 transition-colors'
   },
   
-  // Button patterns (using your CSS variables)
+  // Button patterns matching dashboard styling
   button: {
     primary: 'bg-primary text-primary-foreground hover:bg-primary/90 transition-colors',
     secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-colors',
     outline: 'border border-border bg-background hover:bg-muted/50 transition-colors',
-    ghost: 'hover:bg-muted/50 hover:text-foreground transition-colors'
+    ghost: 'hover:bg-muted/50 hover:text-foreground transition-colors',
+    destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors'
   },
   
   // Input patterns
@@ -217,6 +218,76 @@ export function createStatus(status: keyof typeof STATUS_PATTERNS): string {
 }
 
 /**
+ * Create input styling with validation state
+ */
+export function createInputClasses(state: 'default' | 'withIcon' | 'error' | 'success' | 'disabled' = 'default'): string {
+  return cn(
+    'flex h-10 w-full rounded-md px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50',
+    FORM_PATTERNS.input[state]
+  );
+}
+
+/**
+ * Create form field classes with consistent spacing
+ */
+export function createFieldClasses(layout: 'default' | 'group' | 'inline' = 'default'): string {
+  return FORM_PATTERNS.field[layout];
+}
+
+/**
+ * Create validation message classes
+ */
+export function createMessageClasses(type: 'error' | 'success' | 'info' | 'warning' = 'error'): string {
+  return FORM_PATTERNS.message[type];
+}
+
+/**
+ * Create enhanced form field with icon support
+ */
+export function createFormFieldContainer(hasIcon: boolean = false): string {
+  return cn(
+    FORM_PATTERNS.fieldContainer.default,
+    hasIcon && FORM_PATTERNS.fieldContainer.floating
+  );
+}
+
+/**
+ * Create icon classes for form fields
+ */
+export function createFieldIconClasses(): string {
+  return cn(
+    FORM_PATTERNS.fieldIcon.position,
+    FORM_PATTERNS.fieldIcon.size,
+    FORM_PATTERNS.fieldIcon.color
+  );
+}
+
+// Helper function to create currency input with kr symbol
+export function createCurrencyInput(): { container: string; symbol: string; input: string } {
+  return {
+    container: FORM_PATTERNS.currency.container,
+    symbol: FORM_PATTERNS.currency.symbol,
+    input: FORM_PATTERNS.currency.input
+  };
+}
+
+// Helper function to get Norwegian placeholders
+export function getNorwegianPlaceholder(type: keyof typeof FORM_PATTERNS.placeholders): string {
+  return FORM_PATTERNS.placeholders[type];
+}
+
+// Helper function to get a random legendary artist project name
+export function getRandomLegendaryArtist(): string {
+  const artists = FORM_PATTERNS.legendaryArtists;
+  return artists[Math.floor(Math.random() * artists.length)];
+}
+
+// Helper function to create enhanced dropdown classes
+export function createDropdownClasses(type: 'trigger' | 'triggerWithIcon' | 'content' | 'item' | 'itemSelected' | 'separator' | 'iconContainer' | 'iconInside'): string {
+  return FORM_PATTERNS.dropdown[type];
+}
+
+/**
  * Get role color scheme based on role name
  * Falls back to primary color if role name not found
  */
@@ -240,8 +311,245 @@ export function getRoleBadgeClasses(roleName: string): string {
  */
 export function getRoleBadgeStyle(roleName: string): React.CSSProperties {
   const roleColor = getRoleColor(roleName);
-  return roleColor.style || { backgroundColor: roleColor.bg, color: roleColor.text };
+  return (roleColor as any).style || { backgroundColor: roleColor.bg, color: roleColor.text };
 }
+
+// ========== FORM PATTERNS ==========
+// Standardized form and dialog patterns for consistent UX
+
+export const FORM_PATTERNS = {
+  // Field containers and spacing
+  field: {
+    default: 'space-y-2',
+    group: 'space-y-4',
+    inline: 'flex items-center space-x-2'
+  },
+  
+  // Input styling matching dashboard subtle patterns
+  input: {
+    default: 'bg-background border border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20 transition-colors',
+    withIcon: 'bg-background border border-border text-foreground placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/20 transition-colors pl-10',
+    error: 'bg-background border border-destructive text-foreground placeholder:text-muted-foreground focus:border-destructive focus:ring-2 focus:ring-destructive/20 transition-colors',
+    success: 'bg-background border border-green-500 text-foreground placeholder:text-muted-foreground focus:border-green-500 focus:ring-2 focus:ring-green-500/20 transition-colors',
+    disabled: 'bg-muted border border-border text-muted-foreground cursor-not-allowed'
+  },
+  
+  // Label styling
+  label: {
+    default: 'text-sm font-medium text-foreground',
+    required: 'text-sm font-medium text-foreground after:content-["*"] after:text-destructive after:ml-1',
+    optional: 'text-sm font-medium text-muted-foreground'
+  },
+  
+  // Validation message styling
+  message: {
+    error: 'text-sm font-medium text-destructive',
+    success: 'text-sm font-medium text-green-600',
+    info: 'text-sm text-muted-foreground',
+    warning: 'text-sm font-medium text-orange-600'
+  },
+  
+  // Dialog structure matching dashboard subtle aesthetic
+  dialog: {
+    container: 'bg-card text-card-foreground border border-border rounded-lg shadow-lg',
+    header: 'border-b border-border pb-4 mb-6',
+    content: 'space-y-4',
+    footer: 'border-t border-border pt-4 mt-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 space-y-2 space-y-reverse sm:space-y-0',
+    overlay: 'fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0'
+  },
+  
+  // Form layout patterns matching dashboard spacing
+  layout: {
+    singleColumn: 'space-y-4',
+    twoColumn: 'grid grid-cols-1 md:grid-cols-2 gap-4',
+    threeColumn: 'grid grid-cols-1 md:grid-cols-3 gap-4',
+    fieldset: 'space-y-4 p-4 border border-border rounded-lg bg-muted/50'
+  },
+  
+  // Field container styles with modern aesthetics
+  fieldContainer: {
+    default: 'relative',
+    withIcon: 'relative flex items-center',
+    floating: 'relative group'
+  },
+  
+  // Icon positioning for form fields
+  fieldIcon: {
+    position: 'absolute left-3 top-1/2 -translate-y-1/2 z-10',
+    size: 'h-4 w-4',
+    color: 'text-muted-foreground group-focus-within:text-primary transition-colors'
+  },
+  
+  // Currency input with NOK (kr) support
+  currency: {
+    container: 'relative',
+    symbol: 'absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground pointer-events-none',
+    input: 'pl-8 pr-3 py-2 h-10 w-full rounded-md border border-input bg-background text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50'
+  },
+  
+  // Norwegian placeholders for common input types
+  placeholders: {
+    email: 'navn@firma.no',
+    phone: '+47 123 45 678',
+    name: 'Ola Nordmann',
+    company: 'Bedrift AS',
+    address: 'Karl Johans gate 1, 0154 Oslo'
+  },
+  
+  // Enhanced dropdown styling for better UX
+  dropdown: {
+    trigger: 'h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors',
+    triggerWithIcon: 'h-10 w-full rounded-md border border-input bg-background pl-10 pr-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 disabled:cursor-not-allowed disabled:opacity-50 transition-colors',
+    content: 'relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95',
+    item: 'relative flex w-full cursor-default select-none items-center rounded-sm py-2 px-3 text-sm outline-none hover:bg-muted focus:bg-muted data-[disabled]:pointer-events-none data-[disabled]:opacity-50 transition-colors',
+    itemSelected: 'bg-primary/10 text-primary font-medium',
+    separator: 'h-px bg-border my-1',
+    iconContainer: 'relative inline-block w-full',
+    iconInside: 'absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground z-10 pointer-events-none'
+  },
+  
+  // Legendary artists and bands for project inspiration
+  legendaryArtists: [
+    // Classic Legends
+    'The Beatles',
+    'Queen',
+    'Led Zeppelin',
+    'Pink Floyd',
+    'The Rolling Stones',
+    'David Bowie',
+    'Prince',
+    'Michael Jackson',
+    'Bob Dylan',
+    'Elvis Presley',
+    'Johnny Cash',
+    'The Who',
+    'Fleetwood Mac',
+    'ABBA',
+    
+    // Rock & Alternative Icons
+    'Nirvana',
+    'AC/DC',
+    'Metallica',
+    'Guns N\' Roses',
+    'Pearl Jam',
+    'Radiohead',
+    'The Cure',
+    'Depeche Mode',
+    'U2',
+    'Coldplay',
+    'Foo Fighters',
+    'Red Hot Chili Peppers',
+    'Green Day',
+    'Muse',
+    'Arctic Monkeys',
+    
+    // Cult Bands & Underground Legends
+    'Joy Division',
+    'The Smiths',
+    'Sonic Youth',
+    'Pixies',
+    'My Bloody Valentine',
+    'The Velvet Underground',
+    'Television',
+    'Wire',
+    'Gang of Four',
+    'Bauhaus',
+    'Dead Can Dance',
+    'Cocteau Twins',
+    'This Mortal Coil',
+    'Swans',
+    'Godspeed You! Black Emperor',
+    'Mogwai',
+    'Explosions in the Sky',
+    'Boards of Canada',
+    'Aphex Twin',
+    'Autechre',
+    'Squarepusher',
+    'The Mars Volta',
+    'At the Drive-In',
+    'Fugazi',
+    'Minor Threat',
+    'Black Flag',
+    'Bad Brains',
+    'Dead Kennedys',
+    'The Clash',
+    'Sex Pistols',
+    'Ramones',
+    'Talking Heads',
+    'Kraftwerk',
+    'Can',
+    'Neu!',
+    'King Crimson',
+    'Yes',
+    'Genesis',
+    'Jethro Tull',
+    
+    // Nordic/Icelandic Cult
+    'Björk',
+    'Sigur Rós',
+    'Múm',
+    'Ólafur Arnalds',
+    'Nils Frahm',
+    'Max Richter',
+    
+    // Modern Icons
+    'Radiohead',
+    'Arcade Fire',
+    'The National',
+    'Vampire Weekend',
+    'Tame Impala',
+    'Beach House',
+    'Grizzly Bear',
+    'Animal Collective',
+    'Panda Bear',
+    'Fleet Foxes',
+    'Bon Iver',
+    'Sufjan Stevens',
+    'The Strokes',
+    'Interpol',
+    'Yeah Yeah Yeahs',
+    'LCD Soundsystem',
+    'Daft Punk',
+    'Justice',
+    'Chemical Brothers',
+    'The Prodigy',
+    'Massive Attack',
+    'Portishead',
+    'Tricky',
+    'FKA twigs',
+    'James Blake',
+    'Thom Yorke',
+    'Flying Lotus',
+    'Burial',
+    'Four Tet',
+    
+    // Hip-Hop Legends
+    'Wu-Tang Clan',
+    'A Tribe Called Quest',
+    'De La Soul',
+    'Public Enemy',
+    'N.W.A',
+    'OutKast',
+    'Kanye West',
+    'Kendrick Lamar',
+    'Tyler, The Creator',
+    'Frank Ocean',
+    'MF DOOM',
+    'Madlib',
+    'J Dilla',
+    
+    // Pop Icons
+    'Madonna',
+    'Beyoncé',
+    'Taylor Swift',
+    'Adele',
+    'Amy Winehouse',
+    'Lana Del Rey',
+    'The Weeknd',
+    'Billie Eilish',
+    'Lorde'
+  ]
+} as const;
 
 // ========== RESPONSIVE HELPERS ==========
 
@@ -386,6 +694,7 @@ export const QUINCY_DESIGN_SYSTEM = {
   THEME,
   COMPONENT_CLASSES,
   STATUS_PATTERNS,
+  FORM_PATTERNS,
   SPACING,
   LAYOUT,
   RESPONSIVE,

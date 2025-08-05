@@ -36,7 +36,7 @@ export function ResourcesHeader({
   const icon = isCrewTab ? Users : Package;
   const IconComponent = icon;
   // Use design system colors: warning (orange) for crew, success (green) for equipment
-  const iconColor = isCrewTab ? 'text-orange-500' : 'text-green-500';
+  const iconColor = isCrewTab ? 'text-primary' : 'text-green-500';
 
   // Dynamic equipment types from database, ordered by FOLDER_ORDER
   const { folders: foldersData, loading: foldersLoading } = useFolders();
@@ -59,7 +59,7 @@ export function ResourcesHeader({
   // Tab configuration - using design system colors
   const tabs: Tab<'equipment' | 'crew'>[] = [
     { value: 'equipment', label: 'Equipment', icon: Package, color: 'text-green-500' },
-    { value: 'crew', label: 'Crew', icon: Users, color: 'text-orange-500' }
+    { value: 'crew', label: 'Crew', icon: Users, color: 'text-primary' }
   ];
 
   // Update filters helper
@@ -159,7 +159,7 @@ export function ResourcesHeader({
                   <>
                     {(() => {
                       const IconComponent = getCrewIcon(filters.crewRole);
-                      return <IconComponent className="h-4 w-4 text-orange-500" />;
+                      return <IconComponent className="h-4 w-4 text-primary" />;
                     })()}
                     <span>{filters.crewRole}</span>
                   </>
@@ -185,7 +185,7 @@ export function ResourcesHeader({
                   return (
                     <SelectItem key={role} value={role}>
                       <div className="flex items-center gap-2">
-                        <IconComponent className="h-4 w-4 text-orange-500" />
+                        <IconComponent className="h-4 w-4 text-primary" />
                         <span>{role}</span>
                       </div>
                     </SelectItem>
