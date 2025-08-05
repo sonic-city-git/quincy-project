@@ -4,8 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { CustomerSelect } from "@/components/projectdetail/general/information/forms/CustomerSelect";
-import { OwnerSelect } from "@/components/projectdetail/general/information/forms/OwnerSelect";
+import { CustomerSelect } from "@/components/shared/forms/CustomerSelect";
+import { OwnerSelect } from "@/components/shared/forms/OwnerSelect";
 import { Loader2, FolderOpen, Users, User, Settings } from "lucide-react";
 import { FORM_PATTERNS, createInputClasses, createFieldIconClasses, createFormFieldContainer, createDropdownClasses, getRandomLegendaryArtist } from "@/design-system";
 

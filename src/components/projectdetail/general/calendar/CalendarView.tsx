@@ -1,7 +1,7 @@
 import { Calendar } from "@/components/ui/calendar/Calendar";
 import { CalendarEvent, EventType } from "@/types/events";
 import { useState } from "react";
-import { MultiEventDialog } from "./MultiEventDialog";
+import { MultiEventDialog } from "@/components/shared/dialogs/MultiEventDialog";
 
 interface CalendarViewProps {
   currentDate: Date;
@@ -93,20 +93,14 @@ export function CalendarView({
   };
 
   const handleDragEnd = () => {
-    console.log('🎯 CalendarView: handleDragEnd called, selectedDates:', selectedDates.length, 'dragStartTime:', dragStartTime);
-    
     // Only show multi-event dialog if we're actually dragging (more than 200ms)
     const isDragOperation = dragStartTime && (Date.now() - dragStartTime) > 200;
     
-    console.log('🎯 CalendarView: isDragOperation:', isDragOperation);
-    
     if (isDragOperation && selectedDates.length > 0) {
-      console.log('🎯 CalendarView: Opening multi-event dialog');
       setIsMultiEventDialogOpen(true);
     } else {
       // If it's a quick click, treat it as a regular day click
       if (selectedDates.length === 1) {
-        console.log('🎯 CalendarView: Quick click detected, calling onDayClick');
         handleDayClick(selectedDates[0]);
       }
     }

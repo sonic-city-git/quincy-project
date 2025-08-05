@@ -15,7 +15,6 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { CalendarEvent, EventType } from "@/types/events";
 import { ConfirmationDialog } from "@/components/shared/dialogs/ConfirmationDialog";
-import { LocationInput } from "../calendar/LocationInput";
 
 export interface EventFormData {
   name: string;
@@ -256,9 +255,10 @@ export function EventFormDialog({
                 <label htmlFor="location" className="text-sm font-medium">
                   Location
                 </label>
-                <LocationInput
+                <Input
                   value={formData.location}
-                  onChange={(value) => updateFormData('location', value)}
+                  onChange={(e) => updateFormData('location', e.target.value)}
+                  placeholder="Enter location"
                 />
               </div>
             </div>

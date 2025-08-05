@@ -1,5 +1,5 @@
-import { CustomerSelect } from "./forms/CustomerSelect";
-import { OwnerSelect } from "./forms/OwnerSelect";
+import { CustomerSelect } from "@/components/shared/forms/CustomerSelect";
+import { OwnerSelect } from "@/components/shared/forms/OwnerSelect";
 import { formatDisplayDate } from "@/utils/dateFormatters";
 import { Project } from "@/types/projects";
 import { InvoiceButton } from "../../financial/InvoiceButton";
