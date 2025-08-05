@@ -1,7 +1,7 @@
 // Variant Actions Component
 // Action buttons and dialogs for managing project variants
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { Plus, Copy, Pencil, Trash2, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +17,7 @@ import { CreateVariantDialog } from './CreateVariantDialog';
 import { EditVariantDialog } from './EditVariantDialog';
 import { DeleteVariantDialog } from './DeleteVariantDialog';
 import { DuplicateVariantDialog } from './DuplicateVariantDialog';
+import { FORM_PATTERNS, cn } from '@/design-system';
 
 interface VariantActionsProps {
   projectId: string;
@@ -45,27 +46,28 @@ export function VariantActions({
   const currentVariant = variants.find(v => v.variant_name === selectedVariant);
   const canDelete = variants.length > 1 && currentVariant && !currentVariant.is_default;
 
-  const handleCreateVariant = async (data: CreateVariantPayload) => {
+  // Memoized handlers for performance
+  const handleCreateVariant = useCallback(async (data: CreateVariantPayload) => {
     await onCreateVariant(data);
     setShowCreateDialog(false);
-  };
+  }, [onCreateVariant]);
 
-  const handleUpdateVariant = async (data: UpdateVariantPayload) => {
+  const handleUpdateVariant = useCallback(async (data: UpdateVariantPayload) => {
     await onUpdateVariant(data);
     setShowEditDialog(false);
-  };
+  }, [onUpdateVariant]);
 
-  const handleDeleteVariant = async () => {
+  const handleDeleteVariant = useCallback(async () => {
     if (currentVariant) {
       await onDeleteVariant(currentVariant.variant_name);
       setShowDeleteDialog(false);
     }
-  };
+  }, [currentVariant, onDeleteVariant]);
 
-  const handleDuplicateVariant = async (data: CreateVariantPayload) => {
+  const handleDuplicateVariant = useCallback(async (data: CreateVariantPayload) => {
     await onDuplicateVariant(selectedVariant, data);
     setShowDuplicateDialog(false);
-  };
+  }, [selectedVariant, onDuplicateVariant]);
 
   return (
     <>
@@ -84,6 +86,7 @@ export function VariantActions({
             size="sm"
             variant="outline"
             className="gap-2"
+            aria-label="Create new variant"
           >
             <Plus className="h-4 w-4" />
             New Variant
@@ -93,12 +96,19 @@ export function VariantActions({
           {variants.length > 0 && currentVariant && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  aria-label={`Manage ${currentVariant.display_name} variant`}
+                >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent 
+                align="end"
+                className={FORM_PATTERNS.dropdown.content}
+              >
                 <DropdownMenuLabel className="text-xs">
                   Manage "{currentVariant.display_name}"
                 </DropdownMenuLabel>
@@ -106,7 +116,7 @@ export function VariantActions({
                 
                 <DropdownMenuItem
                   onClick={() => setShowEditDialog(true)}
-                  className="gap-2"
+                  className={cn(FORM_PATTERNS.dropdown.item, "gap-2")}
                 >
                   <Pencil className="h-4 w-4" />
                   Edit Variant
@@ -114,7 +124,7 @@ export function VariantActions({
                 
                 <DropdownMenuItem
                   onClick={() => setShowDuplicateDialog(true)}
-                  className="gap-2"
+                  className={cn(FORM_PATTERNS.dropdown.item, "gap-2")}
                 >
                   <Copy className="h-4 w-4" />
                   Duplicate Variant
@@ -125,7 +135,10 @@ export function VariantActions({
                 <DropdownMenuItem
                   onClick={() => setShowDeleteDialog(true)}
                   disabled={!canDelete}
-                  className="gap-2 text-destructive focus:text-destructive"
+                  className={cn(
+                    FORM_PATTERNS.dropdown.item, 
+                    "gap-2 text-destructive focus:text-destructive"
+                  )}
                 >
                   <Trash2 className="h-4 w-4" />
                   Delete Variant

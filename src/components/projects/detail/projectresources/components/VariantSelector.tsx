@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
 import { ProjectVariant } from '@/types/variants';
-import { cn } from '@/lib/utils';
+import { FORM_PATTERNS, COMPONENT_CLASSES, cn } from '@/design-system';
 
 interface VariantSelectorProps {
   variants: ProjectVariant[];
