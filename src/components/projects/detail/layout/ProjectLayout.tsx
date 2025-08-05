@@ -4,7 +4,7 @@ import { ProjectTabs } from "../ProjectTabs";
 import { Project } from "@/types/projects";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { Settings, Package, Users, DollarSign } from "lucide-react";
+import { Settings, Layers, DollarSign } from "lucide-react";
 
 interface ProjectLayoutProps {
   project: Project;
@@ -44,26 +44,15 @@ export function ProjectLayout({ project, projectId }: ProjectLayoutProps) {
               General
             </Button>
             <Button
-              variant={tab === 'equipment' ? 'default' : 'ghost'}
+              variant={tab === 'projectresources' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => handleTabChange('equipment')}
+              onClick={() => handleTabChange('projectresources')}
               className={`flex items-center gap-2 ${
-                tab === 'equipment' ? 'bg-green-100 text-green-700' : ''
+                tab === 'projectresources' ? 'bg-indigo-100 text-indigo-700' : ''
               }`}
             >
-              <Package className="h-4 w-4" />
-              Equipment
-            </Button>
-            <Button
-              variant={tab === 'crew' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => handleTabChange('crew')}
-              className={`flex items-center gap-2 ${
-                tab === 'crew' ? 'bg-orange-100 text-orange-700' : ''
-              }`}
-            >
-              <Users className="h-4 w-4" />
-              Crew
+              <Layers className="h-4 w-4" />
+              Resources
             </Button>
             <Button
               variant={tab === 'financial' ? 'default' : 'ghost'}

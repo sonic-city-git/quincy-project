@@ -1,4 +1,4 @@
-import { Archive, MoreVertical, Settings, Package, Users, DollarSign } from "lucide-react";
+import { Archive, MoreVertical, Settings, Layers, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -8,8 +8,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 interface ProjectDetailTabsHeaderProps {
-  activeTab: 'general' | 'equipment' | 'crew' | 'financial';
-  onTabChange: (tab: 'general' | 'equipment' | 'crew' | 'financial') => void;
+  activeTab: 'general' | 'projectresources' | 'financial';
+  onTabChange: (tab: 'general' | 'projectresources' | 'financial') => void;
   canArchive: boolean;
   onArchiveClick: () => void;
 }
@@ -23,10 +23,8 @@ export function ProjectDetailTabsHeader({
 
   const getTabConfig = () => {
     switch (activeTab) {
-      case 'equipment':
-        return { title: 'Project Equipment', icon: Package, color: 'text-green-500' };
-      case 'crew':
-        return { title: 'Project Crew', icon: Users, color: 'text-orange-500' };
+      case 'projectresources':
+        return { title: 'Project Resources', icon: Layers, color: 'text-indigo-500' };
       case 'financial':
         return { title: 'Project Financial', icon: DollarSign, color: 'text-blue-500' };
       default:
@@ -82,26 +80,15 @@ export function ProjectDetailTabsHeader({
               General
             </Button>
             <Button
-              variant={activeTab === 'equipment' ? 'default' : 'ghost'}
+              variant={activeTab === 'projectresources' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => onTabChange('equipment')}
+              onClick={() => onTabChange('projectresources')}
               className={`flex items-center gap-2 ${
-                activeTab === 'equipment' ? 'bg-green-100 text-green-700' : ''
+                activeTab === 'projectresources' ? 'bg-indigo-100 text-indigo-700' : ''
               }`}
             >
-              <Package className="h-4 w-4" />
-              Equipment
-            </Button>
-            <Button
-              variant={activeTab === 'crew' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => onTabChange('crew')}
-              className={`flex items-center gap-2 ${
-                activeTab === 'crew' ? 'bg-orange-100 text-orange-700' : ''
-              }`}
-            >
-              <Users className="h-4 w-4" />
-              Crew
+              <Layers className="h-4 w-4" />
+              Resources
             </Button>
             <Button
               variant={activeTab === 'financial' ? 'default' : 'ghost'}
