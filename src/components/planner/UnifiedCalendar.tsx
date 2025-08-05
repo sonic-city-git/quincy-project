@@ -62,6 +62,11 @@ export function UnifiedCalendar({
   renderOnlyLeft = false,
   renderOnlyTimeline = false
 }: UnifiedCalendarProps) {
+
+  // DEBUG: Track selectedDate at UnifiedCalendar level
+  useEffect(() => {
+    console.log('🟢 UNIFIED_CALENDAR selectedDate:', format(selectedDate, 'MMM dd yyyy'), 'resourceType:', resourceType, 'showProblems:', showProblemsOnly);
+  }, [selectedDate, resourceType, showProblemsOnly]);
   
   // STATE PRESERVATION: Save/restore expansion state when toggling View Problems
   const savedExpansionStateRef = useRef<Set<string> | null>(null);
@@ -75,7 +80,7 @@ export function UnifiedCalendar({
   // console.log('UnifiedCalendar render', { selectedDate: selectedDate.toISOString() });
 
   // SIMPLIFIED: Use single consolidated scroll hook
-  const timelineScroll = useTimelineScroll({ selectedDate, targetScrollItem });
+  const timelineScroll = useTimelineScroll({ selectedDate, targetScrollItem, resourceType });
   
   const {
     timelineStart,
@@ -260,6 +265,7 @@ export function UnifiedCalendar({
     if (process.env.NODE_ENV === 'development' && resourceType === 'crew') {
       console.log('👥 Crew mode - allCrewConflicts:', allCrewConflicts);
       console.log('⚠️ Transformed crew warnings:', allWarnings);
+      console.log('🔍 showProblemsOnly:', showProblemsOnly, 'warnings found:', allWarnings.length);
     }
 
     return allWarnings;
@@ -280,12 +286,33 @@ export function UnifiedCalendar({
     
     // User just turned OFF "View Problems" - restore saved expansion state  
     if (wasShowingProblems && !isNowShowingProblems && savedExpansionStateRef.current) {
-      // DEFERRED: Use setTimeout to restore state after current render cycle
-      // This prevents disruption of date selection and other timeline functionality
-      setTimeout(() => {
-        setExpandedGroups(new Set(savedExpansionStateRef.current!));
-        savedExpansionStateRef.current = null;
-      }, 0);
+      // CREW-SPECIFIC: Preserve scroll state more aggressively during expansion restoration
+      console.log(`🔄 [${resourceType.toUpperCase()}] RESTORING EXPANSION STATE after View Problems toggle`);
+      
+      if (resourceType === 'crew') {
+        // For crew tab, ensure scroll state is preserved during expansion changes
+        const currentScrollPosition = equipmentRowsRef?.current?.scrollLeft || 0;
+        console.log(`👥 [CREW] Preserving scroll position: ${currentScrollPosition} before expansion restoration`);
+        
+        setTimeout(() => {
+          setExpandedGroups(new Set(savedExpansionStateRef.current!));
+          savedExpansionStateRef.current = null;
+          
+          // Extra restoration step for crew tab
+          setTimeout(() => {
+            if (equipmentRowsRef?.current && equipmentRowsRef.current.scrollLeft !== currentScrollPosition) {
+              equipmentRowsRef.current.scrollLeft = currentScrollPosition;
+              console.log(`👥 [CREW] Restored scroll position: ${currentScrollPosition} after expansion changes`);
+            }
+          }, 50);
+        }, 0);
+      } else {
+        // Equipment tab - simpler restoration
+        setTimeout(() => {
+          setExpandedGroups(new Set(savedExpansionStateRef.current!));
+          savedExpansionStateRef.current = null;
+        }, 0);
+      }
     }
     
     // Update previous state

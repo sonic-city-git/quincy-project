@@ -124,7 +124,7 @@ const TimelineContentComponent = ({
   }, [warnings]);
 
   // Apply UI-level filtering to equipment groups with smart expansion
-  const { filteredEquipmentGroups, shouldExpand } = useMemo(() => {
+  const { filteredEquipmentGroups, shouldExpand, showNoProblemsMessage } = useMemo(() => {
     // Check if any filters are actually active
     const hasTextFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
     const hasProblemsFilter = showProblemsOnly;
@@ -132,7 +132,7 @@ const TimelineContentComponent = ({
     
     // If no filters are active, return all equipment groups
     if (!hasAnyFilters) {
-      return { filteredEquipmentGroups: equipmentGroups, shouldExpand: new Set<string>() };
+      return { filteredEquipmentGroups: equipmentGroups, shouldExpand: new Set<string>(), showNoProblemsMessage: false };
     }
     
     const { search, equipmentType, crewRole } = filters || {};
@@ -255,7 +255,18 @@ const TimelineContentComponent = ({
       return null;
     }).filter(Boolean) as EquipmentGroup[];
     
-    return { filteredEquipmentGroups: filtered, shouldExpand };
+    // CRITICAL FIX: When in problems mode but no problems found, show all groups
+    // This preserves timeline functionality and date selection
+    if (hasProblemsFilter && !hasTextFilters && filtered.length === 0) {
+      console.log(`🔄 [${resourceType?.toUpperCase()}] NO PROBLEMS FOUND - falling back to all groups to preserve timeline`);
+      return { 
+        filteredEquipmentGroups: equipmentGroups, 
+        shouldExpand: new Set<string>(),
+        showNoProblemsMessage: true // Flag to show success message
+      };
+    }
+    
+    return { filteredEquipmentGroups: filtered, shouldExpand, showNoProblemsMessage: false };
   }, [
     equipmentGroups, 
     filters?.search, 
@@ -272,14 +283,28 @@ const TimelineContentComponent = ({
     const hasProblemsFilter = showProblemsOnly;
     const hasAnyFilters = hasTextFilters || hasProblemsFilter;
     
+    // DEBUG: Track expansion behavior when problems mode is active
+    if (hasProblemsFilter) {
+      console.log(`🔍 [${resourceType?.toUpperCase() || 'UNKNOWN'}] AUTO-EXPANSION CHECK:`, {
+        showProblemsOnly: showProblemsOnly,
+        shouldExpandSize: shouldExpand.size,
+        expandedGroupsSize: expandedGroups.size,
+        hasTextFilters: hasTextFilters,
+        willExpand: hasAnyFilters && shouldExpand.size > 0
+      });
+    }
+    
     if (hasAnyFilters && shouldExpand.size > 0) {
       shouldExpand.forEach(groupKey => {
         if (!expandedGroups.has(groupKey)) {
+          console.log(`📂 [${resourceType?.toUpperCase() || 'UNKNOWN'}] Auto-expanding group:`, groupKey);
           toggleGroup(groupKey, false);
         }
       });
+    } else if (hasProblemsFilter && shouldExpand.size === 0) {
+      console.log(`⚠️ [${resourceType?.toUpperCase() || 'UNKNOWN'}] NO PROBLEMS FOUND - no auto-expansion needed`);
     }
-  }, [shouldExpand?.size || 0, expandedGroups?.size || 0, showProblemsOnly, filters?.search, filters?.equipmentType, filters?.crewRole, toggleGroup]);
+  }, [shouldExpand?.size || 0, expandedGroups?.size || 0, showProblemsOnly, filters?.search, filters?.equipmentType, filters?.crewRole, toggleGroup, resourceType]);
   
   if (!filteredEquipmentGroups || filteredEquipmentGroups.length === 0) {
     const hasTextFilters = filters && (filters.search || filters.equipmentType || filters.crewRole);
@@ -290,6 +315,8 @@ const TimelineContentComponent = ({
     
     if (hasProblemsFilter && !hasTextFilters) {
       emptyMessage = `No ${resourceType === 'crew' ? 'crew problems' : 'equipment problems'} found! 🎉`;
+      
+
     } else if (hasTextFilters && hasProblemsFilter) {
       emptyMessage = `No ${resourceType === 'crew' ? 'crew members' : 'equipment'} with problems match your current filters`;
     } else if (hasTextFilters) {
@@ -309,7 +336,20 @@ const TimelineContentComponent = ({
   }
 
   return (
-    <div className="flex min-h-0">
+    <div className="flex flex-col min-h-0">
+      {/* Success Banner for "No Problems Found" */}
+      {showNoProblemsMessage && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 mx-4">
+          <div className="flex items-center gap-2">
+            <span className="text-green-600 font-medium">
+              🎉 No {resourceType === 'crew' ? 'crew problems' : 'equipment problems'} found!
+            </span>
+            <span className="text-green-600 text-sm">Timeline shows all items for reference.</span>
+          </div>
+        </div>
+      )}
+      
+      <div className="flex min-h-0">
         {/* Left Column - Equipment Names (Fixed during horizontal scroll) */}
         <div className="flex-shrink-0 border-r border-border" style={{ width: LAYOUT.EQUIPMENT_NAME_WIDTH }}>
           {filteredEquipmentGroups.map((group) => (
@@ -332,6 +372,7 @@ const TimelineContentComponent = ({
         {/* Middle Column - Timeline (only horizontal scroll, vertical handled by parent) */}
         <div 
           ref={combinedRef}
+          data-timeline-container="true"
           className={`flex-1 overflow-x-auto scrollbar-hide ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           onScroll={handleTimelineScroll}
@@ -376,6 +417,7 @@ const TimelineContentComponent = ({
 
 
       </div>
+    </div>
   );
 };
 
