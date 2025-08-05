@@ -140,7 +140,8 @@ export function useDashboardConflicts(selectedOwner?: string) {
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
     refetchOnWindowFocus: true,
-    retry: 1
+    retry: 1,
+    enabled: true // Always enabled for planner usage
   });
 
   const { data: crewConflicts, isLoading: isLoadingCrew } = useQuery({
@@ -220,7 +221,8 @@ export function useDashboardConflicts(selectedOwner?: string) {
     },
     staleTime: 2 * 60 * 1000, // 2 minutes
     refetchOnWindowFocus: true,
-    retry: 1
+    retry: 1,
+    enabled: true // Always enabled for planner usage
   });
 
   return {

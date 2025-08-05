@@ -214,9 +214,7 @@ export function UnifiedCalendar({
     equipmentConflicts: allEquipmentConflicts, 
     crewConflicts: allCrewConflicts,
     isLoading: isLoadingAllConflicts 
-  } = useDashboardConflicts(
-    showProblemsOnly ? selectedOwner : undefined // Only fetch when problems view is active
-  );
+  } = useDashboardConflicts(selectedOwner);
 
   // Transform comprehensive conflicts into warnings format for TimelineContent
   const comprehensiveWarnings = useMemo(() => {
