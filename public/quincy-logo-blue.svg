@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="320" height="80" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="320" height="80" fill="#0a0a0a" rx="8"/>
+  
+  <!-- Logo Icon - Interconnected hexagons representing logistics network -->
+  <g transform="translate(20, 15)">
+    <!-- Main hexagon -->
+    <polygon points="25,10 35,15 35,25 25,30 15,25 15,15" 
+             fill="#9b87f5" 
+             stroke="#9b87f5" 
+             stroke-width="1"/>
+    
+    <!-- Connected hexagons -->
+    <polygon points="40,20 45,22.5 45,27.5 40,30 35,27.5 35,22.5" 
+             fill="none" 
+             stroke="#9b87f5" 
+             stroke-width="2" 
+             opacity="0.7"/>
+    
+    <polygon points="10,20 15,22.5 15,27.5 10,30 5,27.5 5,22.5" 
+             fill="none" 
+             stroke="#9b87f5" 
+             stroke-width="2" 
+             opacity="0.7"/>
+    
+    <polygon points="25,35 30,37.5 30,42.5 25,45 20,42.5 20,37.5" 
+             fill="none" 
+             stroke="#9b87f5" 
+             stroke-width="2" 
+             opacity="0.5"/>
+    
+    <!-- Connection lines -->
+    <line x1="32" y1="20" x2="37" y2="22" stroke="#9b87f5" stroke-width="1.5" opacity="0.6"/>
+    <line x1="18" y1="20" x2="13" y2="22" stroke="#9b87f5" stroke-width="1.5" opacity="0.6"/>
+    <line x1="25" y1="27" x2="25" y2="35" stroke="#9b87f5" stroke-width="1.5" opacity="0.4"/>
+  </g>
+  
+  <!-- QUINCY Text -->
+  <text x="85" y="35" 
+        font-family="Inter, system-ui, sans-serif" 
+        font-size="28" 
+        font-weight="700" 
+        fill="#9b87f5" 
+        letter-spacing="1px">QUINCY</text>
+  
+  <!-- Tagline -->
+  <text x="85" y="52" 
+        font-family="Inter, system-ui, sans-serif" 
+        font-size="11" 
+        font-weight="500" 
+        fill="#9b87f5" 
+        opacity="0.8" 
+        letter-spacing="2px">PRODUCTION LOGISTICS</text>
+</svg>

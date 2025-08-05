@@ -117,6 +117,12 @@ const TimelineContentComponent = ({
     });
   }, [formattedDates, visibleTimelineStart, visibleTimelineEnd]);
 
+  // PERFORMANCE OPTIMIZATION: Pre-calculate problems lookup at top level
+  const problemsLookup = useMemo(() => {
+    if (!warnings?.length) return new Set();
+    return new Set(warnings.map(w => w.resourceId));
+  }, [warnings]);
+
   // Apply UI-level filtering to equipment groups with smart expansion
   const { filteredEquipmentGroups, shouldExpand } = useMemo(() => {
     // Check if any filters are actually active
@@ -132,12 +138,6 @@ const TimelineContentComponent = ({
     const { search, equipmentType, crewRole } = filters || {};
     const isCrewMode = resourceType === 'crew';
     const shouldExpand = new Set<string>();
-    
-    // PERFORMANCE OPTIMIZATION: Use pre-calculated warnings instead of expensive date loops
-    const problemsLookup = useMemo(() => {
-      if (!warnings?.length) return new Set();
-      return new Set(warnings.map(w => w.resourceId));
-    }, [warnings]);
 
     const hasProblems = (item: any) => {
       if (!hasProblemsFilter) {
@@ -263,7 +263,7 @@ const TimelineContentComponent = ({
     filters?.crewRole, 
     resourceType, 
     showProblemsOnly,
-    warnings // PERFORMANCE: Use pre-calculated warnings instead of expensive date loops
+    problemsLookup // PERFORMANCE: Use pre-calculated problems lookup
   ]);
   
   // Auto-expand folders that contain filtered results (only when filters are active)

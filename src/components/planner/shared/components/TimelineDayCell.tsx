@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { VISUAL, LAYOUT } from '../constants';
 import { EquipmentBookingFlat } from '../types';
 import { formatPlannerTooltip } from '../../../../utils/tooltipFormatters';
@@ -147,23 +147,18 @@ const TimelineDayCellComponent = ({
 
   return (
     <div 
-      className={`equipment-day-cell px-1 relative ${
-        dateInfo.isSelected || dateInfo.isToday ? 'z-10' : ''
-      } flex items-center justify-center`}
+      className="equipment-day-cell px-1 relative flex items-center justify-center"
       style={{ width: LAYOUT.DAY_CELL_WIDTH }}
     >
-      {/* Today indicator - solid blue background */}
-      {dateInfo.isToday && (
-        <div className="absolute inset-0 bg-blue-100/80 rounded pointer-events-none z-10" />
-      )}
-      {/* Selected indicator - solid border overlay */}
-      {dateInfo.isSelected && (
-        <div className="absolute inset-0 border-2 border-blue-300 rounded pointer-events-none z-10" />
-      )}
-      
       {/* Main availability cell - clickable for expansion */}
       <div
-        className="h-6 w-full transition-all duration-200 relative rounded-md border border-gray-200/50 cursor-pointer hover:border-gray-300"
+        className={`h-6 w-full transition-all duration-200 relative rounded-md cursor-pointer ${
+          dateInfo.isToday 
+            ? 'border-2 border-blue-500 hover:border-blue-600' 
+            : dateInfo.isSelected
+            ? 'border-2 border-blue-300 hover:border-blue-400'
+            : 'border border-gray-200/50 hover:border-gray-300'
+        }`}
         title={tooltipText}
         style={heatmapStyle}
         onClick={() => {
@@ -198,10 +193,7 @@ const TimelineDayCellComponent = ({
             )}
           </span>
           
-          {/* Conflict/Overbooked indicator for both crew and equipment */}
-          {isConflict && (
-            <AlertTriangle className="absolute top-0 right-0 h-2 w-2 text-white opacity-80" />
-          )}
+
         </div>
       </div>
     </div>
