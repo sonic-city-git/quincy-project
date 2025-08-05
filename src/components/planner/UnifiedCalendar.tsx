@@ -256,6 +256,12 @@ export function UnifiedCalendar({
       });
     }
 
+    // Debug logging for crew conflicts
+    if (process.env.NODE_ENV === 'development' && resourceType === 'crew') {
+      console.log('👥 Crew mode - allCrewConflicts:', allCrewConflicts);
+      console.log('⚠️ Transformed crew warnings:', allWarnings);
+    }
+
     return allWarnings;
   }, [showProblemsOnly, resourceType, allEquipmentConflicts, allCrewConflicts, hubWarnings]);
 
@@ -274,17 +280,17 @@ export function UnifiedCalendar({
     
     // User just turned OFF "View Problems" - restore saved expansion state  
     if (wasShowingProblems && !isNowShowingProblems && savedExpansionStateRef.current) {
-      // EFFICIENT: Batch update the entire expansion state in one operation
-      // This triggers only ONE re-render instead of multiple individual toggles
-      setExpandedGroups(new Set(savedExpansionStateRef.current));
-      
-      // Clear saved state
-      savedExpansionStateRef.current = null;
+      // DEFERRED: Use setTimeout to restore state after current render cycle
+      // This prevents disruption of date selection and other timeline functionality
+      setTimeout(() => {
+        setExpandedGroups(new Set(savedExpansionStateRef.current!));
+        savedExpansionStateRef.current = null;
+      }, 0);
     }
     
     // Update previous state
     previousShowProblemsOnlyRef.current = showProblemsOnly;
-  }, [showProblemsOnly, setExpandedGroups]); // OPTIMIZED: Only depend on showProblemsOnly and setExpandedGroups
+  }, [showProblemsOnly, setExpandedGroups]);
 
   // REMOVED: Performance metrics logging to reduce console spam
 

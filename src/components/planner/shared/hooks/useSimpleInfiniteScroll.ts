@@ -12,6 +12,18 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { addDays, format, isWeekend, differenceInDays } from 'date-fns';
 import { LAYOUT } from '../constants';
 
+// TypeScript declaration for shared timeline state
+declare global {
+  interface Window {
+    plannerTimelineState?: {
+      timelineStart: Date;
+      timelineEnd: Date;
+      scrollPosition: number;
+      hasInitialScrolled: boolean;
+    };
+  }
+}
+
 interface UseSimpleInfiniteScrollProps {
   selectedDate: Date;
   targetScrollItem?: {
@@ -32,13 +44,67 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
     return date;
   }, []);
 
-  // Start with LARGER buffer to avoid immediate expansion
-  const [timelineStart, setTimelineStart] = useState(() => addDays(today, -60)); // More buffer
-  const [timelineEnd, setTimelineEnd] = useState(() => addDays(today, 90));
+  // SHARED TIMELINE STATE: Use global state manager to persist across tab switches  
+  const getSharedTimelineState = useCallback(() => {
+    if (typeof window !== 'undefined' && window.plannerTimelineState) {
+      return window.plannerTimelineState;
+    }
+    
+    // Initialize shared state
+    const sharedState = {
+      timelineStart: addDays(today, -60),
+      timelineEnd: addDays(today, 90),
+      scrollPosition: 60 * LAYOUT.DAY_CELL_WIDTH,
+      hasInitialScrolled: false
+    };
+    
+    if (typeof window !== 'undefined') {
+      window.plannerTimelineState = sharedState;
+    }
+    
+    return sharedState;
+  }, [today]);
+
+  const sharedState = getSharedTimelineState();
   
-  // Start near today to prevent initial jump
-  const initialScroll = 60 * LAYOUT.DAY_CELL_WIDTH; // today is 60 days from start (60 * 48 = 2880px > 2000px threshold)
-  const [scrollPosition, setScrollPosition] = useState(initialScroll);
+  const [timelineStart, setTimelineStartLocal] = useState(sharedState.timelineStart);
+  const [timelineEnd, setTimelineEndLocal] = useState(sharedState.timelineEnd);
+  const [scrollPosition, setScrollPositionLocal] = useState(sharedState.scrollPosition);
+  const [hasInitialScrolled, setHasInitialScrolledLocal] = useState(sharedState.hasInitialScrolled);
+
+  // Wrapper setters that update both local and shared state
+  const setTimelineStart = useCallback((date: Date) => {
+    setTimelineStartLocal(date);
+    if (typeof window !== 'undefined' && window.plannerTimelineState) {
+      window.plannerTimelineState.timelineStart = date;
+    }
+  }, []);
+
+  const setTimelineEnd = useCallback((date: Date) => {
+    setTimelineEndLocal(date);
+    if (typeof window !== 'undefined' && window.plannerTimelineState) {
+      window.plannerTimelineState.timelineEnd = date;
+    }
+  }, []);
+
+  const setScrollPosition = useCallback((position: number) => {
+    setScrollPositionLocal(position);
+    if (typeof window !== 'undefined' && window.plannerTimelineState) {
+      window.plannerTimelineState.scrollPosition = position;
+    }
+  }, []);
+
+  const setHasInitialScrolled = useCallback((scrolled: boolean) => {
+    setHasInitialScrolledLocal(scrolled);
+    if (typeof window !== 'undefined' && window.plannerTimelineState) {
+      window.plannerTimelineState.hasInitialScrolled = scrolled;
+    }
+  }, []);
+
+  // Shared state is now updated directly in the setter functions above
+  
+  // Constants
+  const initialScroll = 60 * LAYOUT.DAY_CELL_WIDTH; // today is 60 days from start
   
   // Container readiness state
   const [containerMounted, setContainerMounted] = useState(false);
@@ -46,9 +112,8 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
   // Refs with callback to detect mounting
   const equipmentRowsRef = useRef<HTMLDivElement>(null);
   const stickyHeadersRef = useRef<HTMLDivElement>(null);
-  const scrollPositionRef = useRef(initialScroll);
+  const scrollPositionRef = useRef(scrollPosition);
   const isExpandingRef = useRef(false);
-  const hasInitialScrolledRef = useRef(false);
   
   // Ref callback to detect when container is ready
   const setEquipmentRowsRef = useCallback((element: HTMLDivElement | null) => {
@@ -235,7 +300,7 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
       timelineDatesLength: timelineDates.length,
       containerMounted,
       containerWidth: equipmentRowsRef.current?.clientWidth,
-      hasInitialScrolled: hasInitialScrolledRef.current,
+      hasInitialScrolled: hasInitialScrolled,
       selectedDate: format(selectedDate, 'MMM dd'),
       initialScroll
     });
@@ -244,7 +309,7 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
     if (timelineDates.length > 0 && containerMounted && equipmentRowsRef.current) {
       
       // For initial load: set position to prevent jump, then scroll to today
-      if (!hasInitialScrolledRef.current) {
+      if (!hasInitialScrolled) {
         console.log('🎯 INITIAL LOAD: Setting position and scrolling to', format(selectedDate, 'MMM dd'));
         
         // Set initial position first (prevent jump)
@@ -254,7 +319,7 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
           console.log('✅ Set initial scroll position to:', initialScroll);
         }
         
-        hasInitialScrolledRef.current = true;
+        setHasInitialScrolled(true);
       } else {
         console.log('🎯 DATE CHANGE: Scrolling to', format(selectedDate, 'MMM dd'));
       }
@@ -262,7 +327,17 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
       // Always scroll to selected date (handles both initial + date changes)
       setTimeout(() => scrollToDate(selectedDate), 10);
     }
-  }, [timelineDates.length, containerMounted, selectedDate, initialScroll]); // Everything that matters
+  }, [timelineDates.length, containerMounted, selectedDate, initialScroll, hasInitialScrolled, setHasInitialScrolled]); // Everything that matters
+
+  // TAB SWITCH DETECTION: Always scroll to selectedDate when timeline is ready (for tab switches)
+  useEffect(() => {
+    // If we have timeline data, container is ready, and we've done initial scroll,
+    // make sure selectedDate is visible (important for tab switches)
+    if (timelineDates.length > 0 && containerMounted && equipmentRowsRef.current && hasInitialScrolled) {
+      console.log('🔄 TAB SWITCH: Ensuring selectedDate is visible:', format(selectedDate, 'MMM dd'));
+      setTimeout(() => scrollToDate(selectedDate), 50);
+    }
+  }, [timelineDates.length, containerMounted, hasInitialScrolled, selectedDate, scrollToDate]);
 
   // Handle targetScrollItem (moved from UnifiedCalendar for single scroll location)
   useEffect(() => {

@@ -18,7 +18,7 @@ import { format, addDays } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { OVERBOOKING_WARNING_DAYS, getWarningTimeframe } from '@/constants/timeframes';
 import { usePersistentExpandedGroups } from '@/hooks/usePersistentExpandedGroups';
-import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/utils/equipmentFolderSort';
+import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/types/equipment';
 import { PERFORMANCE } from '../constants';
 
 interface UseTimelineHubProps {
@@ -491,7 +491,24 @@ export function useTimelineHub({
       }
     });
 
-    const groups = Array.from(groupsMap.values());
+    let groups = Array.from(groupsMap.values());
+    
+    // Sort subfolders within each group according to SUBFOLDER_ORDER
+    groups.forEach(group => {
+      if (group.subFolders.length > 0) {
+        const orderArray = SUBFOLDER_ORDER[group.mainFolder as any] || [];
+        group.subFolders.sort((a, b) => {
+          const indexA = orderArray.indexOf(a.name);
+          const indexB = orderArray.indexOf(b.name);
+          
+          if (indexA === -1 && indexB === -1) return a.name.localeCompare(b.name);
+          if (indexA === -1) return 1;
+          if (indexB === -1) return -1;
+          
+          return indexA - indexB;
+        });
+      }
+    });
     
     // Debug: Log all derived main folder names before sorting
     if (process.env.NODE_ENV === 'development' && resourceType === 'equipment') {
@@ -512,9 +529,10 @@ export function useTimelineHub({
           if (indexB === -1) console.log(`🔍 Folder not in FOLDER_ORDER: "${b.mainFolder}"`);
         }
         
+        // Handle folders not in the predefined order
         if (indexA === -1 && indexB === -1) return a.mainFolder.localeCompare(b.mainFolder);
-        if (indexA === -1) return 1;
-        if (indexB === -1) return -1;
+        if (indexA === -1) return 1; // Put unknown folders at the end
+        if (indexB === -1) return -1; // Keep known folders at the beginning
         
         return indexA - indexB;
       });

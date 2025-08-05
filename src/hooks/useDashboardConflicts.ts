@@ -169,6 +169,14 @@ export function useDashboardConflicts(selectedOwner?: string) {
 
       const { data: roles, error } = await rolesQuery;
       if (error) throw error;
+      
+      // Debug logging for crew conflicts
+      if (process.env.NODE_ENV === 'development') {
+        console.log('👥 Crew roles fetched for conflicts:', roles?.length || 0);
+        console.log('📅 Date range:', { startDate, endDate });
+        if (selectedOwner) console.log('👤 Owner filter:', selectedOwner);
+      }
+      
       if (!roles?.length) return [];
 
       // Group by crew member and date
@@ -216,6 +224,15 @@ export function useDashboardConflicts(selectedOwner?: string) {
           });
         }
       });
+
+      // Debug logging for crew conflicts
+      if (process.env.NODE_ENV === 'development') {
+        console.log('⚠️ Crew conflicts found:', conflicts.length);
+        console.log('📊 Total assignment days processed:', assignmentsByMemberAndDate.size);
+        if (conflicts.length > 0) {
+          console.log('🚨 Crew conflicts details:', conflicts);
+        }
+      }
 
       return conflicts;
     },
