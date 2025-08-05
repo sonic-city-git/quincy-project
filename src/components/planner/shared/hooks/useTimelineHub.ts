@@ -18,7 +18,7 @@ import { format, addDays } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { OVERBOOKING_WARNING_DAYS, getWarningTimeframe } from '@/constants/timeframes';
 import { usePersistentExpandedGroups } from '@/hooks/usePersistentExpandedGroups';
-import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/utils/equipmentFolderSort';
+import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/types/equipment';
 import { PERFORMANCE } from '../constants';
 
 interface UseTimelineHubProps {
@@ -60,7 +60,8 @@ export function useTimelineHub({
   const {
     expandedGroups,
     toggleGroup: toggleGroupPersistent,
-    initializeDefaultExpansion
+    initializeDefaultExpansion,
+    setExpandedGroups
   } = usePersistentExpandedGroups(storageKey);
   
   const [expandedResources, setExpandedResources] = useState<Set<string>>(new Set());
@@ -79,6 +80,15 @@ export function useTimelineHub({
     const resources = [];
     const resourceById = new Map();
 
+    // Debug: Log all folder names from database
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🗂️ All folders from database:', foldersResult.data?.map(f => ({ 
+        id: f.id, 
+        name: f.name, 
+        parent_id: f.parent_id 
+      })));
+    }
+
     equipmentResult.data?.forEach(eq => {
       const folder = folderMap.get(eq.folder_id);
       const parentFolder = folder?.parent_id ? folderMap.get(folder.parent_id) : null;
@@ -86,6 +96,17 @@ export function useTimelineHub({
       const mainFolder = parentFolder?.name || folder?.name || 'Uncategorized';
       const subFolder = folder?.parent_id ? folder.name : undefined;
       const folderPath = subFolder ? `${mainFolder}/${subFolder}` : mainFolder;
+
+      // Debug: Log folder derivation for first few items
+      if (process.env.NODE_ENV === 'development' && resources.length < 3) {
+        console.log(`📁 Equipment "${eq.name}":`, {
+          folderId: eq.folder_id,
+          folder: folder?.name,
+          parentFolder: parentFolder?.name,
+          derivedMainFolder: mainFolder,
+          derivedSubFolder: subFolder
+        });
+      }
 
       const resource = {
         id: eq.id,
@@ -470,17 +491,48 @@ export function useTimelineHub({
       }
     });
 
-    const groups = Array.from(groupsMap.values());
+    let groups = Array.from(groupsMap.values());
+    
+    // Sort subfolders within each group according to SUBFOLDER_ORDER
+    groups.forEach(group => {
+      if (group.subFolders.length > 0) {
+        const orderArray = SUBFOLDER_ORDER[group.mainFolder as any] || [];
+        group.subFolders.sort((a, b) => {
+          const indexA = orderArray.indexOf(a.name);
+          const indexB = orderArray.indexOf(b.name);
+          
+          if (indexA === -1 && indexB === -1) return a.name.localeCompare(b.name);
+          if (indexA === -1) return 1;
+          if (indexB === -1) return -1;
+          
+          return indexA - indexB;
+        });
+      }
+    });
+    
+    // Debug: Log all derived main folder names before sorting
+    if (process.env.NODE_ENV === 'development' && resourceType === 'equipment') {
+      const mainFolderNames = groups.map(g => g.mainFolder);
+      console.log('📂 All main folder names before sorting:', mainFolderNames);
+      console.log('📋 Expected FOLDER_ORDER:', FOLDER_ORDER);
+    }
     
     // Sort by resource type
     if (resourceType === 'equipment') {
       return groups.sort((a, b) => {
-        const indexA = FOLDER_ORDER.indexOf(a.mainFolder);
-        const indexB = FOLDER_ORDER.indexOf(b.mainFolder);
+        const indexA = FOLDER_ORDER.indexOf(a.mainFolder as any);
+        const indexB = FOLDER_ORDER.indexOf(b.mainFolder as any);
         
+        // Debug logging to identify folder name mismatches
+        if (process.env.NODE_ENV === 'development') {
+          if (indexA === -1) console.log(`🔍 Folder not in FOLDER_ORDER: "${a.mainFolder}"`);
+          if (indexB === -1) console.log(`🔍 Folder not in FOLDER_ORDER: "${b.mainFolder}"`);
+        }
+        
+        // Handle folders not in the predefined order
         if (indexA === -1 && indexB === -1) return a.mainFolder.localeCompare(b.mainFolder);
-        if (indexA === -1) return 1;
-        if (indexB === -1) return -1;
+        if (indexA === -1) return 1; // Put unknown folders at the end
+        if (indexB === -1) return -1; // Keep known folders at the beginning
         
         return indexA - indexB;
       });
@@ -732,6 +784,7 @@ export function useTimelineHub({
     getLowestAvailable,
     toggleGroup,
     toggleEquipmentExpansion,
+    setExpandedGroups, // ADDED: For efficient batch expansion state updates
     
     // Crew-specific (when resourceType === 'crew')
     getCrewRoleForDate: getProjectQuantityForDate, // Alias for compatibility

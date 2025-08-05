@@ -4,6 +4,7 @@ import { format } from "date-fns";
 
 // Option to test unified system
 import { useTimelineHub } from './shared/hooks/useTimelineHub';
+import { useDashboardConflicts } from '@/hooks/useDashboardConflicts';
 
 
 import { LAYOUT, PERFORMANCE } from './shared/constants';
@@ -61,6 +62,15 @@ export function UnifiedCalendar({
   renderOnlyLeft = false,
   renderOnlyTimeline = false
 }: UnifiedCalendarProps) {
+
+  // DEBUG: Track selectedDate at UnifiedCalendar level
+  useEffect(() => {
+    console.log('🟢 UNIFIED_CALENDAR selectedDate:', format(selectedDate, 'MMM dd yyyy'), 'resourceType:', resourceType, 'showProblems:', showProblemsOnly);
+  }, [selectedDate, resourceType, showProblemsOnly]);
+  
+  // STATE PRESERVATION: Save/restore expansion state when toggling View Problems
+  const savedExpansionStateRef = useRef<Set<string> | null>(null);
+  const previousShowProblemsOnlyRef = useRef(showProblemsOnly);
   
   // Performance tracking
   const loadStartTime = useRef(performance.now());
@@ -70,7 +80,7 @@ export function UnifiedCalendar({
   // console.log('UnifiedCalendar render', { selectedDate: selectedDate.toISOString() });
 
   // SIMPLIFIED: Use single consolidated scroll hook
-  const timelineScroll = useTimelineScroll({ selectedDate, targetScrollItem });
+  const timelineScroll = useTimelineScroll({ selectedDate, targetScrollItem, resourceType });
   
   const {
     timelineStart,
@@ -181,7 +191,7 @@ export function UnifiedCalendar({
     equipmentById,
     bookingsData,
     conflicts,
-    warnings, // Add warnings for optimized problems view
+    warnings: hubWarnings, // Renamed to avoid confusion - these are incomplete (only expanded folders)
     expandedGroups,
     expandedEquipment,
     equipmentProjectUsage,
@@ -195,12 +205,119 @@ export function UnifiedCalendar({
     getLowestAvailable,
     toggleGroup,
     toggleEquipmentExpansion,
+    setExpandedGroups, // ADDED: For efficient batch updates
     updateBookingState,
     getBookingState,
     batchUpdateBookings,
     clearStaleStates,
     resolveConflict,
   } = currentHub;
+
+  // CRITICAL FIX: When "View Problems" is active, use comprehensive conflict detection
+  // that fetches ALL equipment conflicts regardless of folder expansion state
+  const { 
+    equipmentConflicts: allEquipmentConflicts, 
+    crewConflicts: allCrewConflicts,
+    isLoading: isLoadingAllConflicts 
+  } = useDashboardConflicts(selectedOwner);
+
+  // Transform comprehensive conflicts into warnings format for TimelineContent
+  const comprehensiveWarnings = useMemo(() => {
+    if (!showProblemsOnly) {
+      return hubWarnings; // Use normal hub warnings when not in problems-only mode
+    }
+
+    // When in problems-only mode, use comprehensive conflict data
+    const allWarnings = [];
+    
+    if (resourceType === 'equipment' && allEquipmentConflicts) {
+      allEquipmentConflicts.forEach(conflict => {
+        allWarnings.push({
+          resourceId: conflict.equipmentId,
+          resourceName: conflict.equipmentName,
+          date: conflict.date,
+          type: 'overbooked',
+          severity: conflict.overbooked > (conflict.totalStock * 0.5) ? 'high' : 'medium',
+          details: {
+            stock: conflict.totalStock,
+            used: conflict.totalUsed,
+            overbooked: conflict.overbooked,
+            events: conflict.conflictingEvents
+          }
+        });
+      });
+    } else if (resourceType === 'crew' && allCrewConflicts) {
+      allCrewConflicts.forEach(conflict => {
+        allWarnings.push({
+          resourceId: conflict.crewMemberId,
+          resourceName: conflict.crewMemberName,
+          date: conflict.date,
+          type: 'conflict',
+          severity: conflict.conflictingAssignments.length > 2 ? 'high' : 'medium',
+          details: {
+            assignments: conflict.conflictingAssignments
+          }
+        });
+      });
+    }
+
+    // Debug logging for crew conflicts
+    if (process.env.NODE_ENV === 'development' && resourceType === 'crew') {
+      console.log('👥 Crew mode - allCrewConflicts:', allCrewConflicts);
+      console.log('⚠️ Transformed crew warnings:', allWarnings);
+      console.log('🔍 showProblemsOnly:', showProblemsOnly, 'warnings found:', allWarnings.length);
+    }
+
+    return allWarnings;
+  }, [showProblemsOnly, resourceType, allEquipmentConflicts, allCrewConflicts, hubWarnings]);
+
+  // Use comprehensive warnings when available, fallback to hub warnings
+  const warnings = comprehensiveWarnings;
+
+  // EXPANSION STATE PRESERVATION: Save and restore folder expansion when toggling View Problems
+  useEffect(() => {
+    const wasShowingProblems = previousShowProblemsOnlyRef.current;
+    const isNowShowingProblems = showProblemsOnly;
+    
+    // User just turned ON "View Problems" - save current expansion state
+    if (!wasShowingProblems && isNowShowingProblems) {
+      savedExpansionStateRef.current = new Set(expandedGroups);
+    }
+    
+    // User just turned OFF "View Problems" - restore saved expansion state  
+    if (wasShowingProblems && !isNowShowingProblems && savedExpansionStateRef.current) {
+      // CREW-SPECIFIC: Preserve scroll state more aggressively during expansion restoration
+      console.log(`🔄 [${resourceType.toUpperCase()}] RESTORING EXPANSION STATE after View Problems toggle`);
+      
+      if (resourceType === 'crew') {
+        // For crew tab, ensure scroll state is preserved during expansion changes
+        const currentScrollPosition = equipmentRowsRef?.current?.scrollLeft || 0;
+        console.log(`👥 [CREW] Preserving scroll position: ${currentScrollPosition} before expansion restoration`);
+        
+        setTimeout(() => {
+          setExpandedGroups(new Set(savedExpansionStateRef.current!));
+          savedExpansionStateRef.current = null;
+          
+          // Extra restoration step for crew tab
+          setTimeout(() => {
+            if (equipmentRowsRef?.current && equipmentRowsRef.current.scrollLeft !== currentScrollPosition) {
+              equipmentRowsRef.current.scrollLeft = currentScrollPosition;
+              console.log(`👥 [CREW] Restored scroll position: ${currentScrollPosition} after expansion changes`);
+            }
+          }, 50);
+        }, 0);
+      } else {
+        // Equipment tab - simpler restoration
+        setTimeout(() => {
+          setExpandedGroups(new Set(savedExpansionStateRef.current!));
+          savedExpansionStateRef.current = null;
+        }, 0);
+      }
+    }
+    
+    // Update previous state
+    previousShowProblemsOnlyRef.current = showProblemsOnly;
+  }, [showProblemsOnly, setExpandedGroups]);
 
   // REMOVED: Performance metrics logging to reduce console spam
 

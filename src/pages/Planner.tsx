@@ -26,6 +26,11 @@ const Planner = () => {
     today.setHours(0, 0, 0, 0);
     return today;
   });
+
+  // DEBUG: Track selectedDate changes at the top level
+  useEffect(() => {
+    console.log('🔵 PLANNER selectedDate changed:', format(selectedDate, 'MMM dd yyyy'));
+  }, [selectedDate]);
   
   // Remove the aggressive useEffect that was causing double date setting
   

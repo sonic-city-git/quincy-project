@@ -20,28 +20,7 @@ interface Folder {
   parent_id: string | null;
 }
 
-const FOLDER_ORDER = [
-  "Mixers",
-  "Microphones",
-  "DI-boxes",
-  "Cables/Split",
-  "WL",
-  "Outboard",
-  "Stands/Clamps",
-  "Misc",
-  "Flightcases",
-  "Consumables",
-  "Kits",
-  "Mindnes"
-];
-
-const SUBFOLDER_ORDER: Record<string, string[]> = {
-  "Mixers": ["Mixrack", "Surface", "Expansion", "Small format"],
-  "Microphones": ["Dynamic", "Condenser", "Ribbon", "Shotgun", "WL capsule", "Special/Misc"],
-  "DI-boxes": ["Active", "Passive", "Special"],
-  "Cables/Split": ["CAT", "XLR", "LK37/SB", "Jack", "Coax", "Fibre", "Schuko"],
-  "WL": ["MIC", "IEM", "Antenna"]
-};
+import { FOLDER_ORDER, SUBFOLDER_ORDER } from "@/types/equipment";
 
 export function EquipmentFolderFilter({
   selectedFolders,
@@ -53,8 +32,13 @@ export function EquipmentFolderFilter({
   const mainFolders = folders
     .filter(folder => !folder.parent_id)
     .sort((a, b) => {
-      const indexA = FOLDER_ORDER.indexOf(a.name);
-      const indexB = FOLDER_ORDER.indexOf(b.name);
+      const indexA = FOLDER_ORDER.indexOf(a.name as any);
+      const indexB = FOLDER_ORDER.indexOf(b.name as any);
+      
+      if (indexA === -1 && indexB === -1) return a.name.localeCompare(b.name);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      
       return indexA - indexB;
     });
 
@@ -68,6 +52,11 @@ export function EquipmentFolderFilter({
     return subfolders.sort((a, b) => {
       const indexA = orderArray.indexOf(a.name);
       const indexB = orderArray.indexOf(b.name);
+      
+      if (indexA === -1 && indexB === -1) return a.name.localeCompare(b.name);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      
       return indexA - indexB;
     });
   };

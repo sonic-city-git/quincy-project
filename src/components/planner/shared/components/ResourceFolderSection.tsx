@@ -80,9 +80,9 @@ export function ResourceFolderSection({
         >
           <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-data-[state=open]/folder:rotate-90 transition-transform" />
           <FolderIcon className="h-4 w-4 text-blue-500" />
-          <span className="text-sm font-semibold text-foreground">
+          <span className="text-sm font-semibold text-foreground leading-none flex items-center">
             {mainFolder}
-            <span className="ml-2 text-xs text-muted-foreground opacity-0 group-hover/folder:opacity-100 transition-opacity">
+            <span className="ml-2 text-xs text-muted-foreground opacity-0 group-hover/folder:opacity-100 transition-opacity leading-none">
               {navigator.platform.includes('Mac') ? '⌘+click' : 'Ctrl+click'} for all
             </span>
           </span>
@@ -130,7 +130,7 @@ export function ResourceFolderSection({
                   )}
                   
                   <div className="min-w-0 flex-1">
-                    <div className="text-xs font-medium truncate" title={equipment.name}>{equipment.name}</div>
+                    <div className="text-xs font-medium truncate leading-none" title={equipment.name}>{equipment.name}</div>
                     {resourceType === 'equipment' && (
                       <div className="text-xs text-muted-foreground mt-0.5">Stock: {equipment.stock}</div>
                     )}
@@ -196,7 +196,7 @@ export function ResourceFolderSection({
                   style={{ height: LAYOUT.SUBFOLDER_HEIGHT }}
                 >
                   <ChevronRightIcon className="h-4 w-4 text-muted-foreground group-data-[state=open]/subfolder:rotate-90 transition-transform" />
-                  <span className="text-sm font-medium text-muted-foreground">{subFolder.name}</span>
+                  <span className="text-sm font-medium text-muted-foreground leading-none">{subFolder.name}</span>
                 </div>
               </CollapsibleTrigger>
               <CollapsibleContent>
@@ -239,7 +239,7 @@ export function ResourceFolderSection({
                           )}
                           
                           <div className="min-w-0 flex-1">
-                            <div className="text-xs font-medium truncate" title={equipment.name}>{equipment.name}</div>
+                            <div className="text-xs font-medium truncate leading-none" title={equipment.name}>{equipment.name}</div>
                             {resourceType === 'equipment' && (
                               <div className="text-xs text-muted-foreground mt-0.5">Stock: {equipment.stock}</div>
                             )}

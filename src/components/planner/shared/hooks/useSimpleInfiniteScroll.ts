@@ -12,15 +12,37 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { addDays, format, isWeekend, differenceInDays } from 'date-fns';
 import { LAYOUT } from '../constants';
 
+// TypeScript declaration for shared timeline state (per resource type)
+declare global {
+  interface Window {
+    plannerTimelineState?: {
+      equipment: {
+        timelineStart: Date;
+        timelineEnd: Date;
+        scrollPosition: number;
+        hasInitialScrolled: boolean;
+      };
+      crew: {
+        timelineStart: Date;
+        timelineEnd: Date;
+        scrollPosition: number;
+        hasInitialScrolled: boolean;
+      };
+      selectedDate: Date; // Shared across resource types
+    };
+  }
+}
+
 interface UseSimpleInfiniteScrollProps {
   selectedDate: Date;
+  resourceType: 'equipment' | 'crew';
   targetScrollItem?: {
     type: 'equipment' | 'crew';
     id: string;
   } | null;
 }
 
-export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseSimpleInfiniteScrollProps) {
+export function useSimpleInfiniteScroll({ selectedDate, resourceType, targetScrollItem }: UseSimpleInfiniteScrollProps) {
   
   // ========================
   // SIMPLE STATE
@@ -32,13 +54,106 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
     return date;
   }, []);
 
-  // Start with LARGER buffer to avoid immediate expansion
-  const [timelineStart, setTimelineStart] = useState(() => addDays(today, -60)); // More buffer
-  const [timelineEnd, setTimelineEnd] = useState(() => addDays(today, 90));
+  // RESOURCE-SPECIFIC SHARED STATE: Separate state for equipment vs crew
+  const getSharedTimelineState = useCallback(() => {
+    if (typeof window !== 'undefined' && window.plannerTimelineState) {
+      const globalState = window.plannerTimelineState;
+      const resourceState = globalState[resourceType];
+      
+      // Validate resource-specific state integrity
+      if (resourceState && resourceState.timelineStart && resourceState.timelineEnd && typeof resourceState.scrollPosition === 'number') {
+        return resourceState;
+      }
+    }
+    
+    // Initialize shared state structure if needed
+    if (typeof window !== 'undefined') {
+      if (!window.plannerTimelineState) {
+        window.plannerTimelineState = {
+          equipment: {
+            timelineStart: addDays(today, -60),
+            timelineEnd: addDays(today, 90),
+            scrollPosition: 60 * LAYOUT.DAY_CELL_WIDTH,
+            hasInitialScrolled: false
+          },
+          crew: {
+            timelineStart: addDays(today, -60),
+            timelineEnd: addDays(today, 90),
+            scrollPosition: 60 * LAYOUT.DAY_CELL_WIDTH,
+            hasInitialScrolled: false
+          },
+          selectedDate: selectedDate
+        };
+        console.log('✅ INITIALIZED FRESH SHARED STATE STRUCTURE');
+      }
+      
+      // Ensure resource-specific state exists
+      if (!window.plannerTimelineState[resourceType]) {
+        window.plannerTimelineState[resourceType] = {
+          timelineStart: addDays(today, -60),
+          timelineEnd: addDays(today, 90),
+          scrollPosition: 60 * LAYOUT.DAY_CELL_WIDTH,
+          hasInitialScrolled: false
+        };
+        console.log(`✅ INITIALIZED ${resourceType.toUpperCase()} STATE`);
+      }
+    }
+    
+    return window.plannerTimelineState?.[resourceType] || {
+      timelineStart: addDays(today, -60),
+      timelineEnd: addDays(today, 90),
+      scrollPosition: 60 * LAYOUT.DAY_CELL_WIDTH,
+      hasInitialScrolled: false
+    };
+  }, [today, resourceType, selectedDate]);
+
+  const sharedState = getSharedTimelineState();
   
-  // Start near today to prevent initial jump
-  const initialScroll = 60 * LAYOUT.DAY_CELL_WIDTH; // today is 60 days from start (60 * 48 = 2880px > 2000px threshold)
-  const [scrollPosition, setScrollPosition] = useState(initialScroll);
+  const [timelineStart, setTimelineStartLocal] = useState(sharedState.timelineStart);
+  const [timelineEnd, setTimelineEndLocal] = useState(sharedState.timelineEnd);
+  const [scrollPosition, setScrollPositionLocal] = useState(sharedState.scrollPosition);
+  const [hasInitialScrolled, setHasInitialScrolledLocal] = useState(sharedState.hasInitialScrolled);
+
+  // Wrapper setters that update both local and resource-specific shared state
+  const setTimelineStart = useCallback((date: Date) => {
+    setTimelineStartLocal(date);
+    if (typeof window !== 'undefined' && window.plannerTimelineState?.[resourceType]) {
+      window.plannerTimelineState[resourceType].timelineStart = date;
+    }
+  }, [resourceType]);
+
+  const setTimelineEnd = useCallback((date: Date) => {
+    setTimelineEndLocal(date);
+    if (typeof window !== 'undefined' && window.plannerTimelineState?.[resourceType]) {
+      window.plannerTimelineState[resourceType].timelineEnd = date;
+    }
+  }, [resourceType]);
+
+  const setScrollPosition = useCallback((position: number) => {
+    setScrollPositionLocal(position);
+    if (typeof window !== 'undefined' && window.plannerTimelineState?.[resourceType]) {
+      window.plannerTimelineState[resourceType].scrollPosition = position;
+    }
+  }, [resourceType]);
+
+  const setHasInitialScrolled = useCallback((scrolled: boolean) => {
+    setHasInitialScrolledLocal(scrolled);
+    if (typeof window !== 'undefined' && window.plannerTimelineState?.[resourceType]) {
+      window.plannerTimelineState[resourceType].hasInitialScrolled = scrolled;
+    }
+  }, [resourceType]);
+
+  // SYNC GLOBAL SELECTED DATE: Update shared selectedDate when it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.plannerTimelineState) {
+      window.plannerTimelineState.selectedDate = selectedDate;
+    }
+  }, [selectedDate]);
+
+  // Shared state is now updated directly in the setter functions above
+  
+  // Constants
+  const initialScroll = 60 * LAYOUT.DAY_CELL_WIDTH; // today is 60 days from start
   
   // Container readiness state
   const [containerMounted, setContainerMounted] = useState(false);
@@ -46,9 +161,8 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
   // Refs with callback to detect mounting
   const equipmentRowsRef = useRef<HTMLDivElement>(null);
   const stickyHeadersRef = useRef<HTMLDivElement>(null);
-  const scrollPositionRef = useRef(initialScroll);
+  const scrollPositionRef = useRef(scrollPosition);
   const isExpandingRef = useRef(false);
-  const hasInitialScrolledRef = useRef(false);
   
   // Ref callback to detect when container is ready
   const setEquipmentRowsRef = useCallback((element: HTMLDivElement | null) => {
@@ -86,7 +200,7 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
     const selectedNormalized = new Date(selectedDate);
     selectedNormalized.setHours(0, 0, 0, 0);
     
-    return timelineDates.map(date => {
+    const formatted = timelineDates.map(date => {
       const normalizedDate = new Date(date);
       normalizedDate.setHours(0, 0, 0, 0);
       
@@ -98,7 +212,24 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
         isWeekendDay: isWeekend(date)
       };
     });
-  }, [timelineDates, selectedDate, today]);
+    
+    // DEBUG: Track selected date calculation
+    const selectedIndex = formatted.findIndex(d => d.isSelected);
+    console.log(`🟡 [${resourceType.toUpperCase()}] FORMATTED_DATES calc:`, {
+      selectedDate: format(selectedDate, 'MMM dd yyyy'),
+      selectedIndex: selectedIndex,
+      foundSelected: selectedIndex >= 0,
+      totalDates: formatted.length,
+      firstDate: formatted[0]?.dateStr,
+      lastDate: formatted[formatted.length - 1]?.dateStr
+    });
+    
+    if (selectedIndex === -1) {
+      console.warn(`⚠️ [${resourceType.toUpperCase()}] SELECTED DATE NOT IN RANGE`);
+    }
+    
+    return formatted;
+  }, [timelineDates, selectedDate, today, resourceType]);
 
   // ========================
   // SIMPLE EXPANSION
@@ -114,7 +245,7 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
       const currentScrollLeft = scrollPositionRef.current;
       const pixelAdjustment = days * LAYOUT.DAY_CELL_WIDTH;
       
-      setTimelineStart(prev => addDays(prev, -days));
+      setTimelineStart(addDays(timelineStart, -days));
       
       // Simple position adjustment - no RAF loops
       setTimeout(() => {
@@ -130,10 +261,10 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
       
     } else {
       // Forward expansion - no position adjustment needed
-      setTimelineEnd(prev => addDays(prev, days));
+      setTimelineEnd(addDays(timelineEnd, days));
       isExpandingRef.current = false;
     }
-  }, []);
+  }, [timelineStart, timelineEnd, setTimelineStart, setTimelineEnd]);
 
   // ========================
   // INFINITE SCROLL DETECTION
@@ -229,40 +360,64 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
   // SCROLL TO TODAY WHEN READY
   // ========================
   
-  // SIMPLE: Single effect that waits for everything to be ready
+  // OLD READINESS CHECK REMOVED - Now handled by unified scroll system above
+
+  // SHARED STATE DEBUG (only when needed)
+  // useEffect(() => {
+  //   console.log('🔍 SHARED STATE:', {
+  //     selectedDate: format(selectedDate, 'MMM dd yyyy'),
+  //     timelineDatesLength: timelineDates.length,
+  //     containerMounted: containerMounted,
+  //     hasInitialScrolled: hasInitialScrolled
+  //   });
+  // });
+
+  // UNIFIED SCROLL TO SELECTED DATE: Works for initial load, tab switches, and expansion changes
   useEffect(() => {
-    console.log('📊 Readiness check:', {
+    const currentScrollPosition = equipmentRowsRef.current?.scrollLeft || 0;
+    
+    console.log(`🎯 [${resourceType.toUpperCase()}] SCROLL EFFECT CHECK:`, {
+      selectedDate: format(selectedDate, 'MMM dd yyyy'),
       timelineDatesLength: timelineDates.length,
-      containerMounted,
-      containerWidth: equipmentRowsRef.current?.clientWidth,
-      hasInitialScrolled: hasInitialScrolledRef.current,
-      selectedDate: format(selectedDate, 'MMM dd'),
-      initialScroll
+      containerMounted: containerMounted,
+      hasContainer: !!equipmentRowsRef.current,
+      currentScrollPosition: currentScrollPosition,
+      willExecute: timelineDates.length > 0 && containerMounted && equipmentRowsRef.current
     });
     
-    // Wait for timeline data AND containers to be ready
+    // Always scroll to selectedDate when timeline is ready and selectedDate changes
     if (timelineDates.length > 0 && containerMounted && equipmentRowsRef.current) {
+      console.log(`🎯 [${resourceType.toUpperCase()}] EXECUTING SCROLL TO:`, format(selectedDate, 'MMM dd yyyy'), 'from position:', currentScrollPosition);
       
-      // For initial load: set position to prevent jump, then scroll to today
-      if (!hasInitialScrolledRef.current) {
-        console.log('🎯 INITIAL LOAD: Setting position and scrolling to', format(selectedDate, 'MMM dd'));
-        
-        // Set initial position first (prevent jump)
-        if (stickyHeadersRef.current) {
-          equipmentRowsRef.current.scrollLeft = initialScroll;
-          stickyHeadersRef.current.scrollLeft = initialScroll;
-          console.log('✅ Set initial scroll position to:', initialScroll);
-        }
-        
-        hasInitialScrolledRef.current = true;
-      } else {
-        console.log('🎯 DATE CHANGE: Scrolling to', format(selectedDate, 'MMM dd'));
+      // Small delay to ensure rendering is complete
+      const timer = setTimeout(() => {
+        console.log(`🎯 [${resourceType.toUpperCase()}] CALLING scrollToDate`);
+        scrollToDate(selectedDate);
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    } else {
+      console.log(`🔴 [${resourceType.toUpperCase()}] SCROLL CONDITIONS NOT MET`);
+    }
+  }, [selectedDate, timelineDates.length, containerMounted, scrollToDate, resourceType]);
+  
+  // INITIAL SCROLL SETUP: Only for very first load
+  useEffect(() => {
+    if (timelineDates.length > 0 && containerMounted && equipmentRowsRef.current && !hasInitialScrolled) {
+      console.log('🚀 INITIAL SCROLL SETUP');
+      
+      // Set initial position to prevent jump, then scroll to selectedDate
+      if (stickyHeadersRef.current) {
+        equipmentRowsRef.current.scrollLeft = initialScroll;
+        stickyHeadersRef.current.scrollLeft = initialScroll;
       }
       
-      // Always scroll to selected date (handles both initial + date changes)
-      setTimeout(() => scrollToDate(selectedDate), 10);
+      setHasInitialScrolled(true);
+      
+      // Then scroll to actual selectedDate
+      setTimeout(() => scrollToDate(selectedDate), 150);
     }
-  }, [timelineDates.length, containerMounted, selectedDate, initialScroll]); // Everything that matters
+  }, [timelineDates.length, containerMounted, hasInitialScrolled, setHasInitialScrolled, scrollToDate, selectedDate, initialScroll]);
 
   // Handle targetScrollItem (moved from UnifiedCalendar for single scroll location)
   useEffect(() => {

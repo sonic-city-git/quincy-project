@@ -2,7 +2,7 @@ import { AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDisplayDate } from "@/utils/dateFormatters";
-import { useEquipmentConflicts } from "@/hooks/useConsolidatedConflicts";
+import { useDashboardConflicts } from "@/hooks/useDashboardConflicts";
 
 interface EquipmentConflict {
   equipmentId: string;
@@ -23,12 +23,12 @@ interface EquipmentConflictsProps {
 }
 
 export function EquipmentConflicts({ ownerId }: EquipmentConflictsProps) {
-  // PERFORMANCE FIX: Use consolidated hook that leverages planner's existing calculations
-  // instead of running duplicate Supabase queries
-  const { conflicts, isLoading } = useEquipmentConflicts(ownerId);
+  // CRITICAL FIX: Use dashboard-specific conflicts that fetch ALL equipment data
+  // regardless of planner folder expansion state
+  const { equipmentConflicts, isLoading } = useDashboardConflicts(ownerId);
   
   // Limit to 5 most recent conflicts for display
-  const displayConflicts = conflicts.slice(0, 5);
+  const displayConflicts = equipmentConflicts.slice(0, 5);
 
   if (isLoading) {
     return (
