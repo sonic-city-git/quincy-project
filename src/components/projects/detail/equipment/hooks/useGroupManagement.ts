@@ -1,44 +1,89 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+// Types for better type safety
+interface GroupManagementState {
+  groupToDelete: string | null;
+  targetGroupId: string;
+  showNewGroupDialog: boolean;
+  newGroupName: string;
+  isLoading: boolean;
+}
+
+interface CreateGroupResult {
+  id: string;
+  project_id: string;
+  name: string;
+}
+
 export function useGroupManagement(projectId: string) {
-  const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
-  const [targetGroupId, setTargetGroupId] = useState("");
-  const [showNewGroupDialog, setShowNewGroupDialog] = useState(false);
-  const [newGroupName, setNewGroupName] = useState("");
+  const [state, setState] = useState<GroupManagementState>({
+    groupToDelete: null,
+    targetGroupId: "",
+    showNewGroupDialog: false,
+    newGroupName: "",
+    isLoading: false
+  });
+  
   const queryClient = useQueryClient();
 
-  const handleCreateGroup = async () => {
-    if (!newGroupName.trim()) {
+  // Helper function to invalidate all related queries
+  const invalidateGroupQueries = useCallback(async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment-groups', projectId] 
+      }),
+      queryClient.invalidateQueries({ 
+        queryKey: ['project-equipment', projectId] 
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ['project-event-equipment', projectId]
+      })
+    ]);
+  }, [queryClient, projectId]);
+
+  const handleCreateGroup = useCallback(async (): Promise<CreateGroupResult | null> => {
+    if (!state.newGroupName.trim()) {
       toast.error("Please enter a group name");
       return null;
     }
+
+    setState(prev => ({ ...prev, isLoading: true }));
 
     try {
       const { data, error } = await supabase
         .from('project_equipment_groups')
         .insert({
           project_id: projectId,
-          name: newGroupName.trim(),
+          name: state.newGroupName.trim(),
         })
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(`Failed to create group: ${error.message}`);
+      }
 
-      queryClient.invalidateQueries({ queryKey: ['project-equipment-groups'] });
+      await invalidateGroupQueries();
       toast.success('Group created successfully');
-      setShowNewGroupDialog(false);
-      setNewGroupName("");
-      return data;
+      
+      setState(prev => ({ 
+        ...prev, 
+        showNewGroupDialog: false, 
+        newGroupName: "",
+        isLoading: false 
+      }));
+      
+      return data as CreateGroupResult;
     } catch (error) {
-      console.error('Error creating group:', error);
-      toast.error('Failed to create group');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create group';
+      toast.error(errorMessage);
+      setState(prev => ({ ...prev, isLoading: false }));
       return null;
     }
-  };
+  }, [state.newGroupName, projectId, invalidateGroupQueries]);
 
   const handleDeleteGroup = async (groupId: string) => {
     try {
@@ -127,15 +172,38 @@ export function useGroupManagement(projectId: string) {
     }
   };
 
+  // State setters with proper typing
+  const setGroupToDelete = useCallback((groupId: string | null) => {
+    setState(prev => ({ ...prev, groupToDelete: groupId }));
+  }, []);
+
+  const setTargetGroupId = useCallback((groupId: string) => {
+    setState(prev => ({ ...prev, targetGroupId: groupId }));
+  }, []);
+
+  const setShowNewGroupDialog = useCallback((show: boolean) => {
+    setState(prev => ({ ...prev, showNewGroupDialog: show }));
+  }, []);
+
+  const setNewGroupName = useCallback((name: string) => {
+    setState(prev => ({ ...prev, newGroupName: name }));
+  }, []);
+
   return {
-    groupToDelete,
+    // State values
+    groupToDelete: state.groupToDelete,
+    targetGroupId: state.targetGroupId,
+    showNewGroupDialog: state.showNewGroupDialog,
+    newGroupName: state.newGroupName,
+    isLoading: state.isLoading,
+    
+    // State setters
     setGroupToDelete,
-    targetGroupId,
     setTargetGroupId,
-    showNewGroupDialog,
     setShowNewGroupDialog,
-    newGroupName,
     setNewGroupName,
+    
+    // Actions
     handleCreateGroup,
     handleDeleteGroup,
   };
