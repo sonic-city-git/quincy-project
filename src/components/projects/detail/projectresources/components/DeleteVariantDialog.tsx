@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { ProjectVariant } from '@/types/variants';
 import { Loader2, AlertTriangle } from 'lucide-react';
+import { FORM_PATTERNS, cn } from '@/design-system';
 
 interface DeleteVariantDialogProps {
   open: boolean;
@@ -40,8 +41,8 @@ export function DeleteVariantDialog({
       await onDeleteVariant();
       onOpenChange(false);
     } catch (error) {
-      console.error('Error deleting variant:', error);
       // Error is handled by the parent component with toast
+      // No need to log here as parent handles error reporting
     } finally {
       setIsDeleting(false);
     }
@@ -56,8 +57,8 @@ export function DeleteVariantDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
+      <AlertDialogContent className={FORM_PATTERNS.dialog.container}>
+        <AlertDialogHeader className={FORM_PATTERNS.dialog.header}>
           <AlertDialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
             Delete Variant
@@ -85,7 +86,7 @@ export function DeleteVariantDialog({
           </AlertDialogDescription>
         </AlertDialogHeader>
         
-        <AlertDialogFooter>
+        <AlertDialogFooter className={FORM_PATTERNS.dialog.footer}>
           <AlertDialogCancel disabled={isDeleting}>
             Cancel
           </AlertDialogCancel>
@@ -95,6 +96,7 @@ export function DeleteVariantDialog({
               onClick={handleDelete}
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              aria-label={`Delete ${variant.display_name} variant`}
             >
               {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete Variant
