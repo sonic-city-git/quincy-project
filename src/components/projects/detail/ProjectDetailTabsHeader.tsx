@@ -6,6 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { COMPONENT_CLASSES, RESPONSIVE, cn } from "@/design-system";
 
 interface ProjectDetailTabsHeaderProps {
   activeTab: 'general' | 'projectresources' | 'financial';
@@ -24,24 +25,45 @@ export function ProjectDetailTabsHeader({
   const getTabConfig = () => {
     switch (activeTab) {
       case 'projectresources':
-        return { title: 'Project Variants', icon: Layers, color: 'text-indigo-500' };
+        return { 
+          title: 'Project Variants', 
+          icon: Layers, 
+          color: 'text-primary',
+          activeClasses: 'bg-primary/10 text-primary border-primary/20'
+        };
       case 'financial':
-        return { title: 'Project Financial', icon: DollarSign, color: 'text-blue-500' };
+        return { 
+          title: 'Project Financial', 
+          icon: DollarSign, 
+          color: 'text-accent',
+          activeClasses: 'bg-accent/10 text-accent border-accent/20'
+        };
       default:
-        return { title: 'Project General', icon: Settings, color: 'text-purple-500' };
+        return { 
+          title: 'Project General', 
+          icon: Settings, 
+          color: 'text-secondary',
+          activeClasses: 'bg-secondary/10 text-secondary border-secondary/20'
+        };
     }
   };
 
-  const { title, icon: IconComponent, color: iconColor } = getTabConfig();
+  const { title, icon: IconComponent, color: iconColor, activeClasses } = getTabConfig();
 
   return (
-    <div className="sticky top-[72px] z-40 bg-background/95 backdrop-blur-sm border border-border rounded-lg shadow-sm">
+    <div className={cn(
+      "sticky top-[72px] z-40 bg-background/95 backdrop-blur-sm",
+      COMPONENT_CLASSES.card.default
+    )}>
       {/* Header with Title, Actions, and Tab Toggle */}
-      <div className="flex items-center justify-between py-3 px-4 bg-background border-b border-border/30">
+      <div className={cn(
+        RESPONSIVE.flex.header,
+        "py-3 px-4 bg-background border-b border-border/30"
+      )}>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <IconComponent className={`h-5 w-5 ${iconColor}`} />
-            <h3 className="text-lg font-semibold">{title}</h3>
+            <IconComponent className={cn("h-5 w-5", iconColor)} />
+            <h3 className="text-lg font-semibold text-foreground">{title}</h3>
           </div>
         </div>
         
@@ -72,34 +94,43 @@ export function ProjectDetailTabsHeader({
               variant={activeTab === 'general' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onTabChange('general')}
-              className={`flex items-center gap-2 ${
-                activeTab === 'general' ? 'bg-purple-100 text-purple-700' : ''
-              }`}
+              className={cn(
+                "flex items-center gap-2 transition-colors",
+                activeTab === 'general' ? 'bg-secondary/10 text-secondary border-secondary/20' : 'hover:bg-muted/50'
+              )}
+              aria-pressed={activeTab === 'general'}
+              aria-label="Switch to General tab"
             >
               <Settings className="h-4 w-4" />
-              General
+              <span className="hidden sm:inline">General</span>
             </Button>
             <Button
               variant={activeTab === 'projectresources' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onTabChange('projectresources')}
-              className={`flex items-center gap-2 ${
-                activeTab === 'projectresources' ? 'bg-indigo-100 text-indigo-700' : ''
-              }`}
+              className={cn(
+                "flex items-center gap-2 transition-colors",
+                activeTab === 'projectresources' ? 'bg-primary/10 text-primary border-primary/20' : 'hover:bg-muted/50'
+              )}
+              aria-pressed={activeTab === 'projectresources'}
+              aria-label="Switch to Variants tab"
             >
               <Layers className="h-4 w-4" />
-              Variants
+              <span className="hidden sm:inline">Variants</span>
             </Button>
             <Button
               variant={activeTab === 'financial' ? 'default' : 'ghost'}
               size="sm"
               onClick={() => onTabChange('financial')}
-              className={`flex items-center gap-2 ${
-                activeTab === 'financial' ? 'bg-blue-100 text-blue-700' : ''
-              }`}
+              className={cn(
+                "flex items-center gap-2 transition-colors",
+                activeTab === 'financial' ? 'bg-accent/10 text-accent border-accent/20' : 'hover:bg-muted/50'
+              )}
+              aria-pressed={activeTab === 'financial'}
+              aria-label="Switch to Financial tab"
             >
               <DollarSign className="h-4 w-4" />
-              Financial
+              <span className="hidden sm:inline">Financial</span>
             </Button>
           </div>
         </div>

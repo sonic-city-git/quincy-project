@@ -5,11 +5,31 @@ import { Project } from "@/types/projects";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { Settings, Layers, DollarSign } from "lucide-react";
+import { COMPONENT_CLASSES, RESPONSIVE, SPACING, cn } from "@/design-system";
 
 interface ProjectLayoutProps {
   project: Project;
   projectId: string;
 }
+
+// Tab configuration using design system patterns
+const TAB_CONFIG = {
+  general: {
+    label: 'General',
+    icon: Settings,
+    activeClasses: 'bg-secondary/10 text-secondary border-secondary/20'
+  },
+  projectresources: {
+    label: 'Variants',
+    icon: Layers,
+    activeClasses: 'bg-primary/10 text-primary border-primary/20'
+  },
+  financial: {
+    label: 'Financial',
+    icon: DollarSign,
+    activeClasses: 'bg-accent/10 text-accent border-accent/20'
+  }
+} as const;
 
 export function ProjectLayout({ project, projectId }: ProjectLayoutProps) {
   const location = useLocation();
@@ -27,50 +47,42 @@ export function ProjectLayout({ project, projectId }: ProjectLayoutProps) {
   }, [location.pathname, location.hash, navigate]);
 
   return (
-    <Tabs value={tab} onValueChange={handleTabChange} className="space-y-4">
+    <Tabs value={tab} onValueChange={handleTabChange} className={RESPONSIVE.spacing.section}>
       {/* Sticky Tab Navigation */}
-      <div className="sticky top-0 z-20 bg-background border-b border-border">
+      <div className={cn(
+        "sticky top-0 z-20 bg-background/95 backdrop-blur-sm",
+        "border-b border-border shadow-sm"
+      )}>
         <div className="w-full p-4">
           <div className="flex bg-muted rounded-lg p-1">
-            <Button
-              variant={tab === 'general' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => handleTabChange('general')}
-              className={`flex items-center gap-2 ${
-                tab === 'general' ? 'bg-purple-100 text-purple-700' : ''
-              }`}
-            >
-              <Settings className="h-4 w-4" />
-              General
-            </Button>
-            <Button
-              variant={tab === 'projectresources' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => handleTabChange('projectresources')}
-              className={`flex items-center gap-2 ${
-                tab === 'projectresources' ? 'bg-indigo-100 text-indigo-700' : ''
-              }`}
-            >
-              <Layers className="h-4 w-4" />
-              Variants
-            </Button>
-            <Button
-              variant={tab === 'financial' ? 'default' : 'ghost'}
-              size="sm"
-              onClick={() => handleTabChange('financial')}
-              className={`flex items-center gap-2 ${
-                tab === 'financial' ? 'bg-blue-100 text-blue-700' : ''
-              }`}
-            >
-              <DollarSign className="h-4 w-4" />
-              Financial
-            </Button>
+            {Object.entries(TAB_CONFIG).map(([tabKey, config]) => {
+              const Icon = config.icon;
+              const isActive = tab === tabKey;
+              
+              return (
+                <Button
+                  key={tabKey}
+                  variant={isActive ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => handleTabChange(tabKey)}
+                  className={cn(
+                    "flex items-center gap-2 transition-colors",
+                    isActive ? config.activeClasses : 'hover:bg-muted/50'
+                  )}
+                  aria-pressed={isActive}
+                  aria-label={`Switch to ${config.label} tab`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span className="hidden sm:inline">{config.label}</span>
+                </Button>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Tab Content */}
-      <div className="space-y-4">
+      <div className={RESPONSIVE.spacing.section}>
         <ProjectTabs 
           project={project}
           projectId={projectId}
