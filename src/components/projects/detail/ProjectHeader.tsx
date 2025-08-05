@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Project } from "@/types/projects";
-import { Archive, MoreVertical } from "lucide-react";
+import { Archive, MoreVertical, Settings, Layers, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -24,12 +24,32 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useState, useEffect } from "react";
+import { RESPONSIVE, STATUS_PATTERNS, cn } from "@/design-system";
 
 interface ProjectHeaderProps {
   project: Project;
   value: string;
   onValueChange: (value: string) => void;
 }
+
+// Tab configuration using design system patterns
+const TAB_CONFIG = {
+  general: {
+    label: 'General',
+    icon: Settings,
+    activeClasses: 'data-[state=active]:bg-secondary/10 data-[state=active]:text-secondary'
+  },
+  projectresources: {
+    label: 'Variants',
+    icon: Layers,
+    activeClasses: 'data-[state=active]:bg-primary/10 data-[state=active]:text-primary'
+  },
+  financial: {
+    label: 'Financial',
+    icon: DollarSign,
+    activeClasses: 'data-[state=active]:bg-accent/10 data-[state=active]:text-accent'
+  }
+} as const;
 
 export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderProps) {
   const navigate = useNavigate();
@@ -106,98 +126,113 @@ export function ProjectHeader({ project, value, onValueChange }: ProjectHeaderPr
     setShowArchiveDialog(true);
   };
 
-  const getProjectTypeBadgeVariant = (code: string | undefined) => {
+  const getProjectTypeBadgeStyles = (code: string | undefined) => {
     switch (code) {
       case 'artist':
-        return 'default';
+        return cn(STATUS_PATTERNS.info.bg, STATUS_PATTERNS.info.border, STATUS_PATTERNS.info.text, "border");
       case 'corporate':
-        return 'secondary';
+        return cn(STATUS_PATTERNS.success.bg, STATUS_PATTERNS.success.border, STATUS_PATTERNS.success.text, "border");
       case 'broadcast':
-        return 'destructive';
+        return cn(STATUS_PATTERNS.critical.bg, STATUS_PATTERNS.critical.border, STATUS_PATTERNS.critical.text, "border");
       case 'dry_hire':
-        return 'outline';
+        return cn(STATUS_PATTERNS.operational.bg, STATUS_PATTERNS.operational.border, STATUS_PATTERNS.operational.text, "border");
       default:
-        return 'default';
+        return cn(STATUS_PATTERNS.info.bg, STATUS_PATTERNS.info.border, STATUS_PATTERNS.info.text, "border");
     }
   };
 
   return (
-    <div className="flex items-center justify-between py-6">
+    <div className={cn(RESPONSIVE.flex.header, "py-6")}>
+      {/* Project Title and Badge */}
       <div className="space-y-1">
-        <div className="flex items-center gap-2">
-          <h2 className="text-2xl font-semibold tracking-tight">
+        <div className="flex items-center gap-2 flex-wrap">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             {project.name}
-          </h2>
-          <Badge 
-            variant={getProjectTypeBadgeVariant(project.project_type?.code)}
-            className="whitespace-nowrap"
+          </h1>
+          <div 
+            className={cn(
+              "px-2 py-1 rounded-md text-xs font-medium whitespace-nowrap",
+              getProjectTypeBadgeStyles(project.project_type?.code)
+            )}
+            aria-label={`Project type: ${project.project_type?.name || 'Artist'}`}
           >
             {project.project_type?.name || 'Artist'}
-          </Badge>
+          </div>
         </div>
         <p className="text-sm text-muted-foreground">
           Project #{String(project.project_number).padStart(4, '0')}
         </p>
       </div>
+
+      {/* Actions and Tabs */}
       <div className="flex items-center gap-4">
-        <Tabs value={value} onValueChange={onValueChange} className="w-[400px]">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger 
-              value="general"
-              className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-            >
-              General
-            </TabsTrigger>
-            <TabsTrigger 
-              value="equipment"
-              className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-            >
-              Equipment
-            </TabsTrigger>
-            <TabsTrigger 
-              value="crew"
-              className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-            >
-              Crew
-            </TabsTrigger>
-            <TabsTrigger 
-              value="financial"
-              className="data-[state=active]:bg-primary/10 data-[state=active]:text-primary"
-            >
-              Financial
-            </TabsTrigger>
+        {/* Responsive Tabs */}
+        <Tabs value={value} onValueChange={onValueChange} className="w-full max-w-sm md:max-w-md">
+          <TabsList className={cn("grid w-full", `grid-cols-${Object.keys(TAB_CONFIG).length}`)}>
+            {Object.entries(TAB_CONFIG).map(([tabKey, config]) => {
+              const Icon = config.icon;
+              return (
+                <TabsTrigger 
+                  key={tabKey}
+                  value={tabKey}
+                  className={cn(
+                    "flex items-center gap-1.5 transition-colors",
+                    config.activeClasses
+                  )}
+                  aria-label={`Switch to ${config.label} tab`}
+                >
+                  <Icon className="h-3 w-3" />
+                  <span className="hidden sm:inline">{config.label}</span>
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
         </Tabs>
+        {/* Actions Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              aria-label="Project actions menu"
+              className="hover:bg-muted/50"
+            >
               <MoreVertical className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem
               onClick={handleArchiveClick}
               disabled={!canArchive}
-              className="gap-2"
+              className={cn(
+                "gap-2",
+                !canArchive && "opacity-50 cursor-not-allowed"
+              )}
             >
               <Archive className="h-4 w-4" />
-              Archive Project
+              <span>Archive Project</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
+        {/* Archive Confirmation Dialog */}
         <AlertDialog open={showArchiveDialog} onOpenChange={setShowArchiveDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure you want to archive this project?</AlertDialogTitle>
+              <AlertDialogTitle>Archive Project</AlertDialogTitle>
               <AlertDialogDescription>
-                This action will archive project #{String(project.project_number).padStart(4, '0')} - {project.name}.
-                Archived projects will no longer appear in the main project list.
+                Are you sure you want to archive project #{String(project.project_number).padStart(4, '0')} - {project.name}?
+                {" "}Archived projects will no longer appear in the main project list but can be restored later.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleArchive}>Archive Project</AlertDialogAction>
+              <AlertDialogAction 
+                onClick={handleArchive}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Archive Project
+              </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
