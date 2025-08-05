@@ -1,20 +1,20 @@
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2 } from "lucide-react";
+import { Loader2, Trash2, User, Mail, Phone, Folder, Users } from "lucide-react";
+import { UseFormReturn } from "react-hook-form";
+import { Folder as FolderType } from "@/integrations/supabase/types/folder";
 import { CrewRole } from "@/hooks/useCrewRoles";
 import { sortRoles } from "@/utils/roleUtils";
-import { UseFormReturn } from "react-hook-form";
-import { Folder } from "@/types/folders";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getRoleBadgeStyle } from "@/design-system";
+import { getRoleBadgeStyle, FORM_PATTERNS, createInputClasses, createFieldIconClasses, createFormFieldContainer } from "@/design-system";
 
 interface EditMemberFormProps {
   form: UseFormReturn<any>;
   onSubmit: (data: any) => void;
   isPending: boolean;
-  folders: Folder[];
+  folders: FolderType[];
   foldersLoading: boolean;
   roles: CrewRole[];
   rolesLoading: boolean;
@@ -35,15 +35,22 @@ export function EditMemberForm({
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(onSubmit)} className={FORM_PATTERNS.layout.singleColumn}>
         <FormField
           control={form.control}
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel className={FORM_PATTERNS.label.required}>Full Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter name" {...field} />
+                <div className={createFormFieldContainer(true)}>
+                  <User className={createFieldIconClasses()} />
+                  <Input 
+                    placeholder="Ola Nordmann"
+                    className={createInputClasses('withIcon')}
+                    {...field} 
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -54,9 +61,17 @@ export function EditMemberForm({
           name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel className={FORM_PATTERNS.label.optional}>Email Address</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="Enter email" {...field} />
+                <div className={createFormFieldContainer(true)}>
+                  <Mail className={createFieldIconClasses()} />
+                  <Input 
+                    type="email" 
+                                                placeholder="navn@firma.no"
+                    className={createInputClasses('withIcon')}
+                    {...field} 
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -67,9 +82,16 @@ export function EditMemberForm({
           name="phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Phone</FormLabel>
+              <FormLabel className={FORM_PATTERNS.label.optional}>Phone Number</FormLabel>
               <FormControl>
-                <Input placeholder="Enter phone number" {...field} />
+                <div className={createFormFieldContainer(true)}>
+                  <Phone className={createFieldIconClasses()} />
+                  <Input 
+                                                placeholder="+47 123 45 678"
+                    className={createInputClasses('withIcon')}
+                    {...field} 
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -80,26 +102,29 @@ export function EditMemberForm({
           name="folder_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Folder</FormLabel>
-              <Select 
-                value={field.value || "_none"} 
-                onValueChange={(value) => field.onChange(value === "_none" ? "" : value)}
-                disabled={foldersLoading}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select folder" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="_none">None</SelectItem>
-                  {folders.map(folder => (
-                    <SelectItem key={folder.id} value={folder.id}>
-                      {folder.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormLabel className={FORM_PATTERNS.label.optional}>Crew Folder</FormLabel>
+              <div className={createFormFieldContainer(true)}>
+                <Folder className={createFieldIconClasses()} />
+                <Select 
+                  value={field.value || "_none"} 
+                  onValueChange={(value) => field.onChange(value === "_none" ? "" : value)}
+                  disabled={foldersLoading}
+                >
+                  <FormControl>
+                    <SelectTrigger className={createInputClasses('withIcon')}>
+                      <SelectValue placeholder="Select crew folder" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="_none">None</SelectItem>
+                    {folders.map(folder => (
+                      <SelectItem key={folder.id} value={folder.id}>
+                        {folder.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <FormMessage />
             </FormItem>
           )}
@@ -109,8 +134,12 @@ export function EditMemberForm({
           name="role_ids"
           render={() => (
             <FormItem>
-              <FormLabel>Roles</FormLabel>
-              <div className="grid grid-cols-2 gap-4 border rounded-lg p-4 bg-muted/50">
+              <FormLabel className="flex items-center gap-2">
+                <Users className="h-4 w-4 text-muted-foreground" />
+                Roles
+                <span className="text-xs text-muted-foreground">(optional)</span>
+              </FormLabel>
+              <div className={FORM_PATTERNS.layout.fieldset}>
                 {rolesLoading ? (
                   <div className="col-span-2 flex items-center justify-center py-4">
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -120,12 +149,13 @@ export function EditMemberForm({
                     No roles available
                   </div>
                 ) : (
-                  sortedRoles.map((role) => (
-                    <div 
-                      key={role.id} 
-                      className="flex items-center space-x-2 rounded p-2 transition-colors"
-                      style={getRoleBadgeStyle(role.name)}
-                    >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {sortedRoles.map((role) => (
+                      <div 
+                        key={role.id} 
+                        className="flex items-center space-x-2 rounded p-2 transition-colors"
+                        style={getRoleBadgeStyle(role.name)}
+                      >
                       <Checkbox
                         id={role.id}
                         checked={form.watch('role_ids')?.includes(role.id)}
@@ -140,31 +170,31 @@ export function EditMemberForm({
                       />
                       <label
                         htmlFor={role.id}
-                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-white"
+                        className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                       >
                         {role.name}
                       </label>
                     </div>
-                  ))
+                    ))}
+                  </div>
                 )}
               </div>
               <FormMessage />
             </FormItem>
           )}
         />
-        <div className="flex justify-between">
+        <div className={FORM_PATTERNS.dialog.footer}>
           <Button
             type="button"
             variant="destructive"
-            disabled={isPending}
             onClick={onDelete}
-            className="gap-2"
           >
+            <Trash2 className="mr-2 h-4 w-4" />
             Delete Member
           </Button>
-          <Button type="submit" disabled={isPending}>
+          <Button type="submit" disabled={isPending} className="min-w-[120px]">
             {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Save Changes
+            Update Member
           </Button>
         </div>
       </form>

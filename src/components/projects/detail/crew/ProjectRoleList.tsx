@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { CrewMemberSelectContent } from "@/components/resources/crew/CrewMemberSelectContent";
 import { SONIC_CITY_FOLDER_ID } from "@/constants/organizations";
+import { getRoleBadgeStyle } from "@/design-system";
 
 interface ProjectRoleListProps {
   projectId: string;

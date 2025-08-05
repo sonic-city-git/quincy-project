@@ -7,14 +7,14 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useAddMember, AddMemberData } from "@/hooks/useAddMember";
-import { useFolders } from "@/hooks/useFolders";
+import { useCrewFolders } from "@/hooks/useCrewFolders";
 import { useCrewRoles } from "@/hooks/useCrewRoles";
-import { Loader2, UserPlus } from "lucide-react";
+import { Loader2, UserPlus, User, Mail, Phone, Folder, Users } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { sortRoles } from "@/utils/roleUtils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getRoleBadgeStyle, FORM_PATTERNS } from "@/design-system";
+import { getRoleBadgeStyle, FORM_PATTERNS, createInputClasses, createFieldIconClasses, createFormFieldContainer } from "@/design-system";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -33,7 +33,7 @@ interface AddMemberDialogProps {
 
 export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOpenChange }: AddMemberDialogProps = {}) {
   const { mutate: addMember, isPending } = useAddMember();
-  const { folders, loading: foldersLoading } = useFolders();
+  const { folders, loading: foldersLoading } = useCrewFolders();
   const { roles, isLoading: rolesLoading, refetch: refetchRoles } = useCrewRoles();
   
   // Internal state for when dialog is not externally controlled
@@ -112,9 +112,16 @@ export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOp
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel className={FORM_PATTERNS.label.required}>Full Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter name" {...field} />
+                    <div className={createFormFieldContainer(true)}>
+                      <User className={createFieldIconClasses()} />
+                      <Input 
+                                                  placeholder="Ola Nordmann"
+                        className={createInputClasses('withIcon')}
+                        {...field} 
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -125,9 +132,17 @@ export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOp
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className={FORM_PATTERNS.label.optional}>Email Address</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="Enter email" {...field} />
+                    <div className={createFormFieldContainer(true)}>
+                      <Mail className={createFieldIconClasses()} />
+                      <Input 
+                        type="email" 
+                                                  placeholder="navn@firma.no"
+                        className={createInputClasses('withIcon')}
+                        {...field} 
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -138,9 +153,16 @@ export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOp
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone</FormLabel>
+                  <FormLabel className={FORM_PATTERNS.label.optional}>Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter phone number" {...field} />
+                    <div className={createFormFieldContainer(true)}>
+                      <Phone className={createFieldIconClasses()} />
+                      <Input 
+                        placeholder="+47 123 45 678"
+                        className={createInputClasses('withIcon')}
+                        {...field} 
+                      />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -151,25 +173,28 @@ export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOp
               name="folder_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Folder</FormLabel>
-                  <Select 
-                    value={field.value} 
-                    onValueChange={field.onChange}
-                    disabled={foldersLoading}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select folder" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {folders.map(folder => (
-                        <SelectItem key={folder.id} value={folder.id}>
-                          {folder.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel className={FORM_PATTERNS.label.optional}>Crew Folder</FormLabel>
+                  <div className={createFormFieldContainer(true)}>
+                    <Folder className={createFieldIconClasses()} />
+                    <Select 
+                      value={field.value} 
+                      onValueChange={field.onChange}
+                      disabled={foldersLoading}
+                    >
+                      <FormControl>
+                        <SelectTrigger className={createInputClasses('withIcon')}>
+                          <SelectValue placeholder="Select crew folder" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {folders.map(folder => (
+                          <SelectItem key={folder.id} value={folder.id}>
+                            {folder.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -179,7 +204,11 @@ export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOp
               name="role_ids"
               render={() => (
                 <FormItem>
-                  <FormLabel>Roles</FormLabel>
+                  <FormLabel className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                    Roles
+                    <span className="text-xs text-muted-foreground">(optional)</span>
+                  </FormLabel>
                   <div className={FORM_PATTERNS.layout.fieldset}>
                     {rolesLoading ? (
                       <div className="flex items-center justify-center py-4">
@@ -190,11 +219,11 @@ export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOp
                         No roles available
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <div className="flex flex-wrap gap-2">
                         {sortedRoles.map((role) => (
                           <div 
                             key={role.id} 
-                            className="flex items-center space-x-2 rounded p-2 transition-colors"
+                            className="inline-flex items-center space-x-1.5 rounded px-2 py-1 transition-colors text-xs"
                             style={getRoleBadgeStyle(role.name)}
                           >
                             <Checkbox
@@ -212,7 +241,7 @@ export function AddMemberDialog({ open: externalOpen, onOpenChange: externalOnOp
                             />
                             <label
                               htmlFor={role.id}
-                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer text-white"
+                              className="text-xs font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
                             >
                               {role.name}
                             </label>

@@ -1,12 +1,13 @@
 import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { CustomerSelect } from "./CustomerSelect";
 import { OwnerSelect } from "./OwnerSelect";
-import { Loader2 } from "lucide-react";
-import { FORM_PATTERNS } from "@/design-system";
+import { Loader2, FolderOpen, Users, User, Settings } from "lucide-react";
+import { FORM_PATTERNS, createInputClasses, createFieldIconClasses, createFormFieldContainer, createDropdownClasses, getRandomLegendaryArtist } from "@/design-system";
 
 interface ProjectFormData {
   name: string;
@@ -21,6 +22,9 @@ interface ProjectFormProps {
 }
 
 export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
+  // Get a random legendary artist for the placeholder - only once per form instance
+  const [randomArtistPlaceholder] = useState(() => getRandomLegendaryArtist());
+  
   const form = useForm<ProjectFormData>({
     defaultValues: {
       name: '',
@@ -41,11 +45,15 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
             <FormItem>
               <FormLabel className={FORM_PATTERNS.label.required}>Project Name</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Enter project name"
-                  autoComplete="off"
-                  {...field}
-                />
+                <div className={createFormFieldContainer(true)}>
+                  <FolderOpen className={createFieldIconClasses()} />
+                  <Input
+                    placeholder={randomArtistPlaceholder}
+                    autoComplete="off"
+                    className={createInputClasses('withIcon')}
+                    {...field}
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -59,11 +67,15 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
             <FormItem>
               <FormLabel className={FORM_PATTERNS.label.required}>Customer</FormLabel>
               <FormControl>
-                <CustomerSelect
-                  value={field.value}
-                  onChange={field.onChange}
-                  required
-                />
+                <div className={createDropdownClasses('iconContainer')}>
+                  <Users className={createDropdownClasses('iconInside')} />
+                  <CustomerSelect
+                    value={field.value}
+                    onChange={field.onChange}
+                    required
+                    className={createDropdownClasses('triggerWithIcon')}
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -77,11 +89,15 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
             <FormItem>
               <FormLabel className={FORM_PATTERNS.label.required}>Project Owner</FormLabel>
               <FormControl>
-                <OwnerSelect
-                  value={field.value}
-                  onChange={field.onChange}
-                  required
-                />
+                <div className={createDropdownClasses('iconContainer')}>
+                  <User className={createDropdownClasses('iconInside')} />
+                  <OwnerSelect
+                    value={field.value}
+                    onChange={field.onChange}
+                    required
+                    className={createDropdownClasses('triggerWithIcon')}
+                  />
+                </div>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -94,19 +110,22 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
           render={({ field }) => (
             <FormItem>
               <FormLabel className={FORM_PATTERNS.label.required}>Project Type</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select project type" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="artist">Artist</SelectItem>
-                  <SelectItem value="corporate">Corporate</SelectItem>
-                  <SelectItem value="broadcast">Broadcast</SelectItem>
-                  <SelectItem value="dry_hire">Dry Hire</SelectItem>
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <div className={createDropdownClasses('iconContainer')}>
+                  <Settings className={createDropdownClasses('iconInside')} />
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger className={createDropdownClasses('triggerWithIcon')}>
+                      <SelectValue placeholder="Select project type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="artist">Artist</SelectItem>
+                      <SelectItem value="corporate">Corporate</SelectItem>
+                      <SelectItem value="broadcast">Broadcast</SelectItem>
+                      <SelectItem value="dry_hire">Dry Hire</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

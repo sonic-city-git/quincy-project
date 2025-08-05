@@ -14,6 +14,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { useDialogState, DialogStateProps } from './useDialogState';
+import { cn } from '@/lib/utils';
 
 export interface FormDialogProps extends DialogStateProps {
   // Content
@@ -70,7 +71,7 @@ export function FormDialog({
       modal={closeOnOverlayClick}
     >
       <DialogContent 
-        className={`${sizeClasses[size]} ${contentClassName || ''}`}
+        className={cn(sizeClasses[size], contentClassName)}
         aria-labelledby="dialog-title"
         aria-describedby={description ? "dialog-description" : undefined}
       >

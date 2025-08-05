@@ -127,7 +127,7 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
   const renderEquipmentCard = (item: Equipment) => (
     <Card
       key={item.id}
-      className="p-3 cursor-move hover:bg-accent/5 transition-colors border-zinc-800/50"
+                  className="p-3 cursor-move hover:bg-muted/50 transition-colors border-zinc-800/50"
       draggable
       onDragStart={(e) => handleDragStart(e, item)}
       onDoubleClick={() => onSelect(item)}
@@ -170,7 +170,7 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
 
               return (
                 <AccordionItem key={mainFolder.id} value={mainFolder.id} className="border-none">
-                  <AccordionTrigger className="py-2 px-3 hover:no-underline rounded-md hover:bg-accent/5 data-[state=open]:bg-accent/5">
+                  <AccordionTrigger className="py-2 px-3 hover:no-underline rounded-md hover:bg-muted/50 data-[state=open]:bg-muted/50">
                     <span className="text-sm font-medium text-muted-foreground">
                       {mainFolder.name}
                     </span>
@@ -191,7 +191,7 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
 
                         return (
                           <Collapsible key={subfolder.id} defaultOpen={searchQuery.length > 0}>
-                            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground w-full hover:bg-accent/5 px-3 py-1 rounded-md transition-colors">
+                            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground w-full hover:bg-muted/50 px-3 py-1 rounded-md transition-colors">
                               <ChevronDown className="h-4 w-4" />
                               {subfolder.name}
                             </CollapsibleTrigger>

@@ -121,7 +121,7 @@ export function SearchableSelect({
               key={option.id} 
               value={option.id}
               disabled={option.disabled}
-              className="cursor-pointer rounded-sm hover:bg-accent pl-4"
+              className="cursor-pointer rounded-sm hover:bg-muted pl-4"
             >
               {renderSelectOption(option)}
             </SelectItem>
@@ -135,7 +135,7 @@ export function SearchableSelect({
         key={option.id} 
         value={option.id}
         disabled={option.disabled}
-        className="cursor-pointer rounded-sm hover:bg-accent"
+                    className="cursor-pointer rounded-sm hover:bg-muted"
       >
         {renderSelectOption(option)}
       </SelectItem>

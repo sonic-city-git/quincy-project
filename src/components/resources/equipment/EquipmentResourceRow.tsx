@@ -19,7 +19,7 @@ export function EquipmentResourceRow({
 }: EquipmentResourceRowProps) {
   return (
     <TableRow
-      className={`cursor-pointer ${isSelected ? "bg-accent" : ""}`}
+              className={`cursor-pointer ${isSelected ? "bg-primary/10" : ""}`}
       onClick={onSelect}
     >
       {showCheckbox && (
