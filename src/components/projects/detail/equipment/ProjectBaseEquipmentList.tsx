@@ -1,6 +1,6 @@
 import { useProjectEquipment } from "@/hooks/useProjectEquipment";
 import { useEquipmentDragDrop } from "@/hooks/useEquipmentDragDrop";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { GroupDialogs } from "./components/GroupDialogs";
@@ -57,13 +57,15 @@ export function ProjectBaseEquipmentList({
     enabled: !!projectId
   });
 
-  // Group equipment by group_id
-  const groupedEquipment = equipment.reduce((acc, item) => {
-    const groupId = item.group_id || 'ungrouped';
-    if (!acc[groupId]) acc[groupId] = [];
-    acc[groupId].push(item);
-    return acc;
-  }, {} as Record<string, typeof equipment>);
+  // Memoize grouped equipment for performance
+  const groupedEquipment = useMemo(() => {
+    return equipment.reduce((acc, item) => {
+      const groupId = item.group_id || 'ungrouped';
+      if (!acc[groupId]) acc[groupId] = [];
+      acc[groupId].push(item);
+      return acc;
+    }, {} as Record<string, typeof equipment>);
+  }, [equipment]);
 
   const handleGroupDelete = async (groupId: string) => {
     const groupEquipment = groupedEquipment[groupId] || [];
