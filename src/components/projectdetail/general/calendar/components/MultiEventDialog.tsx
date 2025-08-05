@@ -7,7 +7,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -17,12 +16,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+const ALLOWED_EVENT_TYPES = ['Preprod', 'INT Storage', 'EXT Storage'];
+
 interface MultiEventDialogProps {
   isOpen: boolean;
   onClose: () => void;
   dates: Date[];
   eventTypes: EventType[];
-  onAddEvents: (dates: Date[], name: string, eventType: EventType, status: CalendarEvent['status']) => void;
+  onAddEvents: (name: string, eventType: EventType, status: CalendarEvent['status']) => void;
 }
 
 export function MultiEventDialog({
@@ -32,16 +33,18 @@ export function MultiEventDialog({
   eventTypes,
   onAddEvents
 }: MultiEventDialogProps) {
-  const [eventName, setEventName] = useState("");
   const [selectedEventType, setSelectedEventType] = useState<EventType | null>(null);
   const [status, setStatus] = useState<CalendarEvent['status']>("proposed");
 
+  const filteredEventTypes = eventTypes.filter(type => 
+    ALLOWED_EVENT_TYPES.includes(type.name)
+  );
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (eventName && selectedEventType) {
-      onAddEvents(dates, eventName, selectedEventType, status);
+    if (selectedEventType) {
+      onAddEvents(selectedEventType.name, selectedEventType, status);
       onClose();
-      setEventName("");
       setSelectedEventType(null);
       setStatus("proposed");
     }
@@ -56,22 +59,11 @@ export function MultiEventDialog({
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="eventName">Event Name</Label>
-            <Input
-              id="eventName"
-              value={eventName}
-              onChange={(e) => setEventName(e.target.value)}
-              placeholder="Enter event name"
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
             <Label htmlFor="eventType">Event Type</Label>
             <Select
               value={selectedEventType?.id || ""}
               onValueChange={(value) => {
-                const eventType = eventTypes.find(et => et.id === value);
+                const eventType = filteredEventTypes.find(et => et.id === value);
                 setSelectedEventType(eventType || null);
               }}
             >
@@ -79,7 +71,7 @@ export function MultiEventDialog({
                 <SelectValue placeholder="Select event type" />
               </SelectTrigger>
               <SelectContent>
-                {eventTypes.map((eventType) => (
+                {filteredEventTypes.map((eventType) => (
                   <SelectItem key={eventType.id} value={eventType.id}>
                     {eventType.name}
                   </SelectItem>
@@ -111,7 +103,7 @@ export function MultiEventDialog({
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" disabled={!eventName || !selectedEventType}>
+            <Button type="submit" disabled={!selectedEventType}>
               Add Events
             </Button>
           </div>

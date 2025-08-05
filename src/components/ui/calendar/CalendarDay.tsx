@@ -12,9 +12,9 @@ interface CalendarDayProps {
   event?: CalendarEvent;
   isSelected: boolean;
   onClick: () => void;
-  onMouseDown?: () => void;
+  onMouseDown?: (e: React.MouseEvent) => void;
   onMouseEnter?: () => void;
-  onMouseUp?: () => void;
+  onMouseUp?: (e: React.MouseEvent) => void;
 }
 
 export function CalendarDay({
@@ -44,9 +44,20 @@ export function CalendarDay({
     return (
       <button
         onClick={onClick}
-        onMouseDown={onMouseDown}
+        onMouseDown={(e) => {
+          if (onMouseDown) {
+            e.preventDefault(); // Prevent text selection during drag
+            onMouseDown(e);
+          }
+        }}
         onMouseEnter={onMouseEnter}
-        onMouseUp={onMouseUp}
+        onMouseUp={(e) => {
+          if (onMouseUp) {
+            e.preventDefault();
+            onMouseUp(e);
+          }
+        }}
+        onDragStart={(e) => e.preventDefault()} // Prevent default drag behavior
         className={cn(
           baseButtonClasses,
           isSelected && !event && "bg-blue-500/30 text-white",
