@@ -1,12 +1,18 @@
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { ProjectEquipment } from "@/types/equipment";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { formatPrice } from "@/utils/priceFormatters";
+import { 
+  COMPONENT_CLASSES, 
+  FORM_PATTERNS, 
+  cn 
+} from "@/design-system";
 
 interface ProjectEquipmentItemProps {
   item: ProjectEquipment;
@@ -17,6 +23,11 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
   const [isUpdating, setIsUpdating] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const queryClient = useQueryClient();
+
+  // Memoize formatted price for performance
+  const formattedPrice = useMemo(() => {
+    return item.rental_price ? formatPrice(item.rental_price * item.quantity) : '-';
+  }, [item.rental_price, item.quantity]);
 
   const handleDragStart = (e: React.DragEvent) => {
     e.dataTransfer.setData('application/json', JSON.stringify({
@@ -38,7 +49,9 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
         .update({ quantity: newQuantity })
         .eq('id', item.id);
 
-      if (error) throw error;
+      if (error) {
+        throw new Error(`Failed to update quantity: ${error.message}`);
+      }
       
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['project-equipment'] }),
@@ -47,8 +60,8 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
       
       toast.success('Quantity updated');
     } catch (error) {
-      console.error('Error updating quantity:', error);
-      toast.error('Failed to update quantity');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update quantity';
+      toast.error(errorMessage);
     } finally {
       setIsUpdating(false);
     }
@@ -56,43 +69,66 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
 
   const handleRemove = async () => {
     setIsRemoving(true);
-    await onRemove();
-    setIsRemoving(false);
+    try {
+      await onRemove();
+    } finally {
+      setIsRemoving(false);
+    }
   };
 
   return (
     <Card 
-              className={`relative p-1.5 transition-colors border-border/50 hover:bg-muted/50 bg-muted/50 group ${
-        isRemoving ? 'opacity-50' : ''
-      }`}
+      className={cn(
+        COMPONENT_CLASSES.card.hover,
+        "relative p-3 group",
+        isRemoving && "opacity-50 pointer-events-none"
+      )}
       draggable
       onDragStart={handleDragStart}
+      role="listitem"
+      aria-label={`${item.name} - Quantity: ${item.quantity}`}
     >
       <div className="flex items-center justify-between h-full">
-        <div className="flex items-center gap-2">
+        {/* Equipment Info Section */}
+        <div className="flex items-center gap-3">
+          {/* Quantity Input */}
           <Input
             type="number"
             value={item.quantity}
             onChange={(e) => handleQuantityChange(e.target.value)}
-            className="w-10 h-7 bg-background border-border [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-center"
+            className={cn(
+              FORM_PATTERNS.input.default,
+              "w-12 h-8 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            )}
             min={1}
             disabled={isUpdating}
+            aria-label={`Quantity for ${item.name}`}
           />
-          <h3 className="text-sm font-medium leading-none text-zinc-200">
+          
+          {/* Equipment Name */}
+          <h3 className="text-sm font-medium leading-none text-foreground">
             {item.name}
           </h3>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="min-w-[100px] text-right text-sm text-muted-foreground">
-            {item.rental_price ? formatPrice(item.rental_price * item.quantity) : '-'}
+
+        {/* Price and Actions Section */}
+        <div className="flex items-center gap-3">
+          {/* Total Price */}
+          <div className="min-w-[100px] text-right text-sm text-muted-foreground font-medium">
+            {formattedPrice}
           </div>
-          <button 
-            className="h-6 w-6 inline-flex items-center justify-center text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-md disabled:opacity-50"
+          
+          {/* Remove Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-6 w-6 p-0 text-destructive hover:text-destructive/80 hover:bg-destructive/10"
             onClick={handleRemove}
             disabled={isRemoving || isUpdating}
+            aria-label={`Remove ${item.name} from project`}
           >
             <X className="h-3.5 w-3.5" />
-          </button>
+          </Button>
         </div>
       </div>
     </Card>
