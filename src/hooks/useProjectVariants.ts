@@ -1,0 +1,469 @@
+// Project Variants Management Hook
+// Handles CRUD operations for project variants (Trio, Band, DJ configurations)
+
+import { useState, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import {
+  ProjectVariant,
+  CreateVariantPayload,
+  UpdateVariantPayload,
+  VariantManagementHook,
+  VARIANT_CONSTANTS,
+  validateVariantName,
+  generateVariantName,
+  isProjectVariant
+} from '@/types/variants';
+
+/**
+ * Hook for managing project variants
+ * Provides CRUD operations and state management for artist project configurations
+ */
+export function useProjectVariants(projectId: string): VariantManagementHook {
+  const queryClient = useQueryClient();
+  const [selectedVariant, setSelectedVariant] = useState<string>(VARIANT_CONSTANTS.DEFAULT_VARIANT_NAME);
+
+  // Query key factory
+  const queryKey = ['project-variants', projectId];
+
+  // Fetch project variants
+  const {
+    data: variants = [],
+    isLoading,
+    error
+  } = useQuery({
+    queryKey,
+    queryFn: async (): Promise<ProjectVariant[]> => {
+      if (!projectId) {
+        return [];
+      }
+
+      const { data, error } = await supabase
+        .from('project_variants')
+        .select('*')
+        .eq('project_id', projectId)
+        .order('sort_order', { ascending: true });
+
+      if (error) {
+        console.error('Error fetching project variants:', error);
+        throw new Error(`Failed to fetch variants: ${error.message}`);
+      }
+
+      // Validate data and filter out invalid entries
+      const validVariants = (data || []).filter(isProjectVariant);
+      
+      if (validVariants.length !== (data || []).length) {
+        console.warn('Some variant data was invalid and filtered out');
+      }
+
+      return validVariants;
+    },
+    enabled: !!projectId,
+    staleTime: 30 * 1000, // 30 seconds
+    cacheTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Create variant mutation
+  const createVariantMutation = useMutation({
+    mutationFn: async (data: CreateVariantPayload): Promise<ProjectVariant> => {
+      // Validate input
+      if (!validateVariantName(data.variant_name)) {
+        throw new Error('Invalid variant name. Use only lowercase letters, numbers, and underscores.');
+      }
+
+      // Check for duplicate names
+      const existingVariant = variants.find(v => v.variant_name === data.variant_name);
+      if (existingVariant) {
+        throw new Error(`Variant "${data.variant_name}" already exists.`);
+      }
+
+      // Calculate sort order if not provided
+      const sortOrder = data.sort_order ?? Math.max(0, ...variants.map(v => v.sort_order || 0)) + 1;
+
+      // Handle default variant logic
+      let shouldBeDefault = data.is_default;
+      if (variants.length === 0) {
+        // First variant should always be default
+        shouldBeDefault = true;
+      } else if (shouldBeDefault) {
+        // Remove default from other variants first
+        await updateOtherVariantsDefault(projectId, false);
+      }
+
+      const { data: newVariant, error } = await supabase
+        .from('project_variants')
+        .insert({
+          project_id: projectId,
+          variant_name: data.variant_name,
+          display_name: data.display_name,
+          description: data.description,
+          is_default: shouldBeDefault,
+          sort_order: sortOrder
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating variant:', error);
+        throw new Error(`Failed to create variant: ${error.message}`);
+      }
+
+      if (!isProjectVariant(newVariant)) {
+        throw new Error('Invalid variant data returned from server');
+      }
+
+      return newVariant;
+    },
+    onSuccess: (newVariant) => {
+      // Invalidate and refetch variants
+      queryClient.invalidateQueries({ queryKey });
+      
+      // Select the new variant
+      setSelectedVariant(newVariant.variant_name);
+      
+      toast.success(`Variant "${newVariant.display_name}" created successfully`);
+    },
+    onError: (error: Error) => {
+      console.error('Create variant error:', error);
+      toast.error(`Failed to create variant: ${error.message}`);
+    }
+  });
+
+  // Update variant mutation
+  const updateVariantMutation = useMutation({
+    mutationFn: async (data: UpdateVariantPayload): Promise<ProjectVariant> => {
+      const variant = variants.find(v => v.id === data.id);
+      if (!variant) {
+        throw new Error('Variant not found');
+      }
+
+      // Handle default variant logic
+      if (data.is_default && !variant.is_default) {
+        // Remove default from other variants first
+        await updateOtherVariantsDefault(projectId, false);
+      }
+
+      const { data: updatedVariant, error } = await supabase
+        .from('project_variants')
+        .update({
+          display_name: data.display_name,
+          description: data.description,
+          is_default: data.is_default,
+          sort_order: data.sort_order
+        })
+        .eq('id', data.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error updating variant:', error);
+        throw new Error(`Failed to update variant: ${error.message}`);
+      }
+
+      if (!isProjectVariant(updatedVariant)) {
+        throw new Error('Invalid variant data returned from server');
+      }
+
+      return updatedVariant;
+    },
+    onSuccess: (updatedVariant) => {
+      queryClient.invalidateQueries({ queryKey });
+      toast.success(`Variant "${updatedVariant.display_name}" updated successfully`);
+    },
+    onError: (error: Error) => {
+      console.error('Update variant error:', error);
+      toast.error(`Failed to update variant: ${error.message}`);
+    }
+  });
+
+  // Delete variant mutation
+  const deleteVariantMutation = useMutation({
+    mutationFn: async (variantName: string): Promise<void> => {
+      const variant = variants.find(v => v.variant_name === variantName);
+      if (!variant) {
+        throw new Error('Variant not found');
+      }
+
+      // Prevent deletion of default variant if it's the only one
+      if (variant.is_default && variants.length === 1) {
+        throw new Error('Cannot delete the only variant. Create another variant first.');
+      }
+
+      // Prevent deletion of default variant
+      if (variant.is_default) {
+        throw new Error('Cannot delete the default variant. Make another variant default first.');
+      }
+
+      // Check if variant has associated crew roles or equipment
+      const [crewRolesResult, equipmentResult] = await Promise.all([
+        supabase
+          .from('project_roles')
+          .select('id')
+          .eq('project_id', projectId)
+          .eq('variant_name', variantName)
+          .limit(1),
+        supabase
+          .from('project_equipment')
+          .select('id')
+          .eq('project_id', projectId)
+          .eq('variant_name', variantName)
+          .limit(1)
+      ]);
+
+      const hasResources = (crewRolesResult.data?.length ?? 0) > 0 || (equipmentResult.data?.length ?? 0) > 0;
+      
+      if (hasResources) {
+        throw new Error(`Cannot delete variant "${variant.display_name}" because it has associated crew roles or equipment. Remove all resources first.`);
+      }
+
+      // Delete the variant
+      const { error } = await supabase
+        .from('project_variants')
+        .delete()
+        .eq('id', variant.id);
+
+      if (error) {
+        console.error('Error deleting variant:', error);
+        throw new Error(`Failed to delete variant: ${error.message}`);
+      }
+    },
+    onSuccess: (_, variantName) => {
+      queryClient.invalidateQueries({ queryKey });
+      
+      // Switch to default variant if we deleted the selected one
+      if (selectedVariant === variantName) {
+        const defaultVariant = variants.find(v => v.is_default);
+        setSelectedVariant(defaultVariant?.variant_name || VARIANT_CONSTANTS.DEFAULT_VARIANT_NAME);
+      }
+      
+      toast.success('Variant deleted successfully');
+    },
+    onError: (error: Error) => {
+      console.error('Delete variant error:', error);
+      toast.error(`Failed to delete variant: ${error.message}`);
+    }
+  });
+
+  // Duplicate variant mutation
+  const duplicateVariantMutation = useMutation({
+    mutationFn: async ({ 
+      sourceVariant, 
+      newVariantData 
+    }: { 
+      sourceVariant: string; 
+      newVariantData: CreateVariantPayload 
+    }): Promise<ProjectVariant> => {
+      const source = variants.find(v => v.variant_name === sourceVariant);
+      if (!source) {
+        throw new Error('Source variant not found');
+      }
+
+      // Create the new variant first
+      const newVariant = await createVariantMutation.mutateAsync(newVariantData);
+
+      // Copy crew roles
+      const { data: crewRoles } = await supabase
+        .from('project_roles')
+        .select('*')
+        .eq('project_id', projectId)
+        .eq('variant_name', sourceVariant);
+
+      if (crewRoles && crewRoles.length > 0) {
+        const newCrewRoles = crewRoles.map(role => ({
+          project_id: projectId,
+          variant_name: newVariantData.variant_name,
+          role_id: role.role_id,
+          daily_rate: role.daily_rate,
+          hourly_rate: role.hourly_rate,
+          preferred_id: role.preferred_id,
+          hourly_category: role.hourly_category
+        }));
+
+        const { error: crewError } = await supabase
+          .from('project_roles')
+          .insert(newCrewRoles);
+
+        if (crewError) {
+          console.error('Error copying crew roles:', crewError);
+          // Don't throw here, just log the error
+        }
+      }
+
+      // Copy equipment groups and items
+      const { data: equipmentGroups } = await supabase
+        .from('project_equipment_groups')
+        .select('*')
+        .eq('project_id', projectId)
+        .eq('variant_name', sourceVariant);
+
+      if (equipmentGroups && equipmentGroups.length > 0) {
+        for (const group of equipmentGroups) {
+          // Create new group
+          const { data: newGroup, error: groupError } = await supabase
+            .from('project_equipment_groups')
+            .insert({
+              project_id: projectId,
+              variant_name: newVariantData.variant_name,
+              name: group.name,
+              sort_order: group.sort_order
+            })
+            .select()
+            .single();
+
+          if (groupError) {
+            console.error('Error copying equipment group:', groupError);
+            continue;
+          }
+
+          // Copy equipment items for this group
+          const { data: equipmentItems } = await supabase
+            .from('project_equipment')
+            .select('*')
+            .eq('project_id', projectId)
+            .eq('variant_name', sourceVariant)
+            .eq('group_id', group.id);
+
+          if (equipmentItems && equipmentItems.length > 0) {
+            const newEquipmentItems = equipmentItems.map(item => ({
+              project_id: projectId,
+              variant_name: newVariantData.variant_name,
+              equipment_id: item.equipment_id,
+              group_id: newGroup.id,
+              quantity: item.quantity,
+              notes: item.notes
+            }));
+
+            const { error: equipmentError } = await supabase
+              .from('project_equipment')
+              .insert(newEquipmentItems);
+
+            if (equipmentError) {
+              console.error('Error copying equipment items:', equipmentError);
+            }
+          }
+        }
+      }
+
+      return newVariant;
+    },
+    onSuccess: (newVariant) => {
+      queryClient.invalidateQueries({ queryKey });
+      // Also invalidate resource queries since we copied resources
+      queryClient.invalidateQueries(['variant-resources', projectId]);
+      setSelectedVariant(newVariant.variant_name);
+      toast.success(`Variant "${newVariant.display_name}" duplicated successfully`);
+    },
+    onError: (error: Error) => {
+      console.error('Duplicate variant error:', error);
+      toast.error(`Failed to duplicate variant: ${error.message}`);
+    }
+  });
+
+  // Reorder variants mutation
+  const reorderVariantsMutation = useMutation({
+    mutationFn: async ({ variantIds, newOrder }: { variantIds: string[]; newOrder: number[] }): Promise<void> => {
+      if (variantIds.length !== newOrder.length) {
+        throw new Error('Variant IDs and order array lengths must match');
+      }
+
+      // Update sort orders
+      const updates = variantIds.map((id, index) => ({
+        id,
+        sort_order: newOrder[index]
+      }));
+
+      for (const update of updates) {
+        const { error } = await supabase
+          .from('project_variants')
+          .update({ sort_order: update.sort_order })
+          .eq('id', update.id);
+
+        if (error) {
+          console.error('Error updating variant order:', error);
+          throw new Error(`Failed to reorder variants: ${error.message}`);
+        }
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+      toast.success('Variant order updated successfully');
+    },
+    onError: (error: Error) => {
+      console.error('Reorder variants error:', error);
+      toast.error(`Failed to reorder variants: ${error.message}`);
+    }
+  });
+
+  // Helper function to update default status of other variants
+  const updateOtherVariantsDefault = async (projectId: string, isDefault: boolean): Promise<void> => {
+    const { error } = await supabase
+      .from('project_variants')
+      .update({ is_default: isDefault })
+      .eq('project_id', projectId)
+      .neq('is_default', isDefault);
+
+    if (error) {
+      console.error('Error updating other variants default status:', error);
+      throw error;
+    }
+  };
+
+  // Utility functions
+  const getVariantByName = useCallback((variantName: string): ProjectVariant | undefined => {
+    return variants.find(v => v.variant_name === variantName);
+  }, [variants]);
+
+  const getDefaultVariant = useCallback((): ProjectVariant | undefined => {
+    return variants.find(v => v.is_default) || variants[0];
+  }, [variants]);
+
+  // Auto-select default variant when variants load
+  useState(() => {
+    if (variants.length > 0 && !getVariantByName(selectedVariant)) {
+      const defaultVariant = getDefaultVariant();
+      if (defaultVariant) {
+        setSelectedVariant(defaultVariant.variant_name);
+      }
+    }
+  });
+
+  return {
+    // Data
+    variants,
+    selectedVariant,
+    isLoading,
+    error: error as Error | null,
+
+    // Actions
+    setSelectedVariant,
+    createVariant: createVariantMutation.mutateAsync,
+    updateVariant: updateVariantMutation.mutateAsync,
+    deleteVariant: deleteVariantMutation.mutateAsync,
+    duplicateVariant: (sourceVariant: string, newVariantData: CreateVariantPayload) =>
+      duplicateVariantMutation.mutateAsync({ sourceVariant, newVariantData }),
+    reorderVariants: (variantIds: string[], newOrder: number[]) =>
+      reorderVariantsMutation.mutateAsync({ variantIds, newOrder }),
+
+    // Utilities
+    getVariantByName,
+    getDefaultVariant
+  };
+}
+
+// Helper hook for generating variant names from display names
+export function useVariantNameGenerator() {
+  return useCallback((displayName: string, existingVariants: string[]): string => {
+    let baseName = generateVariantName(displayName);
+    let variantName = baseName;
+    let counter = 1;
+
+    // Ensure uniqueness
+    while (existingVariants.includes(variantName)) {
+      variantName = `${baseName}_${counter}`;
+      counter++;
+    }
+
+    return variantName;
+  }, []);
+}
