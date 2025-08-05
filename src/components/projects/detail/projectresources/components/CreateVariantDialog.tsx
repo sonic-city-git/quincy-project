@@ -25,7 +25,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { ProjectVariant, CreateVariantPayload, VARIANT_CONSTANTS, generateVariantName } from '@/types/variants';
+import { ProjectVariant, CreateVariantPayload, VARIANT_CONSTANTS } from '@/types/variants';
 import { Loader2 } from 'lucide-react';
 
 const createVariantSchema = z.object({
@@ -67,20 +67,15 @@ export function CreateVariantDialog({
   const onSubmit = async (data: CreateVariantForm) => {
     setIsSubmitting(true);
     try {
-      // Generate internal variant name from user input
-      const generatedName = generateVariantName(data.variant_name);
-      let uniqueName = generatedName;
-      let counter = 1;
-
-      // Ensure uniqueness for internal name
-      while (existingVariantNames.includes(uniqueName)) {
-        uniqueName = `${generatedName}_${counter}`;
-        counter++;
+      // Check if variant name already exists
+      if (existingVariantNames.includes(data.variant_name)) {
+        form.setError('variant_name', { message: 'This variant name already exists' });
+        return;
       }
 
       await onCreateVariant({
-        variant_name: uniqueName,
-        display_name: data.variant_name, // Use user input as display name
+        variant_name: data.variant_name,
+        display_name: data.variant_name,
         description: data.description || undefined,
         is_default: data.is_default,
       });
