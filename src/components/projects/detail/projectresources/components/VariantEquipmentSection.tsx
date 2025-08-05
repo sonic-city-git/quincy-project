@@ -43,15 +43,15 @@ export function VariantEquipmentSection({ projectId, variantName }: VariantEquip
   };
 
   return (
-    <div className="flex gap-6">
+    <div className="flex gap-4">
       {/* Available Equipment Column */}
       <ProjectTabCard
         title="Available Equipment"
         icon={Box}
         variant="flex"
         className="flex-[6]"
-        contentClassName="h-[600px] overflow-hidden"
-        padding="none"
+        contentClassName="h-[500px] overflow-hidden"
+        padding="compact"
       >
         <EquipmentSelector 
           onSelect={handleEquipmentSelect} 
@@ -68,6 +68,7 @@ export function VariantEquipmentSection({ projectId, variantName }: VariantEquip
         totalPrice={totalPrice}
         formatPrice={formatPrice}
         className="flex-[8]"
+        padding="compact"
         headerExtra={
           <GroupSelector 
             projectId={projectId} 

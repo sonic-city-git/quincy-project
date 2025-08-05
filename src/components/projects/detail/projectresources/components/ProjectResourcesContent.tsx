@@ -93,16 +93,16 @@ export function ProjectResourcesContent({
 
       {/* Variant Content */}
       {currentVariant ? (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* Equipment + Crew Layout */}
-          <div className="grid grid-cols-[2fr_1fr] gap-6">
+          <div className="grid grid-cols-[2fr_1fr] gap-4">
             {/* Equipment Section (2 columns as before) */}
             <VariantEquipmentSection 
               projectId={projectId} 
               variantName={selectedVariant} 
             />
             
-            {/* Crew Section (table as before) */}
+            {/* Crew Section (compact table) */}
             <VariantCrewSection 
               projectId={projectId} 
               variantName={selectedVariant} 
