@@ -29,13 +29,9 @@ import { ProjectVariant, CreateVariantPayload, VARIANT_CONSTANTS, generateVarian
 import { Loader2 } from 'lucide-react';
 
 const createVariantSchema = z.object({
-  display_name: z.string()
-    .min(1, 'Display name is required')
-    .max(VARIANT_CONSTANTS.MAX_DISPLAY_NAME_LENGTH, `Display name must be ${VARIANT_CONSTANTS.MAX_DISPLAY_NAME_LENGTH} characters or less`),
   variant_name: z.string()
     .min(1, 'Variant name is required')
-    .max(VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH, `Variant name must be ${VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH} characters or less`)
-    .regex(VARIANT_CONSTANTS.VALID_VARIANT_NAME_PATTERN, 'Variant name can only contain lowercase letters, numbers, and underscores'),
+    .max(VARIANT_CONSTANTS.MAX_DISPLAY_NAME_LENGTH, `Variant name must be ${VARIANT_CONSTANTS.MAX_DISPLAY_NAME_LENGTH} characters or less`),
   description: z.string().optional(),
   is_default: z.boolean().default(false),
 });
@@ -60,7 +56,6 @@ export function CreateVariantDialog({
   const form = useForm<CreateVariantForm>({
     resolver: zodResolver(createVariantSchema),
     defaultValues: {
-      display_name: '',
       variant_name: '',
       description: '',
       is_default: existingVariants.length === 0, // First variant should be default
@@ -69,33 +64,23 @@ export function CreateVariantDialog({
 
   const existingVariantNames = existingVariants.map(v => v.variant_name);
 
-  // Auto-generate variant name from display name
-  const handleDisplayNameChange = (displayName: string) => {
-    const generatedName = generateVariantName(displayName);
-    let uniqueName = generatedName;
-    let counter = 1;
-
-    // Ensure uniqueness
-    while (existingVariantNames.includes(uniqueName)) {
-      uniqueName = `${generatedName}_${counter}`;
-      counter++;
-    }
-
-    form.setValue('variant_name', uniqueName);
-  };
-
   const onSubmit = async (data: CreateVariantForm) => {
     setIsSubmitting(true);
     try {
-      // Validate unique variant name
-      if (existingVariantNames.includes(data.variant_name)) {
-        form.setError('variant_name', { message: 'This variant name already exists' });
-        return;
+      // Generate internal variant name from user input
+      const generatedName = generateVariantName(data.variant_name);
+      let uniqueName = generatedName;
+      let counter = 1;
+
+      // Ensure uniqueness for internal name
+      while (existingVariantNames.includes(uniqueName)) {
+        uniqueName = `${generatedName}_${counter}`;
+        counter++;
       }
 
       await onCreateVariant({
-        variant_name: data.variant_name,
-        display_name: data.display_name,
+        variant_name: uniqueName,
+        display_name: data.variant_name, // Use user input as display name
         description: data.description || undefined,
         is_default: data.is_default,
       });
@@ -130,43 +115,18 @@ export function CreateVariantDialog({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="display_name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Display Name</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="e.g., Trio, Band, DJ Set"
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        handleDisplayNameChange(e.target.value);
-                      }}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    A human-readable name for this variant
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="variant_name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Variant Name</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="e.g., trio, band, dj_set"
+                      placeholder="e.g., Trio, Band, DJ Set"
                       {...field}
-                      className="font-mono text-sm"
                     />
                   </FormControl>
                   <FormDescription>
-                    A unique identifier (lowercase, numbers, underscores only)
+                    A name for this variant (e.g., "Trio", "Band", "DJ Set")
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

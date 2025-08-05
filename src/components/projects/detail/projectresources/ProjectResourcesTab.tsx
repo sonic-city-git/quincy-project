@@ -5,11 +5,10 @@ import { useState } from 'react';
 import { Project } from '@/types/projects';
 import { ProjectTabCard } from '../../shared/ProjectTabCard';
 import { LayersIcon } from 'lucide-react';
-import { VariantSelector } from './components/VariantSelector';
 import { ProjectResourcesContent } from './components/ProjectResourcesContent';
-import { VariantActions } from './components/VariantActions';
+import { CreateVariantDialog } from './components/CreateVariantDialog';
+import { EditVariantDialog } from './components/EditVariantDialog';
 import { useProjectVariants } from '@/hooks/useProjectVariants';
-import { useVariantResources } from '@/hooks/useVariantResources';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
@@ -35,7 +34,8 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
 }
 
 export function ProjectResourcesTab({ projectId, project }: ProjectResourcesTabProps) {
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [editingVariant, setEditingVariant] = useState<any>(null);
 
   // Variant management
   const {
@@ -50,34 +50,22 @@ export function ProjectResourcesTab({ projectId, project }: ProjectResourcesTabP
     duplicateVariant
   } = useProjectVariants(projectId);
 
-  // Resource data for selected variant
-  const {
-    resourceData,
-    isLoading: resourcesLoading,
-    error: resourcesError,
-    addCrewRole,
-    updateCrewRole,
-    removeCrewRole,
-    addEquipmentItem,
-    updateEquipmentItem,
-    removeEquipmentItem,
-    createEquipmentGroup,
-    updateEquipmentGroup,
-    deleteEquipmentGroup
-  } = useVariantResources(projectId, selectedVariant);
-
   // Check if this is an artist project (should show variants)
   const isArtistProject = project?.customer_type === 'artist';
 
-  // Toggle equipment group expansion
-  const toggleGroupExpansion = (groupId: string) => {
-    const newExpanded = new Set(expandedGroups);
-    if (newExpanded.has(groupId)) {
-      newExpanded.delete(groupId);
-    } else {
-      newExpanded.add(groupId);
-    }
-    setExpandedGroups(newExpanded);
+  // Handle variant management actions
+  const handleCreateVariant = async (data: any) => {
+    await createVariant(data);
+    setShowCreateDialog(false);
+  };
+
+  const handleUpdateVariant = async (data: any) => {
+    await updateVariant(data);
+    setEditingVariant(null);
+  };
+
+  const handleEditVariant = (variant: any) => {
+    setEditingVariant(variant);
   };
 
   // Error states
@@ -96,98 +84,40 @@ export function ProjectResourcesTab({ projectId, project }: ProjectResourcesTabP
     );
   }
 
-  if (resourcesError) {
-    return (
-      <ProjectTabCard
-        title="Resources"
-        icon={LayersIcon}
-        iconColor="text-indigo-500"
-      >
-        <div className="text-center py-8">
-          <div className="text-destructive font-medium mb-2">Failed to load resources</div>
-          <div className="text-sm text-muted-foreground">{resourcesError.message}</div>
-        </div>
-      </ProjectTabCard>
-    );
-  }
-
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <ProjectTabCard
-        title="Resources"
+        title="Variants"
         icon={LayersIcon}
         iconColor="text-indigo-500"
       >
-        <div className="space-y-6">
-          {/* Variant Management Section - Only for artist projects */}
-          {isArtistProject && (
-            <div className="space-y-4">
-              {/* Variant Selector */}
-              <VariantSelector
-                variants={variants}
-                selectedVariant={selectedVariant}
-                onVariantSelect={setSelectedVariant}
-                isLoading={variantsLoading}
-              />
+        <ProjectResourcesContent
+          projectId={projectId}
+          variants={variants}
+          selectedVariant={selectedVariant}
+          onVariantSelect={setSelectedVariant}
+          isLoading={variantsLoading}
+          onEditVariant={handleEditVariant}
+          onCreateVariant={() => setShowCreateDialog(true)}
+        />
 
-              {/* Variant Actions */}
-              <VariantActions
-                projectId={projectId}
-                variants={variants}
-                selectedVariant={selectedVariant}
-                onCreateVariant={createVariant}
-                onUpdateVariant={updateVariant}
-                onDeleteVariant={deleteVariant}
-                onDuplicateVariant={duplicateVariant}
-              />
-            </div>
-          )}
+        {/* Variant Management Dialogs */}
+        <CreateVariantDialog
+          open={showCreateDialog}
+          onOpenChange={setShowCreateDialog}
+          onCreateVariant={handleCreateVariant}
+          existingVariants={variants}
+        />
 
-          {/* Resources Content */}
-          <ProjectResourcesContent
-            projectId={projectId}
-            variantName={selectedVariant}
-            resourceData={resourceData}
-            isLoading={resourcesLoading || variantsLoading}
-            expandedGroups={expandedGroups}
-            onToggleGroup={toggleGroupExpansion}
-            
-            // Crew operations
-            onAddCrewRole={addCrewRole}
-            onUpdateCrewRole={updateCrewRole}
-            onRemoveCrewRole={removeCrewRole}
-            
-            // Equipment operations
-            onAddEquipmentItem={addEquipmentItem}
-            onUpdateEquipmentItem={updateEquipmentItem}
-            onRemoveEquipmentItem={removeEquipmentItem}
-            
-            // Group operations
-            onCreateEquipmentGroup={createEquipmentGroup}
-            onUpdateEquipmentGroup={updateEquipmentGroup}
-            onDeleteEquipmentGroup={deleteEquipmentGroup}
+        {editingVariant && (
+          <EditVariantDialog
+            open={!!editingVariant}
+            onOpenChange={() => setEditingVariant(null)}
+            variant={editingVariant}
+            onUpdateVariant={handleUpdateVariant}
+            existingVariants={variants}
           />
-
-          {/* Empty State for Non-Artist Projects */}
-          {!isArtistProject && (!resourceData || (
-            resourceData.crew_roles.length === 0 && 
-            resourceData.equipment_groups.length === 0 && 
-            resourceData.equipment_ungrouped.length === 0
-          )) && (
-            <div className="text-center py-12">
-              <LayersIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                No resources configured
-              </h3>
-              <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                {isArtistProject 
-                  ? "Create variants (like Trio, Band, DJ) to organize your crew roles and equipment requirements."
-                  : "Add crew roles and equipment for this project. Use the buttons above to get started."
-                }
-              </p>
-            </div>
-          )}
-        </div>
+        )}
       </ProjectTabCard>
     </ErrorBoundary>
   );

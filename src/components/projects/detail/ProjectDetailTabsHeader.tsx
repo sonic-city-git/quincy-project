@@ -24,7 +24,7 @@ export function ProjectDetailTabsHeader({
   const getTabConfig = () => {
     switch (activeTab) {
       case 'projectresources':
-        return { title: 'Project Resources', icon: Layers, color: 'text-indigo-500' };
+        return { title: 'Project Variants', icon: Layers, color: 'text-indigo-500' };
       case 'financial':
         return { title: 'Project Financial', icon: DollarSign, color: 'text-blue-500' };
       default:
@@ -88,7 +88,7 @@ export function ProjectDetailTabsHeader({
               }`}
             >
               <Layers className="h-4 w-4" />
-              Resources
+              Variants
             </Button>
             <Button
               variant={activeTab === 'financial' ? 'default' : 'ghost'}

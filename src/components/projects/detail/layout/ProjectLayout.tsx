@@ -52,7 +52,7 @@ export function ProjectLayout({ project, projectId }: ProjectLayoutProps) {
               }`}
             >
               <Layers className="h-4 w-4" />
-              Resources
+              Variants
             </Button>
             <Button
               variant={tab === 'financial' ? 'default' : 'ghost'}
