@@ -43,23 +43,40 @@ ON project_variants(project_id, sort_order);
 ALTER TABLE project_variants ENABLE ROW LEVEL SECURITY;
 
 -- RLS policies (inherit from projects table security)
-CREATE POLICY IF NOT EXISTS "Users can view project variants they have access to"
-ON project_variants FOR SELECT
-USING (
-    project_id IN (
-        SELECT id FROM projects
-        -- Project access is controlled by existing RLS policies
-    )
-);
-
-CREATE POLICY IF NOT EXISTS "Users can modify project variants they have access to"
-ON project_variants FOR ALL
-USING (
-    project_id IN (
-        SELECT id FROM projects
-        -- Project access is controlled by existing RLS policies
-    )
-);
+DO $$
+BEGIN
+    -- Create SELECT policy if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE tablename = 'project_variants' 
+        AND policyname = 'Users can view project variants they have access to'
+    ) THEN
+        CREATE POLICY "Users can view project variants they have access to"
+        ON project_variants FOR SELECT
+        USING (
+            project_id IN (
+                SELECT id FROM projects
+                -- Project access is controlled by existing RLS policies
+            )
+        );
+    END IF;
+    
+    -- Create ALL policy if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_policies 
+        WHERE tablename = 'project_variants' 
+        AND policyname = 'Users can modify project variants they have access to'
+    ) THEN
+        CREATE POLICY "Users can modify project variants they have access to"
+        ON project_variants FOR ALL
+        USING (
+            project_id IN (
+                SELECT id FROM projects
+                -- Project access is controlled by existing RLS policies
+            )
+        );
+    END IF;
+END $$;
 
 -- Add helpful comments
 COMMENT ON TABLE project_variants IS 'Configuration for project performance variants (e.g., Trio, Band, DJ setups)';
@@ -77,9 +94,18 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER IF NOT EXISTS update_project_variants_updated_at
-    BEFORE UPDATE ON project_variants
-    FOR EACH ROW
-    EXECUTE FUNCTION update_project_variants_updated_at();
+DO $$
+BEGIN
+    -- Create trigger if it doesn't exist
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_trigger 
+        WHERE tgname = 'update_project_variants_updated_at'
+    ) THEN
+        CREATE TRIGGER update_project_variants_updated_at
+            BEFORE UPDATE ON project_variants
+            FOR EACH ROW
+            EXECUTE FUNCTION update_project_variants_updated_at();
+    END IF;
+END $$;
 
 RAISE NOTICE 'Project variants table created successfully with constraints and security policies.';
