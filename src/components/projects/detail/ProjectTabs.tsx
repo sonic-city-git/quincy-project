@@ -7,7 +7,7 @@ import { DollarSign } from "lucide-react";
 import { ProjectTabWrapper } from "../shared/ProjectTabWrapper";
 import { ProjectTabCard } from "../shared/ProjectTabCard";
 import { ProjectGeneralTab } from "./ProjectGeneralTab";
-import { ProjectResourcesTab } from "./projectresources/ProjectResourcesTab";
+import { VariantsTab } from "./variants/VariantsTab";
 import { Project } from "@/types/projects";
 
 interface ProjectTabsProps {
@@ -26,8 +26,8 @@ export function ProjectTabs({ project, projectId, value }: ProjectTabsProps) {
         />
       </ProjectTabWrapper>
 
-      <ProjectTabWrapper value="projectresources" currentTab={value}>
-        <ProjectResourcesTab projectId={projectId} project={project} />
+      <ProjectTabWrapper value="variants" currentTab={value}>
+        <VariantsTab projectId={projectId} project={project} />
       </ProjectTabWrapper>
 
       <ProjectTabWrapper value="financial" currentTab={value}>

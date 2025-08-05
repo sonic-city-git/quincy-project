@@ -9,8 +9,8 @@ import {
 import { COMPONENT_CLASSES, RESPONSIVE, cn } from "@/design-system";
 
 interface ProjectDetailTabsHeaderProps {
-  activeTab: 'general' | 'projectresources' | 'financial';
-  onTabChange: (tab: 'general' | 'projectresources' | 'financial') => void;
+  activeTab: 'general' | 'variants' | 'financial';
+  onTabChange: (tab: 'general' | 'variants' | 'financial') => void;
   canArchive: boolean;
   onArchiveClick: () => void;
 }
@@ -24,7 +24,7 @@ export function ProjectDetailTabsHeader({
 
   const getTabConfig = () => {
     switch (activeTab) {
-      case 'projectresources':
+      case 'variants':
         return { 
           title: 'Project Variants', 
           icon: Layers, 
@@ -105,14 +105,14 @@ export function ProjectDetailTabsHeader({
               <span className="hidden sm:inline">General</span>
             </Button>
             <Button
-              variant={activeTab === 'projectresources' ? 'default' : 'ghost'}
+              variant={activeTab === 'variants' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => onTabChange('projectresources')}
+              onClick={() => onTabChange('variants')}
               className={cn(
                 "flex items-center gap-2 transition-colors",
-                activeTab === 'projectresources' ? 'bg-primary/10 text-primary border-primary/20' : 'hover:bg-muted/50'
+                activeTab === 'variants' ? 'bg-primary/10 text-primary border-primary/20' : 'hover:bg-muted/50'
               )}
-              aria-pressed={activeTab === 'projectresources'}
+              aria-pressed={activeTab === 'variants'}
               aria-label="Switch to Variants tab"
             >
               <Layers className="h-4 w-4" />

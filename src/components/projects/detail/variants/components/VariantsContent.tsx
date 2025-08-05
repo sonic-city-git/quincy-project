@@ -6,12 +6,12 @@ import { Settings, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ProjectVariant } from '@/types/variants';
-import { VariantEquipmentSection } from './VariantEquipmentSection';
-import { VariantCrewSection } from './VariantCrewSection';
+import { VariantEquipmentSection } from '../equipment/VariantEquipmentSection';
+import { VariantCrewSection } from '../crew/VariantCrewSection';
 import { LoadingSpinner } from '@/components/resources/shared/LoadingSpinner';
 import { cn } from '@/lib/utils';
 
-interface ProjectResourcesContentProps {
+interface VariantsContentProps {
   projectId: string;
   variants: ProjectVariant[];
   selectedVariant: string;
@@ -21,7 +21,7 @@ interface ProjectResourcesContentProps {
   onCreateVariant?: () => void;
 }
 
-export function ProjectResourcesContent({
+export function VariantsContent({
   projectId,
   variants,
   selectedVariant,
@@ -29,7 +29,7 @@ export function ProjectResourcesContent({
   isLoading,
   onEditVariant,
   onCreateVariant
-}: ProjectResourcesContentProps) {
+}: VariantsContentProps) {
 
   if (isLoading) {
     return (
