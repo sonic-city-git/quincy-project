@@ -250,12 +250,7 @@ export function useConsolidatedEvents({
 
       if (error) throw error;
 
-      const { dismiss } = toast({
-        title: "Status Updated",
-        description: `Event status changed to ${newStatus}`,
-      });
-
-      setTimeout(() => dismiss(), 600);
+      toast.success(`Event status changed to ${newStatus}`);
       await invalidateEventQueries();
     } catch (error) {
       console.error('Error updating event status:', error);

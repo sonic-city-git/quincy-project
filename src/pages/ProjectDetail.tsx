@@ -1,8 +1,8 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { ProjectDetailTabsHeader } from "@/components/projects/detail/ProjectDetailTabsHeader";
-import { ProjectTabs } from "@/components/projects/detail/ProjectTabs";
+import { DetailHeader } from "@/components/projectdetail/shared/header/DetailHeader";
+import { DetailTabs } from "@/components/projectdetail/shared/tabs/DetailTabs";
 import { Tabs } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Building2 } from "lucide-react";
@@ -169,7 +169,7 @@ const ProjectDetail = () => {
       {/* Main Content - Exact same structure as Projects page */}
       <div className="space-y-4">
         {/* Project Header with Tabs - Outside content for better performance */}
-        <ProjectDetailTabsHeader
+        <DetailHeader
           activeTab={tab as 'general' | 'equipment' | 'crew' | 'financial'}
           onTabChange={handleTabChange as (tab: 'general' | 'equipment' | 'crew' | 'financial') => void}
           canArchive={canArchive}
@@ -179,7 +179,7 @@ const ProjectDetail = () => {
         {/* Tab Content */}
         <div className="space-y-4">
           <Tabs value={tab} onValueChange={handleTabChange}>
-            <ProjectTabs 
+            <DetailTabs 
               project={project}
               projectId={id || ''}
               value={tab}
