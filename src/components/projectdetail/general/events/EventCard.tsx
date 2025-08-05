@@ -1,17 +1,17 @@
 import { CalendarEvent } from "@/types/events";
 import { EVENT_COLORS } from "@/constants/eventColors";
 import { Card } from "@/components/ui/card";
-// Remove circular import - EventCardContent will be inline
-import { EventCardIcons } from "./EventCardIcons";
 import { formatPrice } from "@/utils/priceFormatters";
-import { EventCardGrid } from "./EventCardGrid";
-import { EventCardStatus } from "./EventCardStatus";
-import { EventActions } from "./EventActions";
+import { EventGrid, EventGridColumns } from "./layout/EventGrid";
+import { EventEquipment } from "./components/EventEquipment";
+import { EventCrew } from "./components/EventCrew";
+import { EventStatus } from "./components/EventStatus";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Calendar } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import { formatDisplayDate } from "@/utils/dateFormatters";
+import { cn } from "@/lib/utils";
+import { COMPONENT_CLASSES, STATUS_PATTERNS } from "@/design-system";
+import { useEventSyncStatus } from "@/hooks/useConsolidatedSyncStatus";
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -21,118 +21,138 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: EventCardProps) {
-  const isEditingDisabled = (status: string) => {
-    return ['cancelled', 'invoice ready'].includes(status);
+  const isEditingDisabled = ['cancelled', 'invoice ready', 'invoiced'].includes(event.status);
+  
+  // Get sync status for equipment and crew
+  const { isEquipmentSynced, hasProjectEquipment, isCrewSynced, hasProjectRoles } = useEventSyncStatus(event);
+  
+  // Get status styling using design system
+  const getStatusPattern = (status: string) => {
+    switch (status) {
+      case 'proposed':
+        return STATUS_PATTERNS.warning;
+      case 'confirmed':
+        return STATUS_PATTERNS.success;
+      case 'invoice ready':
+        return STATUS_PATTERNS.info;
+      case 'cancelled':
+        return STATUS_PATTERNS.critical;
+      default:
+        return { bg: 'bg-card', border: 'border-border' };
+    }
   };
 
-  // Get event type details including crew_rate_multiplier and needs_crew
-  const { data: eventType } = useQuery({
-    queryKey: ['event_type', event.type.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('event_types')
-        .select('*')
-        .eq('id', event.type.id)
-        .single();
-      
-      if (error) throw error;
-      return data;
-    }
-  });
-
-  // Get crew roles and their costs for this event
-  const { data: eventRoles } = useQuery({
-    queryKey: ['event_roles', event.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('project_event_roles')
-        .select(`
-          *,
-          crew_roles (
-            name
-          ),
-          crew_members (
-            name
-          )
-        `)
-        .eq('event_id', event.id);
-      
-      if (error) throw error;
-    
-      return data;
-    },
-    enabled: eventType?.needs_crew
-  });
+  const statusPattern = getStatusPattern(event.status);
+  
+  // Determine location icon status
+  const locationStatus = event.location ? 'success' : 'neutral';
+  
+  // Get event type variant for badge styling
+  const getTypeVariant = () => {
+    if (event.type.name?.toLowerCase().includes('concert')) return 'primary';
+    if (event.type.name?.toLowerCase().includes('festival')) return 'secondary';
+    if (event.type.name?.toLowerCase().includes('corporate')) return 'warning';
+    return 'default';
+  };
 
   return (
     <TooltipProvider>
       <Card 
-        key={`${event.date}-${event.name}`} 
-        className={`p-2 transition-colors mb-1.5 ${EventCardStatus({ status: event.status })}`}
+        className={cn(
+          COMPONENT_CLASSES.card.hover,
+          'transition-all duration-200 ease-in-out group',
+          statusPattern.bg,
+          statusPattern.border && `border-l-4 ${statusPattern.border}`,
+          'mb-1 shadow-sm hover:shadow-md'
+        )}
       >
-        <EventCardGrid>
-          {/* Date column */}
-          <div 
-            className="flex items-center gap-2 hover:text-primary cursor-pointer select-none" 
-            onClick={() => onEdit?.(event)}
-          >
-            <Calendar className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">
+        <EventGrid variant="card">
+          {/* Date */}
+          <EventGridColumns.Date interactive={!!onEdit}>
+            <Calendar className="h-4 w-4 flex-shrink-0" />
+            <span className="font-medium">
               {formatDisplayDate(event.date)}
             </span>
-          </div>
+          </EventGridColumns.Date>
           
-          {/* Name column */}
-          <div 
-            className="flex flex-col justify-center hover:text-primary cursor-pointer select-none" 
-            onClick={() => onEdit?.(event)}
+          {/* Event Name & Location */}
+          <EventGridColumns.Event 
+            interactive={!!onEdit}
+            className={cn(onEdit && 'cursor-pointer')}
           >
-            <div className="flex items-center">
-              <span className="font-medium text-base truncate">
-                {event.name}
-              </span>
-            </div>
-            {event.location && (
-              <div className="flex items-center text-muted-foreground">
-                <span className="text-sm truncate">{event.location}</span>
-              </div>
-            )}
-          </div>
-          
-          <EventCardIcons
-            event={event}
-            isEditingDisabled={isEditingDisabled(event.status)}
-            sectionTitle={sectionTitle}
-          />
-
-          <div className="flex items-center px-1.5">
-            <span 
-              className={`text-sm px-1.5 py-0.5 rounded-md bg-opacity-75 ${EVENT_COLORS[event.type.name]}`}
+            <div 
+              className="space-y-1"
+              onClick={onEdit ? () => onEdit(event) : undefined}
             >
-              {event.type.name}
-            </span>
-          </div>
+              <h4 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+                {event.name}
+              </h4>
+              {event.location && (
+                <p className="text-sm text-muted-foreground truncate flex items-center gap-1">
+                  <MapPin className="h-3 w-3 flex-shrink-0" />
+                  {event.location}
+                </p>
+              )}
+            </div>
+          </EventGridColumns.Event>
+          
+          {/* Location Status Icon */}
+          <EventGridColumns.Icon status={locationStatus}>
+            <MapPin className="h-5 w-5" />
+          </EventGridColumns.Icon>
 
-          <div className="flex items-center justify-center">
-            <EventActions
+          {/* Equipment Status */}
+          <EventGridColumns.Icon>
+            <EventEquipment
               event={event}
-              onStatusChange={onStatusChange}
-              isEditingDisabled={isEditingDisabled(event.status)}
+              variant="icon"
+              disabled={isEditingDisabled}
+              isSynced={isEquipmentSynced}
+              hasProjectEquipment={hasProjectEquipment}
             />
-          </div>
+          </EventGridColumns.Icon>
 
-          <div className="flex items-center justify-end text-sm text-muted-foreground">
+          {/* Crew Status */}
+          <EventGridColumns.Icon>
+            <EventCrew
+              event={event}
+              variant="icon" 
+              disabled={isEditingDisabled}
+              isSynced={isCrewSynced}
+              hasProjectRoles={hasProjectRoles}
+            />
+          </EventGridColumns.Icon>
+
+          {/* Event Type Badge */}
+          <EventGridColumns.Badge variant={getTypeVariant()}>
+            {event.type.name}
+          </EventGridColumns.Badge>
+
+          {/* Status Actions */}
+          <EventGridColumns.Action>
+            <EventStatus
+              event={event}
+              variant="manager"
+              onStatusChange={onStatusChange}
+              disabled={isEditingDisabled}
+            />
+          </EventGridColumns.Action>
+
+          {/* Equipment Price */}
+          <EventGridColumns.Price variant="muted">
             {formatPrice(event.equipment_price)}
-          </div>
+          </EventGridColumns.Price>
 
-          <div className="flex items-center justify-end text-sm text-muted-foreground">
+          {/* Crew Price */}
+          <EventGridColumns.Price variant="muted">
             {formatPrice(event.crew_price)}
-          </div>
+          </EventGridColumns.Price>
 
-          <div className="flex items-center justify-end text-sm font-medium">
+          {/* Total Price */}
+          <EventGridColumns.Price variant="total">
             {formatPrice(event.total_price)}
-          </div>
-        </EventCardGrid>
+          </EventGridColumns.Price>
+        </EventGrid>
       </Card>
     </TooltipProvider>
   );

@@ -2,10 +2,13 @@ import { CalendarEvent } from "@/types/events";
 import { EventSection } from "./EventSection";
 import { EventListEmpty } from "./EventListEmpty";
 import { EventListLoading } from "./EventListLoading";
-import { groupEventsByStatus } from "./utils/eventGroups";
+import { EventTableHeader } from "./layout/EventGrid";
+import { eventUtils } from "./utils";
 import { Card } from "@/components/ui/card";
 import { Brush, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { cn } from "@/lib/utils";
+import { COMPONENT_CLASSES, RESPONSIVE } from "@/design-system";
 
 interface EventListProps {
   events: CalendarEvent[];
@@ -25,75 +28,97 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
 
   // Filter out null/undefined events before grouping
   const validEvents = events.filter(event => event && event.date && event.status);
-  const { proposed, confirmed, ready, cancelled, doneAndDusted } = groupEventsByStatus(validEvents);
+  const { proposed, confirmed, ready, cancelled, doneAndDusted } = eventUtils.groupEventsByStatus(validEvents);
+
+  const sections = [
+    { title: "Proposed", events: proposed, variant: "warning" as const },
+    { title: "Confirmed", events: confirmed, variant: "success" as const },
+    { title: "Invoice Ready", events: ready, variant: "info" as const },
+    { title: "Cancelled", events: cancelled, variant: "critical" as const }
+  ];
+
+  const hasActiveEvents = sections.some(section => section.events.length > 0);
 
   return (
-    <div className="space-y-4">
-      {proposed.length > 0 && (
-        <Card className="rounded-lg bg-zinc-800/50 p-4">
-          <EventSection
-            title="Proposed"
-            events={proposed}
-            onStatusChange={onStatusChange}
-            onEdit={onEdit}
-          />
-        </Card>
-      )}
-      {confirmed.length > 0 && (
-        <Card className="rounded-lg bg-zinc-800/50 p-4">
-          <EventSection
-            title="Confirmed"
-            events={confirmed}
-            onStatusChange={onStatusChange}
-            onEdit={onEdit}
-          />
-        </Card>
-      )}
-      {ready.length > 0 && (
-        <Card className="rounded-lg bg-zinc-800/50 p-4">
-          <EventSection
-            title="Invoice Ready"
-            events={ready}
-            onStatusChange={onStatusChange}
-            onEdit={onEdit}
-          />
-        </Card>
-      )}
-      {cancelled.length > 0 && (
-        <Card className="rounded-lg bg-zinc-800/50 p-4">
-          <EventSection
-            title="Cancelled"
-            events={cancelled}
-            onStatusChange={onStatusChange}
-            onEdit={onEdit}
-          />
-        </Card>
-      )}
-      {doneAndDusted.length > 0 && (
-        <Collapsible defaultOpen={false} className="mb-16">
-          <Card className="rounded-lg bg-zinc-800/45 p-4">
-            <CollapsibleTrigger className="flex items-center gap-2 w-full">
-              <div className="flex items-center gap-2">
-                <Brush className="h-5 w-5 text-muted-foreground" />
-                <h3 className="text-lg font-semibold text-muted-foreground">Done and Dusted</h3>
-              </div>
-              <ChevronDown className="h-4 w-4 ml-auto text-muted-foreground transition-transform duration-200" />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-4 space-y-4">
-              {doneAndDusted.map((event) => (
-                <EventSection
-                  key={event.id}
-                  title="Done and Dusted"
-                  events={[event]}
-                  onStatusChange={onStatusChange}
-                  onEdit={undefined}
-                  hideEdit
-                  hideHeader
-                />
-              ))}
-            </CollapsibleContent>
+    <div className={cn(RESPONSIVE.spacing.section)}>
+      {/* Table Header - only show if we have events */}
+      {hasActiveEvents && (
+        <div className="mb-4">
+          <Card className={cn(COMPONENT_CLASSES.card.subtle, 'shadow-none border-none')}>
+            <EventTableHeader />
           </Card>
-        </Collapsible>
+        </div>
+      )}
+
+      {/* Active Event Sections */}
+      <div className="space-y-4">
+        {sections.map(({ title, events, variant }) => (
+          events.length > 0 && (
+            <Card 
+              key={title}
+              className={cn(
+                COMPONENT_CLASSES.card.default,
+                'overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200'
+              )}
+            >
+              <EventSection
+                title={title}
+                events={events}
+                onStatusChange={onStatusChange}
+                onEdit={onEdit}
+                variant={variant}
+              />
+            </Card>
+          )
+        ))}
+      </div>
+
+      {/* Done and Dusted - Collapsible Archive */}
+      {doneAndDusted.length > 0 && (
+        <div className="mt-8">
+          <Collapsible defaultOpen={false}>
+            <Card className={cn(
+              COMPONENT_CLASSES.card.subtle,
+              'transition-all duration-200'
+            )}>
+              <CollapsibleTrigger className={cn(
+                'flex items-center justify-between w-full p-4',
+                'hover:bg-muted/30 transition-all duration-200',
+                'group'
+              )}>
+                <div className="flex items-center gap-3">
+                  <Brush className="h-5 w-5 text-muted-foreground/70 group-hover:text-foreground/90 transition-colors" />
+                  <div className="text-left">
+                    <h3 className="text-lg font-bold tracking-tight text-muted-foreground/80 group-hover:text-foreground/90 transition-colors">
+                      Done and Dusted
+                    </h3>
+                    <p className="text-sm text-muted-foreground/70 font-medium">
+                      {doneAndDusted.length} archived event{doneAndDusted.length !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                </div>
+                <ChevronDown className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-all duration-200 group-data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent className="border-t border-border/20">
+                <div className="p-3 space-y-1">
+                  {doneAndDusted.map((event) => (
+                    <EventSection
+                      key={event.id}
+                      title="Done and Dusted"
+                      events={[event]}
+                      onStatusChange={onStatusChange}
+                      onEdit={undefined}
+                      hideEdit
+                      hideHeader
+                      variant="operational"
+                    />
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Card>
+          </Collapsible>
+        </div>
       )}
     </div>
   );
