@@ -98,6 +98,7 @@ BEGIN
         RAISE WARNING 'Found project roles for artist projects with variant_name != default';
     END IF;
     
+    RAISE NOTICE 'Default variant initialization completed successfully.';
 END $$;
 
 -- Create a helpful view for variant statistics
@@ -118,5 +119,3 @@ COMMENT ON VIEW variant_statistics IS 'Summary statistics for project variants b
 
 -- Display current variant statistics
 SELECT * FROM variant_statistics;
-
-RAISE NOTICE 'Default variant initialization completed successfully.';
