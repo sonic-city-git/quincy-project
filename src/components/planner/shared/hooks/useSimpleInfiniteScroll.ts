@@ -47,7 +47,14 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
   // SHARED TIMELINE STATE: Use global state manager to persist across tab switches  
   const getSharedTimelineState = useCallback(() => {
     if (typeof window !== 'undefined' && window.plannerTimelineState) {
-      return window.plannerTimelineState;
+      // Validate shared state integrity
+      const state = window.plannerTimelineState;
+      if (!state.timelineStart || !state.timelineEnd || typeof state.scrollPosition !== 'number') {
+        console.warn('🚨 CORRUPTED SHARED STATE DETECTED - Reinitializing');
+        window.plannerTimelineState = undefined; // Force reinitialization
+      } else {
+        return state;
+      }
     }
     
     // Initialize shared state
@@ -60,6 +67,7 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
     
     if (typeof window !== 'undefined') {
       window.plannerTimelineState = sharedState;
+      console.log('✅ INITIALIZED FRESH SHARED STATE');
     }
     
     return sharedState;
@@ -329,15 +337,33 @@ export function useSimpleInfiniteScroll({ selectedDate, targetScrollItem }: UseS
     }
   }, [timelineDates.length, containerMounted, selectedDate, initialScroll, hasInitialScrolled, setHasInitialScrolled]); // Everything that matters
 
-  // TAB SWITCH DETECTION: Always scroll to selectedDate when timeline is ready (for tab switches)
+  // DEBUG: Monitor shared state
   useEffect(() => {
-    // If we have timeline data, container is ready, and we've done initial scroll,
-    // make sure selectedDate is visible (important for tab switches)
-    if (timelineDates.length > 0 && containerMounted && equipmentRowsRef.current && hasInitialScrolled) {
-      console.log('🔄 TAB SWITCH: Ensuring selectedDate is visible:', format(selectedDate, 'MMM dd'));
-      setTimeout(() => scrollToDate(selectedDate), 50);
+    console.log('🔍 SHARED STATE DEBUG:', {
+      hasSharedState: !!window.plannerTimelineState,
+      sharedTimelineStart: window.plannerTimelineState?.timelineStart,
+      sharedTimelineEnd: window.plannerTimelineState?.timelineEnd,
+      sharedScrollPosition: window.plannerTimelineState?.scrollPosition,
+      sharedHasInitialScrolled: window.plannerTimelineState?.hasInitialScrolled,
+      localHasInitialScrolled: hasInitialScrolled,
+      selectedDate: format(selectedDate, 'MMM dd')
+    });
+  });
+
+  // SIMPLIFIED TAB SWITCH: Track when timeline reloads and ensure date is visible
+  useEffect(() => {
+    // When timeline data becomes available and we've initialized, scroll to selectedDate
+    if (timelineDates.length > 0 && containerMounted && equipmentRowsRef.current) {
+      console.log('🔄 TIMELINE READY: Ensuring selectedDate is visible:', format(selectedDate, 'MMM dd'));
+      
+      // Give a bit more time for rendering to complete
+      const timer = setTimeout(() => {
+        scrollToDate(selectedDate);
+      }, 150);
+      
+      return () => clearTimeout(timer);
     }
-  }, [timelineDates.length, containerMounted, hasInitialScrolled, selectedDate, scrollToDate]);
+  }, [timelineDates.length, containerMounted, selectedDate, scrollToDate]);
 
   // Handle targetScrollItem (moved from UnifiedCalendar for single scroll location)
   useEffect(() => {
