@@ -1,9 +1,14 @@
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { ProjectEquipment } from "@/types/equipment";
 import { ProjectEquipmentItem } from "../ProjectEquipmentItem";
 import { formatPrice } from "@/utils/priceFormatters";
+import { 
+  COMPONENT_CLASSES, 
+  FORM_PATTERNS,
+  cn 
+} from "@/design-system";
 
 interface EquipmentGroupProps {
   id: string;
@@ -33,69 +38,75 @@ export function EquipmentGroup({
   onRemoveEquipment
 }: EquipmentGroupProps) {
   return (
-    <div 
+    <Card 
       className={cn(
-        "rounded-lg border-2 transition-all duration-200 relative overflow-hidden",
-        isSelected 
-          ? "border-primary bg-primary/5" 
-          : "border-zinc-800/50 hover:border-primary/20 hover:bg-primary/5"
+        COMPONENT_CLASSES.card.default,
+        "transition-all duration-200 overflow-hidden",
+        isSelected && "ring-2 ring-primary ring-offset-2"
       )}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
+      role="group"
+      aria-label={`Equipment group: ${name}`}
     >
+      {/* Group Header */}
       <div className={cn(
-        "absolute inset-0 transition-all duration-200",
-        isSelected 
-          ? "bg-primary/5" 
-          : "bg-zinc-900/50 group-hover:bg-primary/5"
-      )} />
-      <div className="relative z-20">
-        <div className={cn(
-          "transition-colors",
-          isSelected ? "bg-primary/10" : "bg-zinc-900/90"
-        )}>
-          <div className="flex items-center justify-between px-4 py-2">
-            <div 
-              className={cn(
-                "flex-1 cursor-pointer transition-colors",
-                isSelected 
-                  ? "text-primary font-medium" 
-                  : "text-white hover:text-primary/90"
-              )}
-              onClick={onSelect}
+        "border-b border-border p-4",
+        isSelected ? "bg-primary/5" : "bg-muted/30"
+      )}>
+        <div className="flex items-center justify-between">
+          {/* Group Name - Clickable */}
+          <button
+            onClick={onSelect}
+            className={cn(
+              "flex-1 text-left transition-colors",
+              "hover:text-primary focus:text-primary focus:outline-none",
+              isSelected ? "text-primary font-medium" : "text-foreground"
+            )}
+            aria-label={`Select ${name} group`}
+          >
+            <h3 className="text-sm font-medium">{name}</h3>
+          </button>
+          
+          {/* Group Actions */}
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-muted-foreground font-medium">
+              {formatPrice(totalPrice)}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDelete}
+              className="h-8 w-8 p-0 text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+              aria-label={`Delete ${name} group`}
             >
-              <h3 className="text-sm font-medium">{name}</h3>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">
-                {formatPrice(totalPrice)}
-              </span>
-              <button
-                onClick={onDelete}
-                className="text-red-500 hover:text-red-400 transition-colors"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-        <div className="p-3 space-y-2 relative z-30 bg-background/95">
-          {equipment.map((item) => (
-            <div key={item.id} id={`equipment-${item.id}`}>
-              <ProjectEquipmentItem
-                item={item}
-                onRemove={() => onRemoveEquipment(item.id)}
-              />
-            </div>
-          ))}
-          {equipment.length === 0 && (
-            <div className="text-sm text-muted-foreground px-1">
-              No equipment in this group
-            </div>
-          )}
-        </div>
       </div>
-    </div>
+
+      {/* Equipment List */}
+      <div className="p-4">
+        {equipment.length > 0 ? (
+          <div className="space-y-2">
+            {equipment.map((item) => (
+              <div key={item.id} id={`equipment-${item.id}`}>
+                <ProjectEquipmentItem
+                  item={item}
+                  onRemove={() => onRemoveEquipment(item.id)}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-6 text-muted-foreground">
+            <p className="text-sm">No equipment in this group</p>
+            <p className="text-xs mt-1">Drag equipment items here to add them</p>
+          </div>
+        )}
+      </div>
+    </Card>
   );
 }

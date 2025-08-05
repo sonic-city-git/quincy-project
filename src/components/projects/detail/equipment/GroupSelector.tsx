@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,6 +19,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { FORM_PATTERNS, cn } from "@/design-system";
 
 interface GroupSelectorProps {
   projectId: string;
@@ -155,29 +156,32 @@ export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) 
       </DropdownMenu>
 
       <Dialog open={isCustomDialogOpen} onOpenChange={setIsCustomDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
+        <DialogContent className={FORM_PATTERNS.dialog.container}>
+          <DialogHeader className={FORM_PATTERNS.dialog.header}>
             <DialogTitle>Create Custom Group</DialogTitle>
           </DialogHeader>
-          <div className="py-4">
+          <div className={FORM_PATTERNS.field.group}>
             <Input
               placeholder="Enter group name"
               value={customGroupName}
               onChange={(e) => setCustomGroupName(e.target.value)}
+              className={FORM_PATTERNS.input.default}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && customGroupName.trim()) {
                   handleAddGroup(customGroupName);
                 }
               }}
+              aria-label="Equipment group name"
             />
           </div>
-          <DialogFooter>
+          <DialogFooter className={FORM_PATTERNS.dialog.footer}>
             <Button
               variant="outline"
               onClick={() => {
                 setIsCustomDialogOpen(false);
                 setCustomGroupName("");
               }}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
