@@ -5,12 +5,12 @@
  */
 
 import { ProjectTabCard } from "../shared/ProjectTabCard";
-import { ProjectCalendar } from "./calendar/components/ProjectCalendar";
-import { EventList } from "./calendar/components/EventList";
+import { ProjectCalendar } from "./calendar/ProjectCalendar";
+import { EventList } from "./events/EventList";
 import { Project } from "@/types/projects";
-import { ProjectInfo } from "./components/Summary";
+import { ProjectInfo } from "./information/ProjectInfo";
 import { useProjectEvents } from "@/hooks/useConsolidatedEvents";
-import { SyncCrewDataButton } from "./components/SyncCrewDataButton";
+import { SyncCrewDataButton } from "./shared/SyncCrewDataButton";
 
 interface ProjectGeneralTabProps {
   project: Project;

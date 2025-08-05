@@ -4,7 +4,7 @@ import { useCalendarDate } from "@/hooks/useCalendarDate";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import { useProjectEvents } from "@/hooks/useConsolidatedEvents";
 import { CalendarEvent, EventType } from "@/types/events";
-import { EventFormDialog, EventFormData } from "../../components/EventFormDialog";
+import { EventFormDialog, EventFormData } from "../events/EventFormDialog";
 
 interface ProjectCalendarProps {
   projectId: string;

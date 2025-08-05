@@ -1,11 +1,11 @@
-import { CustomerSelect } from "../forms/CustomerSelect";
-import { OwnerSelect } from "../forms/OwnerSelect";
+import { CustomerSelect } from "./forms/CustomerSelect";
+import { OwnerSelect } from "./forms/OwnerSelect";
 import { formatDisplayDate } from "@/utils/dateFormatters";
 import { Project } from "@/types/projects";
 import { InvoiceButton } from "../../financial/InvoiceButton";
 import { InvoiceDialog } from "../../financial/InvoiceDialog";
 import { CalendarEvent } from "@/types/events";
-import { useProjectTabActions } from "../hooks/useGeneralActions";
+import { useProjectTabActions } from "../shared/hooks/useGeneralActions";
 import { FORM_PATTERNS, cn } from "@/design-system";
 
 interface ProjectInfoProps {

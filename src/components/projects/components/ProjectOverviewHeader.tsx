@@ -4,7 +4,7 @@ import { ProjectFilterClear } from "./filters/ProjectFilterClear";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { AddProjectDialog } from "./dialogs/AddProjectDialog";
-import { useCommonProjectTabActions } from "../../projectdetail/general/hooks/useGeneralActions";
+import { useCommonProjectTabActions } from "../../projectdetail/general/shared/hooks/useGeneralActions";
 
 interface ProjectListHeaderProps {
   searchQuery: string;

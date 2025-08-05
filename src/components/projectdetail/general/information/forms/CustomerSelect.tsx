@@ -4,7 +4,7 @@
  */
 
 import { useCustomers } from "@/hooks/useCustomers";
-import { DataSelect } from "../../../shared/forms/SearchableSelect";
+import { DataSelect } from "@/components/shared/forms/SearchableSelect";
 
 interface CustomerSelectProps {
   value?: string;

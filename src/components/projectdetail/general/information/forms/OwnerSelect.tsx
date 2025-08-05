@@ -4,9 +4,9 @@
  */
 
 import { useCrew } from "@/hooks/useCrew";
-import { DataSelect } from "../../../shared/forms/SearchableSelect";
+import { DataSelect } from "@/components/shared/forms/SearchableSelect";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import type { SelectOption } from "../../../shared/forms/SearchableSelect";
+import type { SelectOption } from "@/components/shared/forms/SearchableSelect";
 import { SONIC_CITY_FOLDER_ID, SONIC_CITY_EXCLUDED_EMAILS } from "@/constants/organizations";
 
 interface OwnerSelectProps {

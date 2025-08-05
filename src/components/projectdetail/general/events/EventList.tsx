@@ -2,7 +2,7 @@ import { CalendarEvent } from "@/types/events";
 import { EventSection } from "./EventSection";
 import { EventListEmpty } from "./EventListEmpty";
 import { EventListLoading } from "./EventListLoading";
-import { groupEventsByStatus } from "../utils/eventGroups";
+import { groupEventsByStatus } from "../calendar/utils/eventGroups";
 import { Card } from "@/components/ui/card";
 import { Brush, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";

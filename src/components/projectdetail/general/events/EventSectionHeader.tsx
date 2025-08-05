@@ -3,7 +3,7 @@ import { CalendarEvent, EventType } from "@/types/events";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { EventStatusManager } from "../EventStatusManager";
+import { EventStatusManager } from "./EventStatusManager";
 import { useSectionSyncStatus } from "@/hooks/useConsolidatedSyncStatus";
 import { useSyncSubscriptions } from "@/hooks/useSyncSubscriptions";
 import { StatusIcon } from "./header/StatusIcon";

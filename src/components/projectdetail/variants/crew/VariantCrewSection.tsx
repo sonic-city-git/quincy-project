@@ -4,7 +4,7 @@
 
 import { Plus, Users } from "lucide-react";
 import { useProjectDetails } from "@/hooks/useProjectDetails";
-import { useCommonProjectTabActions } from "../../general/hooks/useGeneralActions";
+import { useCommonProjectTabActions } from "../../general/shared/hooks/useGeneralActions";
 import { AddRoleDialog } from "./components/AddRoleDialog";
 import { CompactCrewRolesList } from "./components/CompactCrewRolesList";
 import { Button } from "@/components/ui/button";
