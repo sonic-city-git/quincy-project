@@ -6,10 +6,11 @@ import { cn } from "@/lib/utils";
 import { useFolders } from "@/hooks/useFolders";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useState, useMemo } from "react";
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from "@/utils/equipmentFolderSort";
+import { FORM_PATTERNS, createFieldIconClasses } from "@/design-system";
 
 interface EquipmentSelectorProps {
   onSelect: (equipment: Equipment) => void;
@@ -148,13 +149,21 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
 
   return (
     <div className="flex flex-col h-full">
+      {/* Enhanced Search Input with Icon */}
       <div className="p-4">
-        <Input
-          placeholder="Search equipment..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full bg-muted/50"
-        />
+        <div className={FORM_PATTERNS.fieldContainer.withIcon}>
+          <Search className={createFieldIconClasses()} />
+          <Input
+            placeholder="Search equipment..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={cn(
+              FORM_PATTERNS.input.withIcon,
+              "w-full bg-muted/50 border-border/50"
+            )}
+            aria-label="Search equipment by name or code"
+          />
+        </div>
       </div>
       <ScrollArea className={cn("flex-1", className)}>
         <div className="px-4 pb-4">

@@ -6,6 +6,7 @@ import { ProjectInvoiceButton } from "./ProjectInvoiceButton";
 import { InvoiceDialog } from "../invoice/InvoiceDialog";
 import { CalendarEvent } from "@/types/events";
 import { useProjectTabActions } from "../shared/hooks/useProjectTabActions";
+import { FORM_PATTERNS, cn } from "@/design-system";
 
 interface ProjectInfoProps {
   project: Project;
@@ -39,38 +40,54 @@ export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInf
   };
 
   return (
-    <div className="space-y-6">
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Customer</label>
+    <div className={FORM_PATTERNS.layout.singleColumn}>
+      <div className={FORM_PATTERNS.field.group}>
+        {/* Customer Field */}
+        <div className={FORM_PATTERNS.field.default}>
+          <label className={FORM_PATTERNS.label.optional}>Customer</label>
           <CustomerSelect
             value={project.customer_id || ''}
             onChange={() => {}}
             required={false}
-            className="bg-muted/50 border-border hover:border-muted-foreground/50 transition-colors"
+            className={cn(
+              FORM_PATTERNS.input.default,
+              "bg-muted/50 hover:border-muted-foreground/50"
+            )}
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Owner</label>
+        {/* Owner Field */}
+        <div className={FORM_PATTERNS.field.default}>
+          <label className={FORM_PATTERNS.label.optional}>Owner</label>
           <OwnerSelect
             value={project.owner_id || ''}
             onChange={() => {}}
             required={false}
-            className="bg-muted/50 border-border hover:border-muted-foreground/50 transition-colors"
+            className={cn(
+              FORM_PATTERNS.input.default,
+              "bg-muted/50 hover:border-muted-foreground/50"
+            )}
           />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Last Invoiced</label>
-          <div className="text-sm bg-muted/50 px-3 py-2 rounded-md border border-border">
+        {/* Last Invoiced Field - Read-only */}
+        <div className={FORM_PATTERNS.field.default}>
+          <label className={FORM_PATTERNS.label.default}>Last Invoiced</label>
+          <div className={cn(
+            FORM_PATTERNS.input.disabled,
+            "text-sm bg-muted/50 px-3 py-2 rounded-md"
+          )}>
             {formatDate(project.created_at)}
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">To be Invoiced</label>
-          <div className="text-sm font-medium bg-muted/50 px-3 py-2 rounded-md border border-border">
+        {/* To be Invoiced Field - Read-only with emphasis */}
+        <div className={FORM_PATTERNS.field.default}>
+          <label className={FORM_PATTERNS.label.default}>To be Invoiced</label>
+          <div className={cn(
+            FORM_PATTERNS.input.disabled,
+            "text-sm font-medium bg-muted/50 px-3 py-2 rounded-md text-accent"
+          )}>
             {formatCurrency(project.to_be_invoiced)}
           </div>
         </div>

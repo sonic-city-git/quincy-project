@@ -14,6 +14,7 @@ import { useCrewSort } from "@/components/resources/crew/useCrewSort";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQueryClient } from "@tanstack/react-query";
 import { SONIC_CITY_FOLDER_ID } from "@/constants/organizations";
+import { FORM_PATTERNS, createCurrencyInput, cn } from "@/design-system";
 
 interface AddRoleDialogProps {
   isOpen: boolean;
@@ -83,22 +84,30 @@ export function AddRoleDialog({ isOpen, onClose, project }: AddRoleDialogProps) 
     }
   };
 
+  const currencyInputStyles = createCurrencyInput();
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
-        <DialogHeader>
+      <DialogContent className={FORM_PATTERNS.dialog.container}>
+        <DialogHeader className={FORM_PATTERNS.dialog.header}>
           <DialogTitle>Add Role</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="role">Role</Label>
+        
+        <form onSubmit={handleSubmit(onSubmit)} className={FORM_PATTERNS.dialog.content}>
+          {/* Role Selection */}
+          <div className={FORM_PATTERNS.field.default}>
+            <Label htmlFor="role" className={FORM_PATTERNS.label.required}>Role</Label>
             <Select onValueChange={(value) => setValue('role_id', value)} required>
-              <SelectTrigger>
+              <SelectTrigger className={FORM_PATTERNS.dropdown.trigger}>
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className={FORM_PATTERNS.dropdown.content}>
                 {roles?.map((role) => (
-                  <SelectItem key={role.id} value={role.id}>
+                  <SelectItem 
+                    key={role.id} 
+                    value={role.id}
+                    className={FORM_PATTERNS.dropdown.item}
+                  >
                     {role.name}
                   </SelectItem>
                 ))}
@@ -106,36 +115,49 @@ export function AddRoleDialog({ isOpen, onClose, project }: AddRoleDialogProps) 
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="daily_rate">Daily Rate</Label>
-            <Input
-              type="number"
-              step="0.01"
-              required
-              {...register('daily_rate', { valueAsNumber: true, required: true })}
-            />
+          {/* Daily Rate with Currency Symbol */}
+          <div className={FORM_PATTERNS.field.default}>
+            <Label htmlFor="daily_rate" className={FORM_PATTERNS.label.required}>Daily Rate</Label>
+            <div className={currencyInputStyles.container}>
+              <span className={currencyInputStyles.symbol}>kr</span>
+              <Input
+                type="number"
+                step="1"
+                required
+                placeholder="7500"
+                className={cn(currencyInputStyles.input, FORM_PATTERNS.input.default)}
+                {...register('daily_rate', { valueAsNumber: true, required: true })}
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="hourly_rate">Hourly Rate</Label>
-            <Input
-              type="number"
-              step="0.01"
-              required
-              {...register('hourly_rate', { valueAsNumber: true, required: true })}
-            />
+          {/* Hourly Rate with Currency Symbol */}
+          <div className={FORM_PATTERNS.field.default}>
+            <Label htmlFor="hourly_rate" className={FORM_PATTERNS.label.required}>Hourly Rate</Label>
+            <div className={currencyInputStyles.container}>
+              <span className={currencyInputStyles.symbol}>kr</span>
+              <Input
+                type="number"
+                step="1"
+                required
+                placeholder="850"
+                className={cn(currencyInputStyles.input, FORM_PATTERNS.input.default)}
+                {...register('hourly_rate', { valueAsNumber: true, required: true })}
+              />
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Preferred Crew Member</Label>
+          {/* Preferred Crew Member */}
+          <div className={FORM_PATTERNS.field.default}>
+            <Label className={FORM_PATTERNS.label.optional}>Preferred Crew Member</Label>
             <Select
               value={watch('preferred_id') || ''}
               onValueChange={(value) => setValue('preferred_id', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className={FORM_PATTERNS.dropdown.trigger}>
                 <SelectValue placeholder="Select preferred crew member" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className={FORM_PATTERNS.dropdown.content}>
                 <ScrollArea className="h-[200px]">
                   {sortedCrew.map((member) => {
                     const initials = member.name
@@ -148,7 +170,7 @@ export function AddRoleDialog({ isOpen, onClose, project }: AddRoleDialogProps) 
                       <SelectItem 
                         key={member.id} 
                         value={member.id}
-                        className="flex items-center gap-3 py-2"
+                        className={cn(FORM_PATTERNS.dropdown.item, "flex items-center gap-3 py-2")}
                       >
                         <div className="flex items-center gap-3">
                           <Avatar className="h-8 w-8">
@@ -174,7 +196,8 @@ export function AddRoleDialog({ isOpen, onClose, project }: AddRoleDialogProps) 
             </Select>
           </div>
 
-          <div className="flex justify-end space-x-2">
+          {/* Form Actions */}
+          <div className={FORM_PATTERNS.dialog.footer}>
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
