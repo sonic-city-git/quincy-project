@@ -1,9 +1,17 @@
 import React from "react";
 import { EquipmentGroup } from "./EquipmentGroup";
 import { ProjectEquipment } from "@/types/equipment";
+import { SPACING, cn } from "@/design-system";
+
+// Proper type definition for equipment group
+interface EquipmentGroupData {
+  id: string;
+  name: string;
+  total_price?: number;
+}
 
 interface GroupListProps {
-  groups: any[];
+  groups: EquipmentGroupData[];
   groupedEquipment: Record<string, ProjectEquipment[]>;
   selectedGroupId: string | null;
   onGroupSelect: (groupId: string | null) => void;
@@ -12,6 +20,7 @@ interface GroupListProps {
   onDragLeave: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent, groupId: string) => void;
   onRemoveEquipment: (id: string) => void;
+  className?: string;
 }
 
 export function GroupList({
@@ -24,9 +33,14 @@ export function GroupList({
   onDragLeave,
   onDrop,
   onRemoveEquipment,
+  className
 }: GroupListProps) {
   return (
-    <div className="space-y-6 pr-4">
+    <div 
+      className={cn(SPACING.section, "pr-4", className)}
+      role="list"
+      aria-label={`Equipment groups (${groups.length} groups)`}
+    >
       {groups.map(group => (
         <EquipmentGroup
           key={group.id}

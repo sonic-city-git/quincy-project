@@ -1,15 +1,36 @@
+import { SPACING, cn } from "@/design-system";
+
 interface EmptyDropZoneProps {
   onDragOver: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   children: React.ReactNode;
+  className?: string;
 }
 
-export function EmptyDropZone({ onDragOver, onDrop, children }: EmptyDropZoneProps) {
+export function EmptyDropZone({ 
+  onDragOver, 
+  onDrop, 
+  children, 
+  className 
+}: EmptyDropZoneProps) {
   return (
     <div 
-      className="h-full overflow-y-auto space-y-6 pr-4"
+      className={cn(
+        "h-full overflow-y-auto pr-4",
+        SPACING.section,
+        className
+      )}
       onDragOver={onDragOver}
       onDrop={onDrop}
+      role="region"
+      aria-label="Equipment drop zone"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          // Handle keyboard activation if needed
+        }
+      }}
     >
       {children}
     </div>

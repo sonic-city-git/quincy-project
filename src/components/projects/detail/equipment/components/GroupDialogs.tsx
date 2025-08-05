@@ -1,9 +1,17 @@
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { FORM_PATTERNS, cn } from "@/design-system";
+
+// Proper type definition for equipment group
+interface EquipmentGroupData {
+  id: string;
+  name: string;
+  total_price?: number;
+}
 
 interface GroupDialogsProps {
-  groups: any[];
+  groups: EquipmentGroupData[];
   showDeleteDialog: boolean;
   showNewGroupDialog: boolean;
   groupToDelete: string | null;
@@ -37,23 +45,27 @@ export function GroupDialogs({
         open={showDeleteDialog} 
         onOpenChange={onDeleteDialogClose}
       >
-        <AlertDialogContent>
-          <AlertDialogHeader>
+        <AlertDialogContent className={FORM_PATTERNS.dialog.container}>
+          <AlertDialogHeader className={FORM_PATTERNS.dialog.header}>
             <AlertDialogTitle>Delete Group</AlertDialogTitle>
             <AlertDialogDescription>
               This group contains equipment. Would you like to move the equipment to another group or delete it?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="py-4">
+          <div className={FORM_PATTERNS.field.group}>
             <Select value={targetGroupId} onValueChange={onTargetGroupSelect}>
-              <SelectTrigger>
+              <SelectTrigger className={FORM_PATTERNS.dropdown.trigger}>
                 <SelectValue placeholder="Select a target group (or leave empty to delete equipment)" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className={FORM_PATTERNS.dropdown.content}>
                 {groups
                   .filter(g => g.id !== groupToDelete)
                   .map(group => (
-                    <SelectItem key={group.id} value={group.id}>
+                    <SelectItem 
+                      key={group.id} 
+                      value={group.id}
+                      className={FORM_PATTERNS.dropdown.item}
+                    >
                       {group.name}
                     </SelectItem>
                   ))
@@ -61,9 +73,12 @@ export function GroupDialogs({
               </SelectContent>
             </Select>
           </div>
-          <AlertDialogFooter>
+          <AlertDialogFooter className={FORM_PATTERNS.dialog.footer}>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={onConfirmDelete}>
+            <AlertDialogAction 
+              onClick={onConfirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               {targetGroupId ? 'Move & Delete Group' : 'Delete All'}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -74,28 +89,33 @@ export function GroupDialogs({
         open={showNewGroupDialog} 
         onOpenChange={onNewGroupDialogClose}
       >
-        <AlertDialogContent>
-          <AlertDialogHeader>
+        <AlertDialogContent className={FORM_PATTERNS.dialog.container}>
+          <AlertDialogHeader className={FORM_PATTERNS.dialog.header}>
             <AlertDialogTitle>Create New Equipment Group</AlertDialogTitle>
             <AlertDialogDescription>
               Enter a name for the new equipment group
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="py-4">
+          <div className={FORM_PATTERNS.field.group}>
             <Input
               placeholder="Enter group name"
               value={newGroupName}
               onChange={(e) => onNewGroupNameChange(e.target.value)}
+              className={FORM_PATTERNS.input.default}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && newGroupName.trim()) {
                   onConfirmCreate();
                 }
               }}
+              aria-label="Equipment group name"
             />
           </div>
-          <AlertDialogFooter>
+          <AlertDialogFooter className={FORM_PATTERNS.dialog.footer}>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={onConfirmCreate}>
+            <AlertDialogAction 
+              onClick={onConfirmCreate}
+              disabled={!newGroupName.trim()}
+            >
               Create Group
             </AlertDialogAction>
           </AlertDialogFooter>
