@@ -108,4 +108,8 @@ BEGIN
     END IF;
 END $$;
 
-RAISE NOTICE 'Project variants table created successfully with constraints and security policies.';
+-- Final success notice
+DO $$
+BEGIN
+    RAISE NOTICE 'Project variants table created successfully with constraints and security policies.';
+END $$;
