@@ -96,6 +96,17 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
             </div>
           </EventGridColumns.Event>
           
+          {/* Event Type Badge - Only on tablet+ to fit mobile grid */}
+          <EventGridColumns.Badge variant={getTypeVariant()} className="hidden md:flex">
+            {event.type.name}
+          </EventGridColumns.Badge>
+
+          {/* Variant - Only on tablet+ to fit mobile grid */}
+          <div className="text-sm text-muted-foreground/80 font-medium hidden md:block">
+            {/* TODO: Add variant field to event data */}
+            -
+          </div>
+
           {/* Location Status Icon */}
           <EventGridColumns.Icon status={locationStatus}>
             <MapPin className="h-5 w-5" />
@@ -123,11 +134,6 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
             />
           </EventGridColumns.Icon>
 
-          {/* Event Type Badge */}
-          <EventGridColumns.Badge variant={getTypeVariant()}>
-            {event.type.name}
-          </EventGridColumns.Badge>
-
           {/* Status Actions */}
           <EventGridColumns.Action>
             <EventStatus
@@ -138,17 +144,17 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
             />
           </EventGridColumns.Action>
 
-          {/* Equipment Price */}
-          <EventGridColumns.Price variant="muted">
+          {/* Equipment Price - Hidden until tablet to prioritize Total */}
+          <EventGridColumns.Price variant="muted" className="hidden md:flex">
             {formatPrice(event.equipment_price)}
           </EventGridColumns.Price>
 
-          {/* Crew Price */}
-          <EventGridColumns.Price variant="muted">
+          {/* Crew Price - Hidden until tablet to prioritize Total */}
+          <EventGridColumns.Price variant="muted" className="hidden md:flex">
             {formatPrice(event.crew_price)}
           </EventGridColumns.Price>
 
-          {/* Total Price */}
+          {/* Total Price - HIGHEST PRIORITY, always visible */}
           <EventGridColumns.Price variant="muted">
             {formatPrice(event.total_price)}
           </EventGridColumns.Price>

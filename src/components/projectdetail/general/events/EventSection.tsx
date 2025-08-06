@@ -7,6 +7,7 @@ import { EventEquipment } from "./components/EventEquipment";
 import { EventCrew } from "./components/EventCrew";
 import { formatPrice } from "@/utils/priceFormatters";
 import { cn } from "@/lib/utils";
+import { Card } from "@/components/ui/card";
 
 interface EventSectionProps {
   title: string;
@@ -71,7 +72,7 @@ export function EventSection({
         />
       )}
       
-      <EventContent variant="list" spacing="sm">
+      <EventContent variant="list" spacing="sm" className="-mt-2">
         {events.map((event) => (
           <EventCard
             key={event.id}
@@ -115,40 +116,65 @@ function EventSectionHeader({
   const eventType = events[0]?.type;
   
   return (
-    <div className={cn(
-      'px-4 py-1 border-b border-border/20',
+    <Card className={cn(
+      'border-b border-border/20 border-l-0 border-r-0 border-t-0 rounded-none shadow-none',
       'bg-gradient-to-r from-muted/10 to-muted/30'
     )}>
-      <EventGrid variant="card" className="min-h-[40px] py-1 md:py-1">
+      <EventGrid variant="card" className="min-h-[48px] py-2 md:py-2">
         {/* Date Column - Section title (aligns with dates below) */}
-        <div className="flex items-center gap-2">
-          <EventStatus
-            event={events[0]}
-            variant="icon"
-            onStatusChange={onStatusChange}
-          />
-          <div>
-            <h3 className="text-lg font-bold tracking-tight leading-tight">{title}</h3>
-            <p className="text-xs text-muted-foreground/80 font-medium leading-tight">
+        <EventGridColumns.Date>
+          <div className="flex items-center gap-3">
+            <EventStatus
+              event={events[0]}
+              variant="icon"
+              onStatusChange={onStatusChange}
+            />
+            <h3 className="text-lg font-bold tracking-tight leading-6 text-white">{title}</h3>
+            <span className="text-xs text-muted-foreground/80 font-medium whitespace-nowrap flex items-center h-6">
               {events.length} event{events.length !== 1 ? 's' : ''}
-            </p>
+            </span>
           </div>
-        </div>
+        </EventGridColumns.Date>
         
         {/* Event Details Column - empty for spacing */}
-        <div></div>
+        <EventGridColumns.Event>
+        </EventGridColumns.Event>
         
-        {/* All other columns - empty for spacing */}
-        <div></div> {/* Location */}
-        <div></div> {/* Equipment */}
-        <div></div> {/* Crew */}
-        <div></div> {/* Type */}
-        <div></div> {/* Status */}
-        <div></div> {/* Equipment Price */}
-        <div></div> {/* Crew Price */}
-        <div></div> {/* Total Price */}
+        {/* Type Badge Column - empty, only on tablet+ to match grid */}
+        <div className="hidden md:block"></div>
+        
+        {/* Variant Column - empty, only on tablet+ to match grid */}
+        <div className="hidden md:block"></div>
+        
+        {/* Location Icon Column - empty */}
+        <EventGridColumns.Icon>
+        </EventGridColumns.Icon>
+        
+        {/* Equipment Icon Column - empty */}
+        <EventGridColumns.Icon>
+        </EventGridColumns.Icon>
+        
+        {/* Crew Icon Column - empty */}
+        <EventGridColumns.Icon>
+        </EventGridColumns.Icon>
+        
+        {/* Status Action Column - empty */}
+        <EventGridColumns.Action>
+        </EventGridColumns.Action>
+        
+        {/* Equipment Price Column - empty */}
+        <EventGridColumns.Price>
+        </EventGridColumns.Price>
+        
+        {/* Crew Price Column - empty */}
+        <EventGridColumns.Price>
+        </EventGridColumns.Price>
+        
+        {/* Total Price Column - empty */}
+        <EventGridColumns.Price>
+        </EventGridColumns.Price>
       </EventGrid>
-    </div>
+    </Card>
   );
 }
 
@@ -200,6 +226,12 @@ function EventSectionSummary({
         <EventGridColumns.Event>
         </EventGridColumns.Event>
         
+        {/* Type Badge Column - empty, only on tablet+ to match grid */}
+        <div className="hidden md:block"></div>
+        
+        {/* Variant Column - empty, only on tablet+ to match grid */}
+        <div className="hidden md:block"></div>
+        
         {/* Location Icon Column - empty */}
         <EventGridColumns.Icon>
         </EventGridColumns.Icon>
@@ -212,24 +244,21 @@ function EventSectionSummary({
         <EventGridColumns.Icon>
         </EventGridColumns.Icon>
         
-        {/* Type Badge Column - empty */}
-        <div></div>
-        
         {/* Status Action Column - empty */}
         <EventGridColumns.Action>
         </EventGridColumns.Action>
         
-        {/* Equipment Price */}
-        <EventGridColumns.Price variant="muted">
+        {/* Equipment Price - Hidden until tablet to prioritize Total */}
+        <EventGridColumns.Price variant="muted" className="hidden md:flex">
           {formatPrice(totalEquipment)}
         </EventGridColumns.Price>
         
-        {/* Crew Price */}
-        <EventGridColumns.Price variant="muted">
+        {/* Crew Price - Hidden until tablet to prioritize Total */}
+        <EventGridColumns.Price variant="muted" className="hidden md:flex">
           {formatPrice(totalCrew)}
         </EventGridColumns.Price>
         
-        {/* Total Price */}
+        {/* Total Price - HIGHEST PRIORITY, always visible */}
         <EventGridColumns.Price variant="muted">
           {formatPrice(totalPrice)}
         </EventGridColumns.Price>
