@@ -1,4 +1,4 @@
-import { CalendarEvent } from "@/types/events";
+import { CalendarEvent, EventType } from "@/types/events";
 import { EVENT_COLORS } from "@/constants/eventColors";
 import { Card } from "@/components/ui/card";
 import { formatPrice } from "@/utils/priceFormatters";
@@ -12,6 +12,28 @@ import { formatDisplayDate } from "@/utils/dateFormatters";
 import { cn } from "@/lib/utils";
 import { COMPONENT_CLASSES, STATUS_PATTERNS } from "@/design-system";
 import { useEventSyncStatus } from "@/hooks/useConsolidatedSyncStatus";
+
+// Utility function to get event type color styling for badges
+export function getEventTypeColorStyle(eventType: EventType): string {
+  // Use the color from the event type or fall back to EVENT_COLORS mapping
+  const typeColor = eventType.color || EVENT_COLORS[eventType.name];
+  
+  if (!typeColor) return 'bg-muted text-muted-foreground';
+  
+  // Convert background classes to badge styling with proper contrast
+  const colorMap: Record<string, string> = {
+    'bg-green-500': 'bg-green-500/10 text-green-700 border border-green-500/20',
+    'bg-blue-500': 'bg-blue-500/10 text-blue-700 border border-blue-500/20',
+    'bg-yellow-500': 'bg-yellow-500/10 text-yellow-700 border border-yellow-500/20',
+    'bg-pink-500': 'bg-pink-500/10 text-pink-700 border border-pink-500/20',
+    'bg-red-500': 'bg-red-500/10 text-red-700 border border-red-500/20',
+    'bg-orange-500': 'bg-orange-500/10 text-orange-700 border border-orange-500/20',
+    'bg-purple-500': 'bg-purple-500/10 text-purple-700 border border-purple-500/20',
+    'bg-indigo-500': 'bg-indigo-500/10 text-indigo-700 border border-indigo-500/20',
+  };
+  
+  return colorMap[typeColor] || 'bg-muted text-muted-foreground';
+}
 
 interface EventCardProps {
   event: CalendarEvent;
@@ -47,12 +69,9 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
   // Determine location icon status
   const locationStatus = event.location ? 'success' : 'neutral';
   
-  // Get event type variant for badge styling
-  const getTypeVariant = () => {
-    if (event.type.name?.toLowerCase().includes('concert')) return 'primary';
-    if (event.type.name?.toLowerCase().includes('festival')) return 'secondary';
-    if (event.type.name?.toLowerCase().includes('corporate')) return 'warning';
-    return 'default';
+  // Get event type color styling
+  const getTypeColorStyle = () => {
+    return getEventTypeColorStyle(event.type);
   };
 
   return (
@@ -97,9 +116,15 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
           </EventGridColumns.Event>
           
           {/* Event Type Badge - Only on tablet+ to fit mobile grid */}
-          <EventGridColumns.Badge variant={getTypeVariant()} className="hidden md:flex">
-            {event.type.name}
-          </EventGridColumns.Badge>
+          <div className="hidden md:flex items-center px-1">
+            <span className={cn(
+              'inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-semibold',
+              'transition-all duration-200 tracking-wide',
+              getTypeColorStyle()
+            )}>
+              {event.type.name}
+            </span>
+          </div>
 
           {/* Variant - Only on tablet+ to fit mobile grid */}
           <div className="text-sm text-muted-foreground/80 font-medium hidden md:block">

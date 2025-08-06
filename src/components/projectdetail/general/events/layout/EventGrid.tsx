@@ -180,10 +180,11 @@ export const EventGridColumns = {
     );
   },
 
-  Badge: ({ children, className, variant = 'default' }: { 
+  Badge: ({ children, className, variant = 'default', customColor }: { 
     children: React.ReactNode; 
     className?: string;
     variant?: 'default' | 'primary' | 'secondary' | 'success' | 'warning';
+    customColor?: string;
   }) => {
     const variantClasses = {
       default: 'bg-muted text-muted-foreground',
@@ -198,8 +199,7 @@ export const EventGridColumns = {
         <span className={cn(
           'inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-semibold',
           'transition-all duration-200 tracking-wide',
-          variantClasses[variant],
-          className
+          customColor || variantClasses[variant]
         )}>
           {children}
         </span>
