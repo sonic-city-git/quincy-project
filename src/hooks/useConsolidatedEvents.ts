@@ -174,7 +174,8 @@ export function useConsolidatedEvents({
     date: Date, 
     eventName: string, 
     eventType: EventType, 
-    status: CalendarEvent['status'] = 'proposed'
+    status: CalendarEvent['status'] = 'proposed',
+    variantName: string = 'default'
   ): Promise<CalendarEvent> => {
     if (!projectId) {
       throw new Error('Project ID is missing');
@@ -184,23 +185,14 @@ export function useConsolidatedEvents({
       // Check for missing resources (non-blocking warnings)
       const validationWarnings = await checkMissingResources(projectId, eventType);
       if (validationWarnings.length > 0) {
-        toast.info(`Event created! ${validationWarnings.join(" ")} You can sync them later.`);
+        toast.info(`Event created with variant "${variantName}"! ${validationWarnings.join(" ")} You can sync them later.`);
       }
 
-      const eventData = await createEvent(projectId, date, eventName, eventType, status);
-      
-      // Sync crew roles if needed
-      if (eventType.needs_crew) {
-        try {
-          await createRoleAssignments(projectId, eventData.id);
-        } catch (error) {
-          console.error('Error syncing crew roles:', error);
-          toast.warning("Event created but crew roles could not be synced. Please sync manually.");
-        }
-      }
+      // createEvent now handles all syncing internally with variant awareness
+      const eventData = await createEvent(projectId, date, eventName, eventType, status, variantName);
 
       await invalidateEventQueries(eventData.id);
-      toast.success("Event created successfully");
+      toast.success(`Event created successfully using variant "${variantName}"`);
       return eventData;
     } catch (error) {
       console.error('Error adding event:', error);

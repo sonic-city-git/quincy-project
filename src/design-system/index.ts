@@ -282,6 +282,12 @@ export function getRandomLegendaryArtist(): string {
   return artists[Math.floor(Math.random() * artists.length)];
 }
 
+// Helper function to get a random legendary festival event name
+export function getRandomLegendaryFestival(): string {
+  const festivals = FORM_PATTERNS.legendaryFestivals;
+  return festivals[Math.floor(Math.random() * festivals.length)];
+}
+
 // Helper function to create enhanced dropdown classes
 export function createDropdownClasses(type: 'trigger' | 'triggerWithIcon' | 'content' | 'item' | 'itemSelected' | 'separator' | 'iconContainer' | 'iconInside'): string {
   return FORM_PATTERNS.dropdown[type];
@@ -548,6 +554,95 @@ export const FORM_PATTERNS = {
     'The Weeknd',
     'Billie Eilish',
     'Lorde'
+  ],
+  
+  // Legendary festivals worldwide for event inspiration
+  legendaryFestivals: [
+    // Iconic Rock & Pop Festivals
+    'Woodstock',
+    'Glastonbury',
+    'Coachella',
+    'Lollapalooza',
+    'Reading & Leeds',
+    'Rock am Ring',
+    'Download',
+    'Bonnaroo',
+    'Austin City Limits',
+    'Outside Lands',
+    'Governors Ball',
+    'Firefly',
+    'Electric Forest',
+    'Shambhala',
+    
+    // European Legends
+    'Roskilde',
+    'Primavera Sound',
+    'FIB Benicàssim',
+    'Rock Werchter',
+    'Pukkelpop',
+    'Lowlands',
+    'Pinkpop',
+    'Isle of Wight',
+    'T in the Park',
+    'V Festival',
+    'Creamfields',
+    'Tomorrowland',
+    'Ultra Music Festival',
+    'Electric Daisy Carnival',
+    
+    // Underground & Alternative
+    'Burning Man',
+    'SXSW',
+    'Sasquatch!',
+    'Pitchfork Music Festival',
+    'All Points East',
+    'End of the Road',
+    'Green Man',
+    'Latitude',
+    'Bestival',
+    'Camp Bestival',
+    'Secret Garden Party',
+    'Wilderness',
+    
+    // Nordic & Scandinavian
+    'Øya Festival',
+    'Way Out West',
+    'Provinssirock',
+    'Ruisrock',
+    'Hultsfred',
+    'Peace & Love',
+    'Bråvalla',
+    'Slottsfjell',
+    'Bergenfest',
+    'Riddu Riđđu',
+    
+    // World Music & Cultural
+    'WOMAD',
+    'Fuji Rock',
+    'Summer Sonic',
+    'Big Day Out',
+    'Falls Festival',
+    'Splendour in the Grass',
+    'Laneway Festival',
+    'Montreux Jazz Festival',
+    'North Sea Jazz',
+    'Montreal Jazz Festival',
+    'Newport Folk Festival',
+    'Cambridge Folk Festival',
+    
+    // Electronic & Dance
+    'Ibiza Closing Parties',
+    'Movement Detroit',
+    'Dekmantel',
+    'Sonar',
+    'Time Warp',
+    'Awakenings',
+    'Mysteryland',
+    'Defqon.1',
+    'Qlimax',
+    'Nature One',
+    'Love Parade',
+    'Street Parade'
   ]
 } as const;
 

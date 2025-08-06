@@ -67,7 +67,7 @@ export function DeleteVariantDialog({
             {canDelete ? (
               <>
                 <p>
-                  Are you sure you want to delete the <strong>"{variant.display_name}"</strong> variant?
+                  Are you sure you want to delete the <strong>"{variant.variant_name}"</strong> variant?
                 </p>
                 <p className="text-sm">
                   This action will permanently remove the variant and all its associated crew roles and equipment configurations. This action cannot be undone.
@@ -76,7 +76,7 @@ export function DeleteVariantDialog({
             ) : (
               <>
                 <p>
-                  The <strong>"{variant.display_name}"</strong> variant cannot be deleted.
+                  The <strong>"{variant.variant_name}"</strong> variant cannot be deleted.
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {getRestrictionReason()}
@@ -96,7 +96,7 @@ export function DeleteVariantDialog({
               onClick={handleDelete}
               disabled={isDeleting}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              aria-label={`Delete ${variant.display_name} variant`}
+              aria-label={`Delete ${variant.variant_name} variant`}
             >
               {isDeleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete Variant

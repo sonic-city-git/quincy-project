@@ -47,34 +47,34 @@ export function VariantsContent({
       <div className="border-b border-border">
         <div className="flex items-center gap-1">
           {variants.map((variant) => (
-            <div key={variant.id} className="flex items-center">
+            <div key={variant.id} className="flex items-center relative">
               <button
                 onClick={() => onVariantSelect(variant.variant_name)}
                 className={cn(
-                  "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-t-lg border-b-2 transition-colors",
+                  "flex items-center gap-2 px-4 py-2 pr-8 text-sm font-medium rounded-t-lg border-b-2 transition-colors",
                   selectedVariant === variant.variant_name
                     ? "border-primary text-primary bg-muted/50"
                     : "border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground"
                 )}
               >
-                <span>{variant.display_name}</span>
+                <span>{variant.variant_name}</span>
                 {variant.is_default && (
                   <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
                     Default
                   </Badge>
                 )}
-                {onEditVariant && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEditVariant(variant);
-                    }}
-                    className="p-1 hover:bg-muted rounded opacity-60 hover:opacity-100"
-                  >
-                    <Settings className="h-3 w-3" />
-                  </button>
-                )}
               </button>
+              {onEditVariant && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditVariant(variant);
+                  }}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded opacity-60 hover:opacity-100 z-10"
+                >
+                  <Settings className="h-3 w-3" />
+                </button>
+              )}
             </div>
           ))}
           

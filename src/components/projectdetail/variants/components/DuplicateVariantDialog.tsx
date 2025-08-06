@@ -25,17 +25,13 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { ProjectVariant, CreateVariantPayload, VARIANT_CONSTANTS, generateVariantName } from '@/types/variants';
+import { ProjectVariant, CreateVariantPayload, VARIANT_CONSTANTS } from '@/types/variants';
 import { Loader2, Copy } from 'lucide-react';
 
 const duplicateVariantSchema = z.object({
-  display_name: z.string()
-    .min(1, 'Display name is required')
-    .max(VARIANT_CONSTANTS.MAX_DISPLAY_NAME_LENGTH, `Display name must be ${VARIANT_CONSTANTS.MAX_DISPLAY_NAME_LENGTH} characters or less`),
   variant_name: z.string()
     .min(1, 'Variant name is required')
-    .max(VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH, `Variant name must be ${VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH} characters or less`)
-    .regex(VARIANT_CONSTANTS.VALID_VARIANT_NAME_PATTERN, 'Variant name can only contain lowercase letters, numbers, and underscores'),
+    .max(VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH, `Variant name must be ${VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH} characters or less`),
   description: z.string().optional(),
   is_default: z.boolean().default(false),
 });
@@ -62,13 +58,11 @@ export function DuplicateVariantDialog({
   const existingVariantNames = existingVariants.map(v => v.variant_name);
   
   // Generate initial duplicate name
-  const suggestedDisplayName = `${sourceVariant.display_name} Copy`;
-  const suggestedVariantName = generateVariantName(suggestedDisplayName);
+  const suggestedVariantName = `${sourceVariant.variant_name} Copy`;
   
   const form = useForm<DuplicateVariantForm>({
     resolver: zodResolver(duplicateVariantSchema),
     defaultValues: {
-      display_name: suggestedDisplayName,
       variant_name: ensureUniqueVariantName(suggestedVariantName, existingVariantNames),
       description: sourceVariant.description ? `Copy of: ${sourceVariant.description}` : '',
       is_default: false, // Duplicates should not be default by default
@@ -87,12 +81,7 @@ export function DuplicateVariantDialog({
     return uniqueName;
   }
 
-  // Auto-generate variant name from display name
-  const handleDisplayNameChange = (displayName: string) => {
-    const generatedName = generateVariantName(displayName);
-    const uniqueName = ensureUniqueVariantName(generatedName, existingVariantNames);
-    form.setValue('variant_name', uniqueName);
-  };
+
 
   const onSubmit = async (data: DuplicateVariantForm) => {
     setIsSubmitting(true);
@@ -105,7 +94,6 @@ export function DuplicateVariantDialog({
 
       await onDuplicateVariant({
         variant_name: data.variant_name,
-        display_name: data.display_name,
         description: data.description || undefined,
         is_default: data.is_default,
       });
@@ -135,7 +123,7 @@ export function DuplicateVariantDialog({
             Duplicate Variant
           </DialogTitle>
           <DialogDescription>
-            Create a copy of <strong>"{sourceVariant.display_name}"</strong> with all its crew roles and equipment. You can then modify the copy as needed.
+            Create a copy of <strong>"{sourceVariant.variant_name}"</strong> with all its crew roles and equipment. You can then modify the copy as needed.
           </DialogDescription>
         </DialogHeader>
 
@@ -143,18 +131,14 @@ export function DuplicateVariantDialog({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="display_name"
+              name="variant_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Display Name</FormLabel>
+                  <FormLabel>Variant Name</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="e.g., Trio Copy, Band Extended"
                       {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        handleDisplayNameChange(e.target.value);
-                      }}
                     />
                   </FormControl>
                   <FormDescription>

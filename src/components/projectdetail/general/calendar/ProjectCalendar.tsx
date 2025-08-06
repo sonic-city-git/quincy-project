@@ -33,12 +33,13 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     dates: Date[], 
     name: string, 
     eventType: EventType, 
-    status: CalendarEvent['status']
+    status: CalendarEvent['status'],
+    variantName?: string
   ) => {
     try {
       // Add events for all selected dates
       for (const date of dates) {
-        await addEvent(date, name, eventType, status);
+        await addEvent(date, name, eventType, status, variantName || 'default');
       }
     } catch (error) {
       console.error('Error adding multiple events:', error);
@@ -63,16 +64,18 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         name: formData.name || eventType.name,
         type: eventType,
         status: formData.status,
-        location: formData.location
+        location: formData.location,
+        variant_name: formData.variantName
       };
       await updateEvent(updatedEvent);
     } else if (selectedDate) {
-      // Create new event
+      // Create new event with variant
       await addEvent(
         selectedDate,
         formData.name || eventType.name,
         eventType,
-        formData.status
+        formData.status,
+        formData.variantName || 'default'
       );
     }
   };
@@ -89,6 +92,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         events={events}
         onDayClick={handleDayClick}
         eventTypes={eventTypes}
+        projectId={projectId}
         onAddMultipleEvents={handleAddMultipleEvents}
         onEditEvent={handleEditEvent}
       />
@@ -100,6 +104,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         event={selectedEvent}
         selectedDate={selectedDate}
         eventTypes={eventTypes}
+        projectId={projectId}
         onSubmit={handleEventSubmit}
         onDelete={handleEventDelete}
       />

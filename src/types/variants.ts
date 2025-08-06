@@ -19,7 +19,6 @@ export interface ProjectVariantWithCounts extends ProjectVariant {
 // Variant creation payload for UI
 export interface CreateVariantPayload {
   variant_name: string;
-  display_name: string;
   description?: string;
   is_default?: boolean;
   sort_order?: number;
@@ -28,7 +27,7 @@ export interface CreateVariantPayload {
 // Variant update payload for UI
 export interface UpdateVariantPayload {
   id: string;
-  display_name?: string;
+  variant_name?: string;
   description?: string;
   is_default?: boolean;
   sort_order?: number;
@@ -180,7 +179,6 @@ export function isProjectVariant(obj: any): obj is ProjectVariant {
     typeof obj.id === 'string' &&
     typeof obj.project_id === 'string' &&
     typeof obj.variant_name === 'string' &&
-    typeof obj.display_name === 'string' &&
     typeof obj.is_default === 'boolean';
 }
 
@@ -208,7 +206,6 @@ export function isVariantEquipmentItem(obj: any): obj is VariantEquipmentItem {
 export const VARIANT_CONSTANTS = {
   DEFAULT_VARIANT_NAME: 'default',
   MAX_VARIANT_NAME_LENGTH: 50,
-  MAX_DISPLAY_NAME_LENGTH: 100,
   MAX_VARIANTS_PER_PROJECT: 10,
   VALID_VARIANT_NAME_PATTERN: /^[a-zA-Z0-9\s\-_]+$/,
 } as const;
@@ -221,17 +218,4 @@ export function validateVariantName(name: string): boolean {
     VARIANT_CONSTANTS.VALID_VARIANT_NAME_PATTERN.test(trimmedName);
 }
 
-export function generateVariantName(displayName: string): string {
-  return displayName
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '')
-    .replace(/\s+/g, '_')
-    .substring(0, VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH);
-}
-
-export function formatVariantDisplayName(variantName: string): string {
-  return variantName
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-}
+// No longer needed - variant_name is used directly for display

@@ -99,7 +99,7 @@ export function VariantActions({
                 <Button 
                   variant="outline" 
                   size="sm"
-                  aria-label={`Manage ${currentVariant.display_name} variant`}
+                  aria-label={`Manage ${currentVariant.variant_name} variant`}
                 >
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
@@ -110,7 +110,7 @@ export function VariantActions({
                 className={FORM_PATTERNS.dropdown.content}
               >
                 <DropdownMenuLabel className="text-xs">
-                  Manage "{currentVariant.display_name}"
+                  Manage "{currentVariant.variant_name}"
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 

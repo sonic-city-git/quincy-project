@@ -31,7 +31,7 @@ import { Loader2 } from 'lucide-react';
 const createVariantSchema = z.object({
   variant_name: z.string()
     .min(1, 'Variant name is required')
-    .max(VARIANT_CONSTANTS.MAX_DISPLAY_NAME_LENGTH, `Variant name must be ${VARIANT_CONSTANTS.MAX_DISPLAY_NAME_LENGTH} characters or less`),
+    .max(VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH, `Variant name must be ${VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH} characters or less`),
   description: z.string().optional(),
   is_default: z.boolean().default(false),
 });
@@ -75,7 +75,6 @@ export function CreateVariantDialog({
 
       await onCreateVariant({
         variant_name: data.variant_name,
-        display_name: data.variant_name,
         description: data.description || undefined,
         is_default: data.is_default,
       });

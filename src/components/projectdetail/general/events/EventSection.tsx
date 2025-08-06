@@ -8,6 +8,11 @@ import { EventCrew } from "./components/EventCrew";
 import { formatPrice } from "@/utils/priceFormatters";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useEquipmentSync } from '@/hooks/useEquipmentSync';
+import { useState } from 'react';
 
 interface EventSectionProps {
   title: string;
@@ -114,6 +119,65 @@ function EventSectionHeader({
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
 }) {
   const eventType = events[0]?.type;
+  const queryClient = useQueryClient();
+  const { syncEvents } = useEquipmentSync();
+  const [isSyncingCrew, setIsSyncingCrew] = useState(false);
+
+  // Check if events need equipment/crew
+  const needsEquipment = events.some(event => event.type?.needs_equipment);
+  const needsCrew = events.some(event => event.type?.needs_crew);
+  const isCancelled = title.toLowerCase() === 'cancelled';
+  const isInvoiceReady = title.toLowerCase() === 'invoice ready';
+
+  // Handle bulk equipment sync for all events in section
+  const handleSyncSectionEquipment = async () => {
+    if (!events.length) return;
+    const eventIds = events.map(event => event.id);
+    await syncEvents(eventIds, events[0].project_id);
+  };
+
+  // Handle bulk crew sync for all events in section
+  const handleSyncSectionCrew = async () => {
+    if (!events.length) return;
+    setIsSyncingCrew(true);
+    
+    try {
+      let totalSynced = 0;
+      
+      for (const event of events) {
+        const { error } = await supabase.rpc('sync_event_crew', {
+          p_event_id: event.id,
+          p_project_id: event.project_id
+        });
+
+        if (error) {
+          console.error('❌ Crew sync failed for event:', event.id, error);
+        } else {
+          totalSynced++;
+        }
+      }
+
+      // Invalidate queries to refresh UI
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['events', events[0].project_id] }),
+        queryClient.invalidateQueries({ queryKey: ['crew-sync-status'] }),
+        queryClient.invalidateQueries({ queryKey: ['sync-status'] })
+      ]);
+
+      if (totalSynced === events.length) {
+        toast.success(`Preferred crew synced for all ${totalSynced} events`);
+      } else if (totalSynced > 0) {
+        toast.success(`Preferred crew synced for ${totalSynced} of ${events.length} events`);
+      } else {
+        toast.error("Failed to sync crew for any events");
+      }
+    } catch (error: any) {
+      console.error('❌ Unexpected error during section crew sync:', error);
+      toast.error("Failed to sync section crew");
+    } finally {
+      setIsSyncingCrew(false);
+    }
+  };
   
   return (
     <Card className={cn(
@@ -150,12 +214,26 @@ function EventSectionHeader({
         <EventGridColumns.Icon>
         </EventGridColumns.Icon>
         
-        {/* Equipment Icon Column - empty */}
+        {/* Equipment Icon Column - Section Equipment Sync */}
         <EventGridColumns.Icon>
+          {!isCancelled && !isInvoiceReady && needsEquipment && (
+            <EventEquipment
+              events={events}
+              variant="icon"
+              onSync={handleSyncSectionEquipment}
+            />
+          )}
         </EventGridColumns.Icon>
         
-        {/* Crew Icon Column - empty */}
+        {/* Crew Icon Column - Section Crew Sync */}
         <EventGridColumns.Icon>
+          {!isCancelled && !isInvoiceReady && needsCrew && (
+            <EventCrew
+              events={events}
+              variant="icon"
+              onSyncPreferredCrew={handleSyncSectionCrew}
+            />
+          )}
         </EventGridColumns.Icon>
         
         {/* Status Action Column - empty */}

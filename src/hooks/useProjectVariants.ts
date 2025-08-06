@@ -3,6 +3,7 @@
 
 import { useState, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import {
@@ -12,7 +13,6 @@ import {
   VariantManagementHook,
   VARIANT_CONSTANTS,
   validateVariantName,
-  generateVariantName,
   isProjectVariant
 } from '@/types/variants';
 
@@ -64,6 +64,25 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
     cacheTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  // Auto-select the default variant when variants are loaded
+  useEffect(() => {
+    if (variants.length > 0) {
+      // Check if current selectedVariant exists in the variants list
+      const currentVariantExists = variants.some(v => v.variant_name === selectedVariant);
+      
+      if (!currentVariantExists) {
+        // Select the default variant
+        const defaultVariant = variants.find(v => v.is_default);
+        if (defaultVariant) {
+          setSelectedVariant(defaultVariant.variant_name);
+        } else {
+          // Fallback to first variant if no default is set
+          setSelectedVariant(variants[0].variant_name);
+        }
+      }
+    }
+  }, [variants, selectedVariant]);
+
   // Create variant mutation
   const createVariantMutation = useMutation({
     mutationFn: async (data: CreateVariantPayload): Promise<ProjectVariant> => {
@@ -99,7 +118,6 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
         .insert({
           project_id: projectId,
           variant_name: trimmedName,
-          display_name: data.display_name,
           description: data.description,
           is_default: shouldBeDefault,
           sort_order: sortOrder
@@ -125,7 +143,7 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
       // Select the new variant
       setSelectedVariant(newVariant.variant_name);
       
-      toast.success(`Variant "${newVariant.display_name}" created successfully`);
+      toast.success(`Variant "${newVariant.variant_name}" created successfully`);
     },
     onError: (error: Error) => {
       console.error('Create variant error:', error);
@@ -150,7 +168,7 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
       const { data: updatedVariant, error } = await supabase
         .from('project_variants')
         .update({
-          display_name: data.display_name,
+          variant_name: data.variant_name,
           description: data.description,
           is_default: data.is_default,
           sort_order: data.sort_order
@@ -172,7 +190,7 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
     },
     onSuccess: (updatedVariant) => {
       queryClient.invalidateQueries({ queryKey });
-      toast.success(`Variant "${updatedVariant.display_name}" updated successfully`);
+      toast.success(`Variant "${updatedVariant.variant_name}" updated successfully`);
     },
     onError: (error: Error) => {
       console.error('Update variant error:', error);
@@ -217,7 +235,7 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
       const hasResources = (crewRolesResult.data?.length ?? 0) > 0 || (equipmentResult.data?.length ?? 0) > 0;
       
       if (hasResources) {
-        throw new Error(`Cannot delete variant "${variant.display_name}" because it has associated crew roles or equipment. Remove all resources first.`);
+        throw new Error(`Cannot delete variant "${variant.variant_name}" because it has associated crew roles or equipment. Remove all resources first.`);
       }
 
       // Delete the variant
@@ -355,7 +373,7 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
       // Also invalidate resource queries since we copied resources
       queryClient.invalidateQueries(['variant-resources', projectId]);
       setSelectedVariant(newVariant.variant_name);
-      toast.success(`Variant "${newVariant.display_name}" duplicated successfully`);
+      toast.success(`Variant "${newVariant.variant_name}" duplicated successfully`);
     },
     onError: (error: Error) => {
       console.error('Duplicate variant error:', error);
@@ -454,19 +472,4 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
   };
 }
 
-// Helper hook for generating variant names from display names
-export function useVariantNameGenerator() {
-  return useCallback((displayName: string, existingVariants: string[]): string => {
-    let baseName = generateVariantName(displayName);
-    let variantName = baseName;
-    let counter = 1;
-
-    // Ensure uniqueness
-    while (existingVariants.includes(variantName)) {
-      variantName = `${baseName}_${counter}`;
-      counter++;
-    }
-
-    return variantName;
-  }, []);
-}
+// Variant name generation is no longer needed - users enter variant names directly

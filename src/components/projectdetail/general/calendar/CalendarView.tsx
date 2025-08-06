@@ -9,8 +9,9 @@ interface CalendarViewProps {
   events: CalendarEvent[];
   onDayClick: (date: Date) => void;
   eventTypes?: EventType[];
-  onAddMultipleEvents: (dates: Date[], name: string, eventType: EventType, status: CalendarEvent['status']) => void;
+  onAddMultipleEvents: (dates: Date[], name: string, eventType: EventType, status: CalendarEvent['status'], variantName?: string) => void;
   onEditEvent: (event: CalendarEvent) => void;
+  projectId?: string; // For variant selection
 }
 
 export function CalendarView({
@@ -20,7 +21,8 @@ export function CalendarView({
   onDayClick,
   eventTypes = [],
   onAddMultipleEvents,
-  onEditEvent
+  onEditEvent,
+  projectId
 }: CalendarViewProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartTime, setDragStartTime] = useState<number | null>(null);
@@ -114,7 +116,7 @@ export function CalendarView({
     }
   };
 
-  const handleAddMultipleEvents = (name: string, eventType: EventType, status: CalendarEvent['status']) => {
+  const handleAddMultipleEvents = (name: string, eventType: EventType, status: CalendarEvent['status'], variantName?: string) => {
     if (!eventType) {
       console.error('No event type selected');
       return;
@@ -129,7 +131,7 @@ export function CalendarView({
       
     }
 
-    onAddMultipleEvents(selectedDates, name, eventType, status);
+    onAddMultipleEvents(selectedDates, name, eventType, status, variantName);
     setSelectedDates([]);
     setIsMultiEventDialogOpen(false);
   };
@@ -157,6 +159,7 @@ export function CalendarView({
         }}
         dates={selectedDates}
         eventTypes={eventTypes || []}
+        projectId={projectId}
         onAddEvents={handleAddMultipleEvents}
       />
     </>

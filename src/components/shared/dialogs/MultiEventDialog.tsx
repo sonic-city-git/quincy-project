@@ -1,113 +1,237 @@
-import { useState } from "react";
-import { CalendarEvent, EventType } from "@/types/events";
+/**
+ * Multi-Event Dialog - Clean, design system compliant form for bulk event creation
+ * Uses React Hook Form with Zod validation following project design patterns
+ */
+
+import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Calendar, Copy } from "lucide-react";
+import { CalendarEvent, EventType } from "@/types/events";
+import { VariantSelector } from "@/components/shared/forms/VariantSelector";
 
-const ALLOWED_EVENT_TYPES = ['Preprod', 'INT Storage', 'EXT Storage'];
+// Only allow specific event types for multi-event creation
+const ALLOWED_EVENT_TYPES = [
+  'Rehearsal', 'Concert', 'Gig', 'Festival', 'Recording', 
+  'Meeting', 'Setup', 'Soundcheck', 'Photo Shoot'
+];
 
-interface MultiEventDialogProps {
-  isOpen: boolean;
+// Form validation schema
+const multiEventFormSchema = z.object({
+  eventTypeId: z.string()
+    .min(1, 'Type is required'),
+  status: z.enum(['proposed', 'confirmed', 'invoice ready', 'cancelled']),
+  variantName: z.string()
+    .min(1, 'Variant is required'),
+});
+
+type MultiEventFormData = z.infer<typeof multiEventFormSchema>;
+
+export interface MultiEventDialogProps {
+  open: boolean;
   onClose: () => void;
-  dates: Date[];
+  selectedDates: Date[];
   eventTypes: EventType[];
-  onAddEvents: (name: string, eventType: EventType, status: CalendarEvent['status']) => void;
+  projectId?: string;
+  onAddEvents: (
+    eventTypeName: string, 
+    eventType: EventType, 
+    status: CalendarEvent['status'],
+    variantName: string
+  ) => void;
 }
 
 export function MultiEventDialog({
-  isOpen,
+  open,
   onClose,
-  dates,
+  selectedDates,
   eventTypes,
+  projectId,
   onAddEvents
 }: MultiEventDialogProps) {
-  const [selectedEventType, setSelectedEventType] = useState<EventType | null>(null);
-  const [status, setStatus] = useState<CalendarEvent['status']>("proposed");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Filter event types to only allowed ones
   const filteredEventTypes = eventTypes.filter(type => 
     ALLOWED_EVENT_TYPES.includes(type.name)
   );
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (selectedEventType) {
-      onAddEvents(selectedEventType.name, selectedEventType, status);
+  // Form setup
+  const form = useForm<MultiEventFormData>({
+    resolver: zodResolver(multiEventFormSchema),
+    defaultValues: {
+      eventTypeId: '',
+      status: 'proposed',
+      variantName: 'default'
+    },
+  });
+
+  // Get selected event type
+  const selectedEventTypeId = form.watch('eventTypeId');
+  const selectedEventType = filteredEventTypes.find(type => type.id === selectedEventTypeId);
+
+  // Handle form submission
+  const handleSubmit = async (data: MultiEventFormData) => {
+    if (!selectedEventType) return;
+
+    setIsSubmitting(true);
+    try {
+      onAddEvents(selectedEventType.name, selectedEventType, data.status, data.variantName);
+      form.reset();
       onClose();
-      setSelectedEventType(null);
-      setStatus("proposed");
+    } catch (error) {
+      console.error('Error creating events:', error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+  const handleCancel = () => {
+    form.reset();
+    onClose();
+  };
+
+  // Don't render if no dates are selected
+  if (!selectedDates?.length) {
+    return null;
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md">
+    <Dialog open={open} onOpenChange={(open) => !open && handleCancel()}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Events to Multiple Dates</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <Copy className="h-5 w-5" />
+            Add Events to Multiple Dates
+          </DialogTitle>
+          <DialogDescription>
+            Create the same event across {selectedDates.length} selected dates. 
+            Each event will use the same configuration.
+          </DialogDescription>
         </DialogHeader>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="eventType">Event Type</Label>
-            <Select
-              value={selectedEventType?.id || ""}
-              onValueChange={(value) => {
-                const eventType = filteredEventTypes.find(et => et.id === value);
-                setSelectedEventType(eventType || null);
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select event type" />
-              </SelectTrigger>
-              <SelectContent>
-                {filteredEventTypes.map((eventType) => (
-                  <SelectItem key={eventType.id} value={eventType.id}>
-                    {eventType.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="status">Status</Label>
-            <Select value={status} onValueChange={(value) => setStatus(value as CalendarEvent['status'])}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="proposed">Proposed</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="invoice ready">Invoice Ready</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            
+            {/* Type */}
+            <FormField
+              control={form.control}
+              name="eventTypeId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {filteredEventTypes.map((eventType) => (
+                        <SelectItem key={eventType.id} value={eventType.id}>
+                          {eventType.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    Choose the type of event to create on all selected dates
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="text-sm text-muted-foreground">
-            Adding to {dates?.length || 0} selected date{(dates?.length || 0) !== 1 ? 's' : ''}
-          </div>
+            {/* Status */}
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="proposed">Proposed</SelectItem>
+                      <SelectItem value="confirmed">Confirmed</SelectItem>
+                      <SelectItem value="invoice ready">Invoice Ready</SelectItem>
+                      <SelectItem value="cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    All events will be created with this status
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <div className="flex justify-end space-x-2">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={!selectedEventType}>
-              Add Events
-            </Button>
-          </div>
-        </form>
+            {/* Variant Selection */}
+            {projectId && (
+              <FormField
+                control={form.control}
+                name="variantName"
+                render={({ field }) => (
+                  <FormItem>
+                    <VariantSelector
+                      projectId={projectId}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      disabled={isSubmitting}
+                      showLabel={true}
+                    />
+                    <FormDescription>
+                      All events will use this variant configuration
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex items-center justify-end gap-2 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !selectedEventType}
+              >
+                {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                Create {selectedDates.length} Events
+              </Button>
+            </div>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

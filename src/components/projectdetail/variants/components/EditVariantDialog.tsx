@@ -29,9 +29,9 @@ import { ProjectVariant, UpdateVariantPayload, VARIANT_CONSTANTS } from '@/types
 import { Loader2 } from 'lucide-react';
 
 const editVariantSchema = z.object({
-  display_name: z.string()
-    .min(1, 'Display name is required')
-    .max(VARIANT_CONSTANTS.MAX_DISPLAY_NAME_LENGTH, `Display name must be ${VARIANT_CONSTANTS.MAX_DISPLAY_NAME_LENGTH} characters or less`),
+  variant_name: z.string()
+    .min(1, 'Variant name is required')
+    .max(VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH, `Variant name must be ${VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH} characters or less`),
   description: z.string().optional(),
   is_default: z.boolean().default(false),
 });
@@ -58,7 +58,7 @@ export function EditVariantDialog({
   const form = useForm<EditVariantForm>({
     resolver: zodResolver(editVariantSchema),
     defaultValues: {
-      display_name: variant.display_name,
+      variant_name: variant.variant_name,
       description: variant.description || '',
       is_default: variant.is_default,
     },
@@ -67,7 +67,7 @@ export function EditVariantDialog({
   // Reset form when variant changes
   useEffect(() => {
     form.reset({
-      display_name: variant.display_name,
+      variant_name: variant.variant_name,
       description: variant.description || '',
       is_default: variant.is_default,
     });
@@ -81,7 +81,7 @@ export function EditVariantDialog({
     try {
       await onUpdateVariant({
         id: variant.id,
-        display_name: data.display_name,
+        variant_name: data.variant_name,
         description: data.description || undefined,
         is_default: data.is_default,
       });
@@ -106,7 +106,7 @@ export function EditVariantDialog({
         <DialogHeader>
           <DialogTitle>Edit Variant</DialogTitle>
           <DialogDescription>
-            Update the configuration for "{variant.display_name}" variant.
+            Update the configuration for "{variant.variant_name}" variant.
           </DialogDescription>
         </DialogHeader>
 
@@ -114,10 +114,10 @@ export function EditVariantDialog({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="display_name"
+              name="variant_name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Display Name</FormLabel>
+                  <FormLabel>Variant Name</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="e.g., Trio, Band, DJ Set"

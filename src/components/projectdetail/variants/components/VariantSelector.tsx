@@ -77,7 +77,7 @@ export function VariantSelector({
           </div>
           <div>
             <div className="font-medium text-sm flex items-center gap-2">
-              {variant.display_name}
+              {variant.variant_name}
               {variant.is_default && (
                 <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
                   <Star className="h-2.5 w-2.5 mr-1 fill-current" />
@@ -112,7 +112,7 @@ export function VariantSelector({
             </div>
             <div className="text-left">
               <div className="font-medium text-sm flex items-center gap-2">
-                {currentVariant?.display_name || 'Select Variant'}
+                {currentVariant?.variant_name || 'Select Variant'}
                 {currentVariant?.is_default && (
                   <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
                     <Star className="h-2.5 w-2.5 mr-1 fill-current" />
@@ -147,7 +147,7 @@ export function VariantSelector({
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
                 <span className="font-medium text-sm">
-                  {variant.display_name}
+                  {variant.variant_name}
                 </span>
                 {variant.is_default && (
                   <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">

@@ -12,6 +12,9 @@ import { formatDisplayDate } from "@/utils/dateFormatters";
 import { cn } from "@/lib/utils";
 import { COMPONENT_CLASSES, STATUS_PATTERNS } from "@/design-system";
 import { useEventSyncStatus } from "@/hooks/useConsolidatedSyncStatus";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 // Utility function to get event type color styling for badges
 export function getEventTypeColorStyle(eventType: EventType): string {
@@ -44,9 +47,42 @@ interface EventCardProps {
 
 export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: EventCardProps) {
   const isEditingDisabled = ['cancelled', 'invoice ready', 'invoiced'].includes(event.status);
+  const queryClient = useQueryClient();
   
   // Get sync status for equipment and crew
   const { isEquipmentSynced, hasProjectEquipment, isCrewSynced, hasProjectRoles } = useEventSyncStatus(event);
+
+  // Handle crew sync
+  const handleSyncPreferredCrew = async () => {
+    try {
+      console.log('🎯 Syncing preferred crew for event:', event.id);
+      
+      // Call the sync_event_crew RPC function
+      const { error } = await supabase.rpc('sync_event_crew', {
+        p_event_id: event.id,
+        p_project_id: event.project_id
+      });
+
+      if (error) {
+        console.error('❌ Crew sync failed:', error);
+        toast.error(`Crew sync failed: ${error.message}`);
+        return;
+      }
+
+      // Invalidate queries to refresh UI
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
+        queryClient.invalidateQueries({ queryKey: ['crew-sync-status', event.id] }),
+        queryClient.invalidateQueries({ queryKey: ['sync-status', event.id] })
+      ]);
+
+      console.log('✅ Crew synced successfully');
+      toast.success("Preferred crew synced successfully");
+    } catch (error: any) {
+      console.error('❌ Unexpected error during crew sync:', error);
+      toast.error(error.message || "Failed to sync preferred crew");
+    }
+  };
   
   // Get status styling using design system
   const getStatusPattern = (status: string) => {
@@ -156,6 +192,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
               disabled={isEditingDisabled}
               isSynced={isCrewSynced}
               hasProjectRoles={hasProjectRoles}
+              onSyncPreferredCrew={() => handleSyncPreferredCrew(event)}
             />
           </EventGridColumns.Icon>
 
