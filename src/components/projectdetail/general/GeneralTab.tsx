@@ -10,7 +10,6 @@ import { EventList } from "./events/EventList";
 import { Project } from "@/types/projects";
 import { ProjectInfo } from "./information/ProjectInfo";
 import { useProjectEvents } from "@/hooks/useConsolidatedEvents";
-import { SyncCrewDataButton } from "./shared/SyncCrewDataButton";
 
 interface ProjectGeneralTabProps {
   project: Project;
@@ -50,9 +49,6 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
       {/* Event List Section */}
       <ProjectTabCard 
         title="Events"
-        actionLabel="Sync Crew Data"
-        onAction={() => {}} // SyncCrewDataButton functionality
-        headerExtra={<SyncCrewDataButton projectId={projectId} />}
       >
         <EventList 
           events={events} 

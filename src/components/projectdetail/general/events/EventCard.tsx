@@ -149,7 +149,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
           </EventGridColumns.Price>
 
           {/* Total Price */}
-          <EventGridColumns.Price variant="total">
+          <EventGridColumns.Price variant="muted">
             {formatPrice(event.total_price)}
           </EventGridColumns.Price>
         </EventGrid>

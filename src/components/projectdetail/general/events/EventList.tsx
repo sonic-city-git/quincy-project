@@ -2,7 +2,6 @@ import { CalendarEvent } from "@/types/events";
 import { EventSection } from "./EventSection";
 import { EventListEmpty } from "./EventListEmpty";
 import { EventListLoading } from "./EventListLoading";
-import { EventTableHeader } from "./layout/EventGrid";
 import { eventUtils } from "./utils";
 import { Card } from "@/components/ui/card";
 import { Brush, ChevronDown } from "lucide-react";
@@ -37,19 +36,8 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
     { title: "Cancelled", events: cancelled, variant: "critical" as const }
   ];
 
-  const hasActiveEvents = sections.some(section => section.events.length > 0);
-
   return (
     <div className={cn(RESPONSIVE.spacing.section)}>
-      {/* Table Header - only show if we have events */}
-      {hasActiveEvents && (
-        <div className="mb-4">
-          <Card className={cn(COMPONENT_CLASSES.card.subtle, 'shadow-none border-none')}>
-            <EventTableHeader />
-          </Card>
-        </div>
-      )}
-
       {/* Active Event Sections */}
       <div className="space-y-4">
         {sections.map(({ title, events, variant }) => (

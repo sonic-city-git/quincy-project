@@ -1,6 +1,6 @@
 import { CalendarEvent } from "@/types/events";
 import { EventCard } from "./EventCard";
-import { EventGrid, EventGridColumns } from "./layout/EventGrid";
+import { EventGrid, EventGridColumns, EventSectionTableHeader } from "./layout/EventGrid";
 import { EventContent } from "./layout/EventContent";
 import { EventStatus } from "./components/EventStatus";
 import { EventEquipment } from "./components/EventEquipment";
@@ -63,6 +63,14 @@ export function EventSection({
         />
       )}
       
+      {/* Column Headers - always show unless hidden */}
+      {!hideHeader && (
+        <EventSectionTableHeader 
+          events={events}
+          onStatusChange={onStatusChange}
+        />
+      )}
+      
       <EventContent variant="list" spacing="sm">
         {events.map((event) => (
           <EventCard
@@ -108,47 +116,38 @@ function EventSectionHeader({
   
   return (
     <div className={cn(
-      'flex items-center justify-between p-4 border-b border-border/20',
+      'px-4 py-1 border-b border-border/20',
       'bg-gradient-to-r from-muted/10 to-muted/30'
     )}>
-      <div className="flex items-center gap-3">
-        <EventStatus
-          event={events[0]}
-          variant="icon"
-          onStatusChange={onStatusChange}
-        />
-        <div>
-          <h3 className="text-xl font-bold tracking-tight">{title}</h3>
-          <p className="text-sm text-muted-foreground/80 font-medium">
-            {events.length} event{events.length !== 1 ? 's' : ''}
-          </p>
+      <EventGrid variant="card" className="min-h-[40px] py-1 md:py-1">
+        {/* Date Column - Section title (aligns with dates below) */}
+        <div className="flex items-center gap-2">
+          <EventStatus
+            event={events[0]}
+            variant="icon"
+            onStatusChange={onStatusChange}
+          />
+          <div>
+            <h3 className="text-lg font-bold tracking-tight leading-tight">{title}</h3>
+            <p className="text-xs text-muted-foreground/80 font-medium leading-tight">
+              {events.length} event{events.length !== 1 ? 's' : ''}
+            </p>
+          </div>
         </div>
-      </div>
-      
-      <div className="flex items-center gap-3">
-        {/* Equipment section actions */}
-        {eventType?.needs_equipment && (
-          <EventEquipment
-            events={events}
-            variant="section"
-          />
-        )}
         
-        {/* Crew section actions */}
-        {eventType?.needs_crew && (
-          <EventCrew
-            events={events}
-            variant="section"
-          />
-        )}
+        {/* Event Details Column - empty for spacing */}
+        <div></div>
         
-        {/* Bulk status actions */}
-        <EventStatus
-          events={events}
-          variant="manager"
-          onStatusChange={onStatusChange}
-        />
-      </div>
+        {/* All other columns - empty for spacing */}
+        <div></div> {/* Location */}
+        <div></div> {/* Equipment */}
+        <div></div> {/* Crew */}
+        <div></div> {/* Type */}
+        <div></div> {/* Status */}
+        <div></div> {/* Equipment Price */}
+        <div></div> {/* Crew Price */}
+        <div></div> {/* Total Price */}
+      </EventGrid>
     </div>
   );
 }
@@ -186,35 +185,52 @@ function EventSectionSummary({
 
   return (
     <div className={cn(
-      'mt-4 p-4 rounded-lg border-l-4 shadow-sm',
-      pattern.bg,
-      pattern.border
+      'mt-4 rounded-lg shadow-sm',
+      pattern.bg
     )}>
       <EventGrid variant="card">
-        <div className="flex items-center">
-          <div className="w-2 h-2 rounded-full bg-current opacity-60" />
-        </div>
-        
-        <div className="flex items-center gap-2">
+        {/* Date Column - Total text */}
+        <EventGridColumns.Date>
           <div className="font-bold text-foreground tracking-wide">
             {title}
           </div>
-          <div className={cn("text-xs font-medium px-2 py-1 rounded-md bg-muted/30", pattern.accent)}>
-            {eventCount} event{eventCount !== 1 ? 's' : ''}
-          </div>
-        </div>
+        </EventGridColumns.Date>
         
-        <div className="col-span-6" /> {/* Icon columns */}
+        {/* Event Column - empty */}
+        <EventGridColumns.Event>
+        </EventGridColumns.Event>
         
-        <EventGridColumns.Price variant="muted" className="font-semibold">
+        {/* Location Icon Column - empty */}
+        <EventGridColumns.Icon>
+        </EventGridColumns.Icon>
+        
+        {/* Equipment Icon Column - empty */}
+        <EventGridColumns.Icon>
+        </EventGridColumns.Icon>
+        
+        {/* Crew Icon Column - empty */}
+        <EventGridColumns.Icon>
+        </EventGridColumns.Icon>
+        
+        {/* Type Badge Column - empty */}
+        <div></div>
+        
+        {/* Status Action Column - empty */}
+        <EventGridColumns.Action>
+        </EventGridColumns.Action>
+        
+        {/* Equipment Price */}
+        <EventGridColumns.Price variant="muted">
           {formatPrice(totalEquipment)}
         </EventGridColumns.Price>
         
-        <EventGridColumns.Price variant="muted" className="font-semibold">
+        {/* Crew Price */}
+        <EventGridColumns.Price variant="muted">
           {formatPrice(totalCrew)}
         </EventGridColumns.Price>
         
-        <EventGridColumns.Price variant="total" className="font-bold text-lg">
+        {/* Total Price */}
+        <EventGridColumns.Price variant="muted">
           {formatPrice(totalPrice)}
         </EventGridColumns.Price>
       </EventGrid>

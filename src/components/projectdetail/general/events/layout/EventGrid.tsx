@@ -8,6 +8,7 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { RESPONSIVE, COMPONENT_CLASSES } from '@/design-system';
+import { Package, Users, Settings2 } from 'lucide-react';
 
 // Shared grid column definitions - MUST stay in sync between header and cards
 const GRID_COLUMNS = {
@@ -194,20 +195,110 @@ export const EventGridColumns = {
 
 /**
  * Professional table header with consistent styling
+ * Enhanced with better typography and design system integration
  */
-export function EventTableHeader() {
+export function EventTableHeader({ className }: { className?: string }) {
   return (
-    <EventGrid variant="header">
-      <div>Date</div>
-      <div>Event</div>
-      <div className="sr-only">Location</div>
-      <div className="sr-only">Equipment</div>
-      <div className="sr-only">Crew</div>
-      <div>Type</div>
-      <div className="sr-only">Status</div>
-      <div className="text-right">Equipment</div>
-      <div className="text-right">Crew</div>
-      <div className="text-right">Total</div>
-    </EventGrid>
+    <div className={cn(
+      'px-4 py-4 bg-gradient-to-r from-muted/40 to-muted/60',
+      'border-b-2 border-border/30',
+      'backdrop-blur-sm',
+      className
+    )}>
+      <EventGrid variant="header" className="min-h-[48px] text-sm font-bold text-foreground/90 tracking-wide">
+        <div>Date</div>
+        <div>Event Details</div>
+        <div className="text-center hidden md:block">Location</div>
+        <div className="text-center hidden md:block">Equipment</div>
+        <div className="text-center hidden md:block">Crew</div>
+        <div>Type</div>
+        <div className="text-center hidden md:block">Status</div>
+        <div className="text-right">Equipment</div>
+        <div className="text-right">Crew</div>
+        <div className="text-right font-bold">Total</div>
+      </EventGrid>
+    </div>
+  );
+}
+
+/**
+ * Compact section-level table header for use within EventSections
+ * Provides column context without overwhelming the section design
+ * Now includes action icons for equipment, crew, and status management
+ */
+export function EventSectionTableHeader({ 
+  className,
+  events,
+  onStatusChange 
+}: { 
+  className?: string;
+  events?: { type?: { needs_equipment?: boolean; needs_crew?: boolean } }[];
+  onStatusChange?: (event: any, newStatus: any) => void;
+}) {
+  return (
+    <div className={cn(
+      'border-b border-border/10 bg-muted/20',
+      className
+    )}>
+      <EventGrid variant="header" className="min-h-[28px] py-0.5 md:py-0.5">
+        {/* Date Column */}
+        <EventGridColumns.Date className="text-xs font-semibold text-muted-foreground/80 tracking-wider uppercase">
+          Date
+        </EventGridColumns.Date>
+        
+        {/* Event Details Column */}
+        <EventGridColumns.Event className="text-xs font-semibold text-muted-foreground/80 tracking-wider uppercase">
+          Event Details
+        </EventGridColumns.Event>
+        
+        {/* Location Icon Column */}
+        <EventGridColumns.Icon>
+          <div className="hidden md:block"></div>
+        </EventGridColumns.Icon>
+        
+        {/* Equipment Icon Column */}
+        <EventGridColumns.Icon>
+          {events && events.length > 0 && events[0]?.type?.needs_equipment && (
+            <Package className="h-6 w-6 text-blue-600 hover:text-blue-700 cursor-pointer transition-colors" />
+          )}
+        </EventGridColumns.Icon>
+        
+        {/* Crew Icon Column */}
+        <EventGridColumns.Icon>
+          {events && events.length > 0 && events[0]?.type?.needs_crew && (
+            <Users className="h-6 w-6 text-green-600 hover:text-green-700 cursor-pointer transition-colors" />
+          )}
+        </EventGridColumns.Icon>
+        
+        {/* Type Badge Column */}
+        <EventGridColumns.Badge className="text-xs font-semibold text-muted-foreground/80 tracking-wider uppercase">
+          Type
+        </EventGridColumns.Badge>
+        
+        {/* Status Action Column */}
+        <EventGridColumns.Action>
+          {events && events.length > 0 && onStatusChange && (
+            <Settings2 className="h-6 w-6 text-orange-600 hover:text-orange-700 cursor-pointer transition-colors" />
+          )}
+        </EventGridColumns.Action>
+        
+        {/* Equipment Price Column */}
+        <EventGridColumns.Price className="text-xs font-semibold text-muted-foreground/80 tracking-wider uppercase">
+          <span className="hidden md:inline">Equipment</span>
+          <span className="md:hidden">Equip</span>
+        </EventGridColumns.Price>
+        
+        {/* Crew Price Column */}
+        <EventGridColumns.Price className="text-xs font-semibold text-muted-foreground/80 tracking-wider uppercase">
+          <span className="hidden md:inline">Crew</span>
+          <span className="md:hidden">Crew</span>
+        </EventGridColumns.Price>
+        
+        {/* Total Price Column */}
+        <EventGridColumns.Price className="text-xs font-bold text-muted-foreground/90 tracking-wider uppercase">
+          Total
+        </EventGridColumns.Price>
+      </EventGrid>
+    </div>
   );
 }
