@@ -16,6 +16,64 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
+// Utility function to extract city from location string or structured data
+function getDisplayLocation(location: string, locationData?: any): { display: string; full: string } {
+  // If we have structured location data, use the city
+  if (locationData?.city) {
+    return {
+      display: locationData.city,
+      full: location // Use the full display name for hover
+    };
+  }
+  
+  // Parse common location formats to extract city
+  const locationStr = location.trim();
+  
+  // Handle formats like "Oslo, Norway" or "London, UK"
+  if (locationStr.includes(',')) {
+    const parts = locationStr.split(',').map(p => p.trim());
+    return {
+      display: parts[0], // First part is usually the city
+      full: locationStr
+    };
+  }
+  
+  // Handle formats like "Oslo Norway" (space-separated)
+  const words = locationStr.split(' ');
+  if (words.length > 1) {
+    // If last word looks like a country code (2-3 uppercase letters), exclude it
+    const lastWord = words[words.length - 1];
+    if (lastWord.length <= 3 && lastWord === lastWord.toUpperCase()) {
+      return {
+        display: words.slice(0, -1).join(' '),
+        full: locationStr
+      };
+    }
+    
+    // If more than 2 words, take first 2 as city
+    if (words.length > 2) {
+      return {
+        display: words.slice(0, 2).join(' '),
+        full: locationStr
+      };
+    }
+  }
+  
+  // If location is short (likely just a city), show as-is
+  if (locationStr.length <= 15) {
+    return {
+      display: locationStr,
+      full: locationStr
+    };
+  }
+  
+  // For long single strings, truncate intelligently
+  return {
+    display: locationStr.length > 15 ? locationStr.substring(0, 15) + '...' : locationStr,
+    full: locationStr
+  };
+}
+
 // Utility function to get event type color styling for badges
 export function getEventTypeColorStyle(eventType: EventType): string {
   // Use the color from the event type or fall back to EVENT_COLORS mapping
@@ -23,19 +81,56 @@ export function getEventTypeColorStyle(eventType: EventType): string {
   
   if (!typeColor) return 'bg-muted text-muted-foreground';
   
-  // Convert background classes to badge styling with proper contrast
-  const colorMap: Record<string, string> = {
-    'bg-green-500': 'bg-green-500/10 text-green-700 border border-green-500/20',
-    'bg-blue-500': 'bg-blue-500/10 text-blue-700 border border-blue-500/20',
-    'bg-yellow-500': 'bg-yellow-500/10 text-yellow-700 border border-yellow-500/20',
-    'bg-pink-500': 'bg-pink-500/10 text-pink-700 border border-pink-500/20',
-    'bg-red-500': 'bg-red-500/10 text-red-700 border border-red-500/20',
-    'bg-orange-500': 'bg-orange-500/10 text-orange-700 border border-orange-500/20',
-    'bg-purple-500': 'bg-purple-500/10 text-purple-700 border border-purple-500/20',
-    'bg-indigo-500': 'bg-indigo-500/10 text-indigo-700 border border-indigo-500/20',
+  // Convert hex colors to Tailwind badge styling
+  const hexToTailwindMap: Record<string, string> = {
+    // Green shades (Show, Double Show)
+    '#22C55E': 'bg-green-500/20 text-foreground border border-green-500/30',
+    '#16A34A': 'bg-green-600/20 text-foreground border border-green-600/30',
+    '#15803D': 'bg-green-700/20 text-foreground border border-green-700/30',
+    
+    // Yellow shades (Preprod)
+    '#EAB308': 'bg-yellow-500/20 text-foreground border border-yellow-500/30',
+    '#CA8A04': 'bg-yellow-600/20 text-foreground border border-yellow-600/30',
+    
+    // Red shades (EXT Storage)
+    '#DC2626': 'bg-red-500/20 text-foreground border border-red-500/30',
+    '#B91C1C': 'bg-red-600/20 text-foreground border border-red-600/30',
+    
+    // Pink shades (INT Storage)
+    '#EC4899': 'bg-pink-500/20 text-foreground border border-pink-500/30',
+    '#DB2777': 'bg-pink-600/20 text-foreground border border-pink-600/30',
+    
+    // Blue shades (Travel)
+    '#3B82F6': 'bg-blue-500/20 text-foreground border border-blue-500/30',
+    '#2563EB': 'bg-blue-600/20 text-foreground border border-blue-600/30',
+    
+    // Orange shades (Hours)
+    '#F97316': 'bg-orange-500/20 text-foreground border border-orange-500/30',
+    '#EA580C': 'bg-orange-600/20 text-foreground border border-orange-600/30',
+    
+    // Purple shades
+    '#A855F7': 'bg-purple-500/20 text-foreground border border-purple-500/30',
+    '#9333EA': 'bg-purple-600/20 text-foreground border border-purple-600/30',
+    
+    // Indigo shades
+    '#6366F1': 'bg-indigo-500/20 text-foreground border border-indigo-500/30',
+    '#4F46E5': 'bg-indigo-600/20 text-foreground border border-indigo-600/30',
   };
   
-  return colorMap[typeColor] || 'bg-muted text-muted-foreground';
+  // Also handle Tailwind class names (fallback from EVENT_COLORS)
+  const tailwindClassMap: Record<string, string> = {
+    'bg-green-500': 'bg-green-500/20 text-foreground border border-green-500/30',
+    'bg-blue-500': 'bg-blue-500/20 text-foreground border border-blue-500/30',
+    'bg-yellow-500': 'bg-yellow-500/20 text-foreground border border-yellow-500/30',
+    'bg-pink-500': 'bg-pink-500/20 text-foreground border border-pink-500/30',
+    'bg-red-500': 'bg-red-500/20 text-foreground border border-red-500/30',
+    'bg-orange-500': 'bg-orange-500/20 text-foreground border border-orange-500/30',
+    'bg-purple-500': 'bg-purple-500/20 text-foreground border border-purple-500/30',
+    'bg-indigo-500': 'bg-indigo-500/20 text-foreground border border-indigo-500/30',
+  };
+  
+  // Try hex mapping first, then Tailwind class mapping
+  return hexToTailwindMap[typeColor] || tailwindClassMap[typeColor] || 'bg-muted text-muted-foreground';
 }
 
 interface EventCardProps {
@@ -135,25 +230,25 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
             className={cn(onEdit && 'cursor-pointer')}
           >
             <div 
-              className="space-y-0.5 w-full overflow-hidden"
+              className="space-y-0.5 w-full overflow-hidden min-w-0"
               onClick={onEdit ? () => onEdit(event) : undefined}
             >
-              <h4 className="font-semibold text-xs text-foreground truncate group-hover:text-primary transition-colors">
+              <h4 className="font-semibold text-sm text-foreground truncate group-hover:text-primary transition-colors">
                 {event.name}
               </h4>
               {event.location && (
                 <p className="text-xs text-muted-foreground truncate flex items-center gap-0.5">
-                  <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
-                  {event.location}
+                  <MapPin className="h-3 w-3 flex-shrink-0" />
+                  {getDisplayLocation(event.location, event.location_data).display}
                 </p>
               )}
             </div>
           </EventGridColumns.Event>
           
           {/* Event Type Badge - Available from small screens (640px+) */}
-          <div className="hidden sm:flex items-center px-0.5 w-full overflow-hidden">
+          <div className="hidden sm:flex items-center px-0.5 overflow-hidden">
             <span className={cn(
-              'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium truncate w-full',
+              'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold flex-shrink-0',
               'transition-all duration-200',
               getTypeColorStyle()
             )}>
@@ -162,9 +257,16 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
           </div>
 
           {/* Variant - Available from tablet (768px+) */}
-          <div className="text-xs text-muted-foreground/80 font-medium hidden md:block truncate overflow-hidden">
-            {/* TODO: Add variant field to event data */}
-            -
+          <div className="hidden md:flex items-center overflow-hidden">
+            {event.variant_name && event.variant_name !== 'default' ? (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-muted/50 text-muted-foreground border border-border/50 flex-shrink-0">
+                {event.variant_name}
+              </span>
+            ) : (
+              <span className="text-xs text-muted-foreground/60 font-semibold flex-shrink-0">
+                default
+              </span>
+            )}
           </div>
 
 

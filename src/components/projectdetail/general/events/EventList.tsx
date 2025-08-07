@@ -67,7 +67,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
                 'group'
               )}>
                 <div className="flex items-center gap-3">
-                  <Brush className="h-5 w-5 text-muted-foreground/70 group-hover:text-foreground/90 transition-colors" />
+                  <Brush className="h-4 w-4 text-muted-foreground/70 group-hover:text-foreground/90 transition-colors" />
                   <div className="text-left">
                     <h3 className="text-lg font-bold tracking-tight text-muted-foreground/80 group-hover:text-foreground/90 transition-colors">
                       Done and Dusted
@@ -77,7 +77,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
                     </p>
                   </div>
                 </div>
-                <ChevronDown className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-all duration-200 group-data-[state=open]:rotate-180" />
+                <ChevronDown className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-all duration-200 group-data-[state=open]:rotate-180" />
               </CollapsibleTrigger>
               
               <CollapsibleContent className="border-t border-border/20">

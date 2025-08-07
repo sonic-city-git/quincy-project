@@ -59,7 +59,7 @@ export function CrewRolesDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Users className="h-5 w-5" />
+            <Users className="h-4 w-4" />
             Crew Roles
           </DialogTitle>
         </DialogHeader>

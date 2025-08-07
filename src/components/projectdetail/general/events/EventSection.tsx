@@ -74,7 +74,7 @@ export function EventSection({
         />
       )}
       
-      <EventContent variant="list" spacing="sm" className="-mt-2 overflow-hidden">
+      <EventContent variant="list" spacing="sm" className="overflow-hidden mt-1">
         {events.map((event) => (
           <EventCard
             key={event.id}
@@ -161,7 +161,8 @@ function EventSectionHeader({
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['events', events[0].project_id] }),
         queryClient.invalidateQueries({ queryKey: ['crew-sync-status'] }),
-        queryClient.invalidateQueries({ queryKey: ['sync-status'] })
+        queryClient.invalidateQueries({ queryKey: ['sync-status'] }),
+        queryClient.invalidateQueries({ queryKey: ['consolidated-project-sync', events[0].project_id] })
       ]);
 
       if (totalSynced === events.length) {
@@ -205,6 +206,11 @@ function EventSectionHeader({
       <EventSectionTableHeader 
         events={events}
         onStatusChange={onStatusChange}
+        onSyncSectionEquipment={handleSyncSectionEquipment}
+        onSyncSectionCrew={handleSyncSectionCrew}
+        onBulkStatusChange={(newStatus) => {
+          events.forEach(event => onStatusChange(event, newStatus as any));
+        }}
       />
       
     </div>
@@ -241,7 +247,7 @@ function EventSectionSummary({
       <EventGrid variant="card">
         {/* Date Column - Total text */}
         <EventGridColumns.Date>
-          <div className="font-bold text-foreground tracking-wide">
+          <div className="font-bold text-sm text-foreground tracking-wide">
             {title}
           </div>
         </EventGridColumns.Date>
@@ -271,17 +277,17 @@ function EventSectionSummary({
         </EventGridColumns.Action>
         
         {/* Equipment Price - Hide FIRST when space is tight (show only on wide+ screens) */}
-        <EventGridColumns.Price variant="muted" className="hidden xl:flex">
+        <EventGridColumns.Price variant="total" className="hidden xl:flex">
           {formatPrice(totalEquipment)}
         </EventGridColumns.Price>
         
         {/* Crew Price - Hide SECOND when space is tight (show from desktop+ screens) */}
-        <EventGridColumns.Price variant="muted" className="hidden lg:flex">
+        <EventGridColumns.Price variant="total" className="hidden lg:flex">
           {formatPrice(totalCrew)}
         </EventGridColumns.Price>
         
         {/* Total Price - HIGHEST PRIORITY, always visible */}
-        <EventGridColumns.Price variant="muted">
+        <EventGridColumns.Price variant="total">
           {formatPrice(totalPrice)}
         </EventGridColumns.Price>
       </EventGrid>

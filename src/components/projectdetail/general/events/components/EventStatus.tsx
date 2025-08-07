@@ -118,7 +118,7 @@ function StatusIcon({ event, className }: { event: CalendarEvent; className?: st
   const Icon = config.icon;
 
   return (
-    <div className={cn('flex items-center justify-center', className)}>
+    <div className={cn('flex items-center justify-center h-10 w-10', className)}>
       <Icon className={cn('h-5 w-5', config.pattern.text)} />
     </div>
   );
@@ -183,7 +183,7 @@ function StatusManager({
           className={cn('h-10 w-10', className)}
           aria-label={`Change status${isBulkAction ? ` for ${events.length} events` : ''}`}
         >
-          <Settings2 className="h-6 w-6" />
+          <Settings2 className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

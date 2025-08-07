@@ -189,7 +189,7 @@ export function EventEquipment({
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="h-10 w-10 flex items-center justify-center">
-            <Package className="text-green-500" />
+            <Package className="h-5 w-5 text-green-500" />
           </div>
         </TooltipTrigger>
         <TooltipContent>
@@ -212,7 +212,7 @@ export function EventEquipment({
                 className="h-10 w-10 p-0"
                 disabled={disabled}
               >
-                <Package className={`${isSyncing ? 'text-orange-500 animate-pulse' : 'text-blue-500'}`} />
+                <Package className={`h-5 w-5 ${isSyncing ? 'text-orange-500 animate-pulse' : 'text-blue-500'}`} />
               </Button>
             </DropdownMenuTrigger>
           </TooltipTrigger>
