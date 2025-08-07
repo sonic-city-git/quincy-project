@@ -259,7 +259,7 @@ export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRole
               <div className="space-y-0.5">
                 <label className="text-xs font-medium text-muted-foreground">Preferred Crew</label>
                 <Select
-                  defaultValue={role.preferred?.id}
+                  defaultValue={role.preferred_member?.id}
                   onValueChange={(value) => handlePreferredChange(role.id, value)}
                 >
                   <SelectTrigger className="h-7 text-xs bg-background border-border focus:border-primary">
