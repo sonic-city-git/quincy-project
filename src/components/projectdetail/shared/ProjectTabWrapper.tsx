@@ -22,7 +22,7 @@ export function ProjectTabWrapper({
   value,
   currentTab,
   children,
-  className = "h-full mt-0"
+  className = "mt-0"
 }: ProjectTabWrapperProps) {
   return (
     <TabsContent 

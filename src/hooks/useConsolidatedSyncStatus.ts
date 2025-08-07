@@ -99,11 +99,12 @@ export function useConsolidatedProjectSync(projectId: string) {
           `)
           .eq('project_id', projectId),
 
-        // Get project roles
+        // Get project roles (ALL variants - we'll filter by variant in the logic)
         supabase
           .from('project_roles')
           .select(`
             id,
+            variant_id,
             role:crew_roles (
               id,
               name,
@@ -220,11 +221,20 @@ export function useEventSyncStatus(event: CalendarEvent | null): SyncStatusResul
       }
     }
 
-    // Crew sync status
-    const hasProjectRoles = projectRoles.length > 0;
+    // Crew sync status - filter roles by event's variant
+    const eventVariantId = event.variant_id;
+    const variantProjectRoles = projectRoles.filter(pr => pr.variant_id === eventVariantId);
+    const hasProjectRoles = variantProjectRoles.length > 0;
     const eventRolesList = eventRoles.get(event.id) || [];
     
-    const roles = projectRoles.map(pr => {
+    // Debug logging for orphan detection
+    if (event.variant_name && variantProjectRoles.length === 0 && projectRoles.length > 0) {
+      console.log(`⚠️ Potential orphan: Event ${event.id} has variant_id ${eventVariantId} but no matching project roles`);
+      console.log(`Available project role variant_ids:`, projectRoles.map(pr => pr.variant_id));
+      console.log(`Event variant_name: ${event.variant_name}`);
+    }
+    
+    const roles = variantProjectRoles.map(pr => {
       const eventRole = eventRolesList.find(er => er.role_id === pr.role.id);
       return {
         id: pr.role.id,

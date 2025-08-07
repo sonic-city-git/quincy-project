@@ -19,7 +19,7 @@ interface DetailTabsProps {
 
 export function DetailTabs({ project, projectId, value }: DetailTabsProps) {
   return (
-    <div className="flex-1 overflow-hidden">
+    <div className="flex-1">
       <ProjectTabWrapper value="general" currentTab={value}>
         <ProjectGeneralTab 
           project={project}

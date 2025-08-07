@@ -26,28 +26,28 @@ export function CalendarHeader({ month, onMonthChange }: CalendarHeaderProps) {
 
   return (
     <div className="relative flex items-center justify-center pt-1">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-1 sm:gap-2 md:gap-4">
         <Button
           variant="ghost"
-          className="h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
           onClick={handlePreviousMonth}
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4" />
         </Button>
         
         <button
           onClick={handleResetMonth}
-          className="text-xl font-medium min-w-[160px] text-center hover:text-primary transition-colors"
+          className="text-sm sm:text-lg md:text-xl font-medium min-w-[120px] sm:min-w-[140px] md:min-w-[160px] text-center hover:text-primary transition-colors"
         >
           {format(month, 'MMMM yyyy')}
         </button>
 
         <Button
           variant="ghost"
-          className="h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
           onClick={handleNextMonth}
         >
-          <ChevronRight className="h-4 w-4" />
+          <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 md:h-4 md:w-4" />
         </Button>
       </div>
     </div>

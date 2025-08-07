@@ -29,7 +29,7 @@ export function CalendarDay({
   onMouseUp
 }: CalendarDayProps) {
   const baseButtonClasses = cn(
-    "h-10 w-full p-0 font-normal relative",
+    "h-6 sm:h-8 md:h-10 w-full p-0 font-normal relative text-xs sm:text-sm",
     !isCurrentMonth && "text-muted-foreground opacity-50",
     isToday && "border border-blue-500",
     "hover:bg-zinc-800 rounded-md transition-colors",

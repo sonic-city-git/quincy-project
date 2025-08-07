@@ -125,7 +125,7 @@ export function EventCrew({
             className="h-10 w-10"
             disabled={disabled}
           >
-            <Users className="h-6 w-6 text-red-500" />
+            <Users className="h-5 w-5 text-red-500" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
@@ -149,9 +149,16 @@ export function EventCrew({
   // If all crew is assigned and no conflicts, show green icon without dropdown
   if (actualIsCrewSynced || allEventsSynced) {
     return (
-      <div className="flex items-center gap-2">
-        <Users className="h-6 w-6 text-green-500" />
-      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="h-10 w-10 flex items-center justify-center">
+            <Users className="h-5 w-5 text-green-500" />
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Crew is assigned</p>
+        </TooltipContent>
+      </Tooltip>
     );
   }
 
@@ -166,7 +173,7 @@ export function EventCrew({
             className="h-10 w-10"
             disabled={disabled}
           >
-            <Users className={cn("h-6 w-6", "text-blue-500")} />
+            <Users className={cn("h-5 w-5", "text-blue-500")} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
