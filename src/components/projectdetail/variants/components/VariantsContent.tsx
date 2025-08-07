@@ -108,7 +108,7 @@ function CrewSectionButton({ projectId, variantName }: { projectId: string; vari
         className="gap-1.5 h-7 text-xs"
       >
         <Plus className="h-3.5 w-3.5" />
-        {totalRoles > 0 ? 'Add Role' : 'Add First Role'}
+        Add Role
       </Button>
 
       {project && (

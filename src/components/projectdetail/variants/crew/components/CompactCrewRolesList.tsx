@@ -2,7 +2,7 @@
  * Compact Crew Roles List - More condensed view for variant layout
  */
 
-import { useProjectRoles } from "@/hooks/useProjectRoles";
+import { useVariantCrew } from "@/hooks/useVariantCrew";
 import { Loader2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,7 +23,7 @@ interface CompactCrewRolesListProps {
 }
 
 export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRolesListProps) {
-  const { roles, isLoading, refetch } = useProjectRoles(projectId);
+  const { crewRoles: roles, isLoading, invalidateCrewCache } = useVariantCrew(projectId, variantName);
   const { crew } = useCrew();
   const [isUpdating, setIsUpdating] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
@@ -181,7 +181,7 @@ export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRole
         .delete()
         .eq('id', roleToDelete);
 
-      await refetch();
+      await invalidateCrewCache();
       toast.success('Role deleted successfully');
     } catch (error) {
       console.error('Error deleting role:', error);

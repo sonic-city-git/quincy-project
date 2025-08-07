@@ -64,7 +64,7 @@ export function VariantCrewList({
           <Users className={cn('h-12 w-12 mx-auto mb-4', STATUS_COLORS.operational.text)} />
           <h3 className="font-medium text-sm mb-2">No crew roles assigned</h3>
           <p className="text-xs text-muted-foreground mb-4 max-w-xs mx-auto">
-            Use the "Add First Role" button above to get started.
+            Use the "Add Role" button above to get started.
           </p>
         </div>
       )}
