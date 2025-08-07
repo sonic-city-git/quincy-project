@@ -32,6 +32,7 @@ import { format } from "date-fns";
 import { CalendarEvent, EventType } from "@/types/events";
 import { ConfirmationDialog } from "@/components/shared/dialogs/ConfirmationDialog";
 import { VariantSelector } from "@/components/shared/forms/VariantSelector";
+import { CityLocationInput } from "@/components/shared/forms/CityLocationInput";
 
 // Form validation schema
 const eventFormSchema = z.object({
@@ -42,8 +43,8 @@ const eventFormSchema = z.object({
     .min(1, 'Type is required'),
   status: z.enum(['proposed', 'confirmed', 'invoice ready', 'cancelled']),
   location: z.string()
-    .max(200, 'Location must be 200 characters or less')
-    .optional(),
+    .min(1, 'Location is required')
+    .max(200, 'Location must be 200 characters or less'),
   variantName: z.string()
     .min(1, 'Variant is required'),
 });
@@ -70,7 +71,7 @@ export interface EventFormDialogProps {
   defaultStatus?: CalendarEvent['status'];
   
   // Actions
-  onSubmit: (data: EventFormData) => Promise<void>;
+  onSubmit: (data: EventFormData, locationData?: any) => Promise<void>;
   onDelete?: (event: CalendarEvent) => Promise<void>;
 }
 
@@ -91,6 +92,7 @@ export function EventFormDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [randomFestivalPlaceholder, setRandomFestivalPlaceholder] = useState(getRandomLegendaryFestival());
+  const [selectedLocationData, setSelectedLocationData] = useState<any>(null);
 
   // Form setup
   const form = useForm<EventFormData>({
@@ -138,8 +140,10 @@ export function EventFormDialog({
   const handleSubmit = async (data: EventFormData) => {
     setIsSubmitting(true);
     try {
-      await onSubmit(data);
+      // Pass both form data and structured location data
+      await onSubmit(data, selectedLocationData);
       form.reset();
+      setSelectedLocationData(null);
       onOpenChange(false);
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -282,19 +286,24 @@ export function EventFormDialog({
                 name="location"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4" />
-                      Location
-                    </FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Enter location (optional)"
-                        {...field}
+                      <CityLocationInput
+                        value={field.value || ''}
+                        onChange={(displayName, cityData) => {
+                          field.onChange(displayName);
+                          // Store structured city data for analytics
+                          setSelectedLocationData(cityData);
+                          if (cityData) {
+                            console.log('City selected with structured data:', cityData);
+                          }
+                        }}
+                        placeholder="Search for a city"
+                        error={form.formState.errors.location?.message}
+                        required={true}
+                        showLabel={true}
+                        description=""
                       />
                     </FormControl>
-                    <FormDescription>
-                      Where this event will take place
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

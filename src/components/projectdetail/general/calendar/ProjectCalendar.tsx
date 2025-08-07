@@ -34,12 +34,13 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     name: string, 
     eventType: EventType, 
     status: CalendarEvent['status'],
-    variantName?: string
+    variantName?: string,
+    location?: string
   ) => {
     try {
       // Add events for all selected dates
       for (const date of dates) {
-        await addEvent(date, name, eventType, status, variantName || 'default');
+        await addEvent(date, name, eventType, status, variantName || 'default', location || '');
       }
     } catch (error) {
       console.error('Error adding multiple events:', error);
@@ -53,7 +54,7 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
     setIsEventDialogOpen(true);
   };
 
-  const handleEventSubmit = async (formData: EventFormData) => {
+  const handleEventSubmit = async (formData: EventFormData, locationData?: any) => {
     const eventType = eventTypes.find(type => type.id === formData.typeId);
     if (!eventType) throw new Error('Event type not found');
 
@@ -65,17 +66,20 @@ export function ProjectCalendar({ projectId }: ProjectCalendarProps) {
         type: eventType,
         status: formData.status,
         location: formData.location,
+        location_data: locationData,
         variant_name: formData.variantName
       };
       await updateEvent(updatedEvent);
     } else if (selectedDate) {
-      // Create new event with variant
+      // Create new event with variant, location, and structured location data
       await addEvent(
         selectedDate,
         formData.name || eventType.name,
         eventType,
         formData.status,
-        formData.variantName || 'default'
+        formData.variantName || 'default',
+        formData.location,
+        locationData
       );
     }
   };

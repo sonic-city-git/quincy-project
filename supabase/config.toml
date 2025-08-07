@@ -20,3 +20,9 @@ verify_jwt = false
 
 [functions.get-secret]
 verify_jwt = false
+
+[functions.city-places]
+verify_jwt = false
+
+[functions.city-details]
+verify_jwt = false

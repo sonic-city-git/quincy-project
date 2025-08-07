@@ -13,13 +13,13 @@ import { Package, Users, Settings2 } from 'lucide-react';
 // Shared grid column definitions - MUST stay in sync between header and cards
 // Optimized for Norwegian currency display and Event Details protection
 const GRID_COLUMNS = {
-  // Mobile: 7 columns, only Total € to give it priority (no clipping)
-  // Total width: ~260px fits mobile perfectly with margins
-  mobile: 'grid-cols-[80px_1fr_36px_36px_36px_50px_90px]',
-  // Tablet: 11 columns, Equipment/Crew/Type/Variant all return (768px+)
-  tablet: 'md:grid-cols-[100px_minmax(200px,300px)_120px_100px_36px_36px_36px_60px_90px_90px_110px]',
+  // Mobile: 6 columns, only Total € to give it priority (no clipping)
+  // Total width: ~224px fits mobile perfectly with margins
+  mobile: 'grid-cols-[80px_1fr_36px_36px_50px_90px]',
+  // Tablet: 10 columns, Equipment/Crew/Type/Variant all return (768px+)
+  tablet: 'md:grid-cols-[100px_minmax(200px,300px)_120px_100px_36px_36px_60px_90px_90px_110px]',
   // Desktop: Full grid with optimal spacing (1024px+)
-  desktop: 'lg:grid-cols-[120px_minmax(250px,400px)_140px_130px_36px_36px_36px_70px_120px_120px_140px]'
+  desktop: 'lg:grid-cols-[120px_minmax(250px,400px)_140px_130px_36px_36px_70px_120px_120px_140px]'
 } as const;
 
 export interface EventGridProps {
@@ -31,14 +31,14 @@ export interface EventGridProps {
 /**
  * 3-Tier progressive responsive event grid optimized for Total € priority:
  * 
- * Mobile (<768px): 7 columns, ~260px total - Total € PRIORITY, no clipping ever
- * [Date:80px] [Event Details:1fr] [Location:36px] [Equipment:36px] [Crew:36px] [Status:50px] [Total €:90px]
+ * Mobile (<768px): 6 columns, ~224px total - Total € PRIORITY, no clipping ever
+ * [Date:80px] [Event Details:1fr] [Equipment:36px] [Crew:36px] [Status:50px] [Total €:90px]
  * 
- * Tablet (768px+): 11 columns, Equipment/Crew/Type/Variant all return
- * [Date:100px] [Event Details:200-300px] [Type:120px] [Variant:100px] [Location:36px] [Equipment:36px] [Crew:36px] [Status:60px] [Equipment €:90px] [Crew €:90px] [Total €:110px]
+ * Tablet (768px+): 10 columns, Equipment/Crew/Type/Variant all return
+ * [Date:100px] [Event Details:200-300px] [Type:120px] [Variant:100px] [Equipment:36px] [Crew:36px] [Status:60px] [Equipment €:90px] [Crew €:90px] [Total €:110px]
  * 
- * Desktop (1024px+): 11 columns, full spacing and protection
- * [Date:120px] [Event Details:250-400px] [Type:140px] [Variant:130px] [Location:36px] [Equipment:36px] [Crew:36px] [Status:70px] [Equipment €:120px] [Crew €:120px] [Total €:140px]
+ * Desktop (1024px+): 10 columns, full spacing and protection
+ * [Date:120px] [Event Details:250-400px] [Type:140px] [Variant:130px] [Equipment:36px] [Crew:36px] [Status:70px] [Equipment €:120px] [Crew €:120px] [Total €:140px]
  * 
  * TOTAL PRICE PRIORITY SYSTEM:
  * 1. Total € - HIGHEST PRIORITY, always visible, never clips
@@ -59,9 +59,9 @@ export interface EventGridProps {
  * - Workflow functionality preserved on all devices
  * 
  * Anti-Clipping Architecture:
- * - Different column counts per breakpoint (7→11→11) 
+ * - Different column counts per breakpoint (6→10→10) 
  * - Elements hidden via visibility classes, not squashed
- * - Mobile-first width: ~260px fits 375px screens with generous margins
+ * - Mobile-first width: ~224px fits 375px screens with generous margins
  * - Total € protected during any window resizing
  * - Norwegian currency format supported at each tier ("kr 99 999")
  * 
@@ -261,7 +261,6 @@ export function EventTableHeader({ className }: { className?: string }) {
         <div>Event Details</div>
         <div className="hidden md:block">Type</div>
         <div className="hidden md:block">Variant</div>
-        <div className="text-center">Location</div>
         <div className="text-center">Equipment</div>
         <div className="text-center">Crew</div>
         <div className="text-center">Status</div>
@@ -313,10 +312,7 @@ export function EventSectionTableHeader({
               Variant
             </div>
 
-            {/* Location Icon Column - Always visible */}
-            <div className="flex items-center justify-center">
-              <div className="hidden md:block"></div>
-            </div>
+
 
             {/* Equipment Icon Column - Always visible */}
             <div className="flex items-center justify-center">

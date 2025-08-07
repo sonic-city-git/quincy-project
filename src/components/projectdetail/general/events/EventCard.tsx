@@ -103,9 +103,6 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
 
   const statusPattern = getStatusPattern(event.status);
   
-  // Determine location icon status
-  const locationStatus = event.location ? 'success' : 'neutral';
-  
   // Get event type color styling
   const getTypeColorStyle = () => {
     return getEventTypeColorStyle(event.type);
@@ -169,10 +166,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
             -
           </div>
 
-          {/* Location Status Icon */}
-          <EventGridColumns.Icon status={locationStatus}>
-            <MapPin className="h-5 w-5" />
-          </EventGridColumns.Icon>
+
 
           {/* Equipment Status */}
           <EventGridColumns.Icon>

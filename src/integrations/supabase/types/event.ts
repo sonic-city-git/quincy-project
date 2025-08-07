@@ -24,7 +24,7 @@ export type ProjectEvent = {
   event_type_id: string;
   revenue: number;
   status: string;
-  location: string | null;
+  location: string;
   equipment_price: number;
   total_price: number;
   created_at: string;

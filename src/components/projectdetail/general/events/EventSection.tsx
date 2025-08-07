@@ -210,10 +210,6 @@ function EventSectionHeader({
         {/* Variant Column - empty, only on tablet+ to match grid */}
         <div className="hidden md:block"></div>
         
-        {/* Location Icon Column - empty */}
-        <EventGridColumns.Icon>
-        </EventGridColumns.Icon>
-        
         {/* Equipment Icon Column - Section Equipment Sync */}
         <EventGridColumns.Icon>
           {!isCancelled && !isInvoiceReady && needsEquipment && (
@@ -310,9 +306,7 @@ function EventSectionSummary({
         {/* Variant Column - empty, only on tablet+ to match grid */}
         <div className="hidden md:block"></div>
         
-        {/* Location Icon Column - empty */}
-        <EventGridColumns.Icon>
-        </EventGridColumns.Icon>
+
         
         {/* Equipment Icon Column - empty */}
         <EventGridColumns.Icon>
