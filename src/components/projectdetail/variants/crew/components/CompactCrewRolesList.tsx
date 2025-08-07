@@ -24,7 +24,7 @@ interface CompactCrewRolesListProps {
 
 export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRolesListProps) {
   const { roles, isLoading, refetch } = useProjectRoles(projectId);
-  const { crew } = useCrew(SONIC_CITY_FOLDER_ID);
+  const { crew } = useCrew();
   const [isUpdating, setIsUpdating] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
   const [rateInputValues, setRateInputValues] = useState<Record<string, { daily: string; hourly: string }>>({});
@@ -226,7 +226,7 @@ export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRole
               key={role.id} 
               className={cn(
                 "bg-card border border-border rounded-lg transition-all duration-200 hover:bg-muted/30",
-                "p-2 space-y-2",
+                "p-1.5 space-y-1.5",
                 isUpdating && "ring-2 ring-primary/20"
               )}
             >
@@ -249,8 +249,8 @@ export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRole
               </div>
 
               {/* Rates Row */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <div className="space-y-1">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-0.5">
                   <label className="text-xs font-medium text-muted-foreground">Daily Rate</label>
                   <Input
                     type="number"
@@ -265,7 +265,7 @@ export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRole
                     title="Click to select all, type new rate, press Enter to save"
                   />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   <label className="text-xs font-medium text-muted-foreground">Hourly Rate</label>
                   <Input
                     type="number"
@@ -283,13 +283,13 @@ export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRole
               </div>
 
               {/* Preferred Crew Row */}
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 <label className="text-xs font-medium text-muted-foreground">Preferred Crew</label>
                 <Select
                   defaultValue={role.preferred?.id}
                   onValueChange={(value) => handlePreferredChange(role.id, value)}
                 >
-                  <SelectTrigger className="h-8 text-xs bg-background border-border focus:border-primary">
+                  <SelectTrigger className="h-7 text-xs bg-background border-border focus:border-primary">
                     <SelectValue placeholder="Select crew member..." />
                   </SelectTrigger>
                   <CrewMemberSelectContent crew={crew || []} />

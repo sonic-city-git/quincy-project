@@ -26,9 +26,18 @@ import { Equipment } from '@/types/equipment';
 import { toast } from 'sonner';
 import { copyEquipmentBetweenVariants } from '@/utils/variantEquipmentCopy';
 import { AddRoleDialog } from '../crew/components/AddRoleDialog';
+import { GroupDialogs } from '../equipment/components/GroupDialogs';
 
 // Equipment Section Button Component
-function EquipmentSectionButton({ projectId, variantName }: { projectId: string; variantName: string }) {
+function EquipmentSectionButton({ 
+  projectId, 
+  variantName, 
+  onAddGroup 
+}: { 
+  projectId: string; 
+  variantName: string;
+  onAddGroup: () => void;
+}) {
   const { equipmentData } = useVariantEquipment(projectId, variantName);
   
   const hasEquipment = equipmentData && (
@@ -56,7 +65,7 @@ function EquipmentSectionButton({ projectId, variantName }: { projectId: string;
       <Button
         variant="outline"
         size="sm"
-        onClick={() => {/* TODO: Add group creation logic */}}
+        onClick={onAddGroup}
         className="gap-1.5 h-7 text-xs"
       >
         <Plus className="h-3.5 w-3.5" />
@@ -138,15 +147,67 @@ export function VariantsContent({
   const [scrollToItemId, setScrollToItemId] = useState<string | null>(null);
 
   // Variant resources management for equipment addition
-  const { addEquipmentItem, updateEquipmentItem, equipmentData } = useVariantEquipment(projectId, selectedVariant);
+  const { 
+    addEquipmentItem, 
+    updateEquipmentItem, 
+    equipmentData,
+    setShowNewGroupDialog,
+    handleCreateGroup,
+    showNewGroupDialog,
+    newGroupName,
+    setNewGroupName
+  } = useVariantEquipment(projectId, selectedVariant);
+
+  // State for pending equipment to add after group creation
+  const [pendingEquipmentForGroup, setPendingEquipmentForGroup] = useState<Equipment | null>(null);
 
   // Reset selected group when variant changes
   useEffect(() => {
     setSelectedGroupId(null);
+    setPendingEquipmentForGroup(null);
   }, [selectedVariant]);
 
   // Check if variant has any groups (not counting ungrouped items)
   const hasGroups = equipmentData && equipmentData.equipment_groups.length > 0;
+
+  // Handle creating group with pending equipment
+  const handleCreateGroupWithEquipment = async () => {
+    if (!pendingEquipmentForGroup) return;
+    
+    try {
+      const newGroup = await handleCreateGroup();
+      if (newGroup) {
+        // Add the pending equipment to the new group
+        await addEquipmentItem({
+          equipment_id: pendingEquipmentForGroup.id,
+          group_id: newGroup.id,
+          quantity: 1,
+          notes: '',
+          _equipmentInfo: {
+            name: pendingEquipmentForGroup.name,
+            rental_price: pendingEquipmentForGroup.rental_price || null,
+            code: pendingEquipmentForGroup.code || null,
+            folder_id: pendingEquipmentForGroup.folder_id || null
+          }
+        });
+        
+        // Auto-select the newly created group
+        setSelectedGroupId(newGroup.id);
+        
+        // Scroll to the newly created group (with slight delay to ensure DOM update)
+        setTimeout(() => {
+          setScrollToItemId(newGroup.id);
+          setTimeout(() => setScrollToItemId(null), 1000);
+        }, 100);
+        
+        toast.success(`Created group "${newGroup.name}" and added ${pendingEquipmentForGroup.name}`);
+        setPendingEquipmentForGroup(null);
+      }
+    } catch (error) {
+      console.error('Error creating group with equipment:', error);
+      toast.error('Failed to create group with equipment');
+    }
+  };
 
   // Get selected group name
   const selectedGroupName = selectedGroupId 
@@ -166,11 +227,9 @@ export function VariantsContent({
 
     if (!selectedGroupId) {
       if (!hasGroups) {
-        // No groups exist - guide user to create one
-        toast.info(`Create a group first to add ${equipment.name}`, {
-          description: "Drag equipment to the variant area or use the 'Add Group' button",
-          duration: 4000
-        });
+        // No groups exist - trigger group creation with this equipment
+        setPendingEquipmentForGroup(equipment);
+        setShowNewGroupDialog(true);
         return;
       } else {
         toast.error('Please select a group first');
@@ -189,7 +248,8 @@ export function VariantsContent({
         _equipmentInfo: {
           name: equipment.name,
           rental_price: equipment.rental_price || null,
-          code: equipment.code || null
+          code: equipment.code || null,
+          folder_id: equipment.folder_id || null
         }
       });
       
@@ -342,6 +402,7 @@ export function VariantsContent({
                         <EquipmentSectionButton 
                           projectId={projectId} 
                           variantName={selectedVariant}
+                          onAddGroup={() => setShowNewGroupDialog(true)}
                         />
                       </div>
                     </div>
@@ -403,6 +464,40 @@ export function VariantsContent({
           </CardContent>
         </Card>
       </div>
+
+      {/* Group Creation Dialog */}
+      <GroupDialogs
+        groups={equipmentData?.equipment_groups || []}
+        showDeleteDialog={false} // Not handling deletes at this level
+        showNewGroupDialog={showNewGroupDialog}
+        groupToDelete={null}
+        targetGroupId=""
+        newGroupName={newGroupName}
+        onDeleteDialogClose={() => {}}
+        onNewGroupDialogClose={() => {
+          setShowNewGroupDialog(false);
+          setNewGroupName("");
+          setPendingEquipmentForGroup(null);
+        }}
+        onTargetGroupSelect={() => {}}
+        onNewGroupNameChange={setNewGroupName}
+        onConfirmDelete={() => {}}
+        onConfirmCreate={pendingEquipmentForGroup ? handleCreateGroupWithEquipment : async () => {
+          const newGroup = await handleCreateGroup();
+          if (newGroup) {
+            // Auto-select the newly created group
+            setSelectedGroupId(newGroup.id);
+            
+            // Scroll to the newly created group (with slight delay to ensure DOM update)
+            setTimeout(() => {
+              setScrollToItemId(newGroup.id);
+              setTimeout(() => setScrollToItemId(null), 1000);
+            }, 100);
+          }
+          setShowNewGroupDialog(false);
+          setNewGroupName("");
+        }}
+      />
     </div>
   );
 }

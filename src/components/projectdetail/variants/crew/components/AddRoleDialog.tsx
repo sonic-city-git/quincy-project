@@ -8,13 +8,11 @@ import { useForm } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useCrew } from "@/hooks/useCrew";
-import { useCrewSort } from "@/components/resources/crew/useCrewSort";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useQueryClient } from "@tanstack/react-query";
 import { SONIC_CITY_FOLDER_ID } from "@/constants/organizations";
 import { FORM_PATTERNS, createCurrencyInput, cn } from "@/design-system";
+import { CrewMemberSelectContent } from "@/components/resources/crew/CrewMemberSelectContent";
 
 interface AddRoleDialogProps {
   isOpen: boolean;
@@ -34,8 +32,7 @@ interface FormData {
 export function AddRoleDialog({ isOpen, onClose, project, variantName }: AddRoleDialogProps) {
   const { roles } = useCrewRoles();
   // PERFORMANCE OPTIMIZATION: Use consistent folder ID for crew data
-  const { crew } = useCrew(SONIC_CITY_FOLDER_ID);
-  const { sortCrew } = useCrewSort();
+  const { crew } = useCrew();
   const queryClient = useQueryClient();
 
   const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<FormData>({
@@ -44,8 +41,6 @@ export function AddRoleDialog({ isOpen, onClose, project, variantName }: AddRole
       hourly_rate: 850
     }
   });
-
-  const sortedCrew = sortCrew(crew || []);
 
   const onSubmit = async (data: FormData) => {
     try {
@@ -172,42 +167,7 @@ export function AddRoleDialog({ isOpen, onClose, project, variantName }: AddRole
               <SelectTrigger className={FORM_PATTERNS.dropdown.trigger}>
                 <SelectValue placeholder="Select preferred crew member" />
               </SelectTrigger>
-              <SelectContent className={FORM_PATTERNS.dropdown.content}>
-                <ScrollArea className="h-[200px]">
-                  {sortedCrew.map((member) => {
-                    const initials = member.name
-                      .split(' ')
-                      .map(n => n[0])
-                      .join('')
-                      .toUpperCase();
-
-                    return (
-                      <SelectItem 
-                        key={member.id} 
-                        value={member.id}
-                        className={cn(FORM_PATTERNS.dropdown.item, "flex items-center gap-3 py-2")}
-                      >
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-8 w-8">
-                            {member.avatar_url ? (
-                              <AvatarImage 
-                                src={member.avatar_url} 
-                                alt={member.name} 
-                                className="object-cover"
-                              />
-                            ) : (
-                              <AvatarFallback className="text-xs bg-muted text-muted-foreground">
-                                {initials}
-                              </AvatarFallback>
-                            )}
-                          </Avatar>
-                          <span className="truncate">{member.name}</span>
-                        </div>
-                      </SelectItem>
-                    );
-                  })}
-                </ScrollArea>
-              </SelectContent>
+              <CrewMemberSelectContent crew={crew || []} />
             </Select>
           </div>
 

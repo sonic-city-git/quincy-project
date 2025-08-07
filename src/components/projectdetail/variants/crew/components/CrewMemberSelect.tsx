@@ -21,7 +21,7 @@ export function CrewMemberSelect({
   className,
   'aria-label': ariaLabel 
 }: CrewMemberSelectProps) {
-  const { crew } = useCrew(SONIC_CITY_FOLDER_ID);
+  const { crew } = useCrew();
   const { sortCrew } = useCrewSort();
   
   // Memoize sorted crew for performance

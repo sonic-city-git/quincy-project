@@ -56,7 +56,12 @@ export function EquipmentGroup({
   // Scroll to specific item when scrollToItemId changes
   useEffect(() => {
     if (scrollToItemId) {
-      const element = document.getElementById(`equipment-${scrollToItemId}`);
+      // Try to find equipment item first, then group
+      let element = document.getElementById(`equipment-${scrollToItemId}`);
+      if (!element) {
+        element = document.getElementById(`group-${scrollToItemId}`);
+      }
+      
       if (element) {
         // Check if element is already in view
         const rect = element.getBoundingClientRect();
@@ -201,13 +206,15 @@ export function EquipmentGroup({
     return sortedFolders;
   }, [equipment, folders]);
   return (
-    <div className={cn(
-      "relative mb-1.5 rounded-lg transition-all duration-300",
-      "border-2", // Simple consistent border
-      isSelected 
-        ? "border-primary bg-primary/5" 
-        : "border-border/20 hover:border-border/40"
-    )}>
+    <div 
+      id={`group-${id}`}
+      className={cn(
+        "relative mb-1.5 rounded-lg transition-all duration-300",
+        "border-2", // Simple consistent border
+        isSelected 
+          ? "border-primary bg-primary/5" 
+          : "border-border/20 hover:border-border/40"
+      )}>
       {/* Group Header */}
       <div 
         className={cn(

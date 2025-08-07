@@ -23,13 +23,6 @@ export function EmptyDropZone({
       onDrop={onDrop}
       role="region"
       aria-label="Equipment drop zone"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          // Handle keyboard activation if needed
-        }
-      }}
     >
       {children}
     </div>

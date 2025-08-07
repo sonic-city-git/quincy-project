@@ -89,6 +89,8 @@ export function ProjectEquipmentItem({ item, onRemove, onUpdateQuantity, onSelec
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.stopPropagation(); // Prevent event bubbling to parent group
+    
     if (e.key === 'Enter') {
       e.preventDefault();
       e.currentTarget.blur(); // Remove focus after applying
@@ -110,7 +112,10 @@ export function ProjectEquipmentItem({ item, onRemove, onUpdateQuantity, onSelec
     setInputValue(item.quantity.toString());
   };
 
-  const handleRemove = async () => {
+  const handleRemove = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation(); // Prevent event bubbling to parent group
+    
     setIsRemoving(true);
     try {
       await onRemove();
@@ -144,6 +149,7 @@ export function ProjectEquipmentItem({ item, onRemove, onUpdateQuantity, onSelec
             onKeyDown={handleKeyDown}
             onFocus={handleFocus}
             onBlur={handleBlur}
+            onClick={(e) => e.stopPropagation()}
             className={cn(
               FORM_PATTERNS.input.default,
               "w-12 h-4 text-center text-xs font-bold",

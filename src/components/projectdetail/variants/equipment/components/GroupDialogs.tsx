@@ -123,6 +123,7 @@ export function GroupDialogs({
                 }
               }}
               aria-label="Equipment group name"
+              autoFocus
             />
           </div>
           <AlertDialogFooter className={FORM_PATTERNS.dialog.footer}>
