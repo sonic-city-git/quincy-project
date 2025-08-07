@@ -47,7 +47,7 @@ export function GroupList({
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
         <p className="text-sm font-medium">No equipment in this variant</p>
         <p className="text-xs mt-2 text-center max-w-xs">
-          Drag equipment from the stock panel or double-click here to create your first group
+          Drag equipment from the stock panel or use the "Add Group" button to create your first group
         </p>
       </div>
     );

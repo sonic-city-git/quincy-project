@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 import React from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useCrew } from "@/hooks/useCrew";
 import { Button } from "@/components/ui/button";
@@ -23,7 +22,7 @@ interface CompactCrewRolesListProps {
 }
 
 export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRolesListProps) {
-  const { crewRoles: roles, isLoading, invalidateCrewCache } = useVariantCrew(projectId, variantName);
+  const { crewRoles: roles, isLoading, invalidateCrewCache, updateCrewRole, removeCrewRole } = useVariantCrew(projectId, variantName);
   const { crew } = useCrew();
   const [isUpdating, setIsUpdating] = useState(false);
   const [roleToDelete, setRoleToDelete] = useState<string | null>(null);
@@ -72,12 +71,8 @@ export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRole
 
     setIsUpdating(true);
     try {
-      const { error } = await supabase
-        .from('project_roles')
-        .update({ [field]: newValue })
-        .eq('id', roleId);
-
-      if (error) throw error;
+      // Use the updateCrewRole function from the hook which handles cache invalidation
+      await updateCrewRole(roleId, { [field]: newValue });
       
       // Update local state to reflect the new saved value
       setRateInputValues(prev => ({
@@ -87,11 +82,8 @@ export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRole
           [inputKey]: newValue?.toString() || ''
         }
       }));
-      
-      toast.success('Rate updated successfully');
     } catch (error) {
       console.error('Error updating rate:', error);
-      toast.error('Failed to update rate');
       // Reset to original value on error
       setRateInputValues(prev => ({
         ...prev,
@@ -148,16 +140,10 @@ export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRole
   const handlePreferredChange = async (roleId: string, preferredId: string) => {
     setIsUpdating(true);
     try {
-      const { error } = await supabase
-        .from('project_roles')
-        .update({ preferred_id: preferredId })
-        .eq('id', roleId);
-
-      if (error) throw error;
-      toast.success('Preferred crew updated successfully');
+      await updateCrewRole(roleId, { preferred_id: preferredId });
     } catch (error) {
       console.error('Error updating preferred crew:', error);
-      toast.error('Failed to update preferred crew');
+      // Error toast is already handled by the updateCrewRole function
     } finally {
       setIsUpdating(false);
     }
@@ -168,24 +154,11 @@ export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRole
     
     setIsUpdating(true);
     try {
-      // Delete event role assignments first
-      await supabase
-        .from('project_event_roles')
-        .delete()
-        .eq('project_id', projectId)
-        .eq('role_id', roleToDelete);
-
-      // Delete the project role
-      await supabase
-        .from('project_roles')
-        .delete()
-        .eq('id', roleToDelete);
-
-      await invalidateCrewCache();
-      toast.success('Role deleted successfully');
+      // Use the removeCrewRole function from the hook which handles cache invalidation
+      await removeCrewRole(roleToDelete);
     } catch (error) {
       console.error('Error deleting role:', error);
-      toast.error('Failed to delete role');
+      // Error toast is already handled by the removeCrewRole function
     } finally {
       setIsUpdating(false);
       setRoleToDelete(null);
