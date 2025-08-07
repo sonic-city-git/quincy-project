@@ -52,8 +52,8 @@ export function EquipmentSelector({ onSelect, className, stickySearch = false, s
     return folders
       .filter(folder => !folder.parent_id)
       .sort((a, b) => {
-        const indexA = FOLDER_ORDER.indexOf(a.name);
-        const indexB = FOLDER_ORDER.indexOf(b.name);
+        const indexA = FOLDER_ORDER.indexOf(a.name as any);
+        const indexB = FOLDER_ORDER.indexOf(b.name as any);
         if (indexA === -1 && indexB === -1) return a.name.localeCompare(b.name);
         if (indexA === -1) return 1;
         if (indexB === -1) return -1;
@@ -125,8 +125,9 @@ export function EquipmentSelector({ onSelect, className, stickySearch = false, s
     if (!searchQuery) return [];
     
     return Object.entries(groupedByParent).reduce((acc: string[], [folderId, folder]) => {
-      const hasMatchingItems = folder.items.length > 0;
-      const hasMatchingSubfolders = Object.values(folder.subfolders).some(
+      const typedFolder = folder as { name: string; items: Equipment[]; subfolders: Record<string, { name: string; items: Equipment[] }> };
+      const hasMatchingItems = typedFolder.items.length > 0;
+      const hasMatchingSubfolders = Object.values(typedFolder.subfolders).some(
         subfolder => subfolder.items.length > 0
       );
 
