@@ -8,7 +8,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Settings, Plus, Box, Users, Layers } from 'lucide-react';
+import { Settings, Plus, Box, Users, Layers, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,8 +20,99 @@ import { VariantEquipmentList } from '../equipment/components/VariantEquipmentLi
 import { VariantCrewList } from '../crew/components/VariantCrewList';
 import { AvailableResourcesPanel } from './AvailableResourcesPanel';
 import { useVariantEquipment } from '@/hooks/useVariantEquipment';
+import { useVariantCrew } from '@/hooks/useVariantCrew';
+import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { Equipment } from '@/types/equipment';
 import { toast } from 'sonner';
+import { copyEquipmentBetweenVariants } from '@/utils/variantEquipmentCopy';
+import { AddRoleDialog } from '../crew/components/AddRoleDialog';
+
+// Equipment Section Button Component
+function EquipmentSectionButton({ projectId, variantName }: { projectId: string; variantName: string }) {
+  const { equipmentData } = useVariantEquipment(projectId, variantName);
+  
+  const hasEquipment = equipmentData && (
+    equipmentData.equipment_groups.length > 0 || 
+    equipmentData.equipment_ungrouped.length > 0
+  );
+
+  const handleCopyFromDefault = async () => {
+    if (variantName === 'default') {
+      toast.error('Cannot copy from default to itself');
+      return;
+    }
+
+    try {
+      await copyEquipmentBetweenVariants(projectId, 'default', variantName);
+      toast.success('Equipment copied successfully');
+    } catch (error) {
+      console.error('Error copying equipment:', error);
+      toast.error('Failed to copy equipment');
+    }
+  };
+
+  if (hasEquipment) {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => {/* TODO: Add group creation logic */}}
+        className="gap-1.5 h-7 text-xs"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        Add Group
+      </Button>
+    );
+  }
+
+  if (variantName !== 'default') {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={handleCopyFromDefault}
+        className="gap-1.5 h-7 text-xs"
+      >
+        <Copy className="h-3.5 w-3.5" />
+        Copy from Default
+      </Button>
+    );
+  }
+
+  return null;
+}
+
+// Crew Section Button Component
+function CrewSectionButton({ projectId, variantName }: { projectId: string; variantName: string }) {
+  const [isAddRoleDialogOpen, setIsAddRoleDialogOpen] = useState(false);
+  const { project } = useProjectDetails(projectId);
+  const { crewRoles } = useVariantCrew(projectId, variantName);
+
+  const totalRoles = crewRoles?.length || 0;
+
+  return (
+    <>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setIsAddRoleDialogOpen(true)}
+        className="gap-1.5 h-7 text-xs"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        {totalRoles > 0 ? 'Add Role' : 'Add First Role'}
+      </Button>
+
+      {project && (
+        <AddRoleDialog
+          isOpen={isAddRoleDialogOpen}
+          onClose={() => setIsAddRoleDialogOpen(false)}
+          project={project}
+          variantName={variantName}
+        />
+      )}
+    </>
+  );
+}
 
 interface VariantsContentProps {
   projectId: string;
@@ -243,9 +334,15 @@ export function VariantsContent({
                   {/* Equipment Section */}
                   <div className="xl:border-r border-border/50 bg-card/50 flex flex-col min-h-0">
                     <div className="px-4 py-3 border-b border-border/50 bg-background/10 flex-shrink-0">
-                      <div className="flex items-center gap-2">
-                        <Box className={cn('h-4 w-4', STATUS_COLORS.info.text)} />
-                        <h3 className="font-medium text-sm">Equipment</h3>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Box className={cn('h-4 w-4', STATUS_COLORS.info.text)} />
+                          <h3 className="font-medium text-sm">Equipment</h3>
+                        </div>
+                        <EquipmentSectionButton 
+                          projectId={projectId} 
+                          variantName={selectedVariant}
+                        />
                       </div>
                     </div>
                     <div className="flex-1 min-h-0 relative">
@@ -266,9 +363,15 @@ export function VariantsContent({
                   {/* Crew Section */}
                   <div className="bg-card/30 flex flex-col xl:border-t-0 border-t border-border/50 xl:mt-0 mt-4 min-h-0">
                     <div className="px-4 py-3 border-b border-border/50 bg-background/10 flex-shrink-0">
-                      <div className="flex items-center gap-2">
-                        <Users className={cn('h-4 w-4', STATUS_COLORS.success.text)} />
-                        <h3 className="font-medium text-sm">Crew Roles</h3>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Users className={cn('h-4 w-4', STATUS_COLORS.success.text)} />
+                          <h3 className="font-medium text-sm">Crew Roles</h3>
+                        </div>
+                        <CrewSectionButton 
+                          projectId={projectId} 
+                          variantName={selectedVariant}
+                        />
                       </div>
                     </div>
                     <div className="flex-1 min-h-0 relative">

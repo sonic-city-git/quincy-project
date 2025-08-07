@@ -6,16 +6,8 @@
  * ✅ Compact view for right panel
  */
 
-import { useState } from 'react';
-import { Copy, Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Package } from 'lucide-react';
 import { useVariantEquipment } from '@/hooks/useVariantEquipment';
-
-import { copyEquipmentBetweenVariants } from '@/utils/variantEquipmentCopy';
-import { toast } from 'sonner';
-import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
-import { cn } from '@/design-system';
 import { BaseEquipmentList } from './BaseEquipmentList';
 
 interface VariantEquipmentListProps {
@@ -41,32 +33,6 @@ export function VariantEquipmentList({
 
   // Note: Group management is handled by BaseEquipmentList through useVariantEquipment hook
 
-  const hasEquipment = equipmentData && (
-    equipmentData.equipment_groups.length > 0 || 
-    equipmentData.equipment_ungrouped.length > 0
-  );
-
-  const handleCopyFromDefault = async () => {
-    if (variantName === 'default') {
-      toast.error('Cannot copy to default variant');
-      return;
-    }
-
-    try {
-      const result = await copyEquipmentBetweenVariants(projectId, 'default', variantName);
-      
-      if (result.success) {
-        toast.success(`Copied ${result.copiedCount} equipment items from default variant`);
-        window.location.reload(); // Simple refresh for now
-      } else {
-        toast.error(result.error || 'Failed to copy equipment');
-      }
-    } catch (error) {
-      console.error('Error copying equipment:', error);
-      toast.error('Failed to copy equipment from default variant');
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -89,23 +55,7 @@ export function VariantEquipmentList({
   }
 
   return (
-    <div className="space-y-3">
-
-      {/* Actions */}
-      {variantName !== 'default' && !hasEquipment && (
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCopyFromDefault}
-            className="gap-1.5 w-full"
-          >
-            <Copy className="h-3.5 w-3.5" />
-            Copy from Default
-          </Button>
-        </div>
-      )}
-
+    <div>
       {/* Equipment Content - Always show BaseEquipmentList for drag & drop */}
       <div className="space-y-1.5">
         <BaseEquipmentList 
