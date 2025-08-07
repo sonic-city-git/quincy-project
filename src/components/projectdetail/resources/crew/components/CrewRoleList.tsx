@@ -217,7 +217,7 @@ export function CrewRoleList({ projectId }: CrewRoleListProps) {
               
               {/* Preferred Crew Selection */}
               <Select
-                defaultValue={role.preferred?.id}
+                defaultValue={role.preferred_member?.id}
                 onValueChange={(value) => handlePreferredChange(role.id, value)}
               >
                 <SelectTrigger className={cn(FORM_PATTERNS.dropdown.trigger, "max-w-[300px]")}>

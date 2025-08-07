@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Project } from '@/types/projects';
 import { ProjectTabCard } from '../shared/ProjectTabCard';
 import { LayersIcon } from 'lucide-react';
-import { VariantsContent } from './components/VariantsContent';
+import { ResourcesContent } from './components/ResourcesContent';
 import { CreateVariantDialog } from './components/CreateVariantDialog';
 import { EditVariantDialog } from './components/EditVariantDialog';
 import { useProjectVariants } from '@/hooks/useProjectVariants';
@@ -13,7 +13,7 @@ import { ErrorBoundary } from 'react-error-boundary';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
 
-interface VariantsTabProps {
+interface ResourcesTabProps {
   projectId: string;
   project?: Project;
 }
@@ -33,7 +33,7 @@ function ErrorFallback({ error, resetErrorBoundary }: { error: Error; resetError
   );
 }
 
-export function VariantsTab({ projectId, project }: VariantsTabProps) {
+export function ResourcesTab({ projectId, project }: ResourcesTabProps) {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingVariant, setEditingVariant] = useState<any>(null);
 
@@ -89,7 +89,7 @@ export function VariantsTab({ projectId, project }: VariantsTabProps) {
         icon={LayersIcon}
         iconColor="text-primary"
       >
-        <VariantsContent
+        <ResourcesContent
           projectId={projectId}
           variants={variants}
           selectedVariant={selectedVariant}

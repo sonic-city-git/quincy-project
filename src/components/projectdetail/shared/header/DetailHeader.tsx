@@ -9,8 +9,8 @@ import {
 import { COMPONENT_CLASSES, RESPONSIVE, cn } from "@/design-system";
 
 interface DetailHeaderProps {
-  activeTab: 'general' | 'variants' | 'financial';
-  onTabChange: (tab: 'general' | 'variants' | 'financial') => void;
+  activeTab: 'general' | 'resources' | 'financial';
+  onTabChange: (tab: 'general' | 'resources' | 'financial') => void;
   canArchive: boolean;
   onArchiveClick: () => void;
 }
@@ -24,9 +24,9 @@ export function DetailHeader({
 
   const getTabConfig = () => {
     switch (activeTab) {
-      case 'variants':
-        return { 
-          title: 'Project Variants', 
+          case 'resources':
+      return {
+        title: 'Project Resources', 
           icon: Layers, 
           color: 'text-primary',
           activeClasses: 'bg-primary/10 text-primary border-primary/20'
@@ -105,18 +105,18 @@ export function DetailHeader({
               <span className="hidden sm:inline">General</span>
             </Button>
             <Button
-              variant={activeTab === 'variants' ? 'default' : 'ghost'}
+              variant={activeTab === 'resources' ? 'default' : 'ghost'}
               size="sm"
-              onClick={() => onTabChange('variants')}
+              onClick={() => onTabChange('resources')}
               className={cn(
                 "flex items-center gap-2 transition-colors",
-                activeTab === 'variants' ? 'bg-primary/10 text-primary border-primary/20' : 'hover:bg-muted/50'
+                activeTab === 'resources' ? 'bg-primary/10 text-primary border-primary/20' : 'hover:bg-muted/50'
               )}
-              aria-pressed={activeTab === 'variants'}
-              aria-label="Switch to Variants tab"
+              aria-pressed={activeTab === 'resources'}
+              aria-label="Switch to Resources tab"
             >
               <Layers className="h-4 w-4" />
-              <span className="hidden sm:inline">Variants</span>
+              <span className="hidden sm:inline">Resources</span>
             </Button>
             <Button
               variant={activeTab === 'financial' ? 'default' : 'ghost'}

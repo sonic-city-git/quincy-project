@@ -17,7 +17,7 @@ export const useProjectRoles = (projectId?: string) => {
             name,
             color
           ),
-          preferred:crew_members (
+          preferred_member:crew_members (
             id,
             name
           )

@@ -19,8 +19,8 @@ const TAB_CONFIG = {
     icon: Settings,
     activeClasses: 'bg-secondary/10 text-secondary border-secondary/20'
   },
-  projectresources: {
-    label: 'Variants',
+  resources: {
+    label: 'Resources',
     icon: Layers,
     activeClasses: 'bg-primary/10 text-primary border-primary/20'
   },

@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Loader2, Layers, Plus } from "lucide-react";
 import { ProjectVariant } from '@/types/variants';
 import { getProjectVariants } from '@/utils/variantHelpers';
-import { CreateVariantDialog } from '@/components/projectdetail/variants/components/CreateVariantDialog';
+import { CreateVariantDialog } from '@/components/projectdetail/resources/components/CreateVariantDialog';
 import { useProjectVariants } from '@/hooks/useProjectVariants';
 
 interface VariantSelectorProps {

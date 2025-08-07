@@ -123,7 +123,7 @@ function CrewSectionButton({ projectId, variantName }: { projectId: string; vari
   );
 }
 
-interface VariantsContentProps {
+interface ResourcesContentProps {
   projectId: string;
   variants: ProjectVariant[];
   selectedVariant: string;
@@ -133,7 +133,7 @@ interface VariantsContentProps {
   onCreateVariant?: () => void;
 }
 
-export function VariantsContent({
+export function ResourcesContent({
   projectId,
   variants,
   selectedVariant,
@@ -141,7 +141,7 @@ export function VariantsContent({
   isLoading,
   onEditVariant,
   onCreateVariant
-}: VariantsContentProps) {
+}: ResourcesContentProps) {
   // Track selected group for adding equipment
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [scrollToItemId, setScrollToItemId] = useState<string | null>(null);
