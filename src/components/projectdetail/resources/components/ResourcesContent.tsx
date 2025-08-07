@@ -308,7 +308,7 @@ export function ResourcesContent({
   const operationalColors = STATUS_COLORS.operational;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 h-[calc(100vh-150px)] min-h-[650px] max-h-[950px]">
+    <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-4 h-[calc(100vh-150px)] min-h-[650px] max-h-[950px]">
       {/* 🎯 LEFT: Available Resources Panel */}
       <AvailableResourcesPanel 
         projectId={projectId} 

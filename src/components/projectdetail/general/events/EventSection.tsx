@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useEquipmentSync } from '@/hooks/useEquipmentSync';
 import { useState } from 'react';
+import { STATUS_COLORS } from "@/components/dashboard/shared/StatusCard";
 
 interface EventSectionProps {
   title: string;
@@ -59,7 +60,11 @@ export function EventSection({
   };
 
   return (
-    <div>
+    <div className={cn(
+      'rounded-lg overflow-hidden',
+      'bg-background border border-border',
+      'shadow-sm hover:shadow-md transition-shadow duration-200'
+    )}>
       {!hideHeader && (
         <EventSectionHeader 
           title={title}
@@ -69,15 +74,7 @@ export function EventSection({
         />
       )}
       
-      {/* Column Headers - always show unless hidden */}
-      {!hideHeader && (
-        <EventSectionTableHeader 
-          events={events}
-          onStatusChange={onStatusChange}
-        />
-      )}
-      
-      <EventContent variant="list" spacing="sm" className="-mt-2">
+      <EventContent variant="list" spacing="sm" className="-mt-2 overflow-hidden">
         {events.map((event) => (
           <EventCard
             key={event.id}
@@ -122,6 +119,9 @@ function EventSectionHeader({
   const queryClient = useQueryClient();
   const { syncEvents } = useEquipmentSync();
   const [isSyncingCrew, setIsSyncingCrew] = useState(false);
+  
+  // Get design system colors based on variant
+  const statusColors = STATUS_COLORS[variant] || STATUS_COLORS.info;
 
   // Check if events need equipment/crew
   const needsEquipment = events.some(event => event.type?.needs_equipment);
@@ -180,75 +180,34 @@ function EventSectionHeader({
   };
   
   return (
-    <Card className={cn(
-      'border-b border-border/20 border-l-0 border-r-0 border-t-0 rounded-none shadow-none',
-      'bg-gradient-to-r from-muted/10 to-muted/30'
+    <div className={cn(
+      'rounded-t-lg overflow-hidden',
+      'bg-gradient-to-br', statusColors.bg,
+      'border', statusColors.border,
+      'shadow-sm'
     )}>
-      <EventGrid variant="card" className="min-h-[48px] py-2 md:py-2">
-        {/* Date Column - Section title (aligns with dates below) */}
-        <EventGridColumns.Date>
-          <div className="flex items-center gap-3">
-            <EventStatus
-              event={events[0]}
-              variant="icon"
-              onStatusChange={onStatusChange}
-            />
-            <h3 className="text-lg font-bold tracking-tight leading-6 text-white">{title}</h3>
-            <span className="text-xs text-muted-foreground/80 font-medium whitespace-nowrap flex items-center h-6">
-              {events.length} event{events.length !== 1 ? 's' : ''}
-            </span>
-          </div>
-        </EventGridColumns.Date>
-        
-        {/* Event Details Column - empty for spacing */}
-        <EventGridColumns.Event>
-        </EventGridColumns.Event>
-        
-        {/* Type Badge Column - empty, only on tablet+ to match grid */}
-        <div className="hidden md:block"></div>
-        
-        {/* Variant Column - empty, only on tablet+ to match grid */}
-        <div className="hidden md:block"></div>
-        
-        {/* Equipment Icon Column - Section Equipment Sync */}
-        <EventGridColumns.Icon>
-          {!isCancelled && !isInvoiceReady && needsEquipment && (
-            <EventEquipment
-              events={events}
-              variant="icon"
-              onSync={handleSyncSectionEquipment}
-            />
-          )}
-        </EventGridColumns.Icon>
-        
-        {/* Crew Icon Column - Section Crew Sync */}
-        <EventGridColumns.Icon>
-          {!isCancelled && !isInvoiceReady && needsCrew && (
-            <EventCrew
-              events={events}
-              variant="icon"
-              onSyncPreferredCrew={handleSyncSectionCrew}
-            />
-          )}
-        </EventGridColumns.Icon>
-        
-        {/* Status Action Column - empty */}
-        <EventGridColumns.Action>
-        </EventGridColumns.Action>
-        
-        {/* Equipment Price Column - empty */}
-        <EventGridColumns.Price>
-        </EventGridColumns.Price>
-        
-        {/* Crew Price Column - empty */}
-        <EventGridColumns.Price>
-        </EventGridColumns.Price>
-        
-        {/* Total Price Column - empty */}
-        <EventGridColumns.Price>
-        </EventGridColumns.Price>
-      </EventGrid>
-    </Card>
+      {/* Section Header */}
+      <div className="px-4 py-3 border-b border-border/20">
+        <div className="flex items-center gap-3">
+          <EventStatus
+            event={events[0]}
+            variant="icon"
+            onStatusChange={onStatusChange}
+          />
+          <h3 className="text-sm font-bold tracking-tight leading-6 text-foreground">{title}</h3>
+          <span className="text-xs text-muted-foreground/80 font-medium whitespace-nowrap flex items-center h-6">
+            {events.length} event{events.length !== 1 ? 's' : ''}
+          </span>
+        </div>
+      </div>
+      
+      {/* Column Headers */}
+      <EventSectionTableHeader 
+        events={events}
+        onStatusChange={onStatusChange}
+      />
+      
+    </div>
   );
 }
 
@@ -270,23 +229,14 @@ function EventSectionSummary({
   eventCount: number;
   variant?: 'warning' | 'success' | 'info' | 'critical' | 'operational';
 }) {
-  // Get status pattern for enhanced styling
-  const getStatusPattern = () => {
-    switch (variant) {
-      case 'warning': return { bg: 'bg-gradient-to-r from-orange-50/20 to-orange-100/20', border: 'border-orange-200/30', accent: 'text-orange-600' };
-      case 'success': return { bg: 'bg-gradient-to-r from-green-50/20 to-green-100/20', border: 'border-green-200/30', accent: 'text-green-600' };
-      case 'info': return { bg: 'bg-gradient-to-r from-blue-50/20 to-blue-100/20', border: 'border-blue-200/30', accent: 'text-blue-600' };
-      case 'critical': return { bg: 'bg-gradient-to-r from-red-50/20 to-red-100/20', border: 'border-red-200/30', accent: 'text-red-600' };
-      default: return { bg: 'bg-gradient-to-r from-muted/10 to-muted/20', border: 'border-border/30', accent: 'text-muted-foreground' };
-    }
-  };
-
-  const pattern = getStatusPattern();
+  // Use design system status colors
+  const statusColors = STATUS_COLORS[variant] || STATUS_COLORS.info;
 
   return (
     <div className={cn(
-      'mt-4 rounded-lg shadow-sm',
-      pattern.bg
+      'mt-4 rounded-lg shadow-sm border',
+      'bg-gradient-to-br', statusColors.bg,
+      statusColors.border
     )}>
       <EventGrid variant="card">
         {/* Date Column - Total text */}
@@ -300,8 +250,8 @@ function EventSectionSummary({
         <EventGridColumns.Event>
         </EventGridColumns.Event>
         
-        {/* Type Badge Column - empty, only on tablet+ to match grid */}
-        <div className="hidden md:block"></div>
+        {/* Type Badge Column - empty, only on small+ to match grid */}
+        <div className="hidden sm:block"></div>
         
         {/* Variant Column - empty, only on tablet+ to match grid */}
         <div className="hidden md:block"></div>
@@ -320,13 +270,13 @@ function EventSectionSummary({
         <EventGridColumns.Action>
         </EventGridColumns.Action>
         
-        {/* Equipment Price - Hidden until tablet to prioritize Total */}
-        <EventGridColumns.Price variant="muted" className="hidden md:flex">
+        {/* Equipment Price - Hide FIRST when space is tight (show only on wide+ screens) */}
+        <EventGridColumns.Price variant="muted" className="hidden xl:flex">
           {formatPrice(totalEquipment)}
         </EventGridColumns.Price>
         
-        {/* Crew Price - Hidden until tablet to prioritize Total */}
-        <EventGridColumns.Price variant="muted" className="hidden md:flex">
+        {/* Crew Price - Hide SECOND when space is tight (show from desktop+ screens) */}
+        <EventGridColumns.Price variant="muted" className="hidden lg:flex">
           {formatPrice(totalCrew)}
         </EventGridColumns.Price>
         
