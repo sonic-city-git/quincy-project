@@ -142,58 +142,26 @@ export function EquipmentSelector({ onSelect, className, stickySearch = false, s
     return [...new Set([...autoExpandedFolders, ...expandedFolders])];
   }, [autoExpandedFolders, expandedFolders]);
 
-  // Handle folder expansion with Cmd+click support and sequential animations
+  // Handle folder expansion with Cmd+click support
   const handleFolderToggle = useCallback((folderId: string, isCtrlClick: boolean = false) => {
     if (isCtrlClick) {
-      // Cmd+click: expand/collapse this folder and all its subfolders with sequential animation
-      const folderData = groupedByParent[folderId];
-      if (!folderData) return;
-      
-      const subfolderIds = Object.keys(folderData.subfolders);
-      const allRelatedIds = [folderId, ...subfolderIds];
-      
+      // Cmd+click: expand/collapse this folder and all its subfolders instantly
       setExpandedFolders(prev => {
-        // Check if main folder and all subfolders are currently expanded
-        const mainExpanded = prev.includes(folderId) || autoExpandedFolders.includes(folderId);
-        const allSubfoldersExpanded = subfolderIds.every(id => prev.includes(id) || autoExpandedFolders.includes(id));
-        const shouldCollapse = mainExpanded && allSubfoldersExpanded;
+        const folderData = groupedByParent[folderId];
+        if (!folderData) return prev;
         
-        if (shouldCollapse) {
-          // CLOSING SEQUENCE: subfolders first, then main folder
-          const newState = [...prev];
-          
-          // Close subfolders with staggered delays (150ms apart)
-          subfolderIds.forEach((subId, index) => {
-            setTimeout(() => {
-              setExpandedFolders(current => current.filter(id => id !== subId));
-            }, index * 150);
-          });
-          
-          // Close main folder after all subfolders (additional 200ms delay)
-          setTimeout(() => {
-            setExpandedFolders(current => current.filter(id => id !== folderId));
-          }, subfolderIds.length * 150 + 200);
-          
-          return newState;
+        const subfolderIds = Object.keys(folderData.subfolders);
+        const allRelatedIds = [folderId, ...subfolderIds];
+        
+        // If all are expanded, collapse all; otherwise expand all
+        const allExpanded = allRelatedIds.every(id => prev.includes(id) || autoExpandedFolders.includes(id));
+        
+        if (allExpanded) {
+          // Remove all related folders instantly
+          return prev.filter(id => !allRelatedIds.includes(id));
         } else {
-          // OPENING SEQUENCE: main folder first, then subfolders
-          let newState = [...prev];
-          
-          // Open main folder immediately if not already open
-          if (!mainExpanded) {
-            newState = [...newState, folderId];
-          }
-          
-          // Open subfolders with staggered delays (100ms apart, starting after 200ms)
-          subfolderIds.forEach((subId, index) => {
-            if (!newState.includes(subId) && !autoExpandedFolders.includes(subId)) {
-              setTimeout(() => {
-                setExpandedFolders(current => [...current, subId]);
-              }, 200 + index * 100);
-            }
-          });
-          
-          return newState;
+          // Add all related folders instantly
+          return [...new Set([...prev, ...allRelatedIds])];
         }
       });
     } else {
