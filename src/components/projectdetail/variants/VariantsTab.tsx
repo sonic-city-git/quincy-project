@@ -89,7 +89,7 @@ export function VariantsTab({ projectId, project }: VariantsTabProps) {
       <ProjectTabCard
         title="Variants"
         icon={LayersIcon}
-        iconColor="text-indigo-500"
+        iconColor="text-primary"
       >
         <VariantsContent
           projectId={projectId}

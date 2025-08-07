@@ -44,7 +44,7 @@ export function VariantActions({
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
 
   const currentVariant = variants.find(v => v.variant_name === selectedVariant);
-  const canDelete = variants.length > 1 && currentVariant && !currentVariant.is_default;
+  const canDelete = variants.length > 1 && currentVariant;
 
   // Memoized handlers for performance
   const handleCreateVariant = useCallback(async (data: CreateVariantPayload) => {

@@ -49,10 +49,7 @@ export function DeleteVariantDialog({
   };
 
   const getRestrictionReason = () => {
-    if (variant.is_default) {
-      return "Cannot delete the default variant. Make another variant the default first.";
-    }
-    return "Cannot delete the only remaining variant. Create another variant first.";
+    return "Cannot delete this variant. This may be the default variant (first created) or the only remaining variant.";
   };
 
   return (

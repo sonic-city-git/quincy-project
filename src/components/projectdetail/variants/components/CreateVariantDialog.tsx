@@ -24,7 +24,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+
 import { ProjectVariant, CreateVariantPayload, VARIANT_CONSTANTS } from '@/types/variants';
 import { Loader2 } from 'lucide-react';
 
@@ -33,7 +33,6 @@ const createVariantSchema = z.object({
     .min(1, 'Variant name is required')
     .max(VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH, `Variant name must be ${VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH} characters or less`),
   description: z.string().optional(),
-  is_default: z.boolean().default(false),
 });
 
 type CreateVariantForm = z.infer<typeof createVariantSchema>;
@@ -58,7 +57,6 @@ export function CreateVariantDialog({
     defaultValues: {
       variant_name: '',
       description: '',
-      is_default: existingVariants.length === 0, // First variant should be default
     },
   });
 
@@ -76,7 +74,6 @@ export function CreateVariantDialog({
       await onCreateVariant({
         variant_name: data.variant_name,
         description: data.description || undefined,
-        is_default: data.is_default,
       });
 
       // Reset form and close dialog
@@ -149,27 +146,7 @@ export function CreateVariantDialog({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="is_default"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Default Variant</FormLabel>
-                    <FormDescription>
-                      Make this the default variant for new events
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled={existingVariants.length === 0} // First variant must be default
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+
 
             <div className="flex justify-end space-x-2 pt-4">
               <Button

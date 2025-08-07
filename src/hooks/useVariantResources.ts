@@ -37,8 +37,8 @@ export function useVariantResources(
     queryFn: async (): Promise<VariantResourceData> => {
       // console.log('🔍 [useVariantResources] Fetching resources for:', { projectId, variantName });
       
-      if (!projectId || !variantName) {
-        console.log('⚠️ [useVariantResources] Missing projectId or variantName:', { projectId, variantName });
+      if (!projectId || !variantName || variantName.trim() === '') {
+        console.log('⚠️ [useVariantResources] Missing or empty projectId/variantName:', { projectId, variantName });
         return {
           crew_roles: [],
           equipment_groups: [],
@@ -231,13 +231,30 @@ export function useVariantResources(
 
   const addEquipmentItemMutation = useMutation({
     mutationFn: async (
-      itemData: Omit<VariantEquipmentItem, 'id' | 'project_id' | 'variant_name'>
+      itemData: Omit<VariantEquipmentItem, 'id' | 'project_id' | 'variant_id'>
     ): Promise<VariantEquipmentItem> => {
+      // First resolve the variant_id from variantName
+      const { data: variant, error: variantError } = await supabase
+        .from('project_variants')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('variant_name', variantName)
+        .maybeSingle();
+
+      if (variantError) {
+        console.error('Error finding variant for equipment addition:', variantError);
+        throw new Error(`Failed to find variant: ${variantError.message}`);
+      }
+
+      if (!variant) {
+        throw new Error(`Variant "${variantName}" not found for project ${projectId}`);
+      }
+
       const { data, error } = await supabase
         .from('project_equipment')
         .insert({
           project_id: projectId,
-          variant_name: variantName,
+          variant_id: variant.id,
           equipment_id: itemData.equipment_id,
           group_id: itemData.group_id,
           quantity: itemData.quantity,
@@ -530,15 +547,15 @@ async function fetchVariantCrewRoles(
     .select('id')
     .eq('project_id', projectId)
     .eq('variant_name', variantName)
-    .single();
+    .maybeSingle();
 
   if (variantError) {
-    console.error('Error fetching variant:', variantError);
-    throw new Error(`Failed to fetch variant: ${variantError.message}`);
+    console.warn('Variant not found for crew roles (may not exist yet):', variantError.message);
+    return [];
   }
 
   if (!variant) {
-    console.error('Variant not found:', { projectId, variantName });
+    console.warn('Variant not found for crew roles:', { projectId, variantName });
     return [];
   }
 
@@ -580,15 +597,15 @@ async function fetchVariantEquipmentGroups(
     .select('id')
     .eq('project_id', projectId)
     .eq('variant_name', variantName)
-    .single();
+    .maybeSingle();
 
   if (variantError) {
-    console.error('Error fetching variant:', variantError);
-    throw new Error(`Failed to fetch variant: ${variantError.message}`);
+    console.warn('Variant not found for equipment groups (may not exist yet):', variantError.message);
+    return [];
   }
 
   if (!variant) {
-    console.error('Variant not found:', { projectId, variantName });
+    console.warn('Variant not found for equipment groups:', { projectId, variantName });
     return [];
   }
 
@@ -620,15 +637,15 @@ async function fetchVariantEquipmentItems(
     .select('id')
     .eq('project_id', projectId)
     .eq('variant_name', variantName)
-    .single();
+    .maybeSingle();
 
   if (variantError) {
-    console.error('Error fetching variant:', variantError);
-    throw new Error(`Failed to fetch variant: ${variantError.message}`);
+    console.warn('Variant not found for equipment items (may not exist yet):', variantError.message);
+    return [];
   }
 
   if (!variant) {
-    console.error('Variant not found:', { projectId, variantName });
+    console.warn('Variant not found for equipment items:', { projectId, variantName });
     return [];
   }
 

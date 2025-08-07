@@ -24,7 +24,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+
 import { ProjectVariant, CreateVariantPayload, VARIANT_CONSTANTS } from '@/types/variants';
 import { Loader2, Copy } from 'lucide-react';
 
@@ -33,7 +33,6 @@ const duplicateVariantSchema = z.object({
     .min(1, 'Variant name is required')
     .max(VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH, `Variant name must be ${VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH} characters or less`),
   description: z.string().optional(),
-  is_default: z.boolean().default(false),
 });
 
 type DuplicateVariantForm = z.infer<typeof duplicateVariantSchema>;
@@ -65,7 +64,6 @@ export function DuplicateVariantDialog({
     defaultValues: {
       variant_name: ensureUniqueVariantName(suggestedVariantName, existingVariantNames),
       description: sourceVariant.description ? `Copy of: ${sourceVariant.description}` : '',
-      is_default: false, // Duplicates should not be default by default
     },
   });
 
@@ -95,7 +93,6 @@ export function DuplicateVariantDialog({
       await onDuplicateVariant({
         variant_name: data.variant_name,
         description: data.description || undefined,
-        is_default: data.is_default,
       });
 
       // Reset form and close dialog
@@ -192,26 +189,7 @@ export function DuplicateVariantDialog({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="is_default"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Default Variant</FormLabel>
-                    <FormDescription>
-                      Make this duplicated variant the default for new events
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
+
 
             {/* Info about what gets copied */}
             <div className="bg-muted/50 p-3 rounded-lg text-sm">

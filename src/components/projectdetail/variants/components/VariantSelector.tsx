@@ -30,12 +30,9 @@ export function VariantSelector({
 }: VariantSelectorProps) {
   // Find the currently selected variant
   const currentVariant = variants.find(v => v.variant_name === selectedVariant);
-  const defaultVariant = variants.find(v => v.is_default);
 
-  // Sort variants: default first, then by sort_order
+  // Sort variants by sort_order (first created variant is "default")
   const sortedVariants = [...variants].sort((a, b) => {
-    if (a.is_default) return -1;
-    if (b.is_default) return 1;
     return (a.sort_order || 0) - (b.sort_order || 0);
   });
 
@@ -78,12 +75,6 @@ export function VariantSelector({
           <div>
             <div className="font-medium text-sm flex items-center gap-2">
               {variant.variant_name}
-              {variant.is_default && (
-                <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
-                  <Star className="h-2.5 w-2.5 mr-1 fill-current" />
-                  Default
-                </Badge>
-              )}
             </div>
             {variant.description && (
               <div className="text-xs text-muted-foreground">
@@ -113,12 +104,6 @@ export function VariantSelector({
             <div className="text-left">
               <div className="font-medium text-sm flex items-center gap-2">
                 {currentVariant?.variant_name || 'Select Variant'}
-                {currentVariant?.is_default && (
-                  <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
-                    <Star className="h-2.5 w-2.5 mr-1 fill-current" />
-                    Default
-                  </Badge>
-                )}
               </div>
               {currentVariant?.description && (
                 <div className="text-xs text-muted-foreground">
@@ -149,12 +134,7 @@ export function VariantSelector({
                 <span className="font-medium text-sm">
                   {variant.variant_name}
                 </span>
-                {variant.is_default && (
-                  <Badge variant="outline" className="text-xs px-1.5 py-0.5 h-5">
-                    <Star className="h-2.5 w-2.5 mr-1 fill-current" />
-                    Default
-                  </Badge>
-                )}
+
                 {selectedVariant === variant.variant_name && (
                   <Badge variant="default" className="text-xs px-1.5 py-0.5 h-5">
                     Active

@@ -47,15 +47,22 @@ export function GroupDialogs({
       >
         <AlertDialogContent className={FORM_PATTERNS.dialog.container}>
           <AlertDialogHeader className={FORM_PATTERNS.dialog.header}>
-            <AlertDialogTitle>Delete Group</AlertDialogTitle>
-            <AlertDialogDescription>
-              This group contains equipment. Would you like to move the equipment to another group or delete it?
+            <AlertDialogTitle>Delete Group with Equipment</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                The group <strong>"{groups.find(g => g.id === groupToDelete)?.name || 'Unknown'}"</strong> contains equipment. 
+                Choose what to do with the equipment:
+              </p>
+              <ul className="text-sm space-y-1 ml-4">
+                <li>• <strong>Move to another group:</strong> Select a target group below</li>
+                <li>• <strong>Delete equipment with group:</strong> Leave selection empty to delete all equipment</li>
+              </ul>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className={FORM_PATTERNS.field.group}>
             <Select value={targetGroupId} onValueChange={onTargetGroupSelect}>
               <SelectTrigger className={FORM_PATTERNS.dropdown.trigger}>
-                <SelectValue placeholder="Select a target group (or leave empty to delete equipment)" />
+                <SelectValue placeholder="Select target group (or leave empty to delete equipment)" />
               </SelectTrigger>
               <SelectContent className={FORM_PATTERNS.dropdown.content}>
                 {groups
@@ -73,13 +80,21 @@ export function GroupDialogs({
               </SelectContent>
             </Select>
           </div>
+          {!targetGroupId && (
+            <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+              <p className="text-sm text-destructive font-medium">⚠️ Warning</p>
+              <p className="text-sm text-muted-foreground">
+                No target group selected. All equipment in this group will be permanently deleted.
+              </p>
+            </div>
+          )}
           <AlertDialogFooter className={FORM_PATTERNS.dialog.footer}>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction 
               onClick={onConfirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {targetGroupId ? 'Move & Delete Group' : 'Delete All'}
+              {targetGroupId ? 'Move Equipment & Delete Group' : 'Delete Equipment & Group'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

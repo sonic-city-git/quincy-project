@@ -37,11 +37,27 @@ export function GroupSelector({ projectId, variantName, onGroupSelect }: GroupSe
   const { data: equipmentGroups = [], isLoading: isLoadingGroups } = useQuery({
     queryKey: ['project-equipment-groups', projectId, variantName],
     queryFn: async () => {
+      // First get the variant_id from variantName
+      const { data: variant, error: variantError } = await supabase
+        .from('project_variants')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('variant_name', variantName)
+        .maybeSingle();
+
+      if (variantError) {
+        throw new Error(`Failed to find variant: ${variantError.message}`);
+      }
+
+      if (!variant) {
+        return [];
+      }
+
       const { data, error } = await supabase
         .from('project_equipment_groups')
         .select('*')
         .eq('project_id', projectId)
-        .eq('variant_name', variantName)
+        .eq('variant_id', variant.id)
         .order('sort_order');
       
       if (error) throw error;
@@ -79,13 +95,29 @@ export function GroupSelector({ projectId, variantName, onGroupSelect }: GroupSe
         Math.max(max, group.sort_order || 0), -1);
       const nextSortOrder = maxSortOrder + 1;
 
+      // First get the variant_id from variantName
+      const { data: variant, error: variantError } = await supabase
+        .from('project_variants')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('variant_name', variantName)
+        .maybeSingle();
+
+      if (variantError) {
+        throw new Error(`Failed to find variant: ${variantError.message}`);
+      }
+
+      if (!variant) {
+        throw new Error(`Variant "${variantName}" not found for project ${projectId}`);
+      }
+
       // If the group doesn't exist, create it
       const { data, error } = await supabase
         .from('project_equipment_groups')
         .insert({
           project_id: projectId,
           name,
-          variant_name: variantName,
+          variant_id: variant.id,
           sort_order: nextSortOrder
         })
         .select()

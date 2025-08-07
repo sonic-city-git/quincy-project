@@ -20,34 +20,17 @@ export function VariantCrewSection({ projectId, variantName }: VariantCrewSectio
 
   if (!project) return null;
 
+  // NOTE: This component is now replaced by the new VariantsContent layout
+  // Keeping this component for backward compatibility but it's no longer used
+  // The new layout integrates crew management in the right panel of VariantsContent
+  
   return (
-    <div className="space-y-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Users className="h-4 w-4 text-orange-500" />
-          <h3 className="text-sm font-medium">Crew Roles</h3>
-        </div>
-        <Button
-          variant="ghost" 
-          size="sm"
-          onClick={() => addDialog.setActive(true)}
-          className="h-8 px-2 text-xs"
-        >
-          <Plus className="h-3 w-3 mr-1" />
-          Add Role
-        </Button>
-      </div>
-
-      {/* Compact Crew List */}
-      <CompactCrewRolesList projectId={projectId} variantName={variantName} />
-      
-      <AddRoleDialog
-        project={project}
-        variantName={variantName}
-        isOpen={addDialog.isActive}
-        onClose={() => addDialog.setActive(false)}
-      />
+    <div className="p-4 bg-muted/50 border border-border rounded-lg">
+      <p className="text-sm text-muted-foreground text-center">
+        ⚠️ This component has been replaced by the new layout design.
+        <br />
+        Crew management is now handled in the VariantsContent component.
+      </p>
     </div>
   );
 }

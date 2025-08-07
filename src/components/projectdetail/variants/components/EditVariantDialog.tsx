@@ -24,7 +24,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
+
 import { ProjectVariant, UpdateVariantPayload, VARIANT_CONSTANTS } from '@/types/variants';
 import { Loader2 } from 'lucide-react';
 
@@ -33,7 +33,6 @@ const editVariantSchema = z.object({
     .min(1, 'Variant name is required')
     .max(VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH, `Variant name must be ${VARIANT_CONSTANTS.MAX_VARIANT_NAME_LENGTH} characters or less`),
   description: z.string().optional(),
-  is_default: z.boolean().default(false),
 });
 
 type EditVariantForm = z.infer<typeof editVariantSchema>;
@@ -60,7 +59,6 @@ export function EditVariantDialog({
     defaultValues: {
       variant_name: variant.variant_name,
       description: variant.description || '',
-      is_default: variant.is_default,
     },
   });
 
@@ -69,12 +67,10 @@ export function EditVariantDialog({
     form.reset({
       variant_name: variant.variant_name,
       description: variant.description || '',
-      is_default: variant.is_default,
     });
   }, [variant, form]);
 
-  const hasOtherVariants = existingVariants.length > 1;
-  const isCurrentlyDefault = variant.is_default;
+
 
   const onSubmit = async (data: EditVariantForm) => {
     setIsSubmitting(true);
@@ -83,7 +79,6 @@ export function EditVariantDialog({
         id: variant.id,
         variant_name: data.variant_name,
         description: data.description || undefined,
-        is_default: data.is_default,
       });
 
       onOpenChange(false);
@@ -167,36 +162,7 @@ export function EditVariantDialog({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="is_default"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Default Variant</FormLabel>
-                    <FormDescription>
-                      {isCurrentlyDefault 
-                        ? "This is currently the default variant"
-                        : "Make this the default variant for new events"
-                      }
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                      disabled={!hasOtherVariants && isCurrentlyDefault} // Can't unset default if it's the only variant
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
 
-            {!hasOtherVariants && isCurrentlyDefault && (
-              <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded">
-                <strong>Note:</strong> This variant must remain the default since it's the only variant. Create another variant first if you want to change the default.
-              </div>
-            )}
 
             <div className="flex justify-end space-x-2 pt-4">
               <Button

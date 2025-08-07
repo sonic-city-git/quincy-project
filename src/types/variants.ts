@@ -20,7 +20,6 @@ export interface ProjectVariantWithCounts extends ProjectVariant {
 export interface CreateVariantPayload {
   variant_name: string;
   description?: string;
-  is_default?: boolean;
   sort_order?: number;
 }
 
@@ -29,7 +28,6 @@ export interface UpdateVariantPayload {
   id: string;
   variant_name?: string;
   description?: string;
-  is_default?: boolean;
   sort_order?: number;
 }
 

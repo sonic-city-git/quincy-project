@@ -57,20 +57,9 @@ export function VariantSelector({
         const currentVariantExists = projectVariants.some(v => v.variant_name === value);
         const shouldAutoSelect = !value || value === 'default' || !currentVariantExists;
         
-        if (shouldAutoSelect) {
-          if (projectVariants.length === 1) {
-            // Only one variant - select it
-            onValueChange(projectVariants[0].variant_name);
-          } else if (projectVariants.length > 1) {
-            // Multiple variants - select the default one
-            const defaultVariant = projectVariants.find(v => v.is_default);
-            if (defaultVariant) {
-              onValueChange(defaultVariant.variant_name);
-            } else {
-              // Fallback to first variant if no default is set
-              onValueChange(projectVariants[0].variant_name);
-            }
-          }
+        if (shouldAutoSelect && projectVariants.length > 0) {
+          // Auto-select the first variant (sorted by creation order)
+          onValueChange(projectVariants[0].variant_name);
         }
       } catch (err) {
         console.error('Error loading variants:', err);
@@ -132,9 +121,6 @@ export function VariantSelector({
             <SelectItem key={variant.id} value={variant.variant_name}>
               <div className="flex items-center gap-2">
                 <span>{variant.variant_name}</span>
-                {variant.is_default && (
-                  <span className="text-xs text-muted-foreground">(Default)</span>
-                )}
               </div>
             </SelectItem>
           ))}

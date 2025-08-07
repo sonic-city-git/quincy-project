@@ -82,69 +82,17 @@ export function VariantEquipmentSection({ projectId, variantName }: VariantEquip
     }
   };
 
+  // NOTE: This component is now replaced by the new VariantsContent layout
+  // Keeping this component for backward compatibility but it's no longer used
+  // The new layout splits Available Resources (left panel) from Variant Content (right panel)
+  
   return (
-    <div className="flex gap-4">
-      {/* Available Equipment Column */}
-      <ProjectTabCard
-        title="Available Equipment"
-        icon={Box}
-        variant="flex"
-        className="flex-[6]"
-        contentClassName="h-[500px] overflow-hidden"
-        padding="compact"
-      >
-        <EquipmentSelector 
-          onSelect={handleEquipmentSelect} 
-          projectId={projectId}
-          selectedGroupId={selectedGroupId}
-          className="h-full"
-        />
-      </ProjectTabCard>
-      
-      {/* Variant Equipment Column */}
-      <ProjectEquipmentCard
-        title="Variant Equipment"
-        icon={ListCheck}
-        totalPrice={totalPrice}
-        formatPrice={formatPrice}
-        className="flex-[8]"
-        padding="compact"
-        headerExtra={
-          <div className="flex items-center gap-2">
-            {/* Show copy button if this variant is empty and we're not on default */}
-            {variantName !== 'default' && 
-             resourceData && 
-             resourceData.equipment_groups.length === 0 && 
-             resourceData.equipment_ungrouped.length === 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleCopyFromDefault}
-                className="flex items-center gap-1"
-              >
-                <Copy className="h-3 w-3" />
-                Copy from Default
-              </Button>
-            )}
-            <GroupSelector 
-              projectId={projectId} 
-              variantName={variantName}
-              selectedGroupId={selectedGroupId}
-              onGroupSelect={setSelectedGroupId}
-            />
-          </div>
-        }
-      >
-        <BaseEquipmentList 
-          projectId={projectId} 
-          variantName={variantName}
-          selectedGroupId={selectedGroupId}
-          onGroupSelect={setSelectedGroupId}
-          equipmentGroups={resourceData?.equipment_groups || []}
-          ungroupedEquipment={resourceData?.equipment_ungrouped || []}
-          isLoading={isLoading}
-        />
-      </ProjectEquipmentCard>
+    <div className="p-4 bg-muted/50 border border-border rounded-lg">
+      <p className="text-sm text-muted-foreground text-center">
+        ⚠️ This component has been replaced by the new layout design.
+        <br />
+        Equipment management is now handled in the VariantsContent component.
+      </p>
     </div>
   );
 }

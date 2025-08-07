@@ -17,6 +17,7 @@ interface BaseEquipmentListProps {
   equipmentGroups: VariantEquipmentGroup[];
   ungroupedEquipment: VariantEquipmentItem[];
   isLoading: boolean;
+  compact?: boolean; // NEW: Support for compact layout
 }
 
 export function BaseEquipmentList({ 
@@ -26,7 +27,8 @@ export function BaseEquipmentList({
   onGroupSelect,
   equipmentGroups,
   ungroupedEquipment,
-  isLoading
+  isLoading,
+  compact = false
 }: BaseEquipmentListProps) {
   const { removeEquipmentItem } = useVariantResources(projectId, variantName);
   const [pendingDropData, setPendingDropData] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function BaseEquipmentList({
     setNewGroupName,
     handleCreateGroup,
     handleDeleteGroup
-  } = useGroupManagement(projectId);
+  } = useGroupManagement(projectId, variantName);
 
   const {
     handleDrop,
@@ -84,9 +86,12 @@ export function BaseEquipmentList({
 
   const handleGroupDelete = async (groupId: string) => {
     const groupEquipment = groupedEquipment[groupId] || [];
+    
     if (groupEquipment.length === 0) {
+      // No equipment - delete directly
       await handleDeleteGroup(groupId);
     } else {
+      // Has equipment - show dialog for user choice
       setGroupToDelete(groupId);
     }
   };
@@ -132,6 +137,7 @@ export function BaseEquipmentList({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onRemoveEquipment={removeEquipmentItem}
+        compact={compact}
       />
 
       <GroupDialogs
@@ -155,8 +161,7 @@ export function BaseEquipmentList({
         onConfirmDelete={async () => {
           if (groupToDelete) {
             await handleDeleteGroup(groupToDelete);
-            setGroupToDelete(null);
-            setTargetGroupId("");
+            // State cleanup is handled by the useGroupManagement hook
           }
         }}
         onConfirmCreate={handleCreateGroupWithEquipment}

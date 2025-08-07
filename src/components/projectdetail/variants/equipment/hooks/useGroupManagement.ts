@@ -18,7 +18,7 @@ interface CreateGroupResult {
   name: string;
 }
 
-export function useGroupManagement(projectId: string) {
+export function useGroupManagement(projectId: string, variantName: string) {
   const [state, setState] = useState<GroupManagementState>({
     groupToDelete: null,
     targetGroupId: "",
@@ -32,6 +32,11 @@ export function useGroupManagement(projectId: string) {
   // Helper function to invalidate all related queries
   const invalidateGroupQueries = useCallback(async () => {
     await Promise.all([
+      // Invalidate the variant-specific resources cache
+      queryClient.invalidateQueries({ 
+        queryKey: ['variant-resources', projectId, variantName] 
+      }),
+      // Also invalidate any project-wide caches
       queryClient.invalidateQueries({ 
         queryKey: ['project-equipment-groups', projectId] 
       }),
@@ -42,7 +47,7 @@ export function useGroupManagement(projectId: string) {
         queryKey: ['project-event-equipment', projectId]
       })
     ]);
-  }, [queryClient, projectId]);
+  }, [queryClient, projectId, variantName]);
 
   const handleCreateGroup = useCallback(async (): Promise<CreateGroupResult | null> => {
     if (!state.newGroupName.trim()) {
@@ -53,10 +58,27 @@ export function useGroupManagement(projectId: string) {
     setState(prev => ({ ...prev, isLoading: true }));
 
     try {
+      // First get the variant_id from variantName
+      const { data: variant, error: variantError } = await supabase
+        .from('project_variants')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('variant_name', variantName)
+        .maybeSingle();
+
+      if (variantError) {
+        throw new Error(`Failed to find variant: ${variantError.message}`);
+      }
+
+      if (!variant) {
+        throw new Error(`Variant "${variantName}" not found for project ${projectId}`);
+      }
+
       const { data, error } = await supabase
         .from('project_equipment_groups')
         .insert({
           project_id: projectId,
+          variant_id: variant.id,
           name: state.newGroupName.trim(),
         })
         .select()
@@ -83,16 +105,19 @@ export function useGroupManagement(projectId: string) {
       setState(prev => ({ ...prev, isLoading: false }));
       return null;
     }
-  }, [state.newGroupName, projectId, invalidateGroupQueries]);
+  }, [state.newGroupName, projectId, variantName, invalidateGroupQueries]);
 
   const handleDeleteGroup = async (groupId: string) => {
     try {
+      // Get the current target group ID from state
+      const currentTargetGroupId = state.targetGroupId;
+      
       // First, handle the project_event_equipment references
-      if (targetGroupId) {
+      if (currentTargetGroupId) {
         // Move event equipment to target group
         const { error: eventUpdateError } = await supabase
           .from('project_event_equipment')
-          .update({ group_id: targetGroupId })
+          .update({ group_id: currentTargetGroupId })
           .eq('group_id', groupId)
           .eq('project_id', projectId);
 
@@ -104,7 +129,7 @@ export function useGroupManagement(projectId: string) {
         // Move project equipment to target group
         const { error: updateError } = await supabase
           .from('project_equipment')
-          .update({ group_id: targetGroupId })
+          .update({ group_id: currentTargetGroupId })
           .eq('group_id', groupId)
           .eq('project_id', projectId);
 
@@ -113,28 +138,28 @@ export function useGroupManagement(projectId: string) {
           throw updateError;
         }
       } else {
-        // Remove group_id from event equipment
-        const { error: eventNullError } = await supabase
+        // Delete event equipment when no target group is selected
+        const { error: eventDeleteError } = await supabase
           .from('project_event_equipment')
-          .update({ group_id: null })
+          .delete()
           .eq('group_id', groupId)
           .eq('project_id', projectId);
 
-        if (eventNullError) {
-          console.error('Error nullifying event equipment:', eventNullError);
-          throw eventNullError;
+        if (eventDeleteError) {
+          console.error('Error deleting event equipment:', eventDeleteError);
+          throw eventDeleteError;
         }
 
-        // Remove group_id from project equipment
-        const { error: nullError } = await supabase
+        // Delete project equipment when no target group is selected
+        const { error: equipmentDeleteError } = await supabase
           .from('project_equipment')
-          .update({ group_id: null })
+          .delete()
           .eq('group_id', groupId)
           .eq('project_id', projectId);
 
-        if (nullError) {
-          console.error('Error nullifying project equipment:', nullError);
-          throw nullError;
+        if (equipmentDeleteError) {
+          console.error('Error deleting project equipment:', equipmentDeleteError);
+          throw equipmentDeleteError;
         }
       }
 
@@ -151,7 +176,13 @@ export function useGroupManagement(projectId: string) {
       }
 
       // Invalidate all relevant queries to refresh the UI
+      console.log('🔄 Invalidating caches for variant:', variantName, 'project:', projectId);
       await Promise.all([
+        // Invalidate the variant-specific resources cache
+        queryClient.invalidateQueries({ 
+          queryKey: ['variant-resources', projectId, variantName] 
+        }),
+        // Also invalidate any project-wide caches
         queryClient.invalidateQueries({ 
           queryKey: ['project-equipment-groups', projectId] 
         }),
@@ -162,10 +193,14 @@ export function useGroupManagement(projectId: string) {
           queryKey: ['project-event-equipment', projectId]
         })
       ]);
+      console.log('✅ Cache invalidation complete');
       
-      toast.success('Group deleted successfully');
-      setGroupToDelete(null);
-      setTargetGroupId("");
+      toast.success(currentTargetGroupId ? 'Equipment moved and group deleted' : 'Equipment and group deleted');
+      setState(prev => ({ 
+        ...prev, 
+        groupToDelete: null, 
+        targetGroupId: "" 
+      }));
     } catch (error: any) {
       console.error('Error deleting group:', error);
       toast.error(error.message || 'Failed to delete group');

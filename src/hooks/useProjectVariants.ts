@@ -22,7 +22,7 @@ import {
  */
 export function useProjectVariants(projectId: string): VariantManagementHook {
   const queryClient = useQueryClient();
-  const [selectedVariant, setSelectedVariant] = useState<string>(VARIANT_CONSTANTS.DEFAULT_VARIANT_NAME);
+  const [selectedVariant, setSelectedVariant] = useState<string>('');
 
   // Query key factory
   const queryKey = ['project-variants', projectId];
@@ -68,18 +68,15 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
   useEffect(() => {
     if (variants.length > 0) {
       // Check if current selectedVariant exists in the variants list
-      const currentVariantExists = variants.some(v => v.variant_name === selectedVariant);
+      const currentVariantExists = selectedVariant && variants.some(v => v.variant_name === selectedVariant);
       
       if (!currentVariantExists) {
-        // Select the default variant
-        const defaultVariant = variants.find(v => v.is_default);
-        if (defaultVariant) {
-          setSelectedVariant(defaultVariant.variant_name);
-        } else {
-          // Fallback to first variant if no default is set
-          setSelectedVariant(variants[0].variant_name);
-        }
+        // Select the first variant (which is the default by creation order)
+        setSelectedVariant(variants[0].variant_name);
       }
+    } else {
+      // No variants exist - clear selected variant
+      setSelectedVariant('');
     }
   }, [variants, selectedVariant]);
 
@@ -103,15 +100,7 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
       // Calculate sort order if not provided
       const sortOrder = data.sort_order ?? Math.max(0, ...variants.map(v => v.sort_order || 0)) + 1;
 
-      // Handle default variant logic
-      let shouldBeDefault = data.is_default;
-      if (variants.length === 0) {
-        // First variant should always be default
-        shouldBeDefault = true;
-      } else if (shouldBeDefault) {
-        // Remove default from other variants first
-        await updateOtherVariantsDefault(projectId, false);
-      }
+      // First variant logic - no special handling needed since we use creation order
 
       const { data: newVariant, error } = await supabase
         .from('project_variants')
@@ -119,7 +108,6 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
           project_id: projectId,
           variant_name: trimmedName,
           description: data.description,
-          is_default: shouldBeDefault,
           sort_order: sortOrder
         })
         .select()
@@ -159,18 +147,11 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
         throw new Error('Variant not found');
       }
 
-      // Handle default variant logic
-      if (data.is_default && !variant.is_default) {
-        // Remove default from other variants first
-        await updateOtherVariantsDefault(projectId, false);
-      }
-
       const { data: updatedVariant, error } = await supabase
         .from('project_variants')
         .update({
           variant_name: data.variant_name,
           description: data.description,
-          is_default: data.is_default,
           sort_order: data.sort_order
         })
         .eq('id', data.id)
@@ -206,14 +187,9 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
         throw new Error('Variant not found');
       }
 
-      // Prevent deletion of default variant if it's the only one
-      if (variant.is_default && variants.length === 1) {
+      // Prevent deletion if it's the only variant
+      if (variants.length === 1) {
         throw new Error('Cannot delete the only variant. Create another variant first.');
-      }
-
-      // Prevent deletion of default variant
-      if (variant.is_default) {
-        throw new Error('Cannot delete the default variant. Make another variant default first.');
       }
 
       // Check if variant has associated crew roles or equipment
@@ -252,10 +228,16 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
     onSuccess: (_, variantName) => {
       queryClient.invalidateQueries({ queryKey });
       
-      // Switch to default variant if we deleted the selected one
+      // Switch to another variant if we deleted the selected one
       if (selectedVariant === variantName) {
-        const defaultVariant = variants.find(v => v.is_default);
-        setSelectedVariant(defaultVariant?.variant_name || VARIANT_CONSTANTS.DEFAULT_VARIANT_NAME);
+        const remainingVariants = variants.filter(v => v.variant_name !== variantName);
+        if (remainingVariants.length > 0) {
+          // Select the first remaining variant (default by creation order)
+          setSelectedVariant(remainingVariants[0].variant_name);
+        } else {
+          // No variants left
+          setSelectedVariant('');
+        }
       }
       
       toast.success('Variant deleted successfully');
@@ -416,38 +398,15 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
     }
   });
 
-  // Helper function to update default status of other variants
-  const updateOtherVariantsDefault = async (projectId: string, isDefault: boolean): Promise<void> => {
-    const { error } = await supabase
-      .from('project_variants')
-      .update({ is_default: isDefault })
-      .eq('project_id', projectId)
-      .neq('is_default', isDefault);
-
-    if (error) {
-      console.error('Error updating other variants default status:', error);
-      throw error;
-    }
-  };
-
   // Utility functions
   const getVariantByName = useCallback((variantName: string): ProjectVariant | undefined => {
     return variants.find(v => v.variant_name === variantName);
   }, [variants]);
 
   const getDefaultVariant = useCallback((): ProjectVariant | undefined => {
-    return variants.find(v => v.is_default) || variants[0];
+    // First variant is the default (by creation order)
+    return variants[0];
   }, [variants]);
-
-  // Auto-select default variant when variants load
-  useState(() => {
-    if (variants.length > 0 && !getVariantByName(selectedVariant)) {
-      const defaultVariant = getDefaultVariant();
-      if (defaultVariant) {
-        setSelectedVariant(defaultVariant.variant_name);
-      }
-    }
-  });
 
   return {
     // Data

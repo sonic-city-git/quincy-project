@@ -21,6 +21,7 @@ interface GroupListProps {
   onDrop: (e: React.DragEvent, groupId: string) => void;
   onRemoveEquipment: (id: string) => void;
   className?: string;
+  compact?: boolean; // NEW: Support for compact layout
 }
 
 export function GroupList({
@@ -33,7 +34,8 @@ export function GroupList({
   onDragLeave,
   onDrop,
   onRemoveEquipment,
-  className
+  className,
+  compact = false
 }: GroupListProps) {
   // Show empty state if no groups
   if (groups.length === 0) {
@@ -41,7 +43,7 @@ export function GroupList({
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
         <p className="text-sm font-medium">No equipment in this variant</p>
         <p className="text-xs mt-2 text-center max-w-xs">
-          Add equipment by selecting items from the left panel or create a new equipment group
+          Drag equipment from the stock panel to this area to create your first group
         </p>
       </div>
     );
@@ -67,6 +69,7 @@ export function GroupList({
           onDragLeave={onDragLeave}
           onDrop={(e) => onDrop(e, group.id)}
           onRemoveEquipment={onRemoveEquipment}
+          compact={compact}
         />
       ))}
     </div>

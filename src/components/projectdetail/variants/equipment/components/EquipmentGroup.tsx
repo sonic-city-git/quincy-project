@@ -22,6 +22,7 @@ interface EquipmentGroupProps {
   onDragLeave: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   onRemoveEquipment: (id: string) => void;
+  compact?: boolean; // NEW: Support for compact layout
 }
 
 export function EquipmentGroup({
@@ -35,7 +36,8 @@ export function EquipmentGroup({
   onDragOver,
   onDragLeave,
   onDrop,
-  onRemoveEquipment
+  onRemoveEquipment,
+  compact = false
 }: EquipmentGroupProps) {
   return (
     <Card 
@@ -52,7 +54,8 @@ export function EquipmentGroup({
     >
       {/* Group Header */}
       <div className={cn(
-        "border-b border-border p-4",
+        "border-b border-border",
+        compact ? "p-2" : "p-4",
         isSelected ? "bg-primary/5" : "bg-muted/30"
       )}>
         <div className="flex items-center justify-between">
@@ -66,12 +69,12 @@ export function EquipmentGroup({
             )}
             aria-label={`Select ${name} group`}
           >
-            <h3 className="text-sm font-medium">{name}</h3>
+            <h3 className={cn("font-medium", compact ? "text-xs" : "text-sm")}>{name}</h3>
           </button>
           
           {/* Group Actions */}
           <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground font-medium">
+            <span className={cn("text-muted-foreground font-medium", compact ? "text-xs" : "text-sm")}>
               {formatPrice(totalPrice)}
             </span>
             <Button
@@ -88,7 +91,7 @@ export function EquipmentGroup({
       </div>
 
       {/* Equipment List */}
-      <div className="p-4">
+      <div className={cn(compact ? "p-2" : "p-4")}>
         {equipment.length > 0 ? (
           <div className="space-y-2">
             {equipment.map((item) => (
