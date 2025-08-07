@@ -1,4 +1,4 @@
-import { SPACING, cn } from "@/design-system";
+import { RESPONSIVE, cn } from "@/design-system";
 
 interface EmptyDropZoneProps {
   onDragOver: (e: React.DragEvent) => void;
@@ -16,8 +16,7 @@ export function EmptyDropZone({
   return (
     <div 
       className={cn(
-        "h-full overflow-y-auto pr-4",
-        SPACING.section,
+        "h-full",
         className
       )}
       onDragOver={onDragOver}

@@ -247,7 +247,7 @@ export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRole
                   variant="ghost"
                   size="sm"
                   onClick={() => setRoleToDelete(role.id)}
-                  className="h-6 w-6 p-0 transition-all duration-200 text-muted-foreground/60 hover:text-white hover:bg-destructive hover:shadow-sm focus:bg-destructive focus:text-white scale-90 hover:scale-100 focus:scale-100"
+                  className="h-6 w-6 p-0 transition-all duration-200 text-muted-foreground/60 hover:text-white hover:bg-destructive hover:shadow-sm focus:bg-destructive focus:text-white"
                 >
                   <X className="h-3.5 w-3.5" />
                 </Button>

@@ -20,8 +20,10 @@ interface GroupListProps {
   onDragLeave: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent, groupId: string) => void;
   onRemoveEquipment: (id: string) => void;
+  onUpdateQuantity?: (id: string, quantity: number) => void;
   className?: string;
   compact?: boolean; // NEW: Support for compact layout
+  scrollToItemId?: string; // ID of item to scroll to
 }
 
 export function GroupList({
@@ -34,8 +36,10 @@ export function GroupList({
   onDragLeave,
   onDrop,
   onRemoveEquipment,
+  onUpdateQuantity,
   className,
-  compact = false
+  compact = false,
+  scrollToItemId
 }: GroupListProps) {
   // Show empty state if no groups
   if (groups.length === 0) {
@@ -51,7 +55,7 @@ export function GroupList({
 
   return (
     <div 
-      className={cn("space-y-1.5", "pr-4", className)}
+      className={cn("space-y-1.5", className)}
       role="list"
       aria-label={`Equipment groups (${groups.length} groups)`}
     >
@@ -69,7 +73,9 @@ export function GroupList({
           onDragLeave={onDragLeave}
           onDrop={(e) => onDrop(e, group.id)}
           onRemoveEquipment={onRemoveEquipment}
+          onUpdateQuantity={onUpdateQuantity}
           compact={compact}
+          scrollToItemId={scrollToItemId}
         />
       ))}
     </div>

@@ -44,9 +44,10 @@ export function VariantsContent({
 }: VariantsContentProps) {
   // Track selected group for adding equipment
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [scrollToItemId, setScrollToItemId] = useState<string | null>(null);
 
   // Variant resources management for equipment addition
-  const { addEquipmentItem, equipmentData } = useVariantEquipment(projectId, selectedVariant);
+  const { addEquipmentItem, updateEquipmentItem, equipmentData } = useVariantEquipment(projectId, selectedVariant);
 
   // Reset selected group when variant changes
   useEffect(() => {
@@ -87,13 +88,35 @@ export function VariantsContent({
     }
 
     try {
-      await addEquipmentItem({
+      // Add equipment - server will handle duplicates automatically
+      const result = await addEquipmentItem({
         equipment_id: equipment.id,
         group_id: selectedGroupId,
         quantity: 1,
-        notes: ''
+        notes: '',
+        // Pass equipment info for optimistic update
+        _equipmentInfo: {
+          name: equipment.name,
+          rental_price: equipment.rental_price || null,
+          code: equipment.code || null
+        }
       });
-      toast.success(`Added ${equipment.name} to variant`);
+      
+      // Show appropriate success message based on what happened
+      if (result._wasOrphaned) {
+        toast.success(`Fixed orphaned ${equipment.name} and updated quantity to ${result.quantity}`);
+      } else if (result._wasUpdated) {
+        toast.success(`Increased ${equipment.name} quantity to ${result.quantity}`);
+      } else {
+        toast.success(`Added ${equipment.name} to variant`);
+      }
+      
+      // Scroll to the added/updated item
+      if (result.id) {
+        setScrollToItemId(result.id);
+        // Clear scroll target after a delay
+        setTimeout(() => setScrollToItemId(null), 1000);
+      }
     } catch (error) {
       console.error('Error adding equipment:', error);
       toast.error('Failed to add equipment');
@@ -216,38 +239,47 @@ export function VariantsContent({
             {currentVariant ? (
               <div className="h-full flex flex-col">
                 {/* Variant Resources Grid */}
-                <div className="flex-1 grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-0 h-full">
+                <div className="flex-1 grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-0 min-h-0">
                   {/* Equipment Section */}
-                  <div className="xl:border-r border-border/50 bg-card/50 flex flex-col">
-                    <div className="px-4 py-3 border-b border-border/50 bg-background/10">
+                  <div className="xl:border-r border-border/50 bg-card/50 flex flex-col min-h-0">
+                    <div className="px-4 py-3 border-b border-border/50 bg-background/10 flex-shrink-0">
                       <div className="flex items-center gap-2">
                         <Box className={cn('h-4 w-4', STATUS_COLORS.info.text)} />
                         <h3 className="font-medium text-sm">Equipment</h3>
                       </div>
                     </div>
-                    <div className="flex-1 p-4 overflow-auto">
-                      <VariantEquipmentList 
-                        projectId={projectId} 
-                        variantName={selectedVariant}
-                        selectedGroupId={selectedGroupId}
-                        onGroupSelect={setSelectedGroupId}
-                      />
+                    <div className="flex-1 min-h-0 relative">
+                      <div className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+                        <div className="p-4">
+                          <VariantEquipmentList 
+                            projectId={projectId} 
+                            variantName={selectedVariant}
+                            selectedGroupId={selectedGroupId}
+                            onGroupSelect={setSelectedGroupId}
+                            scrollToItemId={scrollToItemId}
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                   
                   {/* Crew Section */}
-                  <div className="bg-card/30 flex flex-col xl:border-t-0 border-t border-border/50 xl:mt-0 mt-4">
-                    <div className="px-4 py-3 border-b border-border/50 bg-background/10">
+                  <div className="bg-card/30 flex flex-col xl:border-t-0 border-t border-border/50 xl:mt-0 mt-4 min-h-0">
+                    <div className="px-4 py-3 border-b border-border/50 bg-background/10 flex-shrink-0">
                       <div className="flex items-center gap-2">
                         <Users className={cn('h-4 w-4', STATUS_COLORS.success.text)} />
                         <h3 className="font-medium text-sm">Crew Roles</h3>
                       </div>
                     </div>
-                    <div className="flex-1 p-4 overflow-auto">
-                      <VariantCrewList 
-                        projectId={projectId} 
-                        variantName={selectedVariant} 
-                      />
+                    <div className="flex-1 min-h-0 relative">
+                      <div className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+                        <div className="p-4">
+                          <VariantCrewList 
+                            projectId={projectId} 
+                            variantName={selectedVariant} 
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

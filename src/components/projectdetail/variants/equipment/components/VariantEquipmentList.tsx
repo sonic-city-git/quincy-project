@@ -7,11 +7,11 @@
  */
 
 import { useState } from 'react';
-import { Copy, DollarSign, Package, Plus } from 'lucide-react';
+import { Copy, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useVariantEquipment } from '@/hooks/useVariantEquipment';
-import { formatPrice } from '@/utils/priceFormatters';
+
 import { copyEquipmentBetweenVariants } from '@/utils/variantEquipmentCopy';
 import { toast } from 'sonner';
 import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
@@ -23,13 +23,15 @@ interface VariantEquipmentListProps {
   variantName: string;
   selectedGroupId: string | null;
   onGroupSelect: (groupId: string | null) => void;
+  scrollToItemId?: string;
 }
 
 export function VariantEquipmentList({ 
   projectId, 
   variantName,
   selectedGroupId,
-  onGroupSelect
+  onGroupSelect,
+  scrollToItemId
 }: VariantEquipmentListProps) {
   const { 
     equipmentData, 
@@ -38,19 +40,6 @@ export function VariantEquipmentList({
   } = useVariantEquipment(projectId, variantName);
 
   // Note: Group management is handled by BaseEquipmentList through useVariantEquipment hook
-
-  const successColors = STATUS_COLORS.success;
-  const warningColors = STATUS_COLORS.warning;
-
-  // Calculate total price
-  const totalPrice = equipmentData ? (
-    [...equipmentData.equipment_groups, { equipment_items: equipmentData.equipment_ungrouped }]
-      .reduce((total, group) => {
-        return total + group.equipment_items.reduce((groupTotal, item) => {
-          return groupTotal + (item.equipment?.rental_price || 0) * item.quantity;
-        }, 0);
-      }, 0)
-  ) : 0;
 
   const hasEquipment = equipmentData && (
     equipmentData.equipment_groups.length > 0 || 
@@ -100,31 +89,7 @@ export function VariantEquipmentList({
   }
 
   return (
-    <div className="space-y-2">
-      {/* Variant Stats Header */}
-      <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <DollarSign className={cn('h-4 w-4', successColors.text)} />
-            <span className="text-sm font-medium">Total Value</span>
-          </div>
-          <Badge variant="outline" className={cn(successColors.text, successColors.border)}>
-            {formatPrice(totalPrice)}
-          </Badge>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Package className={cn('h-4 w-4', STATUS_COLORS.info.text)} />
-            <span className="text-sm font-medium">Items</span>
-          </div>
-          <Badge variant="outline">
-            {(equipmentData?.equipment_groups || []).reduce((total, group) => 
-              total + group.equipment_items.length, 0
-            ) + (equipmentData?.equipment_ungrouped || []).length}
-          </Badge>
-        </div>
-      </div>
+    <div className="space-y-3">
 
       {/* Actions */}
       {variantName !== 'default' && !hasEquipment && (
@@ -152,6 +117,7 @@ export function VariantEquipmentList({
           ungroupedEquipment={equipmentData?.equipment_ungrouped || []}
           isLoading={isLoading}
           compact={true}
+          scrollToItemId={scrollToItemId}
         />
       </div>
     </div>

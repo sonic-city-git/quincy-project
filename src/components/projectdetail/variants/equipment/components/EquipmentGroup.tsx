@@ -2,8 +2,16 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { ProjectEquipment } from "@/types/equipment";
+
+// Extended interface to include folder_id
+interface ProjectEquipmentWithFolder extends ProjectEquipment {
+  folder_id?: string;
+}
 import { ProjectEquipmentItem } from "./EquipmentItem";
 import { formatPrice } from "@/utils/priceFormatters";
+import { FOLDER_ORDER } from "@/types/equipment";
+import { useFolders } from "@/hooks/useFolders";
+import { useMemo, useEffect } from "react";
 import { 
   COMPONENT_CLASSES, 
   FORM_PATTERNS,
@@ -13,7 +21,7 @@ import {
 interface EquipmentGroupProps {
   id: string;
   name: string;
-  equipment: ProjectEquipment[];
+  equipment: ProjectEquipmentWithFolder[];
   isSelected: boolean;
   totalPrice: number;
   onSelect: () => void;
@@ -22,7 +30,9 @@ interface EquipmentGroupProps {
   onDragLeave: (e: React.DragEvent) => void;
   onDrop: (e: React.DragEvent) => void;
   onRemoveEquipment: (id: string) => void;
+  onUpdateQuantity?: (itemId: string, quantity: number) => Promise<void>;
   compact?: boolean; // NEW: Support for compact layout
+  scrollToItemId?: string; // ID of item to scroll to
 }
 
 export function EquipmentGroup({
@@ -37,48 +47,190 @@ export function EquipmentGroup({
   onDragLeave,
   onDrop,
   onRemoveEquipment,
-  compact = false
+  onUpdateQuantity,
+  compact = false,
+  scrollToItemId
 }: EquipmentGroupProps) {
+  const { folders = [] } = useFolders();
+
+  // Scroll to specific item when scrollToItemId changes
+  useEffect(() => {
+    if (scrollToItemId) {
+      const element = document.getElementById(`equipment-${scrollToItemId}`);
+      if (element) {
+        // Check if element is already in view
+        const rect = element.getBoundingClientRect();
+        const container = element.closest('[class*="overflow-y-auto"]');
+        const containerRect = container ? container.getBoundingClientRect() : { top: 0, bottom: window.innerHeight };
+        
+        const isInView = rect.top >= containerRect.top && rect.bottom <= containerRect.bottom;
+        
+        let highlightTriggered = false;
+        
+        const triggerHighlight = () => {
+          if (highlightTriggered) return;
+          highlightTriggered = true;
+          
+          // Find the item name element
+          const nameElement = element.querySelector('h3');
+          
+          // Add highlight effect
+          element.style.transform = 'scale(1.02)';
+          element.style.transition = 'transform 0.2s ease';
+          
+          // Highlight the name color
+          if (nameElement) {
+            nameElement.style.color = 'hsl(var(--primary))';
+            nameElement.style.transition = 'color 0.2s ease';
+          }
+          
+          setTimeout(() => {
+            element.style.transform = 'scale(1)';
+            // Reset name color
+            if (nameElement) {
+              nameElement.style.color = '';
+            }
+          }, 300);
+        };
+        
+        if (isInView) {
+          // Element is already visible, trigger highlight immediately
+          triggerHighlight();
+        } else {
+          // Element needs scrolling
+          const scrollContainer = container || window;
+          
+          const handleScrollEnd = () => {
+            triggerHighlight();
+            
+            // Clean up listeners
+            if (scrollContainer === window) {
+              window.removeEventListener('scrollend', handleScrollEnd);
+            } else {
+              scrollContainer.removeEventListener('scrollend', handleScrollEnd);
+            }
+            clearTimeout(fallbackTimer);
+          };
+          
+          // Add scroll end listener
+          if (scrollContainer === window) {
+            window.addEventListener('scrollend', handleScrollEnd, { once: true });
+          } else {
+            scrollContainer.addEventListener('scrollend', handleScrollEnd, { once: true });
+          }
+          
+          // Fallback timeout in case scrollend doesn't fire
+          const fallbackTimer = setTimeout(() => {
+            triggerHighlight();
+          }, 1000);
+          
+          // Start the scroll
+          element.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'nearest'
+          });
+          
+          // Cleanup function
+          return () => {
+            if (scrollContainer === window) {
+              window.removeEventListener('scrollend', handleScrollEnd);
+            } else {
+              scrollContainer.removeEventListener('scrollend', handleScrollEnd);
+            }
+            clearTimeout(fallbackTimer);
+          };
+        }
+      }
+    }
+  }, [scrollToItemId]);
+
+  // Group equipment by folder and sort by FOLDER_ORDER
+  const equipmentByFolder = useMemo(() => {
+    // Group equipment by folder_id
+    const grouped = equipment.reduce((acc, item) => {
+      const folderId = item.folder_id || 'unknown';
+      
+      if (!acc[folderId]) {
+        acc[folderId] = [];
+      }
+      acc[folderId].push(item);
+      return acc;
+    }, {} as Record<string, ProjectEquipmentWithFolder[]>);
+
+    // Group by main folder (parent folder) and sort by FOLDER_ORDER
+    const mainFolderGroups: Record<string, ProjectEquipmentWithFolder[]> = {};
+    
+    Object.entries(grouped).forEach(([folderId, equipmentItems]) => {
+      const folder = folders.find(f => f.id === folderId);
+      
+      // Find the main folder (parent folder)
+      let mainFolder = folder;
+      if (folder?.parent_id) {
+        mainFolder = folders.find(f => f.id === folder.parent_id) || folder;
+      }
+      
+      const mainFolderName = mainFolder?.name || 'Unknown';
+      
+      if (!mainFolderGroups[mainFolderName]) {
+        mainFolderGroups[mainFolderName] = [];
+      }
+      
+      // Sort equipment items alphabetically by name before adding
+      const sortedEquipmentItems = equipmentItems.sort((a, b) => 
+        a.name.localeCompare(b.name)
+      );
+      mainFolderGroups[mainFolderName].push(...sortedEquipmentItems);
+    });
+
+    // Sort main folders by FOLDER_ORDER and equipment within folders alphabetically
+    const sortedFolders = Object.entries(mainFolderGroups).map(([folderName, equipment]) => ({
+      folderId: folderName, // Use folder name as ID for main folders
+      folderName,
+      equipment: equipment.sort((a, b) => a.name.localeCompare(b.name)), // Final alphabetical sort
+      sortIndex: FOLDER_ORDER.indexOf(folderName as any)
+    })).sort((a, b) => {
+      if (a.sortIndex === -1 && b.sortIndex === -1) {
+        return a.folderName.localeCompare(b.folderName);
+      }
+      if (a.sortIndex === -1) return 1;
+      if (b.sortIndex === -1) return -1;
+      return a.sortIndex - b.sortIndex;
+    });
+
+    return sortedFolders;
+  }, [equipment, folders]);
   return (
-    <Card 
-      className={cn(
-        COMPONENT_CLASSES.card.default,
-        "transition-all duration-300 overflow-hidden relative",
-        isSelected 
-          ? "ring-2 ring-inset ring-primary shadow-lg shadow-primary/10 border-primary bg-primary/5" 
-          : "border-border/60 hover:border-border shadow-sm hover:shadow-md"
-      )}
-      onDragOver={onDragOver}
-      onDragLeave={onDragLeave}
-      onDrop={onDrop}
-      role="group"
-      aria-label={`Equipment group: ${name}`}
-    >
+    <div className={cn(
+      "relative mb-1.5 rounded-lg transition-all duration-300",
+      "border-2", // Simple consistent border
+      isSelected 
+        ? "border-primary bg-primary/5" 
+        : "border-border/20 hover:border-border/40"
+    )}>
       {/* Group Header */}
-      <div className={cn(
-        "border-b transition-all duration-300 relative select-none cursor-pointer", // Prevent text selection on header
-        compact ? "p-1" : "p-1.5",
-        isSelected 
-          ? "bg-primary/10 border-primary/30" 
-          : "bg-muted/30 hover:bg-primary/5 border-border/50 hover:border-primary/20"
-      )}
-      onClick={onSelect}>
+      <div 
+        className={cn(
+          "transition-all duration-300 relative select-none cursor-pointer", // Prevent text selection on header
+          "rounded-t-lg border-b border-border/30", // Simple top rounded corners with bottom border
+          "bg-slate-700 hover:bg-slate-800 dark:bg-slate-600 dark:hover:bg-slate-500", // Solid grey backgrounds
+          compact ? "p-1" : "p-1.5"
+        )}
+        onClick={onSelect}>
         <div className="flex items-center justify-between" style={{ userSelect: 'none' }}>
           {/* Group Name - Display Only */}
           <div
             className={cn(
               "flex-1 text-left", 
               "select-none", // Remove all button styling
-              isSelected ? "text-primary font-semibold" : "text-foreground font-medium"
+              "text-foreground font-medium"
             )}
             style={{ userSelect: 'none', WebkitUserSelect: 'none' }} // Extra prevention
           >
             <div className="flex items-center gap-2.5">
               <div className={cn(
                 "w-2.5 h-2.5 rounded-full transition-all duration-200 border-2 flex-shrink-0",
-                isSelected 
-                  ? "bg-primary border-primary shadow-sm shadow-primary/25" 
-                  : "bg-muted-foreground/30 border-muted-foreground/40 group-hover:border-primary/50"
+                "bg-muted-foreground/30 border-muted-foreground/40"
               )} />
               <h3 className={cn(
                 "leading-tight select-none font-semibold tracking-tight", 
@@ -89,9 +241,7 @@ export function EquipmentGroup({
               <span className={cn(
                 "text-xs px-1.5 py-0.5 rounded-md transition-colors font-medium select-none flex-shrink-0 leading-none",
                 compact ? "hidden" : "block",
-                isSelected 
-                  ? "text-primary/90 bg-primary/12 border border-primary/20" 
-                  : "text-muted-foreground/80 bg-muted/50"
+                "text-muted-foreground/80 bg-muted/50"
               )}>
                 {equipment.length}
               </span>
@@ -125,7 +275,6 @@ export function EquipmentGroup({
                 "text-muted-foreground/50 hover:text-white",
                 "hover:bg-destructive hover:shadow-sm focus:bg-destructive focus:text-white",
                 "opacity-40 hover:opacity-100 focus:opacity-100",
-                "scale-90 hover:scale-100 focus:scale-100",
                 "border border-transparent hover:border-destructive/20",
                 compact ? "h-6 w-6" : "h-7 w-7"
               )}
@@ -137,23 +286,56 @@ export function EquipmentGroup({
         </div>
       </div>
 
-      {/* Equipment List */}
-      <div className={cn(
-        compact ? "p-1" : "p-1.5",
-        "min-h-[30px] relative" // Ensure minimum height for drop zones
-      )}>
+      {/* Equipment Content */}
+      <div 
+        className={cn(
+          "transition-all duration-300 relative rounded-b-lg",
+          compact ? "p-1" : "p-1.5",
+          "min-h-[30px]" // Ensure minimum height for drop zones
+        )}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+        role="group"
+        aria-label={`Equipment group: ${name}`}
+      >
         {equipment.length > 0 ? (
-          <div className="space-y-0.5">
-            {equipment.map((item) => (
-              <div 
-                key={item.id} 
-                id={`equipment-${item.id}`}
-                className="transition-all duration-200 hover:scale-[1.005]"
-              >
-                <ProjectEquipmentItem
-                  item={item}
-                  onRemove={() => onRemoveEquipment(item.id)}
-                />
+          <div className="space-y-2">
+            {equipmentByFolder.map((folderGroup) => (
+              <div key={folderGroup.folderId} className="space-y-1">
+                {/* Sub-header for folder */}
+                {equipmentByFolder.length > 1 && (
+                  <div className={cn(
+                    "flex items-center gap-2 ml-3 px-2 py-1 rounded-md bg-muted/20 border border-muted/30",
+                    compact ? "py-0.5 ml-2" : "py-1 ml-3"
+                  )}>
+                    <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 flex-shrink-0" />
+                    <h4 className={cn(
+                      "font-medium text-muted-foreground leading-none",
+                      compact ? "text-xs" : "text-sm"
+                    )}>
+                      {folderGroup.folderName}
+                    </h4>
+                  </div>
+                )}
+                
+                {/* Equipment items for this folder */}
+                <div className="space-y-0.5">
+                  {folderGroup.equipment.map((item) => (
+                    <div 
+                      key={item.id} 
+                      id={`equipment-${item.id}`}
+                      className="transition-all duration-200"
+                    >
+                      <ProjectEquipmentItem
+                        item={item}
+                        onRemove={() => onRemoveEquipment(item.id)}
+                        onUpdateQuantity={onUpdateQuantity}
+                        onSelect={onSelect}
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
@@ -182,6 +364,6 @@ export function EquipmentGroup({
           </div>
         )}
       </div>
-    </Card>
+    </div>
   );
 }

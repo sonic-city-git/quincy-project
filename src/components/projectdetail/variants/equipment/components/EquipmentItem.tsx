@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { ProjectEquipment } from "@/types/equipment";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -17,54 +17,97 @@ import {
 interface ProjectEquipmentItemProps {
   item: ProjectEquipment;
   onRemove: () => void;
+  onUpdateQuantity?: (itemId: string, quantity: number) => Promise<void>;
+  onSelect?: () => void;
 }
 
-export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemProps) {
+export function ProjectEquipmentItem({ item, onRemove, onUpdateQuantity, onSelect }: ProjectEquipmentItemProps) {
   const [isUpdating, setIsUpdating] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [inputValue, setInputValue] = useState(item.quantity.toString());
   const queryClient = useQueryClient();
+
+  // Sync input value when external quantity changes
+  useEffect(() => {
+    setInputValue(item.quantity.toString());
+  }, [item.quantity]);
 
   // Memoize formatted price for performance
   const formattedPrice = useMemo(() => {
     return item.rental_price ? formatPrice(item.rental_price * item.quantity) : '-';
   }, [item.rental_price, item.quantity]);
 
-  const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData('application/json', JSON.stringify({
-      ...item,
-      type: 'project-equipment'
-    }));
-    e.dataTransfer.effectAllowed = 'move';
-  };
 
-  const handleQuantityChange = async (value: string) => {
-    const newQuantity = parseInt(value, 10);
-    if (isNaN(newQuantity) || newQuantity < 1) return;
+
+  const applyQuantityChange = async () => {
+    const newQuantity = parseInt(inputValue, 10);
+    if (isNaN(newQuantity) || newQuantity < 1) {
+      // Reset to original value if invalid
+      setInputValue(item.quantity.toString());
+      return;
+    }
+    
+    // Don't update if value hasn't changed
+    if (newQuantity === item.quantity) return;
     
     setIsUpdating(true);
 
     try {
-      const { error } = await supabase
-        .from('project_equipment')
-        .update({ quantity: newQuantity })
-        .eq('id', item.id);
+      if (onUpdateQuantity) {
+        // Use variant-specific update function with optimistic updates
+        await onUpdateQuantity(item.id, newQuantity);
+      } else {
+        // Fallback to direct Supabase call for non-variant contexts
+        const { error } = await supabase
+          .from('project_equipment')
+          .update({ quantity: newQuantity })
+          .eq('id', item.id);
 
-      if (error) {
-        throw new Error(`Failed to update quantity: ${error.message}`);
+        if (error) {
+          throw new Error(`Failed to update quantity: ${error.message}`);
+        }
+        
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['project-equipment'] }),
+          queryClient.invalidateQueries({ queryKey: ['sync-status'] })
+        ]);
+        
+        toast.success('Quantity updated');
       }
-      
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['project-equipment'] }),
-        queryClient.invalidateQueries({ queryKey: ['sync-status'] })
-      ]);
-      
-      toast.success('Quantity updated');
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to update quantity';
       toast.error(errorMessage);
+      // Reset to original value on error
+      setInputValue(item.quantity.toString());
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputValue(e.target.value);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      e.currentTarget.blur(); // Remove focus after applying
+      applyQuantityChange();
+    } else if (e.key === 'Escape') {
+      // Reset to original value and blur
+      setInputValue(item.quantity.toString());
+      e.currentTarget.blur();
+    }
+  };
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Select all text when clicking/focusing
+    e.target.select();
+  };
+
+  const handleBlur = () => {
+    // Reset to original value if user clicks away without pressing Enter
+    setInputValue(item.quantity.toString());
   };
 
   const handleRemove = async () => {
@@ -80,14 +123,13 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
     <Card 
       className={cn(
         COMPONENT_CLASSES.card.hover,
-        "relative group transition-all duration-200",
+        "relative group transition-all duration-200 cursor-pointer",
         "border-l-4 border-l-accent hover:border-l-primary",
         "py-1 px-3",
         isRemoving && "opacity-50 pointer-events-none animate-pulse",
         isUpdating && "ring-2 ring-primary/20"
       )}
-      draggable
-      onDragStart={handleDragStart}
+      onClick={() => onSelect?.()}
       role="listitem"
       aria-label={`${item.name} - Quantity: ${item.quantity}, Total: ${formattedPrice}`}
     >
@@ -97,18 +139,22 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
           {/* Compact Quantity Input */}
           <Input
             type="number"
-            value={item.quantity}
-            onChange={(e) => handleQuantityChange(e.target.value)}
+            value={inputValue}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             className={cn(
               FORM_PATTERNS.input.default,
-              "w-9 h-4 text-center text-xs font-bold",
+              "w-12 h-4 text-center text-xs font-bold",
               "border focus:border-primary transition-colors",
               "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
               isUpdating && "border-primary bg-primary/5"
             )}
             min={1}
             disabled={isUpdating}
-            aria-label={`Quantity for ${item.name}`}
+            aria-label={`Quantity for ${item.name} - Press Enter to save, Escape or click away to cancel`}
+            title="Click to select all, type new quantity, press Enter to save"
           />
           
           {/* Equipment Details */}
@@ -144,7 +190,6 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
               "text-muted-foreground/60 hover:text-white",
               "hover:bg-destructive hover:shadow-sm focus:bg-destructive focus:text-white",
               "opacity-0 group-hover:opacity-100 focus:opacity-100",
-              "scale-90 hover:scale-100 focus:scale-100",
               "border border-transparent hover:border-destructive/20"
             )}
             onClick={handleRemove}

@@ -1,11 +1,11 @@
 import { VariantEquipmentGroup, VariantEquipmentItem } from "@/types/variants";
-import { useEquipmentDragDrop } from "@/hooks/useEquipmentDragDrop";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { GroupDialogs } from "./GroupDialogs";
 import { EmptyDropZone } from "./EmptyDropZone";
 import { GroupList } from "./GroupList";
 import { useVariantEquipment } from "@/hooks/useVariantEquipment";
+import { toast } from "sonner";
 
 interface BaseEquipmentListProps {
   projectId: string;
@@ -16,6 +16,7 @@ interface BaseEquipmentListProps {
   ungroupedEquipment: VariantEquipmentItem[];
   isLoading: boolean;
   compact?: boolean; // NEW: Support for compact layout
+  scrollToItemId?: string; // ID of item to scroll to
 }
 
 export function BaseEquipmentList({ 
@@ -26,13 +27,17 @@ export function BaseEquipmentList({
   equipmentGroups,
   ungroupedEquipment,
   isLoading,
-  compact = false
+  compact = false,
+  scrollToItemId: externalScrollToItemId
 }: BaseEquipmentListProps) {
   const [pendingDropData, setPendingDropData] = useState<string | null>(null);
+  const [scrollToItemId, setScrollToItemId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   
   const {
+    addEquipmentItem,
     removeEquipmentItem,
+    updateEquipmentItem,
     groupToDelete,
     setGroupToDelete,
     targetGroupId,
@@ -45,11 +50,79 @@ export function BaseEquipmentList({
     handleDeleteGroup
   } = useVariantEquipment(projectId, variantName);
 
-  const {
-    handleDrop,
-    handleDragOver,
-    handleDragLeave
-  } = useEquipmentDragDrop(projectId);
+  // Variant-specific drag/drop handlers
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = e.currentTarget as HTMLElement;
+    if (target?.classList) {
+      target.classList.add('bg-primary/5', 'border-primary/20');
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = e.currentTarget as HTMLElement;
+    if (target?.classList) {
+      target.classList.remove('bg-primary/5', 'border-primary/20');
+    }
+  }, []);
+
+  // Quantity update handler
+  const handleUpdateQuantity = useCallback(async (itemId: string, quantity: number) => {
+    await updateEquipmentItem({ itemId, quantity });
+  }, [updateEquipmentItem]);
+
+  const handleDrop = useCallback(async (e: React.DragEvent, groupId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const target = e.currentTarget as HTMLElement;
+    if (target?.classList) {
+      target.classList.remove('bg-primary/5', 'border-primary/20');
+    }
+
+    try {
+      const data = e.dataTransfer.getData('application/json');
+      if (!data) return;
+
+      const item = JSON.parse(data);
+      
+      // Add equipment - server will handle duplicates automatically
+      const result = await addEquipmentItem({
+        equipment_id: item.id,
+        group_id: groupId,
+        quantity: 1,
+        notes: '',
+        // Pass equipment info for optimistic update
+        _equipmentInfo: {
+          name: item.name,
+          rental_price: item.rental_price || null,
+          code: item.code || null,
+          folder_id: item.folder_id || null
+        }
+      });
+      
+      // Show appropriate success message based on what happened
+      if (result._wasOrphaned) {
+        toast.success(`Fixed orphaned ${item.name} and updated quantity to ${result.quantity}`);
+      } else if (result._wasUpdated) {
+        toast.success(`Increased ${item.name} quantity to ${result.quantity}`);
+      } else {
+        toast.success(`Added ${item.name} to group`);
+      }
+      
+      // Scroll to the added/updated item
+      if (result.id) {
+        setScrollToItemId(result.id);
+        // Clear scroll target after a delay
+        setTimeout(() => setScrollToItemId(null), 1000);
+      }
+    } catch (error) {
+      console.error('Error adding equipment to variant:', error);
+      toast.error('Failed to add equipment to variant');
+    }
+  }, [addEquipmentItem, equipmentGroups]);
 
   // Use the passed equipment groups instead of fetching all project equipment groups
   const groups = equipmentGroups;
@@ -66,7 +139,8 @@ export function BaseEquipmentList({
       code: item.equipment.code || null,
       quantity: item.quantity,
       rental_price: item.equipment.rental_price || null,
-      group_id: item.group_id
+      group_id: item.group_id,
+      folder_id: item.equipment.folder_id // Include folder_id for sub-grouping
     });
     
     // Add equipment from groups
@@ -135,7 +209,9 @@ export function BaseEquipmentList({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
         onRemoveEquipment={removeEquipmentItem}
+        onUpdateQuantity={handleUpdateQuantity}
         compact={compact}
+        scrollToItemId={externalScrollToItemId || scrollToItemId}
       />
 
       <GroupDialogs
