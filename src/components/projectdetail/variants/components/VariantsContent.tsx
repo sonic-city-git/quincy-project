@@ -19,7 +19,7 @@ import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
 import { VariantEquipmentList } from '../equipment/components/VariantEquipmentList';
 import { VariantCrewList } from '../crew/components/VariantCrewList';
 import { AvailableResourcesPanel } from './AvailableResourcesPanel';
-import { useVariantResources } from '@/hooks/useVariantResources';
+import { useVariantEquipment } from '@/hooks/useVariantEquipment';
 import { Equipment } from '@/types/equipment';
 import { toast } from 'sonner';
 
@@ -46,7 +46,7 @@ export function VariantsContent({
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
 
   // Variant resources management for equipment addition
-  const { addEquipmentItem, resourceData } = useVariantResources(projectId, selectedVariant);
+  const { addEquipmentItem, equipmentData } = useVariantEquipment(projectId, selectedVariant);
 
   // Reset selected group when variant changes
   useEffect(() => {
@@ -54,7 +54,7 @@ export function VariantsContent({
   }, [selectedVariant]);
 
   // Check if variant has any groups (not counting ungrouped items)
-  const hasGroups = resourceData && resourceData.equipment_groups.length > 0;
+  const hasGroups = equipmentData && equipmentData.equipment_groups.length > 0;
 
   // Handle equipment addition from stock equipment panel
   const handleEquipmentAdd = async (equipment: Equipment) => {
@@ -142,10 +142,10 @@ export function VariantsContent({
       <div className="flex flex-col h-full">
         {/* Variant Tabs Header - Above Right Panel */}
         <div className={`
-          mb-3 p-4 rounded-lg border
+          mb-4 p-4 rounded-lg border
           bg-gradient-to-br ${operationalColors.bg} 
           ${operationalColors.border}
-          shadow-sm
+          shadow-sm hover:shadow-md transition-shadow duration-200
         `}>
           <div className="flex items-center justify-between">
             {/* Variant Selector Tabs */}
@@ -160,10 +160,10 @@ export function VariantsContent({
                   <button
                     onClick={() => onVariantSelect(variant.variant_name)}
                     className={cn(
-                      "flex items-center gap-2 px-3 py-1.5 pr-7 text-sm font-medium rounded-lg transition-all duration-200",
+                      "flex items-center gap-2 px-3 py-2 pr-7 text-sm font-medium rounded-lg transition-all duration-200 border",
                       selectedVariant === variant.variant_name
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        ? "bg-primary text-primary-foreground shadow-sm border-primary"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent hover:border-border"
                     )}
                   >
                     <span>{variant.variant_name}</span>
@@ -213,13 +213,13 @@ export function VariantsContent({
                 <div className="flex-1 grid grid-cols-[1fr_320px] gap-0 h-full">
                   {/* Equipment Section */}
                   <div className="border-r border-border/50 bg-card/50">
-                    <div className="p-4 border-b border-border/50 bg-background/10">
+                    <div className="px-4 py-3 border-b border-border/50 bg-background/10">
                       <div className="flex items-center gap-2">
                         <Box className={`h-4 w-4 ${STATUS_COLORS.info.text}`} />
                         <h3 className="font-medium text-sm">Equipment</h3>
                       </div>
                     </div>
-                    <div className="p-4 h-[calc(100%-57px)] overflow-auto">
+                    <div className="p-4 h-[calc(100%-49px)] overflow-auto">
                       <VariantEquipmentList 
                         projectId={projectId} 
                         variantName={selectedVariant}
@@ -231,13 +231,13 @@ export function VariantsContent({
                   
                   {/* Crew Section */}
                   <div className="bg-card/30">
-                    <div className="p-4 border-b border-border/50 bg-background/10">
+                    <div className="px-4 py-3 border-b border-border/50 bg-background/10">
                       <div className="flex items-center gap-2">
                         <Users className={`h-4 w-4 ${STATUS_COLORS.success.text}`} />
                         <h3 className="font-medium text-sm">Crew Roles</h3>
                       </div>
                     </div>
-                    <div className="p-4 h-[calc(100%-57px)] overflow-auto">
+                    <div className="p-4 h-[calc(100%-49px)] overflow-auto">
                       <VariantCrewList 
                         projectId={projectId} 
                         variantName={selectedVariant} 

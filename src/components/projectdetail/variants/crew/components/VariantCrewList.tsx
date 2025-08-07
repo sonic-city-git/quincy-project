@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
 import { CompactCrewRolesList } from './CompactCrewRolesList';
-import { useVariantResources } from '@/hooks/useVariantResources';
+import { useVariantCrew } from '@/hooks/useVariantCrew';
 
 interface VariantCrewListProps {
   projectId: string;
@@ -23,18 +23,18 @@ export function VariantCrewList({
   variantName 
 }: VariantCrewListProps) {
   const { 
-    resourceData, 
+    crewRoles, 
     isLoading, 
     error 
-  } = useVariantResources(projectId, variantName);
+  } = useVariantCrew(projectId, variantName);
 
   const successColors = STATUS_COLORS.success;
   const warningColors = STATUS_COLORS.warning;
   const infoColors = STATUS_COLORS.info;
 
   // Calculate crew stats
-  const totalRoles = resourceData?.crew_roles?.length || 0;
-  const assignedRoles = resourceData?.crew_roles?.filter(role => role.assigned_member_id).length || 0;
+  const totalRoles = crewRoles?.length || 0;
+  const assignedRoles = crewRoles?.filter(role => role.preferred_id).length || 0;
   const unassignedRoles = totalRoles - assignedRoles;
 
   if (isLoading) {

@@ -10,13 +10,12 @@ import { useState } from 'react';
 import { Copy, DollarSign, Package, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useVariantResources } from '@/hooks/useVariantResources';
+import { useVariantEquipment } from '@/hooks/useVariantEquipment';
 import { formatPrice } from '@/utils/priceFormatters';
 import { copyEquipmentBetweenVariants } from '@/utils/variantEquipmentCopy';
 import { toast } from 'sonner';
 import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
 import { BaseEquipmentList } from './BaseEquipmentList';
-import { useGroupManagement } from '../hooks/useGroupManagement';
 
 interface VariantEquipmentListProps {
   projectId: string;
@@ -32,19 +31,19 @@ export function VariantEquipmentList({
   onGroupSelect
 }: VariantEquipmentListProps) {
   const { 
-    resourceData, 
+    equipmentData, 
     isLoading, 
     error 
-  } = useVariantResources(projectId, variantName);
+  } = useVariantEquipment(projectId, variantName);
 
-  // Note: Group management is handled by BaseEquipmentList through useGroupManagement hook
+  // Note: Group management is handled by BaseEquipmentList through useVariantEquipment hook
 
   const successColors = STATUS_COLORS.success;
   const warningColors = STATUS_COLORS.warning;
 
   // Calculate total price
-  const totalPrice = resourceData ? (
-    [...resourceData.equipment_groups, { equipment_items: resourceData.equipment_ungrouped }]
+  const totalPrice = equipmentData ? (
+    [...equipmentData.equipment_groups, { equipment_items: equipmentData.equipment_ungrouped }]
       .reduce((total, group) => {
         return total + group.equipment_items.reduce((groupTotal, item) => {
           return groupTotal + (item.equipment?.rental_price || 0) * item.quantity;
@@ -52,9 +51,9 @@ export function VariantEquipmentList({
       }, 0)
   ) : 0;
 
-  const hasEquipment = resourceData && (
-    resourceData.equipment_groups.length > 0 || 
-    resourceData.equipment_ungrouped.length > 0
+  const hasEquipment = equipmentData && (
+    equipmentData.equipment_groups.length > 0 || 
+    equipmentData.equipment_ungrouped.length > 0
   );
 
   const handleCopyFromDefault = async () => {
@@ -119,9 +118,9 @@ export function VariantEquipmentList({
             <span className="text-sm font-medium">Items</span>
           </div>
           <Badge variant="outline">
-            {(resourceData?.equipment_groups || []).reduce((total, group) => 
+            {(equipmentData?.equipment_groups || []).reduce((total, group) => 
               total + group.equipment_items.length, 0
-            ) + (resourceData?.equipment_ungrouped || []).length}
+            ) + (equipmentData?.equipment_ungrouped || []).length}
           </Badge>
         </div>
       </div>
@@ -148,8 +147,8 @@ export function VariantEquipmentList({
           variantName={variantName}
           selectedGroupId={selectedGroupId}
           onGroupSelect={onGroupSelect}
-          equipmentGroups={resourceData?.equipment_groups || []}
-          ungroupedEquipment={resourceData?.equipment_ungrouped || []}
+          equipmentGroups={equipmentData?.equipment_groups || []}
+          ungroupedEquipment={equipmentData?.equipment_ungrouped || []}
           isLoading={isLoading}
           compact={true}
         />

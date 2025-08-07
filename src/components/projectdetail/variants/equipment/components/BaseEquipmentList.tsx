@@ -1,13 +1,11 @@
-import { useVariantResources } from "@/hooks/useVariantResources";
 import { VariantEquipmentGroup, VariantEquipmentItem } from "@/types/variants";
 import { useEquipmentDragDrop } from "@/hooks/useEquipmentDragDrop";
 import { useState, useMemo } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 import { GroupDialogs } from "./GroupDialogs";
 import { EmptyDropZone } from "./EmptyDropZone";
 import { GroupList } from "./GroupList";
-import { useGroupManagement } from "../hooks/useGroupManagement";
+import { useVariantEquipment } from "@/hooks/useVariantEquipment";
 
 interface BaseEquipmentListProps {
   projectId: string;
@@ -30,11 +28,11 @@ export function BaseEquipmentList({
   isLoading,
   compact = false
 }: BaseEquipmentListProps) {
-  const { removeEquipmentItem } = useVariantResources(projectId, variantName);
   const [pendingDropData, setPendingDropData] = useState<string | null>(null);
   const queryClient = useQueryClient();
   
   const {
+    removeEquipmentItem,
     groupToDelete,
     setGroupToDelete,
     targetGroupId,
@@ -45,7 +43,7 @@ export function BaseEquipmentList({
     setNewGroupName,
     handleCreateGroup,
     handleDeleteGroup
-  } = useGroupManagement(projectId, variantName);
+  } = useVariantEquipment(projectId, variantName);
 
   const {
     handleDrop,
