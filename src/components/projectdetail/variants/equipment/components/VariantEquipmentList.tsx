@@ -100,9 +100,9 @@ export function VariantEquipmentList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {/* Variant Stats Header */}
-      <div className="space-y-2">
+      <div className="space-y-1">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <DollarSign className={cn('h-4 w-4', successColors.text)} />
@@ -142,7 +142,7 @@ export function VariantEquipmentList({
       )}
 
       {/* Equipment Content - Always show BaseEquipmentList for drag & drop */}
-      <div className="space-y-4">
+      <div className="space-y-1.5">
         <BaseEquipmentList 
           projectId={projectId} 
           variantName={variantName}

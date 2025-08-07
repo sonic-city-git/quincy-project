@@ -80,49 +80,73 @@ export function ProjectEquipmentItem({ item, onRemove }: ProjectEquipmentItemPro
     <Card 
       className={cn(
         COMPONENT_CLASSES.card.hover,
-        "relative p-3 group",
-        isRemoving && "opacity-50 pointer-events-none"
+        "relative group transition-all duration-200",
+        "border-l-4 border-l-accent hover:border-l-primary",
+        "py-1 px-3",
+        isRemoving && "opacity-50 pointer-events-none animate-pulse",
+        isUpdating && "ring-2 ring-primary/20"
       )}
       draggable
       onDragStart={handleDragStart}
       role="listitem"
-      aria-label={`${item.name} - Quantity: ${item.quantity}`}
+      aria-label={`${item.name} - Quantity: ${item.quantity}, Total: ${formattedPrice}`}
     >
       <div className="flex items-center justify-between h-full">
         {/* Equipment Info Section */}
-        <div className="flex items-center gap-3">
-          {/* Quantity Input */}
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          {/* Compact Quantity Input */}
           <Input
             type="number"
             value={item.quantity}
             onChange={(e) => handleQuantityChange(e.target.value)}
             className={cn(
               FORM_PATTERNS.input.default,
-              "w-12 h-8 text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              "w-9 h-4 text-center text-xs font-bold",
+              "border focus:border-primary transition-colors",
+              "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
+              isUpdating && "border-primary bg-primary/5"
             )}
             min={1}
             disabled={isUpdating}
             aria-label={`Quantity for ${item.name}`}
           />
           
-          {/* Equipment Name */}
-          <h3 className="text-sm font-medium leading-none text-foreground">
-            {item.name}
-          </h3>
+          {/* Equipment Details */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xs font-semibold leading-tight text-foreground truncate group-hover:text-primary transition-colors tracking-tight">
+                {item.name}
+              </h3>
+              {item.code && (
+                <span className="text-xs text-muted-foreground/70 font-mono flex-shrink-0 bg-muted/40 px-1 py-0.5 rounded leading-none">
+                  {item.code}
+                </span>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Price and Actions Section */}
-        <div className="flex items-center gap-3">
-          {/* Total Price */}
-          <div className="min-w-[100px] text-right text-sm text-muted-foreground font-medium">
-            {formattedPrice}
+        <div className="flex items-center gap-2.5 flex-shrink-0">
+          {/* Compact Price Display */}
+          <div className="text-right min-w-[55px]">
+            <div className="text-xs font-bold text-muted-foreground/80 leading-none tracking-tight">
+              {formattedPrice}
+            </div>
           </div>
           
-          {/* Remove Button */}
+          {/* Enhanced Remove Button */}
           <Button
             variant="ghost"
             size="sm"
-            className="h-6 w-6 p-0 text-destructive hover:text-destructive/80 hover:bg-destructive/10"
+            className={cn(
+              "h-7 w-7 p-0 transition-all duration-200 rounded-md",
+              "text-muted-foreground/60 hover:text-white",
+              "hover:bg-destructive hover:shadow-sm focus:bg-destructive focus:text-white",
+              "opacity-0 group-hover:opacity-100 focus:opacity-100",
+              "scale-90 hover:scale-100 focus:scale-100",
+              "border border-transparent hover:border-destructive/20"
+            )}
             onClick={handleRemove}
             disabled={isRemoving || isUpdating}
             aria-label={`Remove ${item.name} from project`}

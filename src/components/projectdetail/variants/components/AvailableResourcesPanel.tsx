@@ -6,17 +6,20 @@
  * ✅ Simple equipment selection interface
  */
 
-import { Box } from 'lucide-react';
+import { Box, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
 import { COMPONENT_CLASSES, cn } from '@/design-system';
 import { EquipmentSelector } from '../equipment/components/EquipmentSelector';
 import { Equipment } from '@/types/equipment';
+import { useState, useEffect, useRef } from 'react';
 
 interface AvailableResourcesPanelProps {
   projectId: string;
   selectedVariant: string;
   selectedGroupId: string | null;
+  selectedGroupName: string | null;
   hasGroups: boolean;
   onEquipmentAdd: (equipment: Equipment) => Promise<void>;
 }
@@ -25,80 +28,93 @@ export function AvailableResourcesPanel({
   projectId, 
   selectedVariant,
   selectedGroupId,
+  selectedGroupName,
   hasGroups,
   onEquipmentAdd
 }: AvailableResourcesPanelProps) {
   const infoColors = STATUS_COLORS.info;
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Keyboard shortcuts: ESC to clear search
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // ESC to clear search and unfocus
+      if (event.key === 'Escape' && searchQuery) {
+        event.preventDefault();
+        setSearchQuery('');
+        searchInputRef.current?.blur();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [searchQuery]);
 
   return (
     <Card className={cn(
-      'overflow-hidden h-full',
+      'h-full flex flex-col overflow-hidden',
       'bg-gradient-to-br', infoColors.bg,
       'border', infoColors.border,
       'shadow-sm hover:shadow-md transition-shadow duration-200'
     )}>
-      {/* Header */}
-      <div className={cn(
-        'border-b border-border/50 bg-background/20 backdrop-blur-sm',
-        COMPONENT_CLASSES.card.default.includes('p-') ? '' : 'px-4 py-3'
-      )}>
-        <div className="flex items-center gap-2 mb-1">
-          <Box className={cn('h-5 w-5', infoColors.text)} />
-          <h2 className="font-semibold text-lg">Stock Equipment</h2>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Add equipment to your variant
-        </p>
-      </div>
-
-      {/* Content */}
-      <CardContent className="p-0 h-[calc(100%-81px)] overflow-hidden">
-        <div className="h-full flex flex-col">
-          {/* Group Selection Status */}
-          <div className={cn(
-            'px-4 py-3 border-b border-border/50 bg-background/10'
-          )}>
+      <div className="flex flex-col h-full overflow-auto">
+        {/* Consolidated Sticky Header */}
+        <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md flex-shrink-0 shadow-sm border-b border-border/30">
+          {/* Main Header */}
+          <div className="px-4 py-3 border-b border-border/20">
+            <div className="flex items-center gap-3">
+              <Box className={cn('h-5 w-5 flex-shrink-0', infoColors.text)} />
+              <h2 className="font-semibold text-lg leading-none text-foreground">Stock Equipment</h2>
+            </div>
+          </div>
+          
+          {/* Group Status */}
+          <div className="px-4 py-2.5 border-b border-border/20">
             {selectedGroupId ? (
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-primary">
-                  Adding to selected group
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Double-click equipment to add to group, or drag & drop to variant list
-                </p>
-              </div>
-            ) : !hasGroups ? (
-              <div className="space-y-1">
-                <p className={cn('text-xs font-medium', STATUS_COLORS.warning.text)}>
-                  No groups in variant
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Double-click equipment to create your first group, or drag to variant area
+              <div className="flex items-center gap-2">
+                <div className={cn('w-2 h-2 rounded-full flex-shrink-0', STATUS_COLORS.success.bg)} />
+                <p className={cn('text-xs font-semibold leading-none', STATUS_COLORS.success.text)}>
+                  Adding to: {selectedGroupName || 'Selected Group'}
                 </p>
               </div>
             ) : (
-              <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-muted-foreground/40 flex-shrink-0" />
+                <p className="text-xs font-semibold text-muted-foreground leading-none">
                   No group selected
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Select a group in the variant list, then double-click to add equipment
                 </p>
               </div>
             )}
           </div>
           
-          {/* Equipment Selector */}
-          <div className="flex-1 overflow-hidden">
-            <EquipmentSelector 
-              onSelect={onEquipmentAdd}
-              projectId={projectId}
-              selectedGroupId={selectedGroupId}
-              className="h-full"
-            />
+          {/* Search Field */}
+          <div className="px-4 py-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+              <Input
+                ref={searchInputRef}
+                placeholder="Search equipment..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 bg-muted/30 border-border/40 focus:bg-background focus:border-primary/50 transition-colors h-9"
+                aria-label="Search equipment by name or code (Press ESC to clear)"
+              />
+            </div>
           </div>
         </div>
-      </CardContent>
+
+        {/* Scrollable Content Area */}
+        <div className="flex-1 overflow-hidden">
+          <EquipmentSelector 
+            onSelect={onEquipmentAdd}
+            projectId={projectId}
+            selectedGroupId={selectedGroupId}
+            searchQuery={searchQuery}
+            stickySearch={false}
+          />
+        </div>
+      </div>
     </Card>
   );
 }

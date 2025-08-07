@@ -56,6 +56,11 @@ export function VariantsContent({
   // Check if variant has any groups (not counting ungrouped items)
   const hasGroups = equipmentData && equipmentData.equipment_groups.length > 0;
 
+  // Get selected group name
+  const selectedGroupName = selectedGroupId 
+    ? equipmentData?.equipment_groups.find(group => group.id === selectedGroupId)?.name || null
+    : null;
+
   // Handle equipment addition from stock equipment panel
   const handleEquipmentAdd = async (equipment: Equipment) => {
     // Guard: No variant selected
@@ -106,7 +111,7 @@ export function VariantsContent({
   // Handle empty variants case
   if (variants.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[400px]">
+      <div className="flex items-center justify-center min-h-[400px] h-full">
         <div className="text-center max-w-md">
           <Layers className={cn('h-16 w-16 mx-auto mb-4', STATUS_COLORS.operational.text)} />
           <h3 className="text-xl font-semibold mb-3">No variants found</h3>
@@ -128,12 +133,13 @@ export function VariantsContent({
   const operationalColors = STATUS_COLORS.operational;
 
   return (
-    <div className="grid grid-cols-[400px_1fr] gap-6 h-[700px]">
+    <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 h-[calc(100vh-200px)] min-h-[600px] max-h-[900px]">
       {/* 🎯 LEFT: Available Resources Panel */}
       <AvailableResourcesPanel 
         projectId={projectId} 
         selectedVariant={selectedVariant}
         selectedGroupId={selectedGroupId}
+        selectedGroupName={selectedGroupName}
         hasGroups={!!hasGroups}
         onEquipmentAdd={handleEquipmentAdd}
       />
@@ -210,16 +216,16 @@ export function VariantsContent({
             {currentVariant ? (
               <div className="h-full flex flex-col">
                 {/* Variant Resources Grid */}
-                <div className="flex-1 grid grid-cols-[1fr_320px] gap-0 h-full">
+                <div className="flex-1 grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-0 h-full">
                   {/* Equipment Section */}
-                  <div className="border-r border-border/50 bg-card/50">
+                  <div className="xl:border-r border-border/50 bg-card/50 flex flex-col">
                     <div className="px-4 py-3 border-b border-border/50 bg-background/10">
                       <div className="flex items-center gap-2">
                         <Box className={cn('h-4 w-4', STATUS_COLORS.info.text)} />
                         <h3 className="font-medium text-sm">Equipment</h3>
                       </div>
                     </div>
-                    <div className="p-4 h-[calc(100%-49px)] overflow-auto">
+                    <div className="flex-1 p-4 overflow-auto">
                       <VariantEquipmentList 
                         projectId={projectId} 
                         variantName={selectedVariant}
@@ -230,14 +236,14 @@ export function VariantsContent({
                   </div>
                   
                   {/* Crew Section */}
-                  <div className="bg-card/30">
+                  <div className="bg-card/30 flex flex-col xl:border-t-0 border-t border-border/50 xl:mt-0 mt-4">
                     <div className="px-4 py-3 border-b border-border/50 bg-background/10">
                       <div className="flex items-center gap-2">
                         <Users className={cn('h-4 w-4', STATUS_COLORS.success.text)} />
                         <h3 className="font-medium text-sm">Crew Roles</h3>
                       </div>
                     </div>
-                    <div className="p-4 h-[calc(100%-49px)] overflow-auto">
+                    <div className="flex-1 p-4 overflow-auto">
                       <VariantCrewList 
                         projectId={projectId} 
                         variantName={selectedVariant} 

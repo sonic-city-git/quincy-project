@@ -8,21 +8,33 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from "@/utils/equipmentFolderSort";
-import { FORM_PATTERNS, createFieldIconClasses } from "@/design-system";
+import { FORM_PATTERNS, createFieldIconClasses, COMPONENT_CLASSES } from "@/design-system";
+import { formatPrice } from "@/utils/priceFormatters";
 
 interface EquipmentSelectorProps {
   onSelect: (equipment: Equipment) => void;
   projectId: string;
   selectedGroupId: string | null;
   className?: string;
+  stickySearch?: boolean;
+  searchQuery?: string;
 }
 
-export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProps) {
+export function EquipmentSelector({ onSelect, className, stickySearch = false, searchQuery: externalSearchQuery }: EquipmentSelectorProps) {
   const { equipment = [], loading } = useEquipment();
   const { folders = [] } = useFolders();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [internalSearchQuery, setInternalSearchQuery] = useState('');
+  const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
+  
+  // Use external search query if provided, otherwise use internal
+  const searchQuery = externalSearchQuery !== undefined ? externalSearchQuery : internalSearchQuery;
+
+  // Clear manual expansions when search changes to avoid conflicts
+  useEffect(() => {
+    setExpandedFolders([]);
+  }, [searchQuery]);
 
   const handleDragStart = (e: React.DragEvent, item: Equipment) => {
     e.dataTransfer.setData('application/json', JSON.stringify(item));
@@ -108,8 +120,8 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
     }, {} as Record<string, { name: string; items: Equipment[]; subfolders: Record<string, { name: string; items: Equipment[] }> }>);
   }, [filteredEquipment, folders]);
 
-  // Determine which folders should be expanded based on search results
-  const expandedFolders = useMemo(() => {
+    // Determine which folders should be expanded based on search results or manual expansion
+  const autoExpandedFolders = useMemo(() => {
     if (!searchQuery) return [];
     
     return Object.entries(groupedByParent).reduce((acc: string[], [folderId, folder]) => {
@@ -117,7 +129,7 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
       const hasMatchingSubfolders = Object.values(folder.subfolders).some(
         subfolder => subfolder.items.length > 0
       );
-      
+
       if (hasMatchingItems || hasMatchingSubfolders) {
         acc.push(folderId);
       }
@@ -125,20 +137,111 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
     }, []);
   }, [groupedByParent, searchQuery]);
 
+  // Combine auto-expanded and manually expanded folders
+  const allExpandedFolders = useMemo(() => {
+    return [...new Set([...autoExpandedFolders, ...expandedFolders])];
+  }, [autoExpandedFolders, expandedFolders]);
+
+  // Handle folder expansion with Cmd+click support and sequential animations
+  const handleFolderToggle = useCallback((folderId: string, isCtrlClick: boolean = false) => {
+    if (isCtrlClick) {
+      // Cmd+click: expand/collapse this folder and all its subfolders with sequential animation
+      const folderData = groupedByParent[folderId];
+      if (!folderData) return;
+      
+      const subfolderIds = Object.keys(folderData.subfolders);
+      const allRelatedIds = [folderId, ...subfolderIds];
+      
+      setExpandedFolders(prev => {
+        // Check if main folder and all subfolders are currently expanded
+        const mainExpanded = prev.includes(folderId) || autoExpandedFolders.includes(folderId);
+        const allSubfoldersExpanded = subfolderIds.every(id => prev.includes(id) || autoExpandedFolders.includes(id));
+        const shouldCollapse = mainExpanded && allSubfoldersExpanded;
+        
+        if (shouldCollapse) {
+          // CLOSING SEQUENCE: subfolders first, then main folder
+          const newState = [...prev];
+          
+          // Close subfolders with staggered delays (150ms apart)
+          subfolderIds.forEach((subId, index) => {
+            setTimeout(() => {
+              setExpandedFolders(current => current.filter(id => id !== subId));
+            }, index * 150);
+          });
+          
+          // Close main folder after all subfolders (additional 200ms delay)
+          setTimeout(() => {
+            setExpandedFolders(current => current.filter(id => id !== folderId));
+          }, subfolderIds.length * 150 + 200);
+          
+          return newState;
+        } else {
+          // OPENING SEQUENCE: main folder first, then subfolders
+          let newState = [...prev];
+          
+          // Open main folder immediately if not already open
+          if (!mainExpanded) {
+            newState = [...newState, folderId];
+          }
+          
+          // Open subfolders with staggered delays (100ms apart, starting after 200ms)
+          subfolderIds.forEach((subId, index) => {
+            if (!newState.includes(subId) && !autoExpandedFolders.includes(subId)) {
+              setTimeout(() => {
+                setExpandedFolders(current => [...current, subId]);
+              }, 200 + index * 100);
+            }
+          });
+          
+          return newState;
+        }
+      });
+    } else {
+      // Normal click: toggle just this folder
+      setExpandedFolders(prev => {
+        const isCurrentlyExpanded = prev.includes(folderId) || autoExpandedFolders.includes(folderId);
+        if (isCurrentlyExpanded) {
+          return prev.filter(id => id !== folderId);
+        } else {
+          return [...prev, folderId];
+        }
+      });
+    }
+  }, [groupedByParent, autoExpandedFolders]);
+
   const renderEquipmentCard = (item: Equipment) => (
     <Card
       key={item.id}
-                  className="p-3 cursor-move hover:bg-muted/50 transition-colors border-zinc-800/50"
+      className={cn(
+        COMPONENT_CLASSES.card.hover,
+        "cursor-move group transition-all duration-200",
+        "border-l-4 border-l-transparent hover:border-l-primary",
+        "py-1.5 px-3"
+      )}
       draggable
       onDragStart={(e) => handleDragStart(e, item)}
       onDoubleClick={() => onSelect(item)}
+      role="button"
+      tabIndex={0}
+      aria-label={`Add ${item.name} to variant. Double-click or drag to add.`}
     >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-medium leading-none">
+      <div className="flex items-center justify-between h-full">
+        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+          <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 group-hover:bg-primary/70 transition-colors flex-shrink-0" />
+          <h3 className="text-xs font-semibold leading-tight text-foreground group-hover:text-primary transition-colors truncate tracking-tight">
             {item.name}
           </h3>
+          {item.code && (
+                            <span className="text-xs text-muted-foreground/70 font-mono bg-muted/40 px-1 py-0.5 rounded flex-shrink-0 leading-none">
+                  {item.code}
+                </span>
+          )}
         </div>
+        {item.rental_price && (
+          <div className="text-xs text-muted-foreground/80 font-semibold flex-shrink-0 ml-2.5 tracking-tight">
+            {formatPrice(item.rental_price)}
+          </div>
+        )}
       </div>
     </Card>
   );
@@ -149,29 +252,34 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
 
   return (
     <div className="flex flex-col h-full">
-      {/* Enhanced Search Input with Icon */}
-      <div className="p-4">
-        <div className={FORM_PATTERNS.fieldContainer.withIcon}>
-          <Search className={createFieldIconClasses()} />
-          <Input
-            placeholder="Search equipment..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className={cn(
-              FORM_PATTERNS.input.withIcon,
-              "w-full bg-muted/50 border-border/50"
-            )}
-            aria-label="Search equipment by name or code"
-          />
+      {/* Conditional Search Field - only show if using internal search */}
+      {externalSearchQuery === undefined && (
+        <div className={cn(
+          "px-4 py-3",
+          stickySearch && "sticky top-0 z-5 bg-background/85 backdrop-blur-sm border-b border-border/20 shadow-sm"
+        )}>
+          <div className={FORM_PATTERNS.fieldContainer.withIcon}>
+            <Search className={cn(createFieldIconClasses(), "text-muted-foreground/60")} />
+            <Input
+              placeholder="Search equipment..."
+              value={internalSearchQuery}
+              onChange={(e) => setInternalSearchQuery(e.target.value)}
+              className={cn(
+                FORM_PATTERNS.input.withIcon,
+                "w-full bg-muted/30 border-border/40 focus:bg-background focus:border-primary/50 transition-colors h-9"
+              )}
+              aria-label="Search equipment by name or code"
+            />
+          </div>
         </div>
-      </div>
+      )}
       <ScrollArea className={cn("flex-1", className)}>
-        <div className="px-4 pb-4">
+        <div className="px-4 pt-2 pb-4">
           <Accordion 
             type="multiple" 
             className="space-y-2"
-            defaultValue={expandedFolders}
-            value={searchQuery ? expandedFolders : undefined}
+            value={allExpandedFolders}
+            onValueChange={setExpandedFolders}
           >
             {sortedMainFolders.map(mainFolder => {
               const folderContent = groupedByParent[mainFolder.id];
@@ -179,7 +287,17 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
 
               return (
                 <AccordionItem key={mainFolder.id} value={mainFolder.id} className="border-none">
-                  <AccordionTrigger className="py-2 px-3 hover:no-underline rounded-md hover:bg-muted/50 data-[state=open]:bg-muted/50">
+                  <AccordionTrigger 
+                    className="py-2 px-3 hover:no-underline rounded-md hover:bg-muted/50 data-[state=open]:bg-muted/50"
+                    title={`Click to toggle ${mainFolder.name}. Cmd+click to expand/collapse all subfolders with animation.`}
+                    onClick={(e) => {
+                      const isCtrlClick = e.metaKey || e.ctrlKey;
+                      if (isCtrlClick) {
+                        e.preventDefault();
+                        handleFolderToggle(mainFolder.id, true);
+                      }
+                    }}
+                  >
                     <span className="text-sm font-medium text-muted-foreground">
                       {mainFolder.name}
                     </span>
@@ -188,7 +306,7 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
                     <div className="space-y-2">
                       {/* Main folder items */}
                       {folderContent.items.length > 0 && (
-                        <div className="space-y-1 px-1">
+                        <div className="space-y-0.5 px-1">
                           {folderContent.items.map(renderEquipmentCard)}
                         </div>
                       )}
@@ -199,13 +317,39 @@ export function EquipmentSelector({ onSelect, className }: EquipmentSelectorProp
                         if (!subfolderContent?.items.length) return null;
 
                         return (
-                          <Collapsible key={subfolder.id} defaultOpen={searchQuery.length > 0}>
-                            <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground w-full hover:bg-muted/50 px-3 py-1 rounded-md transition-colors">
+                          <Collapsible 
+                            key={subfolder.id} 
+                            open={allExpandedFolders.includes(subfolder.id) || searchQuery.length > 0}
+                            onOpenChange={(open) => {
+                              if (open) {
+                                setExpandedFolders(prev => [...prev, subfolder.id]);
+                              } else {
+                                setExpandedFolders(prev => prev.filter(id => id !== subfolder.id));
+                              }
+                            }}
+                          >
+                            <CollapsibleTrigger 
+                              className="flex items-center gap-2 text-sm font-medium text-muted-foreground w-full hover:bg-muted/50 px-3 py-1 rounded-md transition-colors"
+                              title={`Click to toggle ${subfolder.name} subfolder`}
+                              onClick={(e) => {
+                                const isCtrlClick = e.metaKey || e.ctrlKey;
+                                if (isCtrlClick) {
+                                  e.preventDefault();
+                                  // For subfolders, Cmd+click just toggles them since they don't have sub-subfolders
+                                  const isCurrentlyExpanded = allExpandedFolders.includes(subfolder.id);
+                                  if (isCurrentlyExpanded) {
+                                    setExpandedFolders(prev => prev.filter(id => id !== subfolder.id));
+                                  } else {
+                                    setExpandedFolders(prev => [...prev, subfolder.id]);
+                                  }
+                                }
+                              }}
+                            >
                               <ChevronDown className="h-4 w-4" />
                               {subfolder.name}
                             </CollapsibleTrigger>
                             <CollapsibleContent>
-                              <div className="space-y-1 pl-7 pr-1 pt-1">
+                              <div className="space-y-0.5 pl-7 pr-1 pt-1">
                                 {subfolderContent.items.map(renderEquipmentCard)}
                               </div>
                             </CollapsibleContent>

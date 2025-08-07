@@ -80,6 +80,9 @@ export function AddRoleDialog({ isOpen, onClose, project, variantName }: AddRole
         queryClient.invalidateQueries({ 
           queryKey: ['project-roles', project.id] 
         }),
+        queryClient.invalidateQueries({ 
+          queryKey: ['variant-crew', project.id, variantName] 
+        }),
         queryClient.invalidateQueries({
           queryKey: ['project-event-roles']
         }),

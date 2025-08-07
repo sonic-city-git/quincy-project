@@ -51,7 +51,7 @@ export function GroupList({
 
   return (
     <div 
-      className={cn(SPACING.section, "pr-4", className)}
+      className={cn("space-y-1.5", "pr-4", className)}
       role="list"
       aria-label={`Equipment groups (${groups.length} groups)`}
     >

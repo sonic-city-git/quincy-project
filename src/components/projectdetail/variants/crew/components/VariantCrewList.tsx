@@ -12,7 +12,10 @@ import { Badge } from '@/components/ui/badge';
 import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
 import { cn } from '@/design-system';
 import { CompactCrewRolesList } from './CompactCrewRolesList';
+import { AddRoleDialog } from './AddRoleDialog';
 import { useVariantCrew } from '@/hooks/useVariantCrew';
+import { useProjectDetails } from '@/hooks/useProjectDetails';
+import { useState } from 'react';
 
 interface VariantCrewListProps {
   projectId: string;
@@ -23,6 +26,8 @@ export function VariantCrewList({
   projectId, 
   variantName 
 }: VariantCrewListProps) {
+  const [isAddRoleDialogOpen, setIsAddRoleDialogOpen] = useState(false);
+  const { project } = useProjectDetails(projectId);
   const { 
     crewRoles, 
     isLoading, 
@@ -98,7 +103,20 @@ export function VariantCrewList({
 
       {/* Crew Content */}
       {totalRoles > 0 ? (
-        <div className="space-y-2">
+        <div className="space-y-3">
+          {/* Add Role Button */}
+          <div className="flex justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsAddRoleDialogOpen(true)}
+              className="gap-1.5"
+            >
+              <Plus className="h-3.5 w-3.5" />
+              Add Role
+            </Button>
+          </div>
+          
           <CompactCrewRolesList 
             projectId={projectId} 
             variantName={variantName} 
@@ -115,12 +133,23 @@ export function VariantCrewList({
           <Button
             variant="outline"
             size="sm"
+            onClick={() => setIsAddRoleDialogOpen(true)}
             className="gap-1.5"
           >
             <Plus className="h-3.5 w-3.5" />
             Add First Role
           </Button>
         </div>
+      )}
+
+      {/* Add Role Dialog */}
+      {project && (
+        <AddRoleDialog
+          isOpen={isAddRoleDialogOpen}
+          onClose={() => setIsAddRoleDialogOpen(false)}
+          project={project}
+          variantName={variantName}
+        />
       )}
     </div>
   );
