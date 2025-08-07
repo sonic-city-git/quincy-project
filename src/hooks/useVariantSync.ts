@@ -225,6 +225,18 @@ async function syncCrewRolesToEvent(
   variantName: string
 ): Promise<SyncResult> {
   try {
+    // First get the variant_id from the variant_name
+    const { data: variant, error: variantError } = await supabase
+      .from('project_variants')
+      .select('id')
+      .eq('project_id', projectId)
+      .eq('variant_name', variantName)
+      .single();
+
+    if (variantError || !variant) {
+      return { synced: 0, conflicts: [], error: `Failed to find variant: ${variantError?.message || 'Variant not found'}` };
+    }
+
     // Get crew roles for the variant
     const { data: variantRoles, error: rolesError } = await supabase
       .from('project_roles')
@@ -237,7 +249,7 @@ async function syncCrewRolesToEvent(
         )
       `)
       .eq('project_id', projectId)
-      .eq('variant_name', variantName);
+      .eq('variant_id', variant.id);
 
     if (rolesError) {
       return { synced: 0, conflicts: [], error: `Failed to fetch variant roles: ${rolesError.message}` };
@@ -318,6 +330,18 @@ async function syncEquipmentToEvent(
   variantName: string
 ): Promise<SyncResult> {
   try {
+    // First get the variant_id from the variant_name
+    const { data: variant, error: variantError } = await supabase
+      .from('project_variants')
+      .select('id')
+      .eq('project_id', projectId)
+      .eq('variant_name', variantName)
+      .single();
+
+    if (variantError || !variant) {
+      return { synced: 0, conflicts: [], error: `Failed to find variant: ${variantError?.message || 'Variant not found'}` };
+    }
+
     // Get equipment for the variant
     const { data: variantEquipment, error: equipmentError } = await supabase
       .from('project_equipment')
@@ -330,7 +354,7 @@ async function syncEquipmentToEvent(
         )
       `)
       .eq('project_id', projectId)
-      .eq('variant_name', variantName);
+      .eq('variant_id', variant.id);
 
     if (equipmentError) {
       return { synced: 0, conflicts: [], error: `Failed to fetch variant equipment: ${equipmentError.message}` };

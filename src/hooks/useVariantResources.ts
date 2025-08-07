@@ -35,7 +35,10 @@ export function useVariantResources(
   } = useQuery({
     queryKey,
     queryFn: async (): Promise<VariantResourceData> => {
+      // console.log('🔍 [useVariantResources] Fetching resources for:', { projectId, variantName });
+      
       if (!projectId || !variantName) {
+        console.log('⚠️ [useVariantResources] Missing projectId or variantName:', { projectId, variantName });
         return {
           crew_roles: [],
           equipment_groups: [],
@@ -88,11 +91,23 @@ export function useVariantResources(
     mutationFn: async (
       roleData: Omit<VariantCrewRole, 'id' | 'project_id' | 'variant_name'>
     ): Promise<VariantCrewRole> => {
+      // First get the variant_id from the variant_name
+      const { data: variant, error: variantError } = await supabase
+        .from('project_variants')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('variant_name', variantName)
+        .single();
+
+      if (variantError || !variant) {
+        throw new Error(`Failed to find variant: ${variantError?.message || 'Variant not found'}`);
+      }
+
       const { data, error } = await supabase
         .from('project_roles')
         .insert({
           project_id: projectId,
-          variant_name: variantName,
+          variant_id: variant.id,
           role_id: roleData.role_id,
           daily_rate: roleData.daily_rate,
           hourly_rate: roleData.hourly_rate,
@@ -509,6 +524,24 @@ async function fetchVariantCrewRoles(
   projectId: string,
   variantName: string
 ): Promise<VariantCrewRole[]> {
+  // First get the variant_id from the variant_name
+  const { data: variant, error: variantError } = await supabase
+    .from('project_variants')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('variant_name', variantName)
+    .single();
+
+  if (variantError) {
+    console.error('Error fetching variant:', variantError);
+    throw new Error(`Failed to fetch variant: ${variantError.message}`);
+  }
+
+  if (!variant) {
+    console.error('Variant not found:', { projectId, variantName });
+    return [];
+  }
+
   const { data, error } = await supabase
     .from('project_roles')
     .select(`
@@ -526,7 +559,7 @@ async function fetchVariantCrewRoles(
       )
     `)
     .eq('project_id', projectId)
-    .eq('variant_name', variantName)
+    .eq('variant_id', variant.id)
     .order('daily_rate', { ascending: false });
 
   if (error) {
@@ -541,11 +574,29 @@ async function fetchVariantEquipmentGroups(
   projectId: string,
   variantName: string
 ): Promise<VariantEquipmentGroup[]> {
+  // First get the variant_id from the variant_name
+  const { data: variant, error: variantError } = await supabase
+    .from('project_variants')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('variant_name', variantName)
+    .single();
+
+  if (variantError) {
+    console.error('Error fetching variant:', variantError);
+    throw new Error(`Failed to fetch variant: ${variantError.message}`);
+  }
+
+  if (!variant) {
+    console.error('Variant not found:', { projectId, variantName });
+    return [];
+  }
+
   const { data, error } = await supabase
     .from('project_equipment_groups')
     .select('*')
     .eq('project_id', projectId)
-    .eq('variant_name', variantName)
+    .eq('variant_id', variant.id)
     .order('sort_order', { ascending: true });
 
   if (error) {
@@ -563,6 +614,24 @@ async function fetchVariantEquipmentItems(
   projectId: string,
   variantName: string
 ): Promise<VariantEquipmentItem[]> {
+  // First get the variant_id from the variant_name
+  const { data: variant, error: variantError } = await supabase
+    .from('project_variants')
+    .select('id')
+    .eq('project_id', projectId)
+    .eq('variant_name', variantName)
+    .single();
+
+  if (variantError) {
+    console.error('Error fetching variant:', variantError);
+    throw new Error(`Failed to fetch variant: ${variantError.message}`);
+  }
+
+  if (!variant) {
+    console.error('Variant not found:', { projectId, variantName });
+    return [];
+  }
+
   const { data, error } = await supabase
     .from('project_equipment')
     .select(`
@@ -577,7 +646,7 @@ async function fetchVariantEquipmentItems(
       )
     `)
     .eq('project_id', projectId)
-    .eq('variant_name', variantName)
+    .eq('variant_id', variant.id)
     .order('equipment(name)', { ascending: true });
 
   if (error) {

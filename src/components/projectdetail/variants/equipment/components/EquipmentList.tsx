@@ -32,7 +32,7 @@ export function EquipmentList({
   if (equipment.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-        <p>No equipment added to this project</p>
+        <p>No equipment added to this variant</p>
         <p className="text-xs mt-2">Drag equipment items here or use the equipment selector</p>
       </div>
     );

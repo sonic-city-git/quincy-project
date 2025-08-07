@@ -60,7 +60,8 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
       // Call the sync_event_crew RPC function
       const { error } = await supabase.rpc('sync_event_crew', {
         p_event_id: event.id,
-        p_project_id: event.project_id
+        p_project_id: event.project_id,
+        p_variant_name: event.variant_name || 'default'
       });
 
       if (error) {

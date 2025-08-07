@@ -35,6 +35,18 @@ export function GroupList({
   onRemoveEquipment,
   className
 }: GroupListProps) {
+  // Show empty state if no groups
+  if (groups.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+        <p className="text-sm font-medium">No equipment in this variant</p>
+        <p className="text-xs mt-2 text-center max-w-xs">
+          Add equipment by selecting items from the left panel or create a new equipment group
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div 
       className={cn(SPACING.section, "pr-4", className)}

@@ -1,4 +1,5 @@
-import { useProjectEquipment } from "@/hooks/useProjectEquipment";
+import { useVariantResources } from "@/hooks/useVariantResources";
+import { VariantEquipmentGroup, VariantEquipmentItem } from "@/types/variants";
 import { useEquipmentDragDrop } from "@/hooks/useEquipmentDragDrop";
 import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,16 +11,24 @@ import { useGroupManagement } from "../hooks/useGroupManagement";
 
 interface BaseEquipmentListProps {
   projectId: string;
+  variantName: string;
   selectedGroupId: string | null;
   onGroupSelect: (groupId: string | null) => void;
+  equipmentGroups: VariantEquipmentGroup[];
+  ungroupedEquipment: VariantEquipmentItem[];
+  isLoading: boolean;
 }
 
 export function BaseEquipmentList({ 
   projectId, 
+  variantName,
   selectedGroupId,
   onGroupSelect,
+  equipmentGroups,
+  ungroupedEquipment,
+  isLoading
 }: BaseEquipmentListProps) {
-  const { equipment = [], removeEquipment } = useProjectEquipment(projectId);
+  const { removeEquipmentItem } = useVariantResources(projectId, variantName);
   const [pendingDropData, setPendingDropData] = useState<string | null>(null);
   const queryClient = useQueryClient();
   
@@ -42,30 +51,36 @@ export function BaseEquipmentList({
     handleDragLeave
   } = useEquipmentDragDrop(projectId);
 
-  const { data: groups = [] } = useQuery({
-    queryKey: ['project-equipment-groups', projectId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('project_equipment_groups')
-        .select('*')
-        .eq('project_id', projectId)
-        .order('sort_order');
+  // Use the passed equipment groups instead of fetching all project equipment groups
+  const groups = equipmentGroups;
 
-      if (error) throw error;
-      return data;
-    },
-    enabled: !!projectId
-  });
-
-  // Memoize grouped equipment for performance
+  // Memoize grouped equipment for performance and transform data structure
   const groupedEquipment = useMemo(() => {
-    return equipment.reduce((acc, item) => {
-      const groupId = item.group_id || 'ungrouped';
-      if (!acc[groupId]) acc[groupId] = [];
-      acc[groupId].push(item);
-      return acc;
-    }, {} as Record<string, typeof equipment>);
-  }, [equipment]);
+    const grouped: Record<string, any[]> = {};
+    
+    // Helper function to transform VariantEquipmentItem to ProjectEquipment format
+    const transformEquipmentItem = (item: VariantEquipmentItem) => ({
+      id: item.id,
+      equipment_id: item.equipment_id,
+      name: item.equipment.name,
+      code: item.equipment.code || null,
+      quantity: item.quantity,
+      rental_price: item.equipment.rental_price || null,
+      group_id: item.group_id
+    });
+    
+    // Add equipment from groups
+    equipmentGroups.forEach(group => {
+      grouped[group.id] = group.equipment_items.map(transformEquipmentItem);
+    });
+    
+    // Add ungrouped equipment
+    if (ungroupedEquipment.length > 0) {
+      grouped['ungrouped'] = ungroupedEquipment.map(transformEquipmentItem);
+    }
+    
+    return grouped;
+  }, [equipmentGroups, ungroupedEquipment]);
 
   const handleGroupDelete = async (groupId: string) => {
     const groupEquipment = groupedEquipment[groupId] || [];
@@ -116,7 +131,7 @@ export function BaseEquipmentList({
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
-        onRemoveEquipment={removeEquipment}
+        onRemoveEquipment={removeEquipmentItem}
       />
 
       <GroupDialogs

@@ -44,6 +44,7 @@ export function VariantCrewSection({ projectId, variantName }: VariantCrewSectio
       
       <AddRoleDialog
         project={project}
+        variantName={variantName}
         isOpen={addDialog.isActive}
         onClose={() => addDialog.setActive(false)}
       />

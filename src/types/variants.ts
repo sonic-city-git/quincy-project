@@ -44,7 +44,7 @@ export interface VariantResourceData {
 export interface VariantCrewRole {
   id: string;
   project_id: string;
-  variant_name: string;
+  variant_id: string;  // ✅ Fixed: Now uses variant_id instead of variant_name
   role_id: string;
   daily_rate: number | null;
   hourly_rate: number | null;
@@ -71,7 +71,7 @@ export interface VariantCrewRole {
 export interface VariantEquipmentGroup {
   id: string;
   project_id: string;
-  variant_name: string;
+  variant_id: string;  // ✅ Fixed: Now uses variant_id instead of variant_name
   name: string;
   sort_order: number;
   total_price: number;
@@ -82,7 +82,7 @@ export interface VariantEquipmentGroup {
 export interface VariantEquipmentItem {
   id: string;
   project_id: string;
-  variant_name: string;
+  variant_id: string;  // ✅ Fixed: Now uses variant_id instead of variant_name
   equipment_id: string;
   group_id: string | null;
   quantity: number;
@@ -186,7 +186,7 @@ export function isVariantCrewRole(obj: any): obj is VariantCrewRole {
   return obj &&
     typeof obj.id === 'string' &&
     typeof obj.project_id === 'string' &&
-    typeof obj.variant_name === 'string' &&
+    typeof obj.variant_id === 'string' &&  // ✅ Fixed: Now validates variant_id
     typeof obj.role_id === 'string' &&
     obj.role &&
     typeof obj.role.name === 'string';
@@ -196,7 +196,7 @@ export function isVariantEquipmentItem(obj: any): obj is VariantEquipmentItem {
   return obj &&
     typeof obj.id === 'string' &&
     typeof obj.project_id === 'string' &&
-    typeof obj.variant_name === 'string' &&
+    typeof obj.variant_id === 'string' &&  // ✅ Fixed: Now validates variant_id
     typeof obj.equipment_id === 'string' &&
     obj.equipment &&
     typeof obj.equipment.name === 'string';

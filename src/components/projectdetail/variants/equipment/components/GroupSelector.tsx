@@ -23,43 +23,36 @@ import { FORM_PATTERNS, cn } from "@/design-system";
 
 interface GroupSelectorProps {
   projectId: string;
+  variantName: string;
   selectedGroupId: string | null;
   onGroupSelect: (groupId: string | null) => void;
 }
 
-export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) {
+export function GroupSelector({ projectId, variantName, onGroupSelect }: GroupSelectorProps) {
   const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
   const [customGroupName, setCustomGroupName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: equipmentGroups = [], isLoading: isLoadingGroups } = useQuery({
-    queryKey: ['equipment-groups'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('equipment_groups')
-        .select('*')
-        .order('sort_order');
-      
-      if (error) throw error;
-      return data || [];
-    }
-  });
-
-  const { data: projectGroups = [], isLoading: isLoadingProjectGroups } = useQuery({
-    queryKey: ['project-equipment-groups', projectId],
+    queryKey: ['project-equipment-groups', projectId, variantName],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('project_equipment_groups')
         .select('*')
         .eq('project_id', projectId)
+        .eq('variant_name', variantName)
         .order('sort_order');
       
       if (error) throw error;
       return data || [];
     },
-    enabled: !!projectId
+    enabled: !!projectId && !!variantName
   });
+
+  // Use the same data as equipmentGroups to avoid duplicate queries
+  const projectGroups = equipmentGroups;
+  const isLoadingProjectGroups = isLoadingGroups;
 
   const handleAddGroup = async (name: string) => {
     setIsSubmitting(true);
@@ -92,6 +85,7 @@ export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) 
         .insert({
           project_id: projectId,
           name,
+          variant_name: variantName,
           sort_order: nextSortOrder
         })
         .select()
@@ -100,7 +94,7 @@ export function GroupSelector({ projectId, onGroupSelect }: GroupSelectorProps) 
       if (error) throw error;
       
       await queryClient.invalidateQueries({ 
-        queryKey: ['project-equipment-groups', projectId] 
+        queryKey: ['project-equipment-groups', projectId, variantName] 
       });
 
       // Select the newly created group

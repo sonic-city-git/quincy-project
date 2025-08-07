@@ -20,6 +20,7 @@ interface AddRoleDialogProps {
   isOpen: boolean;
   onClose: () => void;
   project: Project;
+  variantName: string;
   eventId?: string;
 }
 
@@ -30,7 +31,7 @@ interface FormData {
   preferred_id?: string;
 }
 
-export function AddRoleDialog({ isOpen, onClose, project }: AddRoleDialogProps) {
+export function AddRoleDialog({ isOpen, onClose, project, variantName }: AddRoleDialogProps) {
   const { roles } = useCrewRoles();
   // PERFORMANCE OPTIMIZATION: Use consistent folder ID for crew data
   const { crew } = useCrew(SONIC_CITY_FOLDER_ID);
@@ -48,13 +49,24 @@ export function AddRoleDialog({ isOpen, onClose, project }: AddRoleDialogProps) 
 
   const onSubmit = async (data: FormData) => {
     try {
-  
+      // First get the variant_id from the variant_name
+      const { data: variant, error: variantError } = await supabase
+        .from('project_variants')
+        .select('id')
+        .eq('project_id', project.id)
+        .eq('variant_name', variantName)
+        .single();
+
+      if (variantError || !variant) {
+        throw new Error(`Failed to find variant: ${variantError?.message || 'Variant not found'}`);
+      }
       
       // Add the project role
       const { error } = await supabase
         .from('project_roles')
         .insert({
           project_id: project.id,
+          variant_id: variant.id,
           role_id: data.role_id,
           daily_rate: data.daily_rate,
           hourly_rate: data.hourly_rate,

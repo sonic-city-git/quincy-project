@@ -132,8 +132,7 @@ function EventSectionHeader({
   // Handle bulk equipment sync for all events in section
   const handleSyncSectionEquipment = async () => {
     if (!events.length) return;
-    const eventIds = events.map(event => event.id);
-    await syncEvents(eventIds, events[0].project_id);
+    await syncEvents(events.map(e => ({ id: e.id, project_id: e.project_id, variant_name: e.variant_name })));
   };
 
   // Handle bulk crew sync for all events in section
@@ -145,10 +144,11 @@ function EventSectionHeader({
       let totalSynced = 0;
       
       for (const event of events) {
-        const { error } = await supabase.rpc('sync_event_crew', {
-          p_event_id: event.id,
-          p_project_id: event.project_id
-        });
+                       const { error } = await supabase.rpc('sync_event_crew', {
+                 p_event_id: event.id,
+                 p_project_id: event.project_id,
+                 p_variant_name: event.variant_name || 'default'
+               });
 
         if (error) {
           console.error('❌ Crew sync failed for event:', event.id, error);

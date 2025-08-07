@@ -283,17 +283,17 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
       // Create the new variant first
       const newVariant = await createVariantMutation.mutateAsync(newVariantData);
 
-      // Copy crew roles
+      // Copy crew roles using variant_id
       const { data: crewRoles } = await supabase
         .from('project_roles')
         .select('*')
         .eq('project_id', projectId)
-        .eq('variant_name', sourceVariant);
+        .eq('variant_id', source.id);
 
       if (crewRoles && crewRoles.length > 0) {
         const newCrewRoles = crewRoles.map(role => ({
           project_id: projectId,
-          variant_name: newVariantData.variant_name,
+          variant_id: newVariant.id,
           role_id: role.role_id,
           daily_rate: role.daily_rate,
           hourly_rate: role.hourly_rate,
@@ -311,12 +311,12 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
         }
       }
 
-      // Copy equipment groups and items
+      // Copy equipment groups and items using variant_id
       const { data: equipmentGroups } = await supabase
         .from('project_equipment_groups')
         .select('*')
         .eq('project_id', projectId)
-        .eq('variant_name', sourceVariant);
+        .eq('variant_id', source.id);
 
       if (equipmentGroups && equipmentGroups.length > 0) {
         for (const group of equipmentGroups) {
@@ -325,7 +325,7 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
             .from('project_equipment_groups')
             .insert({
               project_id: projectId,
-              variant_name: newVariantData.variant_name,
+              variant_id: newVariant.id,
               name: group.name,
               sort_order: group.sort_order
             })
@@ -337,18 +337,18 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
             continue;
           }
 
-          // Copy equipment items for this group
+          // Copy equipment items for this group using variant_id
           const { data: equipmentItems } = await supabase
             .from('project_equipment')
             .select('*')
             .eq('project_id', projectId)
-            .eq('variant_name', sourceVariant)
+            .eq('variant_id', source.id)
             .eq('group_id', group.id);
 
           if (equipmentItems && equipmentItems.length > 0) {
             const newEquipmentItems = equipmentItems.map(item => ({
               project_id: projectId,
-              variant_name: newVariantData.variant_name,
+              variant_id: newVariant.id,
               equipment_id: item.equipment_id,
               group_id: newGroup.id,
               quantity: item.quantity,
