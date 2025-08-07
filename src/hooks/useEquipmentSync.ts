@@ -14,12 +14,13 @@ export function useEquipmentSync() {
   /**
    * Sync equipment for a single event
    */
-  const syncEvent = async (eventId: string, projectId: string): Promise<boolean> => {
+  const syncEvent = async (eventId: string, projectId: string, variantName?: string): Promise<boolean> => {
     setIsSyncing(true);
     try {
       const { error } = await supabase.rpc('sync_event_equipment_unified', {
         p_event_id: eventId,
-        p_project_id: projectId
+        p_project_id: projectId,
+        p_variant_name: variantName || 'default'
       });
 
       if (error) {
@@ -50,7 +51,7 @@ export function useEquipmentSync() {
   /**
    * Sync equipment for multiple events (batch operation)
    */
-  const syncEvents = async (events: Array<{ id: string; project_id: string }>): Promise<boolean> => {
+  const syncEvents = async (events: Array<{ id: string; project_id: string; variant_name?: string }>): Promise<boolean> => {
     setIsSyncing(true);
     try {
       let successCount = 0;
@@ -60,7 +61,8 @@ export function useEquipmentSync() {
       for (const event of events) {
         const { error } = await supabase.rpc('sync_event_equipment_unified', {
           p_event_id: event.id,
-          p_project_id: event.project_id
+          p_project_id: event.project_id,
+          p_variant_name: event.variant_name || 'default'
         });
 
         if (error) {
