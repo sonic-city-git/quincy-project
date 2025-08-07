@@ -43,7 +43,7 @@ const ProjectDetail = () => {
   }, [location.pathname, location.hash, navigate]);
 
   // Check if project can be archived (no open events)
-  const { data: canArchive = false } = useQuery({
+  const { data: canArchive = false, refetch: refetchArchiveStatus } = useQuery({
     queryKey: ['project-archive-status', project?.id],
     queryFn: async () => {
       if (!project?.id) return false;
@@ -70,7 +70,7 @@ const ProjectDetail = () => {
     try {
       const { error } = await supabase
         .from('projects')
-        .update({ archived: true })
+        .update({ is_archived: true })
         .eq('id', project.id);
 
       if (error) throw error;
@@ -174,6 +174,7 @@ const ProjectDetail = () => {
           onTabChange={handleTabChange as (tab: 'general' | 'equipment' | 'crew' | 'financial') => void}
           canArchive={canArchive}
           onArchiveClick={handleArchiveClick}
+          onRefreshArchiveStatus={refetchArchiveStatus}
         />
         
         {/* Tab Content */}
