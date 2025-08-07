@@ -175,7 +175,9 @@ export function useConsolidatedEvents({
     eventName: string, 
     eventType: EventType, 
     status: CalendarEvent['status'] = 'proposed',
-    variantName: string = 'default'
+    variantName: string = 'default',
+    location: string = '',
+    locationData?: any
   ): Promise<CalendarEvent> => {
     if (!projectId) {
       throw new Error('Project ID is missing');
@@ -189,7 +191,7 @@ export function useConsolidatedEvents({
       }
 
       // createEvent now handles all syncing internally with variant awareness
-      const eventData = await createEvent(projectId, date, eventName, eventType, status, variantName);
+      const eventData = await createEvent(projectId, date, eventName, eventType, status, variantName, location, locationData);
 
       await invalidateEventQueries(eventData.id);
       toast.success(`Event created successfully using variant "${variantName}"`);

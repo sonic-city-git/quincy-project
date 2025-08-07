@@ -735,12 +735,14 @@ export type Database = {
           equipment_price: number | null
           event_type_id: string | null
           id: string
-          location: string | null
+          location: string
+          location_data: Json | null
           name: string
           project_id: string | null
           status: string
           total_price: number | null
           updated_at: string
+          variant_id: string | null
         }
         Insert: {
           created_at?: string
@@ -749,12 +751,14 @@ export type Database = {
           equipment_price?: number | null
           event_type_id?: string | null
           id?: string
-          location?: string | null
+          location: string
+          location_data?: Json | null
           name: string
           project_id?: string | null
           status?: string
           total_price?: number | null
           updated_at?: string
+          variant_id?: string | null
         }
         Update: {
           created_at?: string
@@ -763,12 +767,14 @@ export type Database = {
           equipment_price?: number | null
           event_type_id?: string | null
           id?: string
-          location?: string | null
+          location?: string
+          location_data?: Json | null
           name?: string
           project_id?: string | null
           status?: string
           total_price?: number | null
           updated_at?: string
+          variant_id?: string | null
         }
         Relationships: [
           {
@@ -783,6 +789,13 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_events_variant_id_fkey"
+            columns: ["variant_id"]
+            isOneToOne: false
+            referencedRelation: "project_variants"
             referencedColumns: ["id"]
           },
         ]

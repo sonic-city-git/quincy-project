@@ -7,6 +7,7 @@ import { createRoleAssignments } from "./roleAssignments";
 export const fetchEvents = async (projectId: string) => {
   console.log('Fetching events for project:', projectId);
   
+  // First, try to fetch events with proper variant join using foreign key
   const { data, error } = await supabase
     .from('project_events')
     .select(`
@@ -18,16 +19,78 @@ export const fetchEvents = async (projectId: string) => {
         needs_crew,
         needs_equipment,
         crew_rate_multiplier
+      ),
+      project_variants!project_events_variant_id_fkey (
+        id,
+        variant_name
       )
     `)
     .eq('project_id', projectId);
 
   if (error) {
-    console.error('Error fetching events:', error);
-    throw error;
+    console.error('Error fetching events with variants:', error);
+    
+    // Fallback: fetch events without variant join if foreign key doesn't exist
+    console.log('Trying fallback query without variant join...');
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from('project_events')
+      .select(`
+        *,
+        event_types (
+          id,
+          name,
+          color,
+          needs_crew,
+          needs_equipment,
+          crew_rate_multiplier
+        )
+      `)
+      .eq('project_id', projectId);
+
+    if (fallbackError) {
+      console.error('Fallback query also failed:', fallbackError);
+      throw fallbackError;
+    }
+
+    // Manual variant lookup for fallback
+    const eventsWithVariants = await Promise.all(
+      (fallbackData || []).map(async (event) => {
+        let variantData = null;
+        
+        if (event.variant_id) {
+          const { data: variant } = await supabase
+            .from('project_variants')
+            .select('id, variant_name')
+            .eq('id', event.variant_id)
+            .single();
+          variantData = variant;
+        }
+
+        return {
+          ...event,
+          project_variants: variantData
+        };
+      })
+    );
+
+    return eventsWithVariants.map(event => ({
+      id: event.id,
+      project_id: event.project_id,
+      date: new Date(event.date),
+      name: event.name,
+      type: event.event_types,
+      status: event.status as CalendarEvent['status'],
+      location: event.location || '',
+      location_data: event.location_data || null, // Handle missing column gracefully
+      variant_id: event.variant_id,
+      variant_name: event.project_variants?.variant_name || 'default',
+      equipment_price: event.equipment_price,
+      crew_price: event.crew_price,
+      total_price: event.total_price
+    }));
   }
 
-  console.log('Fetched events:', data);
+  console.log('Fetched events with variants:', data);
   return (data || []).map(event => ({
     id: event.id,
     project_id: event.project_id,
@@ -35,8 +98,10 @@ export const fetchEvents = async (projectId: string) => {
     name: event.name,
     type: event.event_types,
     status: event.status as CalendarEvent['status'],
-    location: event.location,
-    variant_name: event.variant_name || 'default', // Include variant info
+    location: event.location || '',
+    location_data: event.location_data || null, // Handle missing column gracefully
+    variant_id: event.variant_id,
+    variant_name: event.project_variants?.variant_name || 'default',
     equipment_price: event.equipment_price,
     crew_price: event.crew_price,
     total_price: event.total_price
@@ -49,32 +114,68 @@ export const createEvent = async (
   eventName: string,
   eventType: EventType,
   status: CalendarEvent['status'] = 'proposed',
-  variantName: string = 'default'
+  variantName: string = 'default',
+  location: string = '',
+  locationData?: any
 ) => {
   const formattedDate = formatDatabaseDate(date);
   
-  console.log('🚀 NEW DEBUG VERSION - Adding event...');
+  console.log('🚀 Creating event with variant system...');
   console.log('Adding event - projectId:', projectId);
   console.log('Adding event - date:', formattedDate);
   console.log('Adding event - eventName:', eventName);
   console.log('Adding event - eventType:', eventType.name);
   console.log('Adding event - status:', status);
-  console.log('Adding event - variantName:', variantName, 'length:', variantName?.length, 'type:', typeof variantName);
+  console.log('Adding event - variantName:', variantName);
+  console.log('Adding event - location:', location);
+  console.log('Adding event - locationData:', locationData);
 
   try {
+    // First, get the variant ID from the variant name
+    const { data: variant, error: variantError } = await supabase
+      .from('project_variants')
+      .select('id')
+      .eq('project_id', projectId)
+      .eq('variant_name', variantName)
+      .maybeSingle();
+
+    if (variantError) {
+      console.error('Error fetching variant:', variantError);
+      throw new Error(`Failed to find variant "${variantName}": ${variantError.message}`);
+    }
+
+    if (!variant) {
+      throw new Error(`Variant "${variantName}" not found for project ${projectId}`);
+    }
+
+    console.log('Found variant ID:', variant.id);
+
+    // Create event with variant_id, location, and optionally structured location data
+    const insertData: any = {
+      project_id: projectId,
+      date: formattedDate,
+      name: eventName.trim() || eventType.name,
+      event_type_id: eventType.id,
+      variant_id: variant.id,
+      status: status,
+      location: location,
+      equipment_price: 0,
+      crew_price: 0,
+      total_price: 0
+    };
+
+    // Add structured location data if provided AND column exists
+    // (This will be enabled after migration is applied)
+    if (locationData) { // Temporarily disabled until migration
+      insertData.location_data = locationData;
+      console.log('📍 Storing structured location data:', locationData);
+    } else if (locationData) {
+      console.log('📍 Structured location data available but column not migrated yet:', locationData);
+    }
+
     const { data: eventData, error: eventError } = await supabase
       .from('project_events')
-      .insert({
-        project_id: projectId,
-        date: formattedDate,
-        name: eventName.trim() || eventType.name,
-        event_type_id: eventType.id,
-        variant_name: variantName,
-        status: status,
-        equipment_price: 0,
-        crew_price: 0,
-        total_price: 0
-      })
+      .insert(insertData)
       .select(`
         *,
         event_types (
@@ -103,10 +204,11 @@ export const createEvent = async (
 
     if (eventType.needs_equipment) {
       // Use variant-aware unified sync function for consistent behavior and pricing
+      // Note: Database functions still use variant_name parameter until migration is applied
       const { error: equipmentError } = await supabase.rpc('sync_event_equipment_unified', {
         p_event_id: eventData.id,
         p_project_id: projectId,
-        p_variant_name: variantName
+        p_variant_id: variant.id
       });
 
       if (equipmentError) {
@@ -117,10 +219,11 @@ export const createEvent = async (
     // Only sync crew if the event type needs crew (includes role creation + cost calculation)
     if (eventType.needs_crew) {
       console.log('Event needs crew, syncing crew roles and calculating cost for variant:', variantName);
+      // Note: Database functions still use variant_name parameter until migration is applied
       const { error: crewError } = await supabase.rpc('sync_event_crew', {
         p_event_id: eventData.id,
         p_project_id: projectId,
-        p_variant_name: variantName
+        p_variant_id: variant.id
       });
 
       if (crewError) {
@@ -195,29 +298,82 @@ export const updateEvent = async (
   projectId: string,
   updatedEvent: CalendarEvent
 ) => {
-  // First delete any sync operations for this event
-  const { error: syncDeleteError } = await supabase
-    .from('sync_operations')
-    .delete()
-    .match({ event_id: updatedEvent.id });
+  console.log('🔄 Updating event with full data...');
+  console.log('Event ID:', updatedEvent.id);
+  console.log('Updated location:', updatedEvent.location);
+  console.log('Updated variant_name:', updatedEvent.variant_name);
 
-  if (syncDeleteError) {
-    console.error('Error deleting sync operations:', syncDeleteError);
-    throw syncDeleteError;
-  }
+  try {
+    // Get variant_id from variant_name if variant changed
+    let variantId = updatedEvent.variant_id;
+    
+    if (updatedEvent.variant_name && !variantId) {
+      const { data: variant, error: variantError } = await supabase
+        .from('project_variants')
+        .select('id')
+        .eq('project_id', projectId)
+        .eq('variant_name', updatedEvent.variant_name)
+        .maybeSingle();
 
-  const { error } = await supabase
-    .from('project_events')
-    .update({
+      if (variantError) {
+        console.error('Error fetching variant for update:', variantError);
+        throw new Error(`Failed to find variant "${updatedEvent.variant_name}": ${variantError.message}`);
+      }
+
+      if (!variant) {
+        throw new Error(`Variant "${updatedEvent.variant_name}" not found for project ${projectId}`);
+      }
+
+      variantId = variant.id;
+    }
+
+    // First delete any sync operations for this event
+    const { error: syncDeleteError } = await supabase
+      .from('sync_operations')
+      .delete()
+      .match({ event_id: updatedEvent.id });
+
+    if (syncDeleteError) {
+      console.error('Error deleting sync operations:', syncDeleteError);
+      throw syncDeleteError;
+    }
+
+    // Update the event with all fields including location, location_data, and variant_id
+    const updateData: any = {
       name: updatedEvent.name.trim() || updatedEvent.type.name,
       event_type_id: updatedEvent.type.id,
-      status: updatedEvent.status
-    })
-    .eq('id', updatedEvent.id)
-    .eq('project_id', projectId);
+      status: updatedEvent.status,
+      location: updatedEvent.location || ''
+    };
 
-  if (error) {
-    console.error('Error updating event:', error);
+    // Only update variant_id if we have one
+    if (variantId) {
+      updateData.variant_id = variantId;
+    }
+
+    // Update structured location data if provided AND column exists
+    // (This will be enabled after migration is applied)
+    if (updatedEvent.location_data !== undefined) { // Temporarily disabled until migration
+      updateData.location_data = updatedEvent.location_data;
+      console.log('📍 Updating structured location data:', updatedEvent.location_data);
+    } else if (updatedEvent.location_data !== undefined) {
+      console.log('📍 Structured location data update available but column not migrated yet:', updatedEvent.location_data);
+    }
+
+    const { error } = await supabase
+      .from('project_events')
+      .update(updateData)
+      .eq('id', updatedEvent.id)
+      .eq('project_id', projectId);
+
+    if (error) {
+      console.error('Error updating event:', error);
+      throw error;
+    }
+
+    console.log('✅ Event updated successfully');
+  } catch (error) {
+    console.error('❌ Error in updateEvent:', error);
     throw error;
   }
 };
