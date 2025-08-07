@@ -73,8 +73,8 @@ export function AvailableResourcesPanel({
           <div className="px-4 py-2.5 border-b border-border/20">
             {selectedGroupId ? (
               <div className="flex items-center gap-2">
-                <div className={cn('w-2 h-2 rounded-full flex-shrink-0', STATUS_COLORS.success.bg)} />
-                <p className={cn('text-xs font-semibold leading-none', STATUS_COLORS.success.text)}>
+                <div className={cn('w-2 h-2 rounded-full flex-shrink-0', STATUS_COLORS.operational.bg)} />
+                <p className={cn('text-xs font-semibold leading-none', STATUS_COLORS.operational.text)}>
                   Adding to: {selectedGroupName || 'Selected Group'}
                 </p>
               </div>

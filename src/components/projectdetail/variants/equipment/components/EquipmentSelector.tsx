@@ -185,7 +185,7 @@ export function EquipmentSelector({ onSelect, className, stickySearch = false, s
         COMPONENT_CLASSES.card.hover,
         "cursor-move group transition-all duration-200",
         "border-l-4 border-l-transparent hover:border-l-primary",
-        "py-1.5 px-3"
+        "py-1 px-2"
       )}
       draggable
       onDragStart={(e) => handleDragStart(e, item)}
@@ -194,20 +194,20 @@ export function EquipmentSelector({ onSelect, className, stickySearch = false, s
       tabIndex={0}
       aria-label={`Add ${item.name} to variant. Double-click or drag to add.`}
     >
-      <div className="flex items-center justify-between h-full">
-        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <div className="w-1.5 h-1.5 rounded-full bg-muted-foreground/50 group-hover:bg-primary/70 transition-colors flex-shrink-0" />
-          <h3 className="text-xs font-semibold leading-tight text-foreground group-hover:text-primary transition-colors truncate tracking-tight">
+      <div className="flex items-center justify-between h-full gap-1">
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+          <div className="w-1 h-1 rounded-full bg-muted-foreground/50 group-hover:bg-primary/70 transition-colors flex-shrink-0" />
+          <h3 className="text-xs font-medium leading-tight text-foreground group-hover:text-primary transition-colors truncate flex-1 min-w-0">
             {item.name}
           </h3>
           {item.code && (
-                            <span className="text-xs text-muted-foreground/70 font-mono bg-muted/40 px-1 py-0.5 rounded flex-shrink-0 leading-none">
-                  {item.code}
-                </span>
+            <span className="text-xs text-muted-foreground/70 font-mono bg-muted/40 px-1 py-0.5 rounded leading-none whitespace-nowrap">
+              {item.code}
+            </span>
           )}
         </div>
         {item.rental_price && (
-          <div className="text-xs text-muted-foreground/80 font-semibold flex-shrink-0 ml-2.5 tracking-tight">
+          <div className="text-xs text-muted-foreground/80 font-medium flex-shrink-0 whitespace-nowrap">
             {formatPrice(item.rental_price)}
           </div>
         )}
@@ -271,11 +271,11 @@ export function EquipmentSelector({ onSelect, className, stickySearch = false, s
                       {mainFolder.name}
                     </span>
                   </AccordionTrigger>
-                  <AccordionContent className="pb-1 pt-1">
-                    <div className="space-y-2">
+                  <AccordionContent className="pb-1 pt-1 px-2">
+                    <div className="space-y-1">
                       {/* Main folder items */}
                       {folderContent.items.length > 0 && (
-                        <div className="space-y-0.5 px-1">
+                        <div className="space-y-0.5">
                           {folderContent.items.map(renderEquipmentCard)}
                         </div>
                       )}
@@ -298,7 +298,7 @@ export function EquipmentSelector({ onSelect, className, stickySearch = false, s
                             }}
                           >
                             <CollapsibleTrigger 
-                              className="flex items-center gap-2 text-sm font-medium text-muted-foreground w-full hover:bg-muted/50 px-3 py-1 rounded-md transition-colors"
+                              className="flex items-center gap-2 text-sm font-medium text-muted-foreground w-full hover:bg-muted/50 py-1 rounded-md transition-colors mt-1"
                               title={`Click to toggle ${subfolder.name} subfolder`}
                               onClick={(e) => {
                                 const isCtrlClick = e.metaKey || e.ctrlKey;
@@ -318,7 +318,7 @@ export function EquipmentSelector({ onSelect, className, stickySearch = false, s
                               {subfolder.name}
                             </CollapsibleTrigger>
                             <CollapsibleContent>
-                              <div className="space-y-0.5 pl-7 pr-1 pt-1">
+                              <div className="space-y-0.5 pl-4 pt-1">
                                 {subfolderContent.items.map(renderEquipmentCard)}
                               </div>
                             </CollapsibleContent>
