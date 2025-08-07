@@ -116,14 +116,15 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
           'transition-all duration-200 ease-in-out group',
           statusPattern.bg,
           statusPattern.border && `border-l-4 ${statusPattern.border}`,
-          'mb-1 shadow-sm hover:shadow-md'
+          'mb-0.5 shadow-sm hover:shadow-md',
+          'w-full overflow-hidden' // Prevent card overflow
         )}
       >
         <EventGrid variant="card">
           {/* Date */}
           <EventGridColumns.Date interactive={!!onEdit}>
-            <Calendar className="h-4 w-4 flex-shrink-0" />
-            <span className="font-medium">
+            <Calendar className="h-3 w-3 flex-shrink-0" />
+            <span className="font-medium text-xs">
               {formatDisplayDate(event.date)}
             </span>
           </EventGridColumns.Date>
@@ -134,34 +135,34 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
             className={cn(onEdit && 'cursor-pointer')}
           >
             <div 
-              className="space-y-1"
+              className="space-y-0.5 w-full overflow-hidden"
               onClick={onEdit ? () => onEdit(event) : undefined}
             >
-              <h4 className="font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+              <h4 className="font-semibold text-xs text-foreground truncate group-hover:text-primary transition-colors">
                 {event.name}
               </h4>
               {event.location && (
-                <p className="text-sm text-muted-foreground truncate flex items-center gap-1">
-                  <MapPin className="h-3 w-3 flex-shrink-0" />
+                <p className="text-xs text-muted-foreground truncate flex items-center gap-0.5">
+                  <MapPin className="h-2.5 w-2.5 flex-shrink-0" />
                   {event.location}
                 </p>
               )}
             </div>
           </EventGridColumns.Event>
           
-          {/* Event Type Badge - Only on tablet+ to fit mobile grid */}
-          <div className="hidden md:flex items-center px-1">
+          {/* Event Type Badge - Available from small screens (640px+) */}
+          <div className="hidden sm:flex items-center px-0.5 w-full overflow-hidden">
             <span className={cn(
-              'inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-semibold',
-              'transition-all duration-200 tracking-wide',
+              'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium truncate w-full',
+              'transition-all duration-200',
               getTypeColorStyle()
             )}>
               {event.type.name}
             </span>
           </div>
 
-          {/* Variant - Only on tablet+ to fit mobile grid */}
-          <div className="text-sm text-muted-foreground/80 font-medium hidden md:block">
+          {/* Variant - Available from tablet (768px+) */}
+          <div className="text-xs text-muted-foreground/80 font-medium hidden md:block truncate overflow-hidden">
             {/* TODO: Add variant field to event data */}
             -
           </div>
@@ -201,13 +202,13 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
             />
           </EventGridColumns.Action>
 
-          {/* Equipment Price - Hidden until tablet to prioritize Total */}
-          <EventGridColumns.Price variant="muted" className="hidden md:flex">
+          {/* Equipment Price - Hide FIRST when space is tight (show only on wide+ screens) */}
+          <EventGridColumns.Price variant="muted" className="hidden xl:flex">
             {formatPrice(event.equipment_price)}
           </EventGridColumns.Price>
 
-          {/* Crew Price - Hidden until tablet to prioritize Total */}
-          <EventGridColumns.Price variant="muted" className="hidden md:flex">
+          {/* Crew Price - Hide SECOND when space is tight (show from desktop+ screens) */}
+          <EventGridColumns.Price variant="muted" className="hidden lg:flex">
             {formatPrice(event.crew_price)}
           </EventGridColumns.Price>
 

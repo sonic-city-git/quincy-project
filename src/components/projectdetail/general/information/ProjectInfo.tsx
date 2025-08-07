@@ -2,10 +2,7 @@ import { CustomerSelect } from "@/components/shared/forms/CustomerSelect";
 import { OwnerSelect } from "@/components/shared/forms/OwnerSelect";
 import { formatDisplayDate } from "@/utils/dateFormatters";
 import { Project } from "@/types/projects";
-import { InvoiceButton } from "../../financial/InvoiceButton";
-import { InvoiceDialog } from "../../financial/InvoiceDialog";
 import { CalendarEvent } from "@/types/events";
-import { useProjectTabActions } from "../shared/hooks/useGeneralActions";
 import { FORM_PATTERNS, cn } from "@/design-system";
 
 interface ProjectInfoProps {
@@ -15,9 +12,6 @@ interface ProjectInfoProps {
 }
 
 export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInfoProps) {
-  // PERFORMANCE OPTIMIZATION: Use consolidated dialog state management
-  const { addAction } = useProjectTabActions(['invoiceDialog']);
-  const invoiceDialog = addAction('invoiceDialog');
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
@@ -92,17 +86,6 @@ export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInf
           </div>
         </div>
       </div>
-
-      <div className="flex justify-end pt-4">
-        <InvoiceButton onClick={() => invoiceDialog.setActive(true)} />
-      </div>
-
-      <InvoiceDialog 
-        isOpen={invoiceDialog.isActive}
-        onClose={() => invoiceDialog.setActive(false)}
-        events={events}
-        onStatusChange={onStatusChange}
-      />
     </div>
   );
 }

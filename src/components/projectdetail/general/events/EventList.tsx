@@ -37,36 +37,28 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
   ];
 
   return (
-    <div className={cn(RESPONSIVE.spacing.section)}>
+    <div className="space-y-3">
       {/* Active Event Sections */}
-      <div className="space-y-4">
-        {sections.map(({ title, events, variant }) => (
-          events.length > 0 && (
-            <Card 
-              key={title}
-              className={cn(
-                COMPONENT_CLASSES.card.default,
-                'overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200'
-              )}
-            >
-              <EventSection
-                title={title}
-                events={events}
-                onStatusChange={onStatusChange}
-                onEdit={onEdit}
-                variant={variant}
-              />
-            </Card>
-          )
-        ))}
-      </div>
+      {sections.map(({ title, events, variant }) => (
+        events.length > 0 && (
+          <div key={title}>
+            <EventSection
+              title={title}
+              events={events}
+              onStatusChange={onStatusChange}
+              onEdit={onEdit}
+              variant={variant}
+            />
+          </div>
+        )
+      ))}
 
       {/* Done and Dusted - Collapsible Archive */}
       {doneAndDusted.length > 0 && (
         <div className="mt-8">
           <Collapsible defaultOpen={false}>
-            <Card className={cn(
-              COMPONENT_CLASSES.card.subtle,
+            <div className={cn(
+              'rounded-lg border border-border bg-muted/20',
               'transition-all duration-200'
             )}>
               <CollapsibleTrigger className={cn(
@@ -104,7 +96,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
                   ))}
                 </div>
               </CollapsibleContent>
-            </Card>
+            </div>
           </Collapsible>
         </div>
       )}

@@ -88,6 +88,7 @@ export function ResourcesTab({ projectId, project }: ResourcesTabProps) {
       <ProjectTabCard
         icon={LayersIcon}
         iconColor="text-primary"
+        padding="sm"
       >
         <ResourcesContent
           projectId={projectId}
