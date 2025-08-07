@@ -12,7 +12,7 @@ import { LucideIcon } from "lucide-react";
 
 export interface ProjectTabCardProps {
   // Header configuration
-  title: string;
+  title?: string;
   icon?: LucideIcon;
   iconColor?: string;
   
@@ -92,9 +92,11 @@ export function ProjectTabCard({
               {IconComponent && (
                 <IconComponent className={`h-5 w-5 ${iconColor || 'text-primary'}`} />
               )}
-              <h2 className={`font-semibold ${variant === 'flex' ? 'text-lg' : 'text-xl'}`}>
-                {title}
-              </h2>
+              {title && (
+                <h2 className={`font-semibold ${variant === 'flex' ? 'text-lg' : 'text-xl'}`}>
+                  {title}
+                </h2>
+              )}
             </div>
             
             {/* Extra header content */}

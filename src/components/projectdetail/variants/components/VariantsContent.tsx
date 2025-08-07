@@ -133,7 +133,7 @@ export function VariantsContent({
   const operationalColors = STATUS_COLORS.operational;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 h-[calc(100vh-200px)] min-h-[600px] max-h-[900px]">
+    <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-6 h-[calc(100vh-150px)] min-h-[650px] max-h-[950px]">
       {/* 🎯 LEFT: Available Resources Panel */}
       <AvailableResourcesPanel 
         projectId={projectId} 

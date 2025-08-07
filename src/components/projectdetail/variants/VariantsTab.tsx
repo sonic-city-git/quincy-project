@@ -72,7 +72,6 @@ export function VariantsTab({ projectId, project }: VariantsTabProps) {
   if (variantsError) {
     return (
       <ProjectTabCard
-        title="Resources"
         icon={LayersIcon}
         iconColor="text-indigo-500"
       >
@@ -87,7 +86,6 @@ export function VariantsTab({ projectId, project }: VariantsTabProps) {
   return (
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <ProjectTabCard
-        title="Variants"
         icon={LayersIcon}
         iconColor="text-primary"
       >
