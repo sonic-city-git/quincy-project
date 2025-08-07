@@ -4,7 +4,7 @@ import { ProjectTabs } from "../tabs/DetailTabs";
 import { Project } from "@/types/projects";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
-import { Settings, Layers, DollarSign } from "lucide-react";
+import { Building2, Database, DollarSign } from "lucide-react";
 import { COMPONENT_CLASSES, RESPONSIVE, SPACING, cn } from "@/design-system";
 
 interface ProjectLayoutProps {
@@ -16,12 +16,12 @@ interface ProjectLayoutProps {
 const TAB_CONFIG = {
   general: {
     label: 'General',
-    icon: Settings,
+    icon: Building2,
     activeClasses: 'bg-secondary/10 text-secondary border-secondary/20'
   },
   resources: {
     label: 'Resources',
-    icon: Layers,
+    icon: Database,
     activeClasses: 'bg-primary/10 text-primary border-primary/20'
   },
   financial: {

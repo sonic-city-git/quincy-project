@@ -16,6 +16,7 @@ import { ProjectVariant } from '@/types/variants';
 import { LoadingSpinner } from '@/components/resources/shared/LoadingSpinner';
 import { cn } from '@/lib/utils';
 import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
+import { COMPONENT_CLASSES, RESPONSIVE } from '@/design-system';
 import { VariantEquipmentList } from '../equipment/components/VariantEquipmentList';
 import { VariantCrewList } from '../crew/components/VariantCrewList';
 import { AvailableResourcesPanel } from './AvailableResourcesPanel';
@@ -320,62 +321,60 @@ export function ResourcesContent({
 
       {/* 🎯 RIGHT: Variant Content Area with Header Tabs */}
       <div className="flex flex-col h-full">
-        {/* Variant Tabs Header - Above Right Panel */}
-        <div className={`
-          mb-4 p-4 rounded-lg border
-          bg-gradient-to-br ${operationalColors.bg} 
-          ${operationalColors.border}
-          shadow-sm hover:shadow-md transition-shadow duration-200
-        `}>
-          <div className="flex items-center justify-between">
-            {/* Variant Selector Tabs */}
-            <div className="flex items-center gap-1">
-              <div className="flex items-center gap-2 mr-4">
-                <Layers className={cn('h-5 w-5', operationalColors.text)} />
-                <h2 className="font-semibold text-lg">Variant Content</h2>
-              </div>
-              
-              {variants.map((variant) => (
-                <div key={variant.id} className="flex items-center relative">
-                  <button
-                    onClick={() => onVariantSelect(variant.variant_name)}
-                    className={cn(
-                      "flex items-center gap-2 px-3 py-2 pr-7 text-sm font-medium rounded-lg transition-all duration-200 border",
-                      selectedVariant === variant.variant_name
-                        ? "bg-primary text-primary-foreground shadow-sm border-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border-transparent hover:border-border"
-                    )}
-                  >
-                    <span>{variant.variant_name}</span>
-                    
-                  </button>
-                  {onEditVariant && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onEditVariant(variant);
-                      }}
-                      className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 hover:bg-background/20 rounded opacity-60 hover:opacity-100 z-10 transition-opacity"
-                    >
-                      <Settings className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-              ))}
+        {/* Variant Content Header */}
+        <div className={cn(COMPONENT_CLASSES.card.default, "mb-4 p-4")}>
+          <div className={RESPONSIVE.flex.header}>
+            {/* Title Section */}
+            <div className="flex items-center gap-2">
+              <Layers className="h-5 w-5 text-primary" />
+              <h2 className="font-semibold text-lg text-foreground">Variants</h2>
             </div>
             
-            {/* Add New Variant Button */}
-            {onCreateVariant && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onCreateVariant}
-                className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
-              >
-                <Plus className="h-4 w-4" />
-                <span>New Variant</span>
-              </Button>
-            )}
+            {/* Action Section: Add Button + Variant Tabs */}
+            <div className="flex items-center gap-3">
+              {/* Add New Variant Button - Left of variants */}
+              {onCreateVariant && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onCreateVariant}
+                  className="p-1.5 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-colors"
+                  title="Add new variant"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                </Button>
+              )}
+              
+              {/* Variant Selector Tabs - Sorted right to left */}
+              <div className="flex items-center gap-1">
+                {[...variants].reverse().map((variant) => (
+                  <div key={variant.id} className="relative">
+                    <button
+                      onClick={() => onVariantSelect(variant.variant_name)}
+                      className={cn(
+                        "flex items-center gap-2 px-3 py-2 pr-7 text-sm font-medium rounded-md transition-all duration-200 border",
+                        selectedVariant === variant.variant_name
+                          ? "bg-primary text-primary-foreground shadow-sm border-primary"
+                          : "bg-muted text-foreground hover:bg-muted/80 border-border hover:border-border/80 shadow-sm"
+                      )}
+                    >
+                      <span>{variant.variant_name}</span>
+                    </button>
+                    {onEditVariant && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEditVariant(variant);
+                        }}
+                        className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 hover:bg-muted rounded opacity-60 hover:opacity-100 z-10 transition-opacity"
+                      >
+                        <Settings className="h-3 w-3" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
 

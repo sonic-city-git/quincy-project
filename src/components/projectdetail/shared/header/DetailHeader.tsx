@@ -1,4 +1,4 @@
-import { Archive, MoreVertical, Settings, Layers, DollarSign } from "lucide-react";
+import { Archive, MoreVertical, Building2, Database, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -27,7 +27,7 @@ export function DetailHeader({
           case 'resources':
       return {
         title: 'Project Resources', 
-          icon: Layers, 
+          icon: Database, 
           color: 'text-primary',
           activeClasses: 'bg-primary/10 text-primary border-primary/20'
         };
@@ -41,7 +41,7 @@ export function DetailHeader({
       default:
         return { 
           title: 'Project General', 
-          icon: Settings, 
+          icon: Building2, 
           color: 'text-secondary',
           activeClasses: 'bg-secondary/10 text-secondary border-secondary/20'
         };
@@ -101,7 +101,7 @@ export function DetailHeader({
               aria-pressed={activeTab === 'general'}
               aria-label="Switch to General tab"
             >
-              <Settings className="h-4 w-4" />
+              <Building2 className="h-4 w-4" />
               <span className="hidden sm:inline">General</span>
             </Button>
             <Button
@@ -115,7 +115,7 @@ export function DetailHeader({
               aria-pressed={activeTab === 'resources'}
               aria-label="Switch to Resources tab"
             >
-              <Layers className="h-4 w-4" />
+              <Database className="h-4 w-4" />
               <span className="hidden sm:inline">Resources</span>
             </Button>
             <Button
