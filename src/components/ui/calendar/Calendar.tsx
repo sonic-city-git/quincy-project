@@ -78,21 +78,21 @@ export function Calendar({
   };
 
   return (
-    <div className={cn("p-3 select-none", className)}>
+    <div className={cn("p-1 sm:p-2 md:p-3 select-none w-full", className)}>
       <CalendarHeader month={month} onMonthChange={onMonthChange || (() => {})} />
       
-      <div className="grid grid-cols-7 mt-4">
+      <div className="grid grid-cols-7 mt-2 sm:mt-3 md:mt-4">
         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => (
           <div
             key={day}
-            className="text-muted-foreground rounded-md font-normal text-[0.8rem] flex h-10 w-full items-center justify-center"
+            className="text-muted-foreground rounded-md font-normal text-[0.6rem] sm:text-[0.7rem] md:text-[0.8rem] flex h-6 sm:h-8 md:h-10 w-full items-center justify-center"
           >
             {day}
           </div>
         ))}
       </div>
       
-      <div className="grid grid-cols-7 mt-2 gap-1">
+      <div className="grid grid-cols-7 mt-1 sm:mt-2 gap-0.5 sm:gap-1 w-full">
         {weeks.map((week, weekIndex) => 
           week.map((day, dayIndex) => {
             const event = getEventForDate(day);

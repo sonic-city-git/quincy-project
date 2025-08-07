@@ -1,15 +1,17 @@
 
 /**
- * 🎯 TWO-COLUMN PROJECT GENERAL TAB
+ * 🎯 SMART-RESTACKING TWO-COLUMN PROJECT GENERAL TAB
  * 
  * Inspired by Resources tab design pattern:
- * - LEFT: Project Information + Calendar (stacked, 400px fixed width)
+ * - LEFT: Project Information + Calendar (stacked, scales 320→400px)
  * - RIGHT: Events List (independently scrollable, flexible width)
  * 
  * Features:
- * - Responsive: Single column on mobile, two columns on lg+
- * - Fixed height container with proper scroll management
- * - Events scroll independently from information/calendar
+ * - RESTACKING: Single column on mobile/small (0-767px) - natural page flow
+ * - TWO-COLUMN: From tablet up (768px+), scales left column width  
+ * - Progressive sizing: 320px→360px→400px (tablet to desktop)
+ * - SCROLL BEHAVIOR: Calendar + Info always follow main page scroll
+ * - Events scrolling: Natural flow when stacked, constrained height when side-by-side
  */
 
 import { ProjectTabCard } from "../shared/ProjectTabCard";
@@ -47,47 +49,47 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
     <ProjectTabCard
       padding="sm"
     >
-      <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-4 h-[calc(100vh-150px)] min-h-[650px] max-h-[950px] overflow-hidden">
-        {/* 🎯 LEFT COLUMN: Calendar + Information Stack - Two separate components */}
-        <div className="flex flex-col gap-4 h-full overflow-y-auto overscroll-contain">
+      <div className="grid grid-cols-1 sm:grid-cols-1 md:grid-cols-[320px_1fr] lg:grid-cols-[360px_1fr] xl:grid-cols-[400px_1fr] gap-3 md:gap-4 h-[calc(100vh-150px)] min-h-[650px] max-h-[950px] overflow-hidden">
+        {/* 🎯 LEFT COLUMN: Calendar + Information Stack - Part of main page scroll */}
+        <div className="flex flex-col gap-4">
           {/* Project Calendar Component */}
           <div className={cn(
-            'flex flex-col overflow-hidden',
+            'flex flex-col',
             'bg-gradient-to-br', infoColors.bg,
             'border', infoColors.border,
             'rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200'
           )}>
             {/* Calendar Header */}
-            <div className="px-3 py-2.5 border-b border-border/20">
-              <div className="flex items-center gap-3">
-                <Calendar className="h-5 w-5 flex-shrink-0 text-primary" />
-                <h2 className="font-semibold text-lg leading-none text-foreground">Calendar</h2>
+            <div className="px-2 py-1.5 sm:px-3 sm:py-2 md:py-2.5 border-b border-border/20">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Calendar className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+                <h2 className="font-semibold text-sm sm:text-base md:text-lg leading-none text-foreground">Calendar</h2>
               </div>
             </div>
             
-            {/* Calendar Content */}
-            <div className="p-3">
+            {/* Calendar Content - Scales down, no overflow */}
+            <div className="p-1 sm:p-2 md:p-3">
               <ProjectCalendar projectId={projectId} />
             </div>
           </div>
           
           {/* Project Information Component */}
           <div className={cn(
-            'flex flex-col overflow-hidden',
+            'flex flex-col',
             'bg-gradient-to-br', infoColors.bg,
             'border', infoColors.border,
             'rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200'
           )}>
             {/* Information Header */}
-            <div className="px-3 py-2.5 border-b border-border/20">
-              <div className="flex items-center gap-3">
-                <Info className="h-5 w-5 flex-shrink-0 text-primary" />
-                <h2 className="font-semibold text-lg leading-none text-foreground">Information</h2>
+            <div className="px-2 py-1 border-b border-border/20">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <Info className="h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 text-primary" />
+                <h2 className="font-semibold text-sm sm:text-base md:text-lg leading-none text-foreground">Information</h2>
               </div>
             </div>
             
-            {/* Information Content */}
-            <div className="p-3">
+            {/* Information Content - Ultra compact */}
+            <div className="p-1.5">
               <ProjectInfo 
                 project={project} 
                 events={events}
@@ -97,7 +99,7 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
           </div>
         </div>
 
-        {/* 🎯 RIGHT COLUMN: Events (Independently Scrollable) */}
+        {/* 🎯 RIGHT COLUMN: Events (matches Resources tab layout) */}
         <div className={cn(
           'flex flex-col h-full overflow-hidden',
           'bg-gradient-to-br', infoColors.bg,

@@ -33,7 +33,8 @@ export function useEquipmentSync() {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
         queryClient.invalidateQueries({ queryKey: ['project-event-equipment', eventId] }),
-        queryClient.invalidateQueries({ queryKey: ['sync-status', eventId] })
+        queryClient.invalidateQueries({ queryKey: ['sync-status', eventId] }),
+        queryClient.invalidateQueries({ queryKey: ['consolidated-project-sync', projectId] })
       ]);
 
       console.log('✅ [SYNC] Equipment synced successfully');
@@ -79,7 +80,8 @@ export function useEquipmentSync() {
         projectIds.flatMap(projectId => [
           queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
           queryClient.invalidateQueries({ queryKey: ['project-event-equipment'] }),
-          queryClient.invalidateQueries({ queryKey: ['sync-status'] })
+          queryClient.invalidateQueries({ queryKey: ['sync-status'] }),
+          queryClient.invalidateQueries({ queryKey: ['consolidated-project-sync', projectId] })
         ])
       );
 

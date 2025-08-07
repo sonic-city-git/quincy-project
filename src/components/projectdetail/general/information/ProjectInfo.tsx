@@ -34,56 +34,54 @@ export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInf
   };
 
   return (
-    <div className={FORM_PATTERNS.layout.singleColumn}>
-      <div className={FORM_PATTERNS.field.group}>
-        {/* Customer Field */}
-        <div className={FORM_PATTERNS.field.default}>
-          <label className={FORM_PATTERNS.label.optional}>Customer</label>
-          <CustomerSelect
-            value={project.customer_id || ''}
-            onChange={() => {}}
-            required={false}
-            className={cn(
-              FORM_PATTERNS.input.default,
-              "bg-muted/50 hover:border-muted-foreground/50"
-            )}
-          />
-        </div>
+    <div className="space-y-1">
+      {/* Customer Field */}
+      <div className="space-y-0.5">
+        <label className="text-xs font-medium text-muted-foreground">Customer</label>
+        <CustomerSelect
+          value={project.customer_id || ''}
+          onChange={() => {}}
+          required={false}
+          className={cn(
+            FORM_PATTERNS.input.default,
+            "bg-muted/50 hover:border-muted-foreground/50 h-7 text-xs"
+          )}
+        />
+      </div>
 
-        {/* Owner Field */}
-        <div className={FORM_PATTERNS.field.default}>
-          <label className={FORM_PATTERNS.label.optional}>Owner</label>
-          <OwnerSelect
-            value={project.owner_id || ''}
-            onChange={() => {}}
-            required={false}
-            className={cn(
-              FORM_PATTERNS.input.default,
-              "bg-muted/50 hover:border-muted-foreground/50"
-            )}
-          />
-        </div>
+      {/* Owner Field */}
+      <div className="space-y-0.5">
+        <label className="text-xs font-medium text-muted-foreground">Owner</label>
+        <OwnerSelect
+          value={project.owner_id || ''}
+          onChange={() => {}}
+          required={false}
+          className={cn(
+            FORM_PATTERNS.input.default,
+            "bg-muted/50 hover:border-muted-foreground/50 h-7 text-xs"
+          )}
+        />
+      </div>
 
-        {/* Last Invoiced Field - Read-only */}
-        <div className={FORM_PATTERNS.field.default}>
-          <label className={FORM_PATTERNS.label.default}>Last Invoiced</label>
-          <div className={cn(
-            FORM_PATTERNS.input.disabled,
-            "text-sm bg-muted/50 px-3 py-2 rounded-md"
-          )}>
-            {formatDate(project.created_at)}
-          </div>
+      {/* Last Invoiced Field - Read-only */}
+      <div className="space-y-0.5">
+        <label className="text-xs font-medium text-foreground">Last Invoiced</label>
+        <div className={cn(
+          FORM_PATTERNS.input.disabled,
+          "text-xs bg-muted/50 px-2 py-1 rounded-md h-7 flex items-center"
+        )}>
+          {formatDate(project.created_at)}
         </div>
+      </div>
 
-        {/* To be Invoiced Field - Read-only with emphasis */}
-        <div className={FORM_PATTERNS.field.default}>
-          <label className={FORM_PATTERNS.label.default}>To be Invoiced</label>
-          <div className={cn(
-            FORM_PATTERNS.input.disabled,
-            "text-sm font-medium bg-muted/50 px-3 py-2 rounded-md text-accent"
-          )}>
-            {formatCurrency(project.to_be_invoiced)}
-          </div>
+      {/* To be Invoiced Field - Read-only with emphasis */}
+      <div className="space-y-0.5">
+        <label className="text-xs font-medium text-foreground">To be Invoiced</label>
+        <div className={cn(
+          FORM_PATTERNS.input.disabled,
+          "text-xs font-medium bg-muted/50 px-2 py-1 rounded-md text-accent h-7 flex items-center"
+        )}>
+          {formatCurrency(project.to_be_invoiced)}
         </div>
       </div>
     </div>
