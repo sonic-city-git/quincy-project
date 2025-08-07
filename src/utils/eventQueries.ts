@@ -36,6 +36,7 @@ export const fetchEvents = async (projectId: string) => {
     type: event.event_types,
     status: event.status as CalendarEvent['status'],
     location: event.location,
+    variant_name: event.variant_name || 'default', // Include variant info
     equipment_price: event.equipment_price,
     crew_price: event.crew_price,
     total_price: event.total_price
@@ -47,17 +48,18 @@ export const createEvent = async (
   date: Date,
   eventName: string,
   eventType: EventType,
-  status: CalendarEvent['status'] = 'proposed'
+  status: CalendarEvent['status'] = 'proposed',
+  variantName: string = 'default'
 ) => {
   const formattedDate = formatDatabaseDate(date);
   
-  console.log('Adding event:', {
-    projectId,
-    date: formattedDate,
-    eventName,
-    eventType,
-    status
-  });
+  console.log('🚀 NEW DEBUG VERSION - Adding event...');
+  console.log('Adding event - projectId:', projectId);
+  console.log('Adding event - date:', formattedDate);
+  console.log('Adding event - eventName:', eventName);
+  console.log('Adding event - eventType:', eventType.name);
+  console.log('Adding event - status:', status);
+  console.log('Adding event - variantName:', variantName, 'length:', variantName?.length, 'type:', typeof variantName);
 
   try {
     const { data: eventData, error: eventError } = await supabase
@@ -67,6 +69,7 @@ export const createEvent = async (
         date: formattedDate,
         name: eventName.trim() || eventType.name,
         event_type_id: eventType.id,
+        variant_name: variantName,
         status: status,
         equipment_price: 0,
         crew_price: 0,
@@ -86,34 +89,42 @@ export const createEvent = async (
       .single();
 
     if (eventError) {
-      console.error('Error creating event:', eventError);
+      console.error('❌ Database error creating event:');
+      console.error('Error code:', eventError.code);
+      console.error('Error message:', eventError.message);
+      console.error('Error details:', eventError.details);
+      console.error('Error hint:', eventError.hint);
+      console.error('Full error object:', eventError);
+      console.error('Sent variantName:', variantName);
       throw eventError;
     }
 
     console.log('Created event:', eventData);
 
     if (eventType.needs_equipment) {
-      // Use unified sync function for consistent behavior and pricing
+      // Use variant-aware unified sync function for consistent behavior and pricing
       const { error: equipmentError } = await supabase.rpc('sync_event_equipment_unified', {
         p_event_id: eventData.id,
-        p_project_id: projectId
+        p_project_id: projectId,
+        p_variant_name: variantName
       });
 
       if (equipmentError) {
-        console.error('Error syncing equipment:', equipmentError);
+        console.error('Error syncing equipment for variant:', variantName, equipmentError);
       }
     }
 
     // Only sync crew if the event type needs crew (includes role creation + cost calculation)
     if (eventType.needs_crew) {
-      console.log('Event needs crew, syncing crew roles and calculating cost');
+      console.log('Event needs crew, syncing crew roles and calculating cost for variant:', variantName);
       const { error: crewError } = await supabase.rpc('sync_event_crew', {
         p_event_id: eventData.id,
-        p_project_id: projectId
+        p_project_id: projectId,
+        p_variant_name: variantName
       });
 
       if (crewError) {
-        console.error('Error syncing crew:', crewError);
+        console.error('Error syncing crew for variant:', variantName, crewError);
       }
     }
 
@@ -147,6 +158,7 @@ export const createEvent = async (
         name: eventData.name,
         type: eventData.event_types,
         status: eventData.status as CalendarEvent['status'],
+        variant_name: eventData.variant_name || 'default',
         equipment_price: eventData.equipment_price,
         crew_price: eventData.crew_price,
         total_price: eventData.total_price
@@ -162,12 +174,19 @@ export const createEvent = async (
       name: updatedEvent.name,
       type: updatedEvent.event_types,
       status: updatedEvent.status as CalendarEvent['status'],
+      variant_name: updatedEvent.variant_name || 'default',
       equipment_price: updatedEvent.equipment_price,
       crew_price: updatedEvent.crew_price,
       total_price: updatedEvent.total_price
     };
   } catch (error) {
-    console.error('Error in createEvent:', error);
+    console.error('❌ Catch block error in createEvent:');
+    console.error('Error message:', error?.message);
+    console.error('Error code:', error?.code);
+    console.error('variantName sent:', variantName);
+    console.error('eventType:', eventType.name);
+    console.error('projectId:', projectId);
+    console.error('Full error:', error);
     throw error;
   }
 };

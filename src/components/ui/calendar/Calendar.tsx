@@ -78,7 +78,7 @@ export function Calendar({
   };
 
   return (
-    <div className={cn("p-3", className)}>
+    <div className={cn("p-3 select-none", className)}>
       <CalendarHeader month={month} onMonthChange={onMonthChange || (() => {})} />
       
       <div className="grid grid-cols-7 mt-4">
@@ -109,7 +109,7 @@ export function Calendar({
                 
                     onDayClick?.(day);
                   }}
-                  onMouseDown={() => {
+                  onMouseDown={(e) => {
                     if (!event && onDragStart) {
                       onDragStart(day);
                     }
@@ -119,7 +119,7 @@ export function Calendar({
                       onDragEnter(day);
                     }
                   }}
-                  onMouseUp={() => {
+                  onMouseUp={(e) => {
                     if (!event && onDragEnd) {
                       onDragEnd();
                     }

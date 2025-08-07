@@ -1,7 +1,11 @@
 # 🎯 Project Detail Pages Transformation Plan
 
+> **⚠️ PLAN EVOLUTION**: This plan has evolved into the **Project Variants Transformation** - see [PROJECT_VARIANTS_TRANSFORMATION_PLAN.md](PROJECT_VARIANTS_TRANSFORMATION_PLAN.md) for the current comprehensive plan.
+
 ## **Overview**
-Transform the project detail pages to fully leverage our enhanced design system and perform comprehensive house cleaning for consistency, accessibility, and polish.
+~~Transform the project detail pages to fully leverage our enhanced design system and perform comprehensive house cleaning for consistency, accessibility, and polish.~~
+
+**Updated Objective**: Implement Project Variants system for artist projects while applying design system improvements. This addresses the core user need for different performance configurations (Trio, Band, DJ) with unified resource management.
 
 ## **🎨 Design System Integration Goals**
 
@@ -171,3 +175,17 @@ Transform the project detail pages to fully leverage our enhanced design system 
 - Document any breaking changes or migration notes
 
 **Ready to transform those detail pages into something amazing!** 🎉✨
+
+---
+
+## **🔄 PLAN EVOLUTION UPDATE**
+
+This transformation plan has been superseded by the comprehensive **Project Variants Transformation Plan**. See:
+
+- [PROJECT_VARIANTS_TRANSFORMATION_PLAN.md](PROJECT_VARIANTS_TRANSFORMATION_PLAN.md) - Executive summary and architecture
+- [DATABASE_MIGRATION_STRATEGY.md](DATABASE_MIGRATION_STRATEGY.md) - Schema extension strategy  
+- [UI_ARCHITECTURE_PLAN.md](UI_ARCHITECTURE_PLAN.md) - Unified Resources tab design
+- [IMPLEMENTATION_PHASES.md](IMPLEMENTATION_PHASES.md) - 4-week timeline with deliverables
+- [TESTING_STRATEGY.md](TESTING_STRATEGY.md) - Comprehensive testing approach
+
+The new plan addresses the user's requirement for artist variant support (Trio, Band, DJ configurations) while maintaining all the design system improvements outlined here.

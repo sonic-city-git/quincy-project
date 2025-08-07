@@ -44,7 +44,8 @@ export const syncExistingCrewData = async (projectId: string) => {
       // Sync crew roles and update cost from project requirements (customer-facing cost)
       const { error: crewSyncError } = await supabase.rpc('sync_event_crew', {
         p_event_id: event.id,
-        p_project_id: projectId
+        p_project_id: projectId,
+        p_variant_name: event.variant_name || 'default'
       });
 
       if (crewSyncError) {

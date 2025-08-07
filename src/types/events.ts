@@ -22,6 +22,7 @@ export interface CalendarEvent {
   type: EventType;
   status: EventStatus['name'];
   location?: string;
+  variant_name?: string; // Which variant this event uses for equipment/crew
   equipment?: Array<{ id: string; name: string }>;
   project_id: string;
   equipment_price?: number;
