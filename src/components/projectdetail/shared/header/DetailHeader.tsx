@@ -13,13 +13,15 @@ interface DetailHeaderProps {
   onTabChange: (tab: 'general' | 'resources' | 'financial') => void;
   canArchive: boolean;
   onArchiveClick: () => void;
+  onRefreshArchiveStatus: () => void;
 }
 
 export function DetailHeader({
   activeTab,
   onTabChange,
   canArchive,
-  onArchiveClick
+  onArchiveClick,
+  onRefreshArchiveStatus
 }: DetailHeaderProps) {
 
   const getTabConfig = () => {
@@ -70,7 +72,11 @@ export function DetailHeader({
         {/* Action Menu and Tab Toggle */}
         <div className="flex items-center gap-4">
           {/* Action Menu */}
-          <DropdownMenu>
+          <DropdownMenu onOpenChange={(open) => {
+            if (open) {
+              onRefreshArchiveStatus();
+            }
+          }}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
                 <MoreVertical className="h-3 w-3" />
@@ -80,10 +86,17 @@ export function DetailHeader({
               <DropdownMenuItem
                 onClick={onArchiveClick}
                 disabled={!canArchive}
-                className="gap-2 text-xs"
+                className="gap-2 text-xs flex-col items-start p-3"
               >
-                <Archive className="h-3 w-3" />
-                Archive Project
+                <div className="flex items-center gap-2">
+                  <Archive className="h-3 w-3" />
+                  Archive Project
+                </div>
+                {!canArchive && (
+                  <div className="text-xs text-muted-foreground mt-1">
+                    All events must be cancelled or invoiced first
+                  </div>
+                )}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
