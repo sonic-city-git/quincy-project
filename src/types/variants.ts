@@ -148,28 +148,8 @@ export interface VariantManagementHook {
   reorderVariants: (variantIds: string[], newOrder: number[]) => Promise<void>;
 }
 
-// Resource filtering and management
-export interface VariantResourcesHook {
-  // Data
-  resourceData: VariantResourceData | null;
-  isLoading: boolean;
-  error: Error | null;
-  
-  // Crew operations
-  addCrewRole: (roleData: Omit<VariantCrewRole, 'id' | 'project_id' | 'variant_name'>) => Promise<VariantCrewRole>;
-  updateCrewRole: (roleId: string, updates: Partial<VariantCrewRole>) => Promise<VariantCrewRole>;
-  removeCrewRole: (roleId: string) => Promise<void>;
-  
-  // Equipment operations  
-  addEquipmentItem: (itemData: Omit<VariantEquipmentItem, 'id' | 'project_id' | 'variant_name'>) => Promise<VariantEquipmentItem>;
-  updateEquipmentItem: (itemId: string, updates: Partial<VariantEquipmentItem>) => Promise<VariantEquipmentItem>;
-  removeEquipmentItem: (itemId: string) => Promise<void>;
-  
-  // Group operations
-  createEquipmentGroup: (groupData: { name: string; sort_order?: number }) => Promise<VariantEquipmentGroup>;
-  updateEquipmentGroup: (groupId: string, updates: Partial<VariantEquipmentGroup>) => Promise<VariantEquipmentGroup>;
-  deleteEquipmentGroup: (groupId: string, moveItemsToGroupId?: string) => Promise<void>;
-}
+// Optimized hook interfaces (replaced VariantResourcesHook with focused hooks)
+// See: useVariantEquipment.ts, useVariantCrew.ts, useVariantData.ts
 
 // Type guards for runtime type checking
 export function isProjectVariant(obj: any): obj is ProjectVariant {

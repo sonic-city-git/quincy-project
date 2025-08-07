@@ -108,7 +108,7 @@ export function VariantsContent({
     return (
       <div className="flex items-center justify-center h-[400px]">
         <div className="text-center max-w-md">
-          <Layers className={`h-16 w-16 mx-auto mb-4 ${STATUS_COLORS.operational.text}`} />
+          <Layers className={cn('h-16 w-16 mx-auto mb-4', STATUS_COLORS.operational.text)} />
           <h3 className="text-xl font-semibold mb-3">No variants found</h3>
           <p className="text-muted-foreground mb-6">
             This project doesn't have any variants yet. Create your first variant to start organizing equipment and crew.
@@ -151,7 +151,7 @@ export function VariantsContent({
             {/* Variant Selector Tabs */}
             <div className="flex items-center gap-1">
               <div className="flex items-center gap-2 mr-4">
-                <Layers className={`h-5 w-5 ${operationalColors.text}`} />
+                <Layers className={cn('h-5 w-5', operationalColors.text)} />
                 <h2 className="font-semibold text-lg">Variant Content</h2>
               </div>
               
@@ -215,7 +215,7 @@ export function VariantsContent({
                   <div className="border-r border-border/50 bg-card/50">
                     <div className="px-4 py-3 border-b border-border/50 bg-background/10">
                       <div className="flex items-center gap-2">
-                        <Box className={`h-4 w-4 ${STATUS_COLORS.info.text}`} />
+                        <Box className={cn('h-4 w-4', STATUS_COLORS.info.text)} />
                         <h3 className="font-medium text-sm">Equipment</h3>
                       </div>
                     </div>
@@ -233,7 +233,7 @@ export function VariantsContent({
                   <div className="bg-card/30">
                     <div className="px-4 py-3 border-b border-border/50 bg-background/10">
                       <div className="flex items-center gap-2">
-                        <Users className={`h-4 w-4 ${STATUS_COLORS.success.text}`} />
+                        <Users className={cn('h-4 w-4', STATUS_COLORS.success.text)} />
                         <h3 className="font-medium text-sm">Crew Roles</h3>
                       </div>
                     </div>
@@ -249,7 +249,7 @@ export function VariantsContent({
             ) : (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
-                  <Layers className={`h-12 w-12 mx-auto mb-4 ${operationalColors.text}`} />
+                  <Layers className={cn('h-12 w-12 mx-auto mb-4', operationalColors.text)} />
                   <h3 className="text-lg font-medium text-muted-foreground mb-2">
                     No variant selected
                   </h3>

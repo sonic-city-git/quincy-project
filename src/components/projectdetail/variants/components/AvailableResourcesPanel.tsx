@@ -9,6 +9,7 @@
 import { Box } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
+import { COMPONENT_CLASSES, cn } from '@/design-system';
 import { EquipmentSelector } from '../equipment/components/EquipmentSelector';
 import { Equipment } from '@/types/equipment';
 
@@ -30,30 +31,33 @@ export function AvailableResourcesPanel({
   const infoColors = STATUS_COLORS.info;
 
   return (
-    <Card className={`
-      bg-gradient-to-br ${infoColors.bg} 
-      border ${infoColors.border} 
-      overflow-hidden h-full
-      shadow-sm hover:shadow-md transition-shadow
-    `}>
+    <Card className={cn(
+      'overflow-hidden h-full',
+      'bg-gradient-to-br', infoColors.bg,
+      'border', infoColors.border,
+      'shadow-sm hover:shadow-md transition-shadow duration-200'
+    )}>
       {/* Header */}
-      <div className="border-b border-border/50 bg-background/20 backdrop-blur-sm">
-        <div className="p-4">
-          <div className="flex items-center gap-2">
-            <Box className={`h-5 w-5 ${infoColors.text}`} />
-            <h2 className="font-semibold text-lg">Stock Equipment</h2>
-          </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Add equipment to your variant
-          </p>
+      <div className={cn(
+        'border-b border-border/50 bg-background/20 backdrop-blur-sm',
+        COMPONENT_CLASSES.card.default.includes('p-') ? '' : 'px-4 py-3'
+      )}>
+        <div className="flex items-center gap-2 mb-1">
+          <Box className={cn('h-5 w-5', infoColors.text)} />
+          <h2 className="font-semibold text-lg">Stock Equipment</h2>
         </div>
+        <p className="text-sm text-muted-foreground">
+          Add equipment to your variant
+        </p>
       </div>
 
       {/* Content */}
-      <CardContent className="p-0 h-[calc(100%-89px)] overflow-hidden">
+      <CardContent className="p-0 h-[calc(100%-81px)] overflow-hidden">
         <div className="h-full flex flex-col">
           {/* Group Selection Status */}
-          <div className="p-4 border-b border-border/50 bg-background/10">
+          <div className={cn(
+            'px-4 py-3 border-b border-border/50 bg-background/10'
+          )}>
             {selectedGroupId ? (
               <div className="space-y-1">
                 <p className="text-xs font-medium text-primary">
@@ -65,7 +69,7 @@ export function AvailableResourcesPanel({
               </div>
             ) : !hasGroups ? (
               <div className="space-y-1">
-                <p className={`text-xs font-medium ${STATUS_COLORS.warning.text}`}>
+                <p className={cn('text-xs font-medium', STATUS_COLORS.warning.text)}>
                   No groups in variant
                 </p>
                 <p className="text-xs text-muted-foreground">

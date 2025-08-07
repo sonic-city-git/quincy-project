@@ -45,13 +45,15 @@ src/components/projects/detail/
 ├─ resources/                         // NEW: Unified resources management
 │  ├─ ResourcesTab.tsx                // Main resources container
 │  ├─ VariantSelector.tsx             // Variant selection UI
-│  ├─ VariantResourcesContent.tsx     // Content for selected variant
+│  ├─ VariantsContent.tsx             // Optimized content with left/right layout
 │  ├─ sections/
 │  │  ├─ CrewVariantSection.tsx       // Crew management for variant
 │  │  └─ EquipmentVariantSection.tsx  // Equipment management for variant
 │  ├─ hooks/
 │  │  ├─ useProjectVariants.ts        // Variant CRUD operations
-│  │  ├─ useVariantResources.ts       // Filtered resources by variant
+│  │  ├─ useVariantEquipment.ts       // Equipment & group management
+│  │  ├─ useVariantCrew.ts            // Crew role management
+│  │  ├─ useVariantData.ts            // Unified data access
 │  │  └─ useVariantSync.ts            // Sync operations for variants
 │  └─ dialogs/
 │     ├─ AddVariantDialog.tsx         // Create new variants
@@ -92,7 +94,7 @@ export function ResourcesTab({ projectId, project }: ResourcesTabProps) {
         projectId={projectId}
       />
       
-      <VariantResourcesContent
+      <VariantsContent
         projectId={projectId}
         variantName={selectedVariant}
       />
@@ -163,19 +165,19 @@ export function VariantSelector({
 }
 ```
 
-### **VariantResourcesContent.tsx**
+### **VariantsContent.tsx** (Optimized Layout)
 ```typescript
-interface VariantResourcesContentProps {
+interface VariantsContentProps {
   projectId: string;
   variantName: string;
 }
 
 // Main content area for variant resources
-export function VariantResourcesContent({
+export function VariantsContent({
   projectId,
   variantName
-}: VariantResourcesContentProps) {
-  const { crewData, equipmentData, isLoading } = useVariantResources(projectId, variantName);
+}: VariantsContentProps) {
+  const { equipmentData, crewRoles, isLoading } = useVariantData(projectId, variantName);
   
   if (isLoading) {
     return <LoadingSpinner />;
@@ -290,9 +292,9 @@ export function useProjectVariants(projectId: string) {
 }
 ```
 
-### **useVariantResources.ts**
+### **useVariantData.ts** (Optimized Architecture)
 ```typescript
-export function useVariantResources(projectId: string, variantName: string) {
+export function useVariantData(projectId: string, variantName: string) {
   // Consolidated data fetching for variant resources
   const { data, isLoading } = useQuery({
     queryKey: ['variant-resources', projectId, variantName],
@@ -393,7 +395,7 @@ const VARIANT_SELECTOR_LAYOUT = {
   aria-labelledby={`variant-tab-${selectedVariant}`}
   id={`variant-content-${selectedVariant}`}
 >
-  <VariantResourcesContent {...props} />
+  <VariantsContent {...props} />
 </div>
 ```
 
@@ -425,13 +427,13 @@ const MemoizedCrewSection = memo(CrewVariantSection, (prev, next) =>
 ### **Lazy Loading**
 ```typescript
 // Lazy load variant content
-const VariantResourcesContent = lazy(() => 
-  import('./VariantResourcesContent').then(m => ({ default: m.VariantResourcesContent }))
+const VariantsContent = lazy(() =>
+import('./VariantsContent').then(m => ({ default: m.VariantsContent }))
 );
 
 // Suspense with loading fallback
 <Suspense fallback={<ResourcesLoadingSkeleton />}>
-  <VariantResourcesContent {...props} />
+  <VariantsContent {...props} />
 </Suspense>
 ```
 

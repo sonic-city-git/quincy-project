@@ -10,6 +10,7 @@ import { Plus, Users, UserCheck, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
+import { cn } from '@/design-system';
 import { CompactCrewRolesList } from './CompactCrewRolesList';
 import { useVariantCrew } from '@/hooks/useVariantCrew';
 
@@ -64,7 +65,7 @@ export function VariantCrewList({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Users className={`h-4 w-4 ${infoColors.text}`} />
+            <Users className={cn('h-4 w-4', infoColors.text)} />
             <span className="text-sm font-medium">Total Roles</span>
           </div>
           <Badge variant="outline">
@@ -74,10 +75,10 @@ export function VariantCrewList({
         
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <UserCheck className={`h-4 w-4 ${successColors.text}`} />
+            <UserCheck className={cn('h-4 w-4', successColors.text)} />
             <span className="text-sm font-medium">Assigned</span>
           </div>
-          <Badge variant="outline" className={`${successColors.text} ${successColors.border}`}>
+          <Badge variant="outline" className={cn(successColors.text, successColors.border)}>
             {assignedRoles}
           </Badge>
         </div>
@@ -85,10 +86,10 @@ export function VariantCrewList({
         {unassignedRoles > 0 && (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Clock className={`h-4 w-4 ${warningColors.text}`} />
+              <Clock className={cn('h-4 w-4', warningColors.text)} />
               <span className="text-sm font-medium">Unassigned</span>
             </div>
-            <Badge variant="outline" className={`${warningColors.text} ${warningColors.border}`}>
+            <Badge variant="outline" className={cn(warningColors.text, warningColors.border)}>
               {unassignedRoles}
             </Badge>
           </div>
@@ -105,7 +106,7 @@ export function VariantCrewList({
         </div>
       ) : (
         <div className="text-center py-8">
-          <Users className={`h-12 w-12 mx-auto mb-4 ${STATUS_COLORS.operational.text}`} />
+          <Users className={cn('h-12 w-12 mx-auto mb-4', STATUS_COLORS.operational.text)} />
           <h3 className="font-medium text-sm mb-2">No crew roles assigned</h3>
           <p className="text-xs text-muted-foreground mb-4 max-w-xs mx-auto">
             Add crew roles to this variant from the available resources panel.

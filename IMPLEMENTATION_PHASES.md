@@ -45,10 +45,13 @@ supabase/migrations/
 - [ ] **COMMIT**: `feat: add useProjectVariants hook with CRUD operations`
 
 #### **Afternoon: Resource Filtering Hook**  
-- [ ] Create `src/hooks/useVariantResources.ts`
+- [x] Create optimized variant hooks:
+  - [x] `src/hooks/useVariantEquipment.ts` (equipment & groups)
+  - [x] `src/hooks/useVariantCrew.ts` (crew roles)  
+  - [x] `src/hooks/useVariantData.ts` (unified access)
 - [ ] Implement filtered data fetching by variant
 - [ ] Add caching and performance optimizations
-- [ ] **COMMIT**: `feat: add useVariantResources hook for filtered data`
+- [x] **COMMIT**: `feat: add optimized variant hooks with focused responsibilities`
 
 ### **Day 3: Database Utilities**
 #### **Morning: Variant Sync Hook**
@@ -66,7 +69,7 @@ supabase/migrations/
 ### **Day 4: Testing Infrastructure**
 #### **Morning: Unit Tests**
 - [ ] Test suite for `useProjectVariants`
-- [ ] Test suite for `useVariantResources`  
+- [ ] Test suite for optimized variant hooks  
 - [ ] Test suite for `useVariantSync`
 - [ ] **COMMIT**: `test: add comprehensive tests for variant hooks`
 
@@ -110,7 +113,7 @@ supabase/migrations/
 
 ### **Day 7: Resource Content Components**
 #### **Morning: Content Structure**
-- [ ] Implement `VariantResourcesContent.tsx`
+- [x] Implement `VariantsContent.tsx` (optimized layout)
 - [ ] Create `CrewVariantSection.tsx`
 - [ ] Create `EquipmentVariantSection.tsx`
 - [ ] **COMMIT**: `feat: add variant resource content components`

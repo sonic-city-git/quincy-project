@@ -15,6 +15,7 @@ import { formatPrice } from '@/utils/priceFormatters';
 import { copyEquipmentBetweenVariants } from '@/utils/variantEquipmentCopy';
 import { toast } from 'sonner';
 import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
+import { cn } from '@/design-system';
 import { BaseEquipmentList } from './BaseEquipmentList';
 
 interface VariantEquipmentListProps {
@@ -104,17 +105,17 @@ export function VariantEquipmentList({
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <DollarSign className={`h-4 w-4 ${successColors.text}`} />
+            <DollarSign className={cn('h-4 w-4', successColors.text)} />
             <span className="text-sm font-medium">Total Value</span>
           </div>
-          <Badge variant="outline" className={`${successColors.text} ${successColors.border}`}>
+          <Badge variant="outline" className={cn(successColors.text, successColors.border)}>
             {formatPrice(totalPrice)}
           </Badge>
         </div>
         
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Package className={`h-4 w-4 ${STATUS_COLORS.info.text}`} />
+            <Package className={cn('h-4 w-4', STATUS_COLORS.info.text)} />
             <span className="text-sm font-medium">Items</span>
           </div>
           <Badge variant="outline">

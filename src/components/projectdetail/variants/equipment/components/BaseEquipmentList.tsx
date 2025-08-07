@@ -156,12 +156,12 @@ export function BaseEquipmentList({
         }}
         onTargetGroupSelect={setTargetGroupId}
         onNewGroupNameChange={setNewGroupName}
-        onConfirmDelete={async () => {
-          if (groupToDelete) {
-            await handleDeleteGroup(groupToDelete);
-            // State cleanup is handled by the useGroupManagement hook
-          }
-        }}
+                  onConfirmDelete={async () => {
+            if (groupToDelete) {
+              await handleDeleteGroup(groupToDelete);
+              // State cleanup is handled by the useVariantEquipment hook
+            }
+          }}
         onConfirmCreate={handleCreateGroupWithEquipment}
       />
     </EmptyDropZone>

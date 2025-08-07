@@ -653,7 +653,7 @@ describe('Variant System Performance', () => {
     const largeProject = await createLargeTestProject();
     
     const startTime = performance.now();
-    await loadVariantResources(largeProject.id, 'band');
+    await loadVariantData(largeProject.id, 'band');
     const endTime = performance.now();
     
     expect(endTime - startTime).toBeLessThan(500); // <500ms for large datasets
