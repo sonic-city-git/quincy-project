@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { COMPONENT_CLASSES } from "@/design-system";
 import { statusUtils } from "@/constants/eventStatus";
 import { useUnifiedEventSync } from "@/hooks/useUnifiedEventSync";
+import { useReactivePricing } from "@/services/pricing/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -146,6 +147,9 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
   
   // Get unified sync data and actions
   const { data: syncData, actions: syncActions } = useUnifiedEventSync(event);
+  
+  // 🔄 Get reactive pricing that automatically updates with variant changes
+  const { data: pricingData } = useReactivePricing(event);
 
   // Handle crew sync using unified actions
   const handleSyncPreferredCrew = async () => {
@@ -263,17 +267,17 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
 
           {/* Equipment Price - Hide FIRST when space is tight (show only on wide+ screens) */}
           <EventGridColumns.Price variant="muted" className="hidden xl:flex">
-            {formatPrice(event.equipment_price)}
+            {formatPrice(pricingData?.equipment_price ?? event.equipment_price)}
           </EventGridColumns.Price>
 
           {/* Crew Price - Hide SECOND when space is tight (show from desktop+ screens) */}
           <EventGridColumns.Price variant="muted" className="hidden lg:flex">
-            {formatPrice(event.crew_price)}
+            {formatPrice(pricingData?.crew_price ?? event.crew_price)}
           </EventGridColumns.Price>
 
           {/* Total Price - HIGHEST PRIORITY, always visible */}
           <EventGridColumns.Price variant="muted">
-            {formatPrice(event.total_price)}
+            {formatPrice(pricingData?.total_price ?? event.total_price)}
           </EventGridColumns.Price>
         </EventGrid>
       </Card>

@@ -1,10 +1,11 @@
 /**
  * 🔄 VARIANT EVENT SYNC UTILITIES
  * 
- * Handles synchronization of all events when variant data changes.
- * According to business logic: "Event with variant → calculates content of that variant"
+ * ⚠️ DEPRECATED: Phase 2 Architecture - Use reactive pricing instead
+ * @deprecated Use @/services/pricing for automatic pricing updates
  * 
- * When variant crew/equipment changes → ALL events using that variant must update.
+ * Legacy sync approach replaced by reactive pricing system.
+ * Only kept for manual sync operations (crew assignments, equipment sync).
  */
 
 import { supabase } from '@/integrations/supabase/client';

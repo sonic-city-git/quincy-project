@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useBulkEventSync } from '@/hooks/useUnifiedEventSync';
 import { useState, useMemo } from 'react';
+import { useEventsWithReactivePricing } from '@/services/pricing/hooks';
 import { STATUS_COLORS } from "@/components/dashboard/shared/StatusCard";
 
 interface EventSectionProps {
@@ -36,16 +37,19 @@ export function EventSection({
 }: EventSectionProps) {
   const eventType = events[0]?.type;
   
-  // Calculate total prices for the section
-  const totalEquipmentPrice = events.reduce((sum, event) => {
+  // 🔄 Get events with reactive pricing that automatically updates
+  const { events: eventsWithPricing } = useEventsWithReactivePricing(events);
+  
+  // Calculate total prices for the section using reactive pricing
+  const totalEquipmentPrice = eventsWithPricing.reduce((sum, event) => {
     return sum + (event.equipment_price || 0);
   }, 0);
   
-  const totalCrewPrice = events.reduce((sum, event) => {
+  const totalCrewPrice = eventsWithPricing.reduce((sum, event) => {
     return sum + (event.crew_price || 0);
   }, 0);
   
-  const totalPrice = events.reduce((sum, event) => {
+  const totalPrice = eventsWithPricing.reduce((sum, event) => {
     return sum + (event.total_price || 0);
   }, 0);
 
@@ -68,14 +72,14 @@ export function EventSection({
       {!hideHeader && (
         <EventSectionHeader 
           title={title}
-          events={events}
+          events={eventsWithPricing}
           variant={variant}
           onStatusChange={onStatusChange}
         />
       )}
       
       <EventContent variant="list" spacing="sm" className="overflow-hidden mt-1">
-        {events.map((event) => (
+        {eventsWithPricing.map((event) => (
           <EventCard
             key={event.id}
             event={event}
@@ -86,7 +90,7 @@ export function EventSection({
         ))}
         
         {/* Enhanced Summary Row - show for all sections with totals */}
-        {events.length > 0 && (totalEquipmentPrice > 0 || totalCrewPrice > 0 || totalPrice > 0) && (
+        {eventsWithPricing.length > 0 && (totalEquipmentPrice > 0 || totalCrewPrice > 0 || totalPrice > 0) && (
           <EventSectionSummary
             title={getTotalLabel()}
             totalEquipment={totalEquipmentPrice}
