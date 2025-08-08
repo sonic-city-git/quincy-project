@@ -142,7 +142,7 @@ export function useVariantEquipment(projectId: string, variantId: string) {
 
       return { equipment_groups, equipment_ungrouped: ungroupedEquipment };
     },
-    enabled: !!projectId && !!variantName,
+    enabled: !!projectId && !!variantId,
     staleTime: 30 * 1000,
     cacheTime: 5 * 60 * 1000
   });
