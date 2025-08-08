@@ -11,8 +11,8 @@ import { Card } from "@/components/ui/card";
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useEquipmentSync } from '@/hooks/useEquipmentSync';
-import { useState } from 'react';
+import { useBulkEventSync } from '@/hooks/useUnifiedEventSync';
+import { useState, useMemo } from 'react';
 import { STATUS_COLORS } from "@/components/dashboard/shared/StatusCard";
 
 interface EventSectionProps {
@@ -116,68 +116,33 @@ function EventSectionHeader({
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
 }) {
   const eventType = events[0]?.type;
-  const queryClient = useQueryClient();
-  const { syncEvents } = useEquipmentSync();
-  const [isSyncingCrew, setIsSyncingCrew] = useState(false);
+  const { syncEquipment, syncCrew, isSyncing } = useBulkEventSync(events);
   
-  // Get design system colors based on variant
-  const statusColors = STATUS_COLORS[variant] || STATUS_COLORS.info;
+  // Memoize expensive calculations to prevent re-renders
+  const sectionMetadata = useMemo(() => {
+    const statusColors = STATUS_COLORS[variant] || STATUS_COLORS.info;
+    const titleLower = title.toLowerCase();
+    
+    return {
+      statusColors,
+      needsEquipment: events.some(event => event.type?.needs_equipment),
+      needsCrew: events.some(event => event.type?.needs_crew),
+      isCancelled: titleLower === 'cancelled',
+      isInvoiceReady: titleLower === 'invoice ready'
+    };
+  }, [variant, title, events]);
 
-  // Check if events need equipment/crew
-  const needsEquipment = events.some(event => event.type?.needs_equipment);
-  const needsCrew = events.some(event => event.type?.needs_crew);
-  const isCancelled = title.toLowerCase() === 'cancelled';
-  const isInvoiceReady = title.toLowerCase() === 'invoice ready';
+  const { statusColors, needsEquipment, needsCrew, isCancelled, isInvoiceReady } = sectionMetadata;
 
-  // Handle bulk equipment sync for all events in section
+  // Handle bulk sync operations using unified system
   const handleSyncSectionEquipment = async () => {
     if (!events.length) return;
-    await syncEvents(events.map(e => ({ id: e.id, project_id: e.project_id, variant_name: e.variant_name })));
+    await syncEquipment();
   };
 
-  // Handle bulk crew sync for all events in section
   const handleSyncSectionCrew = async () => {
     if (!events.length) return;
-    setIsSyncingCrew(true);
-    
-    try {
-      let totalSynced = 0;
-      
-      for (const event of events) {
-                       const { error } = await supabase.rpc('sync_event_crew', {
-                 p_event_id: event.id,
-                 p_project_id: event.project_id,
-                 p_variant_name: event.variant_name || 'default'
-               });
-
-        if (error) {
-          console.error('❌ Crew sync failed for event:', event.id, error);
-        } else {
-          totalSynced++;
-        }
-      }
-
-      // Invalidate queries to refresh UI
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['events', events[0].project_id] }),
-        queryClient.invalidateQueries({ queryKey: ['crew-sync-status'] }),
-        queryClient.invalidateQueries({ queryKey: ['sync-status'] }),
-        queryClient.invalidateQueries({ queryKey: ['consolidated-project-sync', events[0].project_id] })
-      ]);
-
-      if (totalSynced === events.length) {
-        toast.success(`Preferred crew synced for all ${totalSynced} events`);
-      } else if (totalSynced > 0) {
-        toast.success(`Preferred crew synced for ${totalSynced} of ${events.length} events`);
-      } else {
-        toast.error("Failed to sync crew for any events");
-      }
-    } catch (error: any) {
-      console.error('❌ Unexpected error during section crew sync:', error);
-      toast.error("Failed to sync section crew");
-    } finally {
-      setIsSyncingCrew(false);
-    }
+    await syncCrew();
   };
   
   return (
@@ -204,6 +169,7 @@ function EventSectionHeader({
       
       {/* Column Headers */}
       <EventSectionTableHeader 
+        sectionTitle={title}
         events={events}
         onStatusChange={onStatusChange}
         onSyncSectionEquipment={handleSyncSectionEquipment}
@@ -254,6 +220,7 @@ function EventSectionSummary({
         
         {/* Event Column - empty */}
         <EventGridColumns.Event>
+          <div></div>
         </EventGridColumns.Event>
         
         {/* Type Badge Column - empty, only on small+ to match grid */}
@@ -266,14 +233,17 @@ function EventSectionSummary({
         
         {/* Equipment Icon Column - empty */}
         <EventGridColumns.Icon>
+          <div></div>
         </EventGridColumns.Icon>
         
         {/* Crew Icon Column - empty */}
         <EventGridColumns.Icon>
+          <div></div>
         </EventGridColumns.Icon>
         
         {/* Status Action Column - empty */}
         <EventGridColumns.Action>
+          <div></div>
         </EventGridColumns.Action>
         
         {/* Equipment Price - Hide FIRST when space is tight (show only on wide+ screens) */}

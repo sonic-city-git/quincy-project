@@ -37,12 +37,13 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
   // Use info colors to match Resources tab styling
   const infoColors = STATUS_COLORS.info;
 
-  const handleStatusChange = async (event, newStatus) => {
+  const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
     await updateEventStatus(event, newStatus);
   };
 
-  const handleEditEvent = (event) => {
-    // TODO: Implement edit functionality
+  const handleEditEvent = (event: CalendarEvent) => {
+    console.log('Edit event:', event);
+    // Event editing is handled by EventFormDialog in ProjectCalendar
   };
 
   return (

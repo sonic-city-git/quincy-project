@@ -23,7 +23,7 @@ import {
   Settings2 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { STATUS_PATTERNS } from '@/design-system';
+import { EVENT_STATUS_CONFIG, statusUtils } from '@/constants/eventStatus';
 
 export interface EventStatusProps {
   event?: CalendarEvent;
@@ -35,40 +35,9 @@ export interface EventStatusProps {
 }
 
 /**
- * Status configuration with design system integration
+ * Use unified status configuration
  */
-const STATUS_CONFIG = {
-  proposed: {
-    icon: Clock,
-    label: 'Proposed',
-    pattern: STATUS_PATTERNS.warning,
-    description: 'Waiting for confirmation'
-  },
-  confirmed: {
-    icon: CheckCircle,
-    label: 'Confirmed',
-    pattern: STATUS_PATTERNS.success,
-    description: 'Ready for production'
-  },
-  'invoice ready': {
-    icon: Send,
-    label: 'Invoice Ready',
-    pattern: STATUS_PATTERNS.info,
-    description: 'Ready to invoice'
-  },
-  cancelled: {
-    icon: XCircle,
-    label: 'Cancelled',
-    pattern: STATUS_PATTERNS.critical,
-    description: 'Event cancelled'
-  },
-  invoiced: {
-    icon: CheckCircle,
-    label: 'Invoiced',
-    pattern: STATUS_PATTERNS.operational,
-    description: 'Completed and invoiced'
-  }
-} as const;
+const STATUS_CONFIG = EVENT_STATUS_CONFIG;
 
 /**
  * Main EventStatus component with multiple variants
@@ -81,8 +50,9 @@ export function EventStatus({
   disabled = false,
   className 
 }: EventStatusProps) {
-  const targetEvent = event || events[0];
-  if (!targetEvent) return null;
+  // Robust edge case handling
+  const targetEvent = event || (events.length > 0 ? events[0] : null);
+  if (!targetEvent || !targetEvent.status) return null;
 
   const config = STATUS_CONFIG[targetEvent.status as keyof typeof STATUS_CONFIG];
   if (!config) return null;
@@ -220,18 +190,6 @@ function StatusManager({
 }
 
 /**
- * Status utilities
+ * Export unified status utilities (backward compatibility)
  */
-export const statusUtils = {
-  getConfig: (status: CalendarEvent['status']) => 
-    STATUS_CONFIG[status as keyof typeof STATUS_CONFIG],
-  
-  isEditable: (status: CalendarEvent['status']) => 
-    !['cancelled', 'invoiced'].includes(status),
-  
-  getStatusColor: (status: CalendarEvent['status']) => 
-    STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]?.pattern.text || 'text-muted-foreground',
-  
-  getStatusBackground: (status: CalendarEvent['status']) => 
-    STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]?.pattern.bg || 'bg-muted/50'
-} as const;
+export { statusUtils };

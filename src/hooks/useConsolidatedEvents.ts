@@ -228,7 +228,10 @@ export function useConsolidatedEvents({
     event: CalendarEvent, 
     newStatus: CalendarEvent['status']
   ): Promise<void> => {
-    if (!projectId) return;
+    if (!projectId || !event?.id) {
+      console.error('Missing projectId or event.id in updateEventStatus');
+      return;
+    }
 
     const updatedEvent = { ...event, status: newStatus };
     
@@ -248,7 +251,7 @@ export function useConsolidatedEvents({
       await invalidateEventQueries();
     } catch (error) {
       console.error('Error updating event status:', error);
-      // Rollback optimistic update
+      // Rollback optimistic update by invalidating all queries
       await invalidateEventQueries();
       toast.error("Failed to update event status");
       throw error;

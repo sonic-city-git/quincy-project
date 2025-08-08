@@ -71,8 +71,9 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
       const currentVariantExists = selectedVariant && variants.some(v => v.variant_name === selectedVariant);
       
       if (!currentVariantExists) {
-        // Select the first variant (which is the default by creation order)
-        setSelectedVariant(variants[0].variant_name);
+        // Select the default variant first, or fall back to the first variant
+        const defaultVariant = variants.find(v => v.is_default === true) || variants[0];
+        setSelectedVariant(defaultVariant.variant_name);
       }
     } else {
       // No variants exist - clear selected variant
@@ -198,13 +199,13 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
           .from('project_roles')
           .select('id')
           .eq('project_id', projectId)
-          .eq('variant_name', variantName)
+          .eq('variant_id', variant.id)
           .limit(1),
         supabase
           .from('project_equipment')
           .select('id')
           .eq('project_id', projectId)
-          .eq('variant_name', variantName)
+          .eq('variant_id', variant.id)
           .limit(1)
       ]);
 
@@ -232,8 +233,9 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
       if (selectedVariant === variantName) {
         const remainingVariants = variants.filter(v => v.variant_name !== variantName);
         if (remainingVariants.length > 0) {
-          // Select the first remaining variant (default by creation order)
-          setSelectedVariant(remainingVariants[0].variant_name);
+          // Select the default variant first, or fall back to the first remaining variant
+          const defaultVariant = remainingVariants.find(v => v.is_default === true) || remainingVariants[0];
+          setSelectedVariant(defaultVariant.variant_name);
         } else {
           // No variants left
           setSelectedVariant('');
@@ -404,8 +406,8 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
   }, [variants]);
 
   const getDefaultVariant = useCallback((): ProjectVariant | undefined => {
-    // First variant is the default (by creation order)
-    return variants[0];
+    // Find the variant marked as default, or fall back to the first one
+    return variants.find(v => v.is_default === true) || variants[0];
   }, [variants]);
 
   return {

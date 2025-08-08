@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { CalendarEvent } from '@/types/events';
-import { useEventSyncStatus } from '@/hooks/useConsolidatedSyncStatus';
+import { useUnifiedEventSync } from '@/hooks/useUnifiedEventSync';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemo } from 'react';
@@ -59,10 +59,10 @@ export function EventCrew({
   const targetEvents = events.length > 0 ? events : (targetEvent ? [targetEvent] : []);
   const [showRolesDialog, setShowRolesDialog] = useState(false);
   
-  // Use props if provided, otherwise get from hook
-  const syncStatus = useEventSyncStatus(targetEvent);
-  const actualHasProjectRoles = hasProjectRoles ?? syncStatus.hasProjectRoles;
-  const actualIsCrewSynced = isSynced ?? syncStatus.isCrewSynced;
+  // Use props if provided, otherwise get from unified hook
+  const { data: syncData } = useUnifiedEventSync(targetEvent);
+  const actualHasProjectRoles = hasProjectRoles ?? syncData.crew.hasProjectRoles;
+  const actualIsCrewSynced = isSynced ?? syncData.crew.synced;
   
   // Get crew assignments for the event(s)
   const { data: eventRoles } = useQuery({
@@ -79,6 +79,11 @@ export function EventCrew({
 
   // Calculate sync status like HeaderCrewIcon
   const allEventsSynced = useMemo(() => {
+    // First check if any events actually need crew
+    const eventsNeedingCrew = targetEvents.filter(evt => evt?.type?.needs_crew);
+    if (eventsNeedingCrew.length === 0) return true; // No crew needed = synced
+    
+    // If we have no event roles data, we can't determine sync status
     if (!eventRoles?.length) return false;
     
     // Group roles by event
@@ -91,12 +96,13 @@ export function EventCrew({
     });
     
     // Check if each crew-needing event has all its roles assigned
-    for (const evt of targetEvents) {
-      if (!evt.type.needs_crew) continue;
-      
+    for (const evt of eventsNeedingCrew) {
       const eventRolesList = rolesByEvent.get(evt.id) || [];
-      if (eventRolesList.length === 0) continue;
       
+      // If no roles exist for this event, it's not synced
+      if (eventRolesList.length === 0) return false;
+      
+      // If any role is unassigned, not synced
       const hasUnassignedRoles = eventRolesList.some(role => !role.crew_member_id);
       if (hasUnassignedRoles) {
         return false;

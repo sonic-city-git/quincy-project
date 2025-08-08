@@ -21,7 +21,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { CalendarEvent } from '@/types/events';
-import { useEquipmentSync } from '@/hooks/useEquipmentSync';
+import { useUnifiedEventSync } from '@/hooks/useUnifiedEventSync';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -70,7 +70,6 @@ export function EventEquipment({
   className,
   onSync
 }: EventEquipmentProps) {
-  const { syncEvent, syncEvents, isSyncing } = useEquipmentSync();
   const [showDifferences, setShowDifferences] = useState(false);
   const [differences, setDifferences] = useState<EquipmentDifference>({
     added: [],
@@ -78,11 +77,12 @@ export function EventEquipment({
     changed: []
   });
   
-  const targetEvent = event || events[0];
+  const targetEvent = event || (events.length > 0 ? events[0] : null);
+  const { actions: syncActions, isSyncing } = useUnifiedEventSync(targetEvent);
   const targetEvents = events.length > 0 ? events : (targetEvent ? [targetEvent] : []);
   
-  // Don't render if no equipment needed or no project equipment
-  if (!targetEvent?.type?.needs_equipment || !hasProjectEquipment) {
+  // Don't render if no equipment needed, no project equipment, or no valid event
+  if (!targetEvent?.type?.needs_equipment || !hasProjectEquipment || !targetEvent.id) {
     return null;
   }
 
@@ -91,87 +91,14 @@ export function EventEquipment({
 
   const handleSync = async () => {
     console.log('🎯 handleSync called for event:', targetEvent.id);
-    await syncEvent(targetEvent.id, targetEvent.project_id);
+    await syncActions.syncEquipment();
     onSync?.([targetEvent.id]);
   };
 
   const fetchDifferences = async () => {
     try {
-      const { data: projectEquipment } = await supabase
-        .from('project_equipment')
-        .select(`
-          equipment_id,
-          quantity,
-          group_id,
-          equipment:equipment (
-            name,
-            code
-          ),
-          group:project_equipment_groups (
-            name
-          )
-        `)
-        .eq('project_id', targetEvent.project_id);
-
-      const { data: eventEquipment } = await supabase
-        .from('project_event_equipment')
-        .select(`
-          equipment_id,
-          quantity,
-          group_id,
-          equipment:equipment (
-            name,
-            code
-          ),
-          group:project_equipment_groups (
-            name
-          )
-        `)
-        .eq('event_id', targetEvent.id);
-
-      const projectMap = new Map(projectEquipment?.map(item => [item.equipment_id, item]) || []);
-      const eventMap = new Map(eventEquipment?.map(item => [item.equipment_id, item]) || []);
-
-      const added: EquipmentItem[] = [];
-      const removed: EquipmentItem[] = [];
-      const changed: EquipmentDifference['changed'] = [];
-
-      projectMap.forEach((projectItem, equipId) => {
-        const eventItem = eventMap.get(equipId);
-        
-        if (!eventItem) {
-          added.push({
-            id: equipId,
-            equipment: projectItem.equipment,
-            quantity: projectItem.quantity,
-            group: projectItem.group
-          });
-        } else if (eventItem.quantity !== projectItem.quantity) {
-          changed.push({
-            item: {
-              id: equipId,
-              equipment: projectItem.equipment,
-              quantity: eventItem.quantity,
-              group: projectItem.group
-            },
-            oldQuantity: eventItem.quantity,
-            newQuantity: projectItem.quantity
-          });
-        }
-      });
-
-      eventMap.forEach((eventItem, equipId) => {
-        if (!projectMap.has(equipId)) {
-          removed.push({
-            id: equipId,
-            equipment: eventItem.equipment,
-            quantity: eventItem.quantity,
-            group: eventItem.group
-          });
-        }
-      });
-
-      setDifferences({ added, removed, changed });
+      const differences = await syncActions.fetchEquipmentDifferences();
+      setDifferences(differences);
     } catch (error) {
       console.error('Error fetching differences:', error);
       toast.error("Failed to fetch equipment differences");

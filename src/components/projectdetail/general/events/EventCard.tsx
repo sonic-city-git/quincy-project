@@ -10,8 +10,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Calendar, MapPin } from "lucide-react";
 import { formatDisplayDate } from "@/utils/dateFormatters";
 import { cn } from "@/lib/utils";
-import { COMPONENT_CLASSES, STATUS_PATTERNS } from "@/design-system";
-import { useEventSyncStatus } from "@/hooks/useConsolidatedSyncStatus";
+import { COMPONENT_CLASSES } from "@/design-system";
+import { statusUtils } from "@/constants/eventStatus";
+import { useUnifiedEventSync } from "@/hooks/useUnifiedEventSync";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -141,62 +142,18 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: EventCardProps) {
-  const isEditingDisabled = ['cancelled', 'invoice ready', 'invoiced'].includes(event.status);
-  const queryClient = useQueryClient();
+  const isEditingDisabled = !statusUtils.canEdit(event);
   
-  // Get sync status for equipment and crew
-  const { isEquipmentSynced, hasProjectEquipment, isCrewSynced, hasProjectRoles } = useEventSyncStatus(event);
+  // Get unified sync data and actions
+  const { data: syncData, actions: syncActions } = useUnifiedEventSync(event);
 
-  // Handle crew sync
+  // Handle crew sync using unified actions
   const handleSyncPreferredCrew = async () => {
-    try {
-      console.log('🎯 Syncing preferred crew for event:', event.id);
-      
-      // Call the sync_event_crew RPC function
-      const { error } = await supabase.rpc('sync_event_crew', {
-        p_event_id: event.id,
-        p_project_id: event.project_id,
-        p_variant_name: event.variant_name || 'default'
-      });
-
-      if (error) {
-        console.error('❌ Crew sync failed:', error);
-        toast.error(`Crew sync failed: ${error.message}`);
-        return;
-      }
-
-      // Invalidate queries to refresh UI
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['events', event.project_id] }),
-        queryClient.invalidateQueries({ queryKey: ['crew-sync-status', event.id] }),
-        queryClient.invalidateQueries({ queryKey: ['sync-status', event.id] })
-      ]);
-
-      console.log('✅ Crew synced successfully');
-      toast.success("Preferred crew synced successfully");
-    } catch (error: any) {
-      console.error('❌ Unexpected error during crew sync:', error);
-      toast.error(error.message || "Failed to sync preferred crew");
-    }
+    await syncActions.syncCrew();
   };
   
-  // Get status styling using design system
-  const getStatusPattern = (status: string) => {
-    switch (status) {
-      case 'proposed':
-        return STATUS_PATTERNS.warning;
-      case 'confirmed':
-        return STATUS_PATTERNS.success;
-      case 'invoice ready':
-        return STATUS_PATTERNS.info;
-      case 'cancelled':
-        return STATUS_PATTERNS.critical;
-      default:
-        return { bg: 'bg-card', border: 'border-border' };
-    }
-  };
-
-  const statusPattern = getStatusPattern(event.status);
+  // Get status pattern using unified system
+  const statusPattern = statusUtils.getPattern(event.status as any);
   
   // Get event type color styling
   const getTypeColorStyle = () => {
@@ -277,8 +234,8 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
               event={event}
               variant="icon"
               disabled={isEditingDisabled}
-              isSynced={isEquipmentSynced}
-              hasProjectEquipment={hasProjectEquipment}
+              isSynced={syncData.equipment.synced}
+              hasProjectEquipment={syncData.equipment.hasProjectEquipment}
             />
           </EventGridColumns.Icon>
 
@@ -288,9 +245,9 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
               event={event}
               variant="icon" 
               disabled={isEditingDisabled}
-              isSynced={isCrewSynced}
-              hasProjectRoles={hasProjectRoles}
-              onSyncPreferredCrew={() => handleSyncPreferredCrew(event)}
+              isSynced={syncData.crew.synced}
+              hasProjectRoles={syncData.crew.hasProjectRoles}
+              onSyncPreferredCrew={handleSyncPreferredCrew}
             />
           </EventGridColumns.Icon>
 

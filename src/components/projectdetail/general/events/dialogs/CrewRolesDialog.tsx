@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Users, RefreshCw } from 'lucide-react';
 import { CalendarEvent } from '@/types/events';
-import { useSyncCrewStatus } from '@/hooks/useSyncCrewStatus';
+import { useUnifiedEventSync } from '@/hooks/useUnifiedEventSync';
 import { cn } from '@/lib/utils';
 
 interface CrewRolesDialogProps {
@@ -34,7 +34,8 @@ export function CrewRolesDialog({
   event,
   onSyncPreferredCrew
 }: CrewRolesDialogProps) {
-  const { hasProjectRoles, roles, isSynced } = useSyncCrewStatus(event);
+  const { data: syncData } = useUnifiedEventSync(event);
+  const { hasProjectRoles, roles, synced: isSynced } = syncData.crew;
 
   if (!hasProjectRoles) {
     return (
