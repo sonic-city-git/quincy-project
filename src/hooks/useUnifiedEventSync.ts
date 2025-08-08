@@ -67,7 +67,7 @@ export function useUnifiedEventSync(event: CalendarEvent | null): UnifiedEventSy
     mutationFn: async () => {
       if (!event) throw new Error('No event provided');
       
-      const { error } = await supabase.rpc('sync_event_equipment', {
+      const { error } = await supabase.rpc('sync_event_equipment_unified', {
         p_event_id: event.id,
         p_project_id: event.project_id,
         p_variant_id: event.variant_id || null
@@ -462,7 +462,7 @@ export function useBulkEventSync(events: CalendarEvent[]) {
         
         if (type === 'equipment' || type === 'all') {
           calls.push(
-            supabase.rpc('sync_event_equipment', {
+            supabase.rpc('sync_event_equipment_unified', {
               p_event_id: event.id,
               p_project_id: event.project_id,
               p_variant_id: event.variant_id || null

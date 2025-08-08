@@ -49,12 +49,12 @@ export async function getProjectVariants(projectId: string): Promise<ProjectVari
 export async function changeEventVariant(
   eventId: string, 
   projectId: string, 
-  newVariantName: string
+  newVariantId: string
 ): Promise<void> {
   const { error } = await supabase.rpc('sync_event_variant', {
     p_event_id: eventId,
     p_project_id: projectId,
-    p_variant_name: newVariantName
+    p_variant_id: newVariantId
   });
 
   if (error) {
