@@ -39,7 +39,7 @@ export function useVariantCrew(projectId: string, variantId: string) {
         queryKey: ['events', projectId] 
       }),
       queryClient.invalidateQueries({ 
-        queryKey: ['project-events', projectId] 
+        queryKey: ['calendar-events', projectId] 
       })
     ]);
     console.log('✅ [useVariantCrew] Cache invalidation complete');
@@ -141,6 +141,17 @@ export function useVariantCrew(projectId: string, variantId: string) {
       // 🔄 Sync all events using this variant when crew role added
       try {
         await syncEventsForCrewRateChange(projectId, variantId);
+        
+        // 🕒 Small delay to ensure database triggers complete
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // 🔄 Force refresh event queries after sync
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
+          queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] })
+        ]);
+        
+        console.log('✅ Event cache refreshed after crew role sync');
       } catch (error) {
         console.error('Failed to sync events after adding crew role:', error);
         // Don't throw - user action succeeded, sync is secondary
@@ -202,6 +213,17 @@ export function useVariantCrew(projectId: string, variantId: string) {
       // 🔄 Sync all events using this variant when crew role rates updated
       try {
         await syncEventsForCrewRateChange(projectId, variantId);
+        
+        // 🕒 Small delay to ensure database triggers complete
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // 🔄 Force refresh event queries after sync
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
+          queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] })
+        ]);
+        
+        console.log('✅ Event cache refreshed after crew role update');
       } catch (error) {
         console.error('Failed to sync events after updating crew role:', error);
         // Don't throw - user action succeeded, sync is secondary
@@ -231,6 +253,17 @@ export function useVariantCrew(projectId: string, variantId: string) {
       // 🔄 Sync all events using this variant when crew role removed
       try {
         await syncEventsForCrewRateChange(projectId, variantId);
+        
+        // 🕒 Small delay to ensure database triggers complete
+        await new Promise(resolve => setTimeout(resolve, 200));
+        
+        // 🔄 Force refresh event queries after sync
+        await Promise.all([
+          queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
+          queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] })
+        ]);
+        
+        console.log('✅ Event cache refreshed after crew role removal');
       } catch (error) {
         console.error('Failed to sync events after removing crew role:', error);
         // Don't throw - user action succeeded, sync is secondary
