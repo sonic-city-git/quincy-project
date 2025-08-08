@@ -74,32 +74,19 @@ export function useVariantEquipment(projectId: string, variantId: string) {
     isLoading,
     error
   } = useQuery({
-    queryKey: ['variant-equipment', projectId, variantName],
+    queryKey: ['variant-equipment', projectId, variantId],
     queryFn: async (): Promise<VariantEquipmentData> => {
-      if (!projectId || !variantName) {
+      if (!projectId || !variantId) {
         return { equipment_groups: [], equipment_ungrouped: [] };
       }
 
-      // Get variant ID first
-      const { data: variant, error: variantError } = await supabase
-        .from('project_variants')
-        .select('id')
-        .eq('project_id', projectId)
-        .eq('variant_name', variantName)
-        .maybeSingle();
-
-      if (variantError || !variant) {
-        console.warn('[useVariantEquipment] Variant not found:', { projectId, variantName });
-        return { equipment_groups: [], equipment_ungrouped: [] };
-      }
-
-      // Fetch equipment groups and items in parallel
+      // Fetch equipment groups and items in parallel using direct variant_id
       const [groupsResult, itemsResult] = await Promise.all([
         supabase
           .from('project_equipment_groups')
           .select('*')
           .eq('project_id', projectId)
-          .eq('variant_id', variant.id)
+          .eq('variant_id', variantId)
           .order('sort_order', { ascending: true }),
         supabase
           .from('project_equipment')
@@ -115,7 +102,7 @@ export function useVariantEquipment(projectId: string, variantId: string) {
             )
           `)
           .eq('project_id', projectId)
-          .eq('variant_id', variant.id)
+          .eq('variant_id', variantId)
           .order('equipment(name)', { ascending: true })
       ]);
 
