@@ -49,7 +49,7 @@ export function useVariantEquipment(projectId: string, variantId: string) {
   // === CACHE MANAGEMENT ===
   
   const invalidateEquipmentCache = useCallback(async () => {
-    console.log('🔄 [useVariantEquipment] Invalidating caches for:', { projectId, variantName });
+    console.log('🔄 [useVariantEquipment] Invalidating caches for:', { projectId, variantId });
     await Promise.all([
       queryClient.invalidateQueries({ 
         queryKey: ['variant-equipment', projectId, variantId] 
@@ -155,17 +155,6 @@ export function useVariantEquipment(projectId: string, variantId: string) {
         _equipmentInfo?: { name: string; rental_price?: number | null; code?: string | null; folder_id?: string | null; } 
       }
     ): Promise<VariantEquipmentItem> => {
-      // Get variant ID
-      const { data: variant, error: variantError } = await supabase
-        .from('project_variants')
-        .select('id')
-        .eq('project_id', projectId)
-        .eq('variant_name', variantName)
-        .maybeSingle();
-
-      if (variantError || !variant) {
-        throw new Error(`Failed to find variant: ${variantError?.message || 'Variant not found'}`);
-      }
 
       // Check if equipment already exists using the same constraint as the database
       // Constraint is on (project_id, equipment_id, group_id) NOT variant_id
@@ -196,7 +185,7 @@ export function useVariantEquipment(projectId: string, variantId: string) {
       
       if (existingEquipment) {
         // Equipment exists - check if it's for the correct variant
-        if (existingEquipment.variant_id === variant.id) {
+        if (existingEquipment.variant_id === variantId) {
           // Same variant - update quantity
           const newQuantity = existingEquipment.quantity + itemData.quantity;
           const updateResult = await supabase
@@ -230,7 +219,7 @@ export function useVariantEquipment(projectId: string, variantId: string) {
           const updateResult = await supabase
             .from('project_equipment')
             .update({ 
-              variant_id: variant.id,
+              variant_id: variantId,
               quantity: newQuantity,
               notes: itemData.notes || existingEquipment.notes
             })
@@ -260,7 +249,7 @@ export function useVariantEquipment(projectId: string, variantId: string) {
           .from('project_equipment')
           .insert({
             project_id: projectId,
-            variant_id: variant.id,
+            variant_id: variantId,
             equipment_id: itemData.equipment_id,
             group_id: itemData.group_id,
             quantity: itemData.quantity,
@@ -295,7 +284,7 @@ export function useVariantEquipment(projectId: string, variantId: string) {
         ...data, 
         _wasUpdated: wasUpdated, 
         _previousQuantity: existingEquipment?.quantity,
-        _wasOrphaned: existingEquipment && existingEquipment.variant_id !== variant.id
+        _wasOrphaned: existingEquipment && existingEquipment.variant_id !== variantId
       };
     },
     onMutate: async (itemData) => {
@@ -540,17 +529,7 @@ export function useVariantEquipment(projectId: string, variantId: string) {
         throw new Error('Group name is required');
       }
 
-      // Get variant ID
-      const { data: variant, error: variantError } = await supabase
-        .from('project_variants')
-        .select('id')
-        .eq('project_id', projectId)
-        .eq('variant_name', variantName)
-        .maybeSingle();
 
-      if (variantError || !variant) {
-        throw new Error(`Failed to find variant: ${variantError?.message || 'Variant not found'}`);
-      }
 
       const maxSortOrder = Math.max(0, ...(equipmentData?.equipment_groups.map(g => g.sort_order) || [0]));
       const sortOrder = groupData.sort_order ?? maxSortOrder + 1;
@@ -559,7 +538,7 @@ export function useVariantEquipment(projectId: string, variantId: string) {
         .from('project_equipment_groups')
         .insert({
           project_id: projectId,
-          variant_id: variant.id,
+          variant_id: variantId,
           name: trimmedName,
           sort_order: sortOrder
         })
