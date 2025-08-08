@@ -3,7 +3,7 @@
  * Reduced from 36 lines to 17 lines (53% reduction)  
  */
 
-import { useEntityData } from '../shared/useEntityData';
+import { useEntityData } from '@/hooks/shared/useEntityData';
 import { Project } from "@/types/projects";
 import { projectBaseQuery, transformProjectData } from "@/utils/projectQueries";
 
