@@ -24,7 +24,7 @@ export const syncExistingCrewData = async (projectId: string) => {
     // Get all events for this project
     const { data: events, error: eventsError } = await supabase
       .from('project_events')
-      .select('id')
+      .select('id, variant_id')
       .eq('project_id', projectId);
 
     if (eventsError) {
@@ -45,7 +45,7 @@ export const syncExistingCrewData = async (projectId: string) => {
       const { error: crewSyncError } = await supabase.rpc('sync_event_crew', {
         p_event_id: event.id,
         p_project_id: projectId,
-        p_variant_name: event.variant_name || 'default'
+        p_variant_id: event.variant_id || null
       });
 
       if (crewSyncError) {
