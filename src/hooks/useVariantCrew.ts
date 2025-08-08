@@ -9,6 +9,7 @@ import {
   VariantCrewRole,
   isVariantCrewRole
 } from '@/types/variants';
+import { syncEventsForCrewRateChange } from '@/utils/variantEventSync';
 
 /**
  * Focused hook for variant crew management
@@ -32,6 +33,13 @@ export function useVariantCrew(projectId: string, variantId: string) {
       }),
       queryClient.invalidateQueries({ 
         queryKey: ['project-roles', projectId] 
+      }),
+      // 🔄 Also invalidate event queries so UI shows updated prices
+      queryClient.invalidateQueries({ 
+        queryKey: ['events', projectId] 
+      }),
+      queryClient.invalidateQueries({ 
+        queryKey: ['project-events', projectId] 
       })
     ]);
     console.log('✅ [useVariantCrew] Cache invalidation complete');
@@ -129,6 +137,14 @@ export function useVariantCrew(projectId: string, variantId: string) {
     onSuccess: async (newRole) => {
       await invalidateCrewCache();
       toast.success(`Added ${newRole.role.name} to variant`);
+      
+      // 🔄 Sync all events using this variant when crew role added
+      try {
+        await syncEventsForCrewRateChange(projectId, variantId);
+      } catch (error) {
+        console.error('Failed to sync events after adding crew role:', error);
+        // Don't throw - user action succeeded, sync is secondary
+      }
     },
     onError: (error: Error) => {
       console.error('[useVariantCrew] Add crew role error:', error);
@@ -182,6 +198,14 @@ export function useVariantCrew(projectId: string, variantId: string) {
     onSuccess: async (updatedRole) => {
       await invalidateCrewCache();
       toast.success(`Updated ${updatedRole.role.name} role`);
+      
+      // 🔄 Sync all events using this variant when crew role rates updated
+      try {
+        await syncEventsForCrewRateChange(projectId, variantId);
+      } catch (error) {
+        console.error('Failed to sync events after updating crew role:', error);
+        // Don't throw - user action succeeded, sync is secondary
+      }
     },
     onError: (error: Error) => {
       console.error('[useVariantCrew] Update crew role error:', error);
@@ -203,6 +227,14 @@ export function useVariantCrew(projectId: string, variantId: string) {
     onSuccess: async () => {
       await invalidateCrewCache();
       toast.success('Crew role removed');
+      
+      // 🔄 Sync all events using this variant when crew role removed
+      try {
+        await syncEventsForCrewRateChange(projectId, variantId);
+      } catch (error) {
+        console.error('Failed to sync events after removing crew role:', error);
+        // Don't throw - user action succeeded, sync is secondary
+      }
     },
     onError: (error: Error) => {
       console.error('[useVariantCrew] Remove crew role error:', error);
