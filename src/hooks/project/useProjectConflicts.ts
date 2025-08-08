@@ -12,7 +12,7 @@
  */
 
 import { useMemo } from 'react';
-import { useConsolidatedConflicts } from './useConsolidatedConflicts';
+import { useConsolidatedConflicts } from '../global/useConsolidatedConflicts';
 
 interface ProjectConflictResult {
   hasConflicts: boolean;

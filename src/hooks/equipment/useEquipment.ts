@@ -3,7 +3,7 @@
  * Reduced from 70 lines to 12 lines (83% reduction)
  */
 
-import { useEntityData, EntityConfigs } from './shared/useEntityData';
+import { useEntityData, EntityConfigs } from '../shared/useEntityData';
 
 export function useEquipment() {
   const { data: equipment, isLoading: loading, refetch } = useEntityData({

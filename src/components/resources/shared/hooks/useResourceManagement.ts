@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Resource, ResourceType, isCrewResource, isEquipmentResource } from "../../types/resource";
-import { useCrewRoles } from "@/hooks/crewRoles";
+import { useCrewRoles } from "@/hooks/crew";
 import { useFolders } from "@/hooks/ui";
 
 type SortField = "name" | "updated" | "type" | "roles" | "stock";

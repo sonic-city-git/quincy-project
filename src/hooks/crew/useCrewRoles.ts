@@ -3,7 +3,7 @@
  * Reduced from 41 lines to 15 lines (63% reduction)
  */
 
-import { useEntityData, EntityConfigs } from './shared/useEntityData';
+import { useEntityData, EntityConfigs } from '../shared/useEntityData';
 
 export interface CrewRole {
   id: string;

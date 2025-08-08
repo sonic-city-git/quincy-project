@@ -7,7 +7,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CrewRole } from "@/hooks/crewRoles";
+import { CrewRole } from "@/hooks/crew";
 import { sortRoles } from "@/utils/roleUtils";
 
 interface CrewRoleFilterProps {

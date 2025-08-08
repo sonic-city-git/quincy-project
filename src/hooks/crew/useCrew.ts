@@ -3,7 +3,7 @@
  * Reduced from 120 lines to 49 lines (59% reduction)
  */
 
-import { useEntityData } from './shared/useEntityData';
+import { useEntityData } from '../shared/useEntityData';
 import { CrewMember } from '@/types/crew';
 import { supabase } from '@/integrations/supabase/client';
 

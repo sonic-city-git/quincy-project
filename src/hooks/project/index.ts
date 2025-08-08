@@ -6,7 +6,7 @@
 
 export { useProjectVariants } from './useProjectVariants';
 export { useProjectDetails } from './useProjectDetails';
-export { useProjectPGA } from './useProjectPGA';
+export { useProjectPGA, useBatchProjectPGA } from './useProjectPGA';
 export { useProjectConflicts } from './useProjectConflicts';
 export { useProjectFilters } from './useProjectFilters';
 export { useProjects } from './useProjects';

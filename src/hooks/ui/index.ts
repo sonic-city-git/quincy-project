@@ -4,7 +4,7 @@
  * All hooks related to UI state, responsive design, and user interface interactions.
  */
 
-export { useMobile } from './use-mobile';
+export { useIsMobile } from './use-mobile';
 export { useFilterState } from './useFilterState';
 export { useTabPersistence } from './useTabPersistence';
 export { useOwnerOptions } from './useOwnerOptions';

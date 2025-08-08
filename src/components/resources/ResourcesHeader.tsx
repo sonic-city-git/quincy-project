@@ -1,7 +1,7 @@
 import { Package, Users, Mic, Volume2, Lightbulb, Video, Cable, Settings, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCrewRoles } from "@/hooks/crewRoles";
+import { useCrewRoles } from "@/hooks/crew";
 import { useFolders } from "@/hooks/ui";
 import { FOLDER_ORDER } from "@/types/equipment";
 import { SectionHeader } from "@/components/shared/SectionHeader";

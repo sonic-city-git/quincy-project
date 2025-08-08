@@ -3,7 +3,7 @@ import { CrewRoleFilter } from "./filters/CrewRoleFilter";
 import { CrewFilterClear } from "./filters/CrewFilterClear";
 import { CrewActions } from "./CrewActions";
 import { AddMemberDialog } from "./AddMemberDialog";
-import { CrewRole } from "@/hooks/crewRoles";
+import { CrewRole } from "@/hooks/crew";
 
 interface CrewListHeaderProps {
   searchQuery: string;
