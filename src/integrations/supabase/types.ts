@@ -719,6 +719,7 @@ export type Database = {
           hourly_rate: number | null
           hours_worked: number | null
           id: string
+          is_synced: boolean | null
           project_id: string | null
           role_id: string | null
           total_cost: number | null
@@ -736,6 +737,7 @@ export type Database = {
           hourly_rate?: number | null
           hours_worked?: number | null
           id?: string
+          is_synced?: boolean | null
           project_id?: string | null
           role_id?: string | null
           total_cost?: number | null
@@ -753,6 +755,7 @@ export type Database = {
           hourly_rate?: number | null
           hours_worked?: number | null
           id?: string
+          is_synced?: boolean | null
           project_id?: string | null
           role_id?: string | null
           total_cost?: number | null
@@ -1227,6 +1230,7 @@ export type Database = {
       sync_event_crew: {
         Args:
           | { p_event_id: string; p_project_id: string }
+          | { p_event_id: string; p_project_id: string; p_variant_id?: string }
           | {
               p_event_id: string
               p_project_id: string
@@ -1241,6 +1245,7 @@ export type Database = {
       sync_event_equipment_unified: {
         Args:
           | { p_event_id: string; p_project_id: string }
+          | { p_event_id: string; p_project_id: string; p_variant_id?: string }
           | {
               p_event_id: string
               p_project_id: string

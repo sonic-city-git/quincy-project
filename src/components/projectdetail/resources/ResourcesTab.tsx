@@ -12,6 +12,7 @@ import { useProjectVariants } from '@/hooks/useProjectVariants';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+import { PricingSyncDebugger } from '@/components/debug/PricingSyncDebugger';
 
 interface ResourcesTabProps {
   projectId: string;
@@ -101,6 +102,9 @@ export function ResourcesTab({ projectId, project }: ResourcesTabProps) {
           onEditVariant={handleEditVariant}
           onCreateVariant={() => setShowCreateDialog(true)}
         />
+
+        {/* 🧪 TEMPORARY DEBUG COMPONENT */}
+        <PricingSyncDebugger projectId={projectId} />
 
         {/* Variant Management Dialogs */}
         <CreateVariantDialog
