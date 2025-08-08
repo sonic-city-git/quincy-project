@@ -1,0 +1,39 @@
+/**
+ * 🎣 QUINCY HOOKS - ORGANIZED BY DOMAIN
+ * 
+ * Phase 3: Code Quality Restoration
+ * Clean, organized hook exports by business domain.
+ */
+
+// Project Management
+export * from './project';
+
+// Variant Configuration  
+export * from './variant';
+
+// Event Operations
+export * from './event';
+
+// Crew Management
+export * from './crew';
+
+// Equipment Management
+export * from './equipment';
+
+// Customer Relations
+export * from './customer';
+
+// Calendar Functionality
+export * from './calendar';
+
+// Global Operations
+export * from './global';
+
+// UI & Interaction
+export * from './ui';
+
+// Shared Utilities
+export * from './shared';
+
+// Pricing Service (Phase 2 Architecture)
+export * from '../services/pricing';
