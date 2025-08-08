@@ -3,7 +3,7 @@
  * 
  * This file is deprecated. Use the new unified system instead:
  * - Event status operations: statusUtils from @/constants/eventStatus
- * - Sync operations: useUnifiedEventSync from @/hooks/useUnifiedEventSync
+ * - Sync operations: useUnifiedEventSync from @/hooks/event
  * 
  * @deprecated Use statusUtils from @/constants/eventStatus
  */

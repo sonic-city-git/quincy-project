@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card";
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useBulkEventSync } from '@/hooks/useUnifiedEventSync';
+import { useBulkEventSync } from '@/hooks/event';
 import { useState, useMemo } from 'react';
 import { useEventsWithReactivePricing } from '@/services/pricing/hooks';
 import { STATUS_COLORS } from "@/components/dashboard/shared/StatusCard";

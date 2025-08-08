@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { GroupDialogs } from "./GroupDialogs";
 import { EmptyDropZone } from "./EmptyDropZone";
 import { GroupList } from "./GroupList";
-import { useVariantEquipment } from "@/hooks/useVariantEquipment";
+import { useVariantEquipment } from "@/hooks/variant";
 import { toast } from "sonner";
 
 interface BaseEquipmentListProps {

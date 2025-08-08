@@ -4,7 +4,7 @@
  */
 
 import { AddItemDialog } from "@/components/shared/dialogs/FormDialog";
-import { useAddProject } from "@/hooks/useAddProject";
+import { useAddProject } from "@/hooks/project";
 import { ProjectForm } from "../forms/ProjectForm";
 
 interface AddProjectDialogProps {

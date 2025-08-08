@@ -8,7 +8,7 @@ import { LayersIcon } from 'lucide-react';
 import { ResourcesContent } from './components/ResourcesContent';
 import { CreateVariantDialog } from './components/CreateVariantDialog';
 import { EditVariantDialog } from './components/EditVariantDialog';
-import { useProjectVariants } from '@/hooks/useProjectVariants';
+import { useProjectVariants } from '@/hooks/project';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';

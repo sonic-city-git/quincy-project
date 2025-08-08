@@ -2,13 +2,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useCrewRoles } from "@/hooks/useCrewRoles";
+import { useCrewRoles } from "@/hooks/crew";
 import { Project } from "@/types/projects";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCrew } from "@/hooks/useCrew";
+import { useCrew } from "@/hooks/crew";
 import { useQueryClient } from "@tanstack/react-query";
 import { SONIC_CITY_FOLDER_ID } from "@/constants/organizations";
 import { FORM_PATTERNS, createCurrencyInput, cn } from "@/design-system";

@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
 import { CalendarEvent } from '@/types/events';
-import { useUnifiedEventSync } from '@/hooks/useUnifiedEventSync';
+import { useUnifiedEventSync } from '@/hooks/event';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useMemo } from 'react';

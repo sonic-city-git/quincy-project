@@ -19,7 +19,7 @@ import { ProjectCalendar } from "./calendar/ProjectCalendar";
 import { EventList } from "./events/EventList";
 import { Project } from "@/types/projects";
 import { ProjectInfo } from "./information/ProjectInfo";
-import { useProjectEvents } from "@/hooks/useConsolidatedEvents";
+import { useProjectEvents } from "@/hooks/event";
 import { Calendar, Info, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COMPONENT_CLASSES, RESPONSIVE } from "@/design-system";

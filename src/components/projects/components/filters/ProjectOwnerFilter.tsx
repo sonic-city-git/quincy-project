@@ -8,8 +8,8 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useProjects } from "@/hooks/useProjects";
-import { useOwnerOptions } from "@/hooks/useOwnerOptions";
+import { useProjects } from "@/hooks/project";
+import { useOwnerOptions } from "@/hooks/ui";
 import { getInitials } from "@/utils/stringUtils";
 
 interface ProjectOwnerFilterProps {

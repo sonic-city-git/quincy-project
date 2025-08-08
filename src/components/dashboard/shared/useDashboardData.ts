@@ -8,7 +8,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { getWarningTimeframe } from "@/constants/timeframes";
-import { useDashboardConflicts } from "@/hooks/useDashboardConflicts";
+import { useDashboardConflicts } from "@/hooks/global";
 
 // Common query options for dashboard data
 const DASHBOARD_QUERY_OPTIONS = {

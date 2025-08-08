@@ -3,8 +3,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useCrewFolders } from "@/hooks/useCrewFolders";
-import { useCrewRoles } from "@/hooks/useCrewRoles";
+import { useCrewFolders } from "@/hooks/crewFolders";
+import { useCrewRoles } from "@/hooks/crewRoles";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";

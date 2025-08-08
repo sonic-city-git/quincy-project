@@ -28,7 +28,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, Calendar, Copy } from "lucide-react";
 import { CalendarEvent, EventType } from "@/types/events";
 import { SimpleVariantSelector } from "@/components/shared/forms/SimpleVariantSelector";
-import { useProjectVariants } from "@/hooks/useProjectVariants";
+import { useProjectVariants } from "@/hooks/project";
 
 // Only allow specific event types for multi-event creation
 const ALLOWED_EVENT_TYPES = [

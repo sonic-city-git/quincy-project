@@ -10,7 +10,7 @@ import { Users } from 'lucide-react';
 import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
 import { cn } from '@/design-system';
 import { CompactCrewRolesList } from './CompactCrewRolesList';
-import { useVariantCrew } from '@/hooks/useVariantCrew';
+import { useVariantCrew } from '@/hooks/variant';
 
 interface VariantCrewListProps {
   projectId: string;

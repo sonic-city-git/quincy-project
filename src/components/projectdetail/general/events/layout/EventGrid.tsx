@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { EVENT_STATUS_CONFIG } from '@/constants/eventStatus';
-import { useUnifiedEventSync } from '@/hooks/useUnifiedEventSync';
+import { useUnifiedEventSync } from '@/hooks/event';
 
 // Use unified status configuration
 const STATUS_CONFIG = EVENT_STATUS_CONFIG;

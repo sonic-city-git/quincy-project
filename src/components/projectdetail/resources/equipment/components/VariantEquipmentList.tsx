@@ -7,7 +7,7 @@
  */
 
 import { Package } from 'lucide-react';
-import { useVariantEquipment } from '@/hooks/useVariantEquipment';
+import { useVariantEquipment } from '@/hooks/variant';
 import { BaseEquipmentList } from './BaseEquipmentList';
 
 interface VariantEquipmentListProps {

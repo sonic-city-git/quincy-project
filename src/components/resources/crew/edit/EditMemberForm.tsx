@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Trash2, User, Mail, Phone, Folder, Users } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { Folder as FolderType } from "@/integrations/supabase/types/folder";
-import { CrewRole } from "@/hooks/useCrewRoles";
+import { CrewRole } from "@/hooks/crewRoles";
 import { sortRoles } from "@/utils/roleUtils";
 import { getRoleBadgeStyle, FORM_PATTERNS, createInputClasses, createFieldIconClasses, createFormFieldContainer } from "@/design-system";
 

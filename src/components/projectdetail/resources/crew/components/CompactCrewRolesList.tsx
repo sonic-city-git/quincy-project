@@ -3,14 +3,14 @@
  * Optimized for performance with memoized role items
  */
 
-import { useVariantCrew } from "@/hooks/useVariantCrew";
+import { useVariantCrew } from "@/hooks/variant";
 import { Loader2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useCallback, useMemo } from "react";
 import React from "react";
 import { toast } from "sonner";
-import { useCrew } from "@/hooks/useCrew";
+import { useCrew } from "@/hooks/crew";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { CrewMemberSelectContent } from "@/components/resources/crew/CrewMemberSelectContent";

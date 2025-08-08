@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
 import { useState } from "react";
 import { EditEquipmentDialog } from "./EditEquipmentDialog";
-import { useEquipment } from "@/hooks/useEquipment";
+import { useEquipment } from "@/hooks/equipment";
 import { Equipment } from "@/integrations/supabase/types/equipment";
 
 interface EquipmentActionsProps {

@@ -4,8 +4,8 @@
  */
 
 import { useState, useEffect } from "react";
-import { useCrew } from "@/hooks/useCrew";
-import { useCrewRoles } from "@/hooks/useCrewRoles";
+import { useCrew } from "@/hooks/crew";
+import { useCrewRoles } from "@/hooks/crewRoles";
 import { CrewTable } from "../crew/CrewTable";
 import { useCrewSort } from "../crew/useCrewSort";
 
@@ -18,8 +18,8 @@ import { useResourceFiltering } from "../shared/hooks/useResourceFiltering";
 import { COMPONENT_CLASSES, cn } from "@/design-system";
 import { Users, ChevronRight } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { usePersistentExpandedGroups } from "@/hooks/usePersistentExpandedGroups";
-import { useCrewFolders } from "@/hooks/useCrewFolders";
+import { usePersistentExpandedGroups } from "@/hooks/ui";
+import { useCrewFolders } from "@/hooks/crewFolders";
 import { sortCrewFolderNames } from "@/utils/crewFolderSort";
 
 interface ResourceCrewTableProps {

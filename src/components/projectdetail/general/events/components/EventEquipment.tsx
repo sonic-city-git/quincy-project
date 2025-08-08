@@ -21,7 +21,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { CalendarEvent } from '@/types/events';
-import { useUnifiedEventSync } from '@/hooks/useUnifiedEventSync';
+import { useUnifiedEventSync } from '@/hooks/event';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 

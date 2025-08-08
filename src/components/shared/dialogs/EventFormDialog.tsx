@@ -32,7 +32,7 @@ import { format } from "date-fns";
 import { CalendarEvent, EventType } from "@/types/events";
 import { ConfirmationDialog } from "@/components/shared/dialogs/ConfirmationDialog";
 import { SimpleVariantSelector } from "@/components/shared/forms/SimpleVariantSelector";
-import { useProjectVariants } from "@/hooks/useProjectVariants";
+import { useProjectVariants } from "@/hooks/project";
 import { CityLocationInput } from "@/components/shared/forms/CityLocationInput";
 
 // Form validation schema

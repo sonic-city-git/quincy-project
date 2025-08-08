@@ -12,7 +12,7 @@ import { formatDisplayDate } from "@/utils/dateFormatters";
 import { cn } from "@/lib/utils";
 import { COMPONENT_CLASSES } from "@/design-system";
 import { statusUtils } from "@/constants/eventStatus";
-import { useUnifiedEventSync } from "@/hooks/useUnifiedEventSync";
+import { useUnifiedEventSync } from "@/hooks/event";
 import { useReactivePricing } from "@/services/pricing/hooks";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";

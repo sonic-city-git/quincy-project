@@ -3,7 +3,7 @@
  * Reduced from 81 lines to 35 lines (57% reduction)
  */
 
-import { useCrew } from "@/hooks/useCrew";
+import { useCrew } from "@/hooks/crew";
 import { DataSelect } from "@/components/shared/forms/SearchableSelect";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import type { SelectOption } from "@/components/shared/forms/SearchableSelect";

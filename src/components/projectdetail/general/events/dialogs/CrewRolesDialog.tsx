@@ -18,7 +18,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Users, RefreshCw } from 'lucide-react';
 import { CalendarEvent } from '@/types/events';
-import { useUnifiedEventSync } from '@/hooks/useUnifiedEventSync';
+import { useUnifiedEventSync } from '@/hooks/event';
 import { cn } from '@/lib/utils';
 
 interface CrewRolesDialogProps {
