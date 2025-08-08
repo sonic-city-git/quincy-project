@@ -65,7 +65,7 @@ export function useVariantEquipment(projectId: string, variantId: string) {
       })
     ]);
     console.log('✅ [useVariantEquipment] Cache invalidation complete');
-  }, [queryClient, projectId, variantName]);
+  }, [queryClient, projectId, variantId]);
 
   // === DATA FETCHING ===
 
