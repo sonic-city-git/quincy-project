@@ -52,7 +52,7 @@ export function useVariantEquipment(projectId: string, variantId: string) {
     console.log('🔄 [useVariantEquipment] Invalidating caches for:', { projectId, variantName });
     await Promise.all([
       queryClient.invalidateQueries({ 
-        queryKey: ['variant-equipment', projectId, variantName] 
+        queryKey: ['variant-equipment', projectId, variantId] 
       }),
       queryClient.invalidateQueries({ 
         queryKey: ['project-equipment-groups', projectId] 
@@ -314,11 +314,11 @@ export function useVariantEquipment(projectId: string, variantId: string) {
     onMutate: async (itemData) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ 
-        queryKey: ['variant-equipment', projectId, variantName] 
+        queryKey: ['variant-equipment', projectId, variantId] 
       });
 
       // Snapshot the previous value
-      const previousData = queryClient.getQueryData(['variant-equipment', projectId, variantName]);
+      const previousData = queryClient.getQueryData(['variant-equipment', projectId, variantId]);
 
       // Create temporary item for optimistic update (we don't have the real ID yet)
       const tempId = `temp-${Date.now()}`;
@@ -341,7 +341,7 @@ export function useVariantEquipment(projectId: string, variantId: string) {
       } as VariantEquipmentItem;
 
       // Optimistically update the cache
-      queryClient.setQueryData(['variant-equipment', projectId, variantName], (old: VariantEquipmentData | undefined) => {
+      queryClient.setQueryData(['variant-equipment', projectId, variantId], (old: VariantEquipmentData | undefined) => {
         if (!old) return old;
 
         if (itemData.group_id) {
@@ -415,7 +415,7 @@ export function useVariantEquipment(projectId: string, variantId: string) {
     },
     onError: (error: Error, newData, context) => {
       // Roll back optimistic update
-      queryClient.setQueryData(['variant-equipment', projectId, variantName], context?.previousData);
+      queryClient.setQueryData(['variant-equipment', projectId, variantId], context?.previousData);
       console.error('[useVariantEquipment] Add equipment error:', error);
       toast.error(`Failed to add equipment: ${error.message}`);
     }
@@ -486,14 +486,14 @@ export function useVariantEquipment(projectId: string, variantId: string) {
     onMutate: async ({ itemId, quantity, notes }) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ 
-        queryKey: ['variant-equipment', projectId, variantName] 
+        queryKey: ['variant-equipment', projectId, variantId] 
       });
 
       // Snapshot the previous value
-      const previousData = queryClient.getQueryData(['variant-equipment', projectId, variantName]);
+      const previousData = queryClient.getQueryData(['variant-equipment', projectId, variantId]);
 
       // Optimistically update the cache
-      queryClient.setQueryData(['variant-equipment', projectId, variantName], (old: VariantEquipmentData | undefined) => {
+      queryClient.setQueryData(['variant-equipment', projectId, variantId], (old: VariantEquipmentData | undefined) => {
         if (!old) return old;
 
         const updatedGroups = old.equipment_groups.map(group => ({
@@ -532,14 +532,14 @@ export function useVariantEquipment(projectId: string, variantId: string) {
     },
     onError: (error: Error, newData, context) => {
       // If the mutation fails, use the context returned from onMutate to roll back
-      queryClient.setQueryData(['variant-equipment', projectId, variantName], context?.previousData);
+      queryClient.setQueryData(['variant-equipment', projectId, variantId], context?.previousData);
       console.error('[useVariantEquipment] Update equipment error:', error);
       toast.error(`Failed to update equipment: ${error.message}`);
     },
     onSettled: () => {
       // Always refetch after error or success to ensure consistency
       queryClient.invalidateQueries({ 
-        queryKey: ['variant-equipment', projectId, variantName] 
+        queryKey: ['variant-equipment', projectId, variantId] 
       });
     }
   });
