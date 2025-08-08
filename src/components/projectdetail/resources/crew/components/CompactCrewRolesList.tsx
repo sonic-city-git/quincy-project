@@ -19,6 +19,7 @@ import { VariantCrewRole } from "@/types/variants";
 
 interface CompactCrewRolesListProps {
   projectId: string;
+  variantId: string;
   variantName: string;
 }
 
@@ -127,8 +128,8 @@ const MemoizedRoleItem = React.memo(({
 
 MemoizedRoleItem.displayName = 'MemoizedRoleItem';
 
-export function CompactCrewRolesList({ projectId, variantName }: CompactCrewRolesListProps) {
-  const { crewRoles: roles, isLoading, invalidateCrewCache, updateCrewRole, removeCrewRole } = useVariantCrew(projectId, variantName);
+export function CompactCrewRolesList({ projectId, variantId, variantName }: CompactCrewRolesListProps) {
+  const { crewRoles: roles, isLoading, invalidateCrewCache, updateCrewRole, removeCrewRole } = useVariantCrew(projectId, variantId);
   const { crew } = useCrew();
   const [updatingRoles, setUpdatingRoles] = useState<Set<string>>(new Set()); // Track which specific roles are updating
   const [roleToDelete, setRoleToDelete] = useState<string | null>(null);

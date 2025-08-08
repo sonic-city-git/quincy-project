@@ -9,6 +9,7 @@ import { toast } from "sonner";
 
 interface BaseEquipmentListProps {
   projectId: string;
+  variantId: string;
   variantName: string;
   selectedGroupId: string | null;
   onGroupSelect: (groupId: string | null) => void;
@@ -20,7 +21,8 @@ interface BaseEquipmentListProps {
 }
 
 export function BaseEquipmentList({ 
-  projectId, 
+  projectId,
+  variantId,
   variantName,
   selectedGroupId,
   onGroupSelect,
@@ -48,7 +50,7 @@ export function BaseEquipmentList({
     setNewGroupName,
     handleCreateGroup,
     handleDeleteGroup
-  } = useVariantEquipment(projectId, variantName);
+  } = useVariantEquipment(projectId, variantId);
 
   // Variant-specific drag/drop handlers
   const handleDragOver = useCallback((e: React.DragEvent) => {

@@ -41,6 +41,7 @@ export function ResourcesTab({ projectId, project }: ResourcesTabProps) {
   const {
     variants,
     selectedVariant,
+    selectedVariantObject,
     setSelectedVariant,
     isLoading: variantsLoading,
     error: variantsError,
@@ -94,6 +95,7 @@ export function ResourcesTab({ projectId, project }: ResourcesTabProps) {
           projectId={projectId}
           variants={variants}
           selectedVariant={selectedVariant}
+          selectedVariantObject={selectedVariantObject}
           onVariantSelect={setSelectedVariant}
           isLoading={variantsLoading}
           onEditVariant={handleEditVariant}
