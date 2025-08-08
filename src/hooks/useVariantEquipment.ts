@@ -28,8 +28,13 @@ interface VariantEquipmentData {
 /**
  * Optimized hook for variant equipment management
  * Combines equipment and group operations with centralized cache management
+ * 
+ * ARCHITECTURAL DECISION: Uses variant_id directly for efficiency
+ * - Eliminates database lookup to convert variant_name → variant_id
+ * - Consistent with database foreign key relationships
+ * - Aligns with RPC function signatures that expect variant_id
  */
-export function useVariantEquipment(projectId: string, variantName: string) {
+export function useVariantEquipment(projectId: string, variantId: string) {
   const queryClient = useQueryClient();
   
   // Group management state

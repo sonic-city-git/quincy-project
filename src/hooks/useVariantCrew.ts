@@ -13,24 +13,29 @@ import {
 /**
  * Focused hook for variant crew management
  * Handles crew role CRUD operations with centralized cache management
+ * 
+ * ARCHITECTURAL DECISION: Uses variant_id directly for efficiency
+ * - Eliminates database lookup to convert variant_name → variant_id
+ * - Consistent with database foreign key relationships
+ * - Aligns with RPC function signatures that expect variant_id
  */
-export function useVariantCrew(projectId: string, variantName: string) {
+export function useVariantCrew(projectId: string, variantId: string) {
   const queryClient = useQueryClient();
 
   // === CACHE MANAGEMENT ===
   
   const invalidateCrewCache = useCallback(async () => {
-    console.log('🔄 [useVariantCrew] Invalidating caches for:', { projectId, variantName });
+    console.log('🔄 [useVariantCrew] Invalidating caches for:', { projectId, variantId });
     await Promise.all([
       queryClient.invalidateQueries({ 
-        queryKey: ['variant-crew', projectId, variantName] 
+        queryKey: ['variant-crew', projectId, variantId] 
       }),
       queryClient.invalidateQueries({ 
         queryKey: ['project-roles', projectId] 
       })
     ]);
     console.log('✅ [useVariantCrew] Cache invalidation complete');
-  }, [queryClient, projectId, variantName]);
+  }, [queryClient, projectId, variantId]);
 
   // === DATA FETCHING ===
 
@@ -39,25 +44,13 @@ export function useVariantCrew(projectId: string, variantName: string) {
     isLoading,
     error
   } = useQuery({
-    queryKey: ['variant-crew', projectId, variantName],
+    queryKey: ['variant-crew', projectId, variantId],
     queryFn: async (): Promise<VariantCrewRole[]> => {
-      if (!projectId || !variantName) {
+      if (!projectId || !variantId) {
         return [];
       }
 
-      // Get variant ID first
-      const { data: variant, error: variantError } = await supabase
-        .from('project_variants')
-        .select('id')
-        .eq('project_id', projectId)
-        .eq('variant_name', variantName)
-        .maybeSingle();
-
-      if (variantError || !variant) {
-        console.warn('[useVariantCrew] Variant not found:', { projectId, variantName });
-        return [];
-      }
-
+      // Query directly with variant_id - no lookup needed!
       const { data, error } = await supabase
         .from('project_roles')
         .select(`
@@ -75,7 +68,7 @@ export function useVariantCrew(projectId: string, variantName: string) {
           )
         `)
         .eq('project_id', projectId)
-        .eq('variant_id', variant.id)
+        .eq('variant_id', variantId)
         .order('daily_rate', { ascending: false });
 
       if (error) {
@@ -84,7 +77,7 @@ export function useVariantCrew(projectId: string, variantName: string) {
 
       return (data || []).filter(isVariantCrewRole);
     },
-    enabled: !!projectId && !!variantName,
+    enabled: !!projectId && !!variantId,
     staleTime: 30 * 1000,
     cacheTime: 5 * 60 * 1000
   });
@@ -95,23 +88,12 @@ export function useVariantCrew(projectId: string, variantName: string) {
     mutationFn: async (
       roleData: Omit<VariantCrewRole, 'id' | 'project_id' | 'variant_id'>
     ): Promise<VariantCrewRole> => {
-      // Get variant ID
-      const { data: variant, error: variantError } = await supabase
-        .from('project_variants')
-        .select('id')
-        .eq('project_id', projectId)
-        .eq('variant_name', variantName)
-        .single();
-
-      if (variantError || !variant) {
-        throw new Error(`Failed to find variant: ${variantError?.message || 'Variant not found'}`);
-      }
-
+      // Insert directly with variant_id - no lookup needed!
       const { data, error } = await supabase
         .from('project_roles')
         .insert({
           project_id: projectId,
-          variant_id: variant.id,
+          variant_id: variantId,
           role_id: roleData.role_id,
           daily_rate: roleData.daily_rate,
           hourly_rate: roleData.hourly_rate,

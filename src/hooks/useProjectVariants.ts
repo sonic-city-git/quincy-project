@@ -1,7 +1,7 @@
 // Project Variants Management Hook
 // Handles CRUD operations for project variants (Trio, Band, DJ configurations)
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
@@ -410,10 +410,15 @@ export function useProjectVariants(projectId: string): VariantManagementHook {
     return variants.find(v => v.is_default === true) || variants[0];
   }, [variants]);
 
+  const selectedVariantObject = useMemo((): ProjectVariant | undefined => {
+    return selectedVariant ? variants.find(v => v.variant_name === selectedVariant) : undefined;
+  }, [variants, selectedVariant]);
+
   return {
     // Data
     variants,
     selectedVariant,
+    selectedVariantObject,
     isLoading,
     error: error as Error | null,
 
