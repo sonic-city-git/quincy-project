@@ -12,11 +12,7 @@ import { formatDisplayDate } from "@/utils/dateFormatters";
 import { cn } from "@/lib/utils";
 import { COMPONENT_CLASSES } from "@/design-system";
 import { statusUtils } from "@/constants/eventStatus";
-import { useUnifiedEventSync } from "@/hooks/event";
 import { useReactivePricing } from "@/services/pricing/hooks";
-import { useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
 // Utility function to extract city from location string or structured data
 function getDisplayLocation(location: string, locationData?: any): { display: string; full: string } {
@@ -145,16 +141,8 @@ interface EventCardProps {
 export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: EventCardProps) {
   const isEditingDisabled = !statusUtils.canEdit(event);
   
-  // Get unified sync data and actions
-  const { data: syncData, actions: syncActions } = useUnifiedEventSync(event);
-  
   // 🔄 Get reactive pricing that automatically updates with variant changes
   const { data: pricingData } = useReactivePricing(event);
-
-  // Handle crew sync using unified actions
-  const handleSyncPreferredCrew = async () => {
-    await syncActions.syncCrew();
-  };
   
   // Get status pattern using unified system
   const statusPattern = statusUtils.getPattern(event.status as any);
@@ -232,26 +220,21 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
 
 
 
-          {/* Equipment Status */}
+          {/* Equipment Status - Now shows operational status (overbookings, warnings, subrentals) */}
           <EventGridColumns.Icon>
             <EventEquipment
               event={event}
               variant="icon"
               disabled={isEditingDisabled}
-              isSynced={syncData.equipment.synced}
-              hasProjectEquipment={syncData.equipment.hasProjectEquipment}
             />
           </EventGridColumns.Icon>
 
-          {/* Crew Status */}
+          {/* Crew Status - Now shows operational status (conflicts, warnings, assignments) */}
           <EventGridColumns.Icon>
             <EventCrew
               event={event}
               variant="icon" 
               disabled={isEditingDisabled}
-              isSynced={syncData.crew.synced}
-              hasProjectRoles={syncData.crew.hasProjectRoles}
-              onSyncPreferredCrew={handleSyncPreferredCrew}
             />
           </EventGridColumns.Icon>
 

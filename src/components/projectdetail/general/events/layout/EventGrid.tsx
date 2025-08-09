@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { EVENT_STATUS_CONFIG } from '@/constants/eventStatus';
-import { useUnifiedEventSync } from '@/hooks/event';
+
 
 // Use unified status configuration
 const STATUS_CONFIG = EVENT_STATUS_CONFIG;
@@ -311,29 +311,17 @@ export function EventSectionTableHeader({
   className,
   events,
   onStatusChange,
-  onSyncSectionEquipment,
-  onSyncSectionCrew,
   onBulkStatusChange
 }: { 
   sectionTitle?: string;
   className?: string;
   events?: any[];
   onStatusChange?: (event: any, newStatus: any) => void;
-  onSyncSectionEquipment?: () => void;
-  onSyncSectionCrew?: () => void;
   onBulkStatusChange?: (newStatus: string) => void;
 }) {
-  // Aggregate sync status from all events
+  // Count events that need equipment/crew for display purposes
   const eventsWithEquipment = events?.filter(event => event.type?.needs_equipment) || [];
   const eventsWithCrew = events?.filter(event => event.type?.needs_crew) || [];
-  
-  // Only get sync data if we have events and they need resources
-  const firstEvent = events?.[0];
-  const shouldFetchSync = firstEvent && (eventsWithEquipment.length > 0 || eventsWithCrew.length > 0);
-  const { data: firstEventSync } = useUnifiedEventSync(shouldFetchSync ? firstEvent : null);
-  
-  // For simplicity, use first event as representative of the section
-  // In a more complex implementation, you could aggregate across all events
   return (
     <div className={cn(
       'border-b border-border/10 bg-muted/20 rounded-b-lg',
@@ -364,114 +352,20 @@ export function EventSectionTableHeader({
 
             {/* Equipment Icon Column - Always visible */}
             <div className="flex items-center justify-center">
-              {eventsWithEquipment.length > 0 && (() => {
-                const isEquipmentSynced = firstEventSync?.equipment.synced;
-                const hasProjectEquipment = firstEventSync?.equipment.hasProjectEquipment;
-                
-                // Show loading state
-                if (!firstEventSync) {
-                  return (
-                    <Button variant="ghost" size="icon" className="h-10 w-10 p-0" disabled>
-                      <Package className="h-5 w-5 text-gray-400" />
-                    </Button>
-                  );
-                }
-                
-                // Determine icon color based on sync status
-                let iconColor = 'text-gray-400';
-                if (hasProjectEquipment) {
-                  iconColor = isEquipmentSynced ? 'text-green-500' : 'text-blue-500';
-                }
-                
-                return (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 p-0"
-                        disabled={!hasProjectEquipment}
-                        title={hasProjectEquipment ? 
-                          (isEquipmentSynced ? 'Equipment synced' : 'Sync equipment') : 
-                          'No equipment needed'
-                        }
-                      >
-                        <Package className={`h-5 w-5 ${iconColor}`} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="center" className="w-52">
-                      <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
-                        Equipment ({eventsWithEquipment.length} events)
-                      </div>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={onSyncSectionEquipment}
-                        disabled={!onSyncSectionEquipment}
-                        className="flex items-center gap-2"
-                      >
-                        <Package className="h-4 w-4" />
-                        Sync {sectionTitle || 'all'} equipment
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                );
-              })()}
+              {eventsWithEquipment.length > 0 && (
+                <div className="h-10 w-10 flex items-center justify-center" title="Equipment status">
+                  <Package className="h-5 w-5 text-green-500" />
+                </div>
+              )}
             </div>
 
             {/* Crew Icon Column - Always visible */}
             <div className="flex items-center justify-center">
-              {eventsWithCrew.length > 0 && (() => {
-                const isCrewSynced = firstEventSync?.crew.synced;
-                const hasProjectRoles = firstEventSync?.crew.hasProjectRoles;
-                
-                // Show loading state
-                if (!firstEventSync) {
-                  return (
-                    <Button variant="ghost" size="icon" className="h-10 w-10 p-0" disabled>
-                      <Users className="h-5 w-5 text-gray-400" />
-                    </Button>
-                  );
-                }
-                
-                // Determine icon color based on sync status
-                let iconColor = 'text-gray-400';
-                if (hasProjectRoles) {
-                  iconColor = isCrewSynced ? 'text-green-500' : 'text-blue-500';
-                }
-                
-                return (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-10 w-10 p-0"
-                        disabled={!hasProjectRoles}
-                        title={hasProjectRoles ? 
-                          (isCrewSynced ? 'Crew synced' : 'Sync crew') : 
-                          'No crew needed'
-                        }
-                      >
-                        <Users className={`h-5 w-5 ${iconColor}`} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="center" className="w-52">
-                      <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
-                        Crew ({eventsWithCrew.length} events)
-                      </div>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={onSyncSectionCrew}
-                        disabled={!onSyncSectionCrew}
-                        className="flex items-center gap-2"
-                      >
-                        <Users className="h-4 w-4" />
-                        Sync {sectionTitle || 'all'} crew
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                );
-              })()}
+              {eventsWithCrew.length > 0 && (
+                <div className="h-10 w-10 flex items-center justify-center" title="Crew status">
+                  <Users className="h-5 w-5 text-green-500" />
+                </div>
+              )}
             </div>
         
             {/* Status Action Column - Always visible */}

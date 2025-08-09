@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card";
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useBulkEventSync } from '@/hooks/event';
+
 import { useState, useMemo } from 'react';
 import { useEventsWithReactivePricing } from '@/services/pricing/hooks';
 import { STATUS_COLORS } from "@/components/dashboard/shared/StatusCard";
@@ -120,8 +120,6 @@ function EventSectionHeader({
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
 }) {
   const eventType = events[0]?.type;
-  const { syncEquipment, syncCrew, isSyncing } = useBulkEventSync(events);
-  
   // Memoize expensive calculations to prevent re-renders
   const sectionMetadata = useMemo(() => {
     const statusColors = STATUS_COLORS[variant] || STATUS_COLORS.info;
@@ -137,17 +135,6 @@ function EventSectionHeader({
   }, [variant, title, events]);
 
   const { statusColors, needsEquipment, needsCrew, isCancelled, isInvoiceReady } = sectionMetadata;
-
-  // Handle bulk sync operations using unified system
-  const handleSyncSectionEquipment = async () => {
-    if (!events.length) return;
-    await syncEquipment();
-  };
-
-  const handleSyncSectionCrew = async () => {
-    if (!events.length) return;
-    await syncCrew();
-  };
   
   return (
     <div className={cn(
@@ -176,8 +163,6 @@ function EventSectionHeader({
         sectionTitle={title}
         events={events}
         onStatusChange={onStatusChange}
-        onSyncSectionEquipment={handleSyncSectionEquipment}
-        onSyncSectionCrew={handleSyncSectionCrew}
         onBulkStatusChange={(newStatus) => {
           events.forEach(event => onStatusChange(event, newStatus as any));
         }}
