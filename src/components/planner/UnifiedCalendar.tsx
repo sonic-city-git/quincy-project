@@ -13,6 +13,7 @@ import { LAYOUT, PERFORMANCE } from './shared/constants';
 import { PlannerFilters, TimelineHeader } from './shared/components/TimelineHeader';
 import { TimelineContent } from './shared/components/TimelineContent';
 import { useSimpleInfiniteScroll as useTimelineScroll } from './shared/hooks/useSimpleInfiniteScroll';
+import { SubrentalConfirmationDialog } from './shared/dialogs/SubrentalConfirmationDialog';
 
 interface UnifiedCalendarProps {
   selectedDate: Date;
@@ -62,6 +63,17 @@ export function UnifiedCalendar({
   renderOnlyLeft = false,
   renderOnlyTimeline = false
 }: UnifiedCalendarProps) {
+  // Subrental dialog state
+  const [subrentalDialogOpen, setSubrentalDialogOpen] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<any>(null);
+  const [conflictDate, setConflictDate] = useState<string>('');
+
+  // Subrental suggestion click handler
+  const handleSubrentalClick = useCallback((suggestion: any, date: string) => {
+    setSelectedSuggestion(suggestion);
+    setConflictDate(date);
+    setSubrentalDialogOpen(true);
+  }, []);
 
   // DEBUG: Track selectedDate at UnifiedCalendar level
   useEffect(() => {
@@ -195,6 +207,10 @@ export function UnifiedCalendar({
     expandedGroups,
     expandedEquipment,
     equipmentProjectUsage,
+    // Subrental data
+    subrentalSuggestions,
+    suggestionsByDate,
+    shouldShowSubrentalSection,
     isLoading,
     isEquipmentReady,
     isBookingsReady,
@@ -481,9 +497,20 @@ export function UnifiedCalendar({
         warnings={warnings} // PERFORMANCE: Pass pre-calculated warnings for optimized problems view
         visibleTimelineStart={timelineStart}
         visibleTimelineEnd={timelineEnd}
+        // Subrental props
+        suggestionsByDate={suggestionsByDate}
+        onSubrentalClick={handleSubrentalClick}
         isWithinScrollContainer={isWithinScrollContainer}
       />
       </div>
+      
+      {/* Subrental Confirmation Dialog */}
+      <SubrentalConfirmationDialog
+        open={subrentalDialogOpen}
+        onOpenChange={setSubrentalDialogOpen}
+        suggestion={selectedSuggestion}
+        conflictDate={conflictDate}
+      />
     </div>
   );
 }

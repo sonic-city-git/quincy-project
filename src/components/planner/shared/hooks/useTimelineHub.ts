@@ -20,6 +20,7 @@ import { OVERBOOKING_WARNING_DAYS, getWarningTimeframe } from '@/constants/timef
 import { usePersistentExpandedGroups } from '@/hooks/ui';
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/types/equipment';
 import { PERFORMANCE } from '../constants';
+import { useSubrentalSuggestions } from '@/hooks/equipment/useSubrentalSuggestions';
 
 interface UseTimelineHubProps {
   resourceType: 'equipment' | 'crew';
@@ -435,11 +436,90 @@ export function useTimelineHub({
     return processedBookings;
   }, [rawBookingsData, resourceData?.resourceById, resourceType]);
 
+  // WARNINGS (30-day window)
+  const warnings = useMemo(() => {
+    if (!bookingsData || !resourceData) return [];
+    
+    const today = new Date();
+    const warningEnd = addDays(today, OVERBOOKING_WARNING_DAYS);
+    
+    const warningsList = [];
+    
+    Array.from(bookingsData.values()).forEach(booking => {
+      const bookingDate = new Date(booking.date);
+      if (bookingDate < today || bookingDate > warningEnd) return;
+      
+      const resource = resourceData.resourceById.get(booking.resourceId);
+      if (!resource) return;
+
+      if (resourceType === 'equipment' && booking.isOverbooked) {
+        warningsList.push({
+          resourceId: booking.resourceId,
+          resourceName: resource.name,
+          date: booking.date,
+          type: 'overbooked',
+          severity: booking.totalUsed > (resource.stock * 1.5) ? 'high' : 'medium',
+          details: {
+            stock: resource.stock,
+            used: booking.totalUsed,
+            overbooked: booking.totalUsed - resource.stock,
+            events: booking.bookings
+          }
+        });
+      }
+      
+      if (resourceType === 'crew' && booking.isOverbooked) {
+        warningsList.push({
+          resourceId: booking.resourceId,
+          resourceName: resource.name,
+          date: booking.date,
+          type: 'conflict',
+          severity: booking.totalAssignments > 2 ? 'high' : 'medium',
+          details: {
+            assignments: booking.assignments
+          }
+        });
+      }
+    });
+
+    return warningsList;
+  }, [bookingsData, resourceData, resourceType]);
+
+  // SUBRENTAL SUGGESTIONS (Equipment only) - Must be before GROUPED RESOURCES
+  const {
+    subrentalSuggestions,
+    suggestionsByDate,
+    shouldShowSubrentalSection
+  } = useSubrentalSuggestions({
+    warnings,
+    resourceType,
+    visibleTimelineStart,
+    visibleTimelineEnd
+  });
+
+  // ENSURE SUBRENTAL IS ALWAYS EXPANDED
+  useEffect(() => {
+    if (shouldShowSubrentalSection && !expandedGroups.has('Subrental')) {
+      setExpandedGroups(prev => new Set([...prev, 'Subrental']));
+    }
+  }, [shouldShowSubrentalSection, expandedGroups, setExpandedGroups]);
+
   // GROUPED RESOURCES
   const resourceGroups = useMemo(() => {
     if (!resourceData?.resources) return [];
 
     const groupsMap = new Map();
+    
+    // Add Subrental section if we have suggestions (Equipment only)
+    if (resourceType === 'equipment' && shouldShowSubrentalSection) {
+      groupsMap.set('Subrental', {
+        mainFolder: 'Subrental',
+        equipment: [], // Will be populated with suggestion placeholders
+        subFolders: [],
+        isExpanded: true, // Always expanded to show suggestions
+        isSubrentalSection: true // Special flag for identification
+      });
+    }
     
     resourceData.resources.forEach(resource => {
       const { mainFolder, subFolder } = resource;
@@ -471,6 +551,31 @@ export function useTimelineHub({
         group.equipment.push(resource);
       }
     });
+
+    // Populate Subrental section with suggestion placeholders
+    if (resourceType === 'equipment' && shouldShowSubrentalSection) {
+      const subrentalGroup = groupsMap.get('Subrental');
+      if (subrentalGroup) {
+        // Create unique placeholder items for each unique equipment suggestion
+        const uniqueEquipment = new Map();
+        subrentalSuggestions.forEach(suggestion => {
+          if (!uniqueEquipment.has(suggestion.equipmentId)) {
+            uniqueEquipment.set(suggestion.equipmentId, {
+              id: `subrental-${suggestion.equipmentId}`,
+              name: suggestion.equipmentName,
+              stock: 0, // Placeholder, not actual stock
+              folderPath: 'Subrental',
+              mainFolder: 'Subrental',
+              subFolder: undefined,
+              level: 1,
+              isSubrentalPlaceholder: true,
+              originalEquipmentId: suggestion.equipmentId
+            });
+          }
+        });
+        subrentalGroup.equipment = Array.from(uniqueEquipment.values());
+      }
+    }
 
     let groups = Array.from(groupsMap.values());
     
@@ -526,7 +631,7 @@ export function useTimelineHub({
         return a.mainFolder.localeCompare(b.mainFolder);
       });
     }
-  }, [resourceData?.resources, expandedGroups, resourceType]);
+  }, [resourceData?.resources, expandedGroups, resourceType, shouldShowSubrentalSection, subrentalSuggestions]);
 
   // SIMPLIFIED PROJECT USAGE - No complex filtering
   const projectUsage = useMemo(() => {
@@ -576,55 +681,6 @@ export function useTimelineHub({
 
     return usage;
   }, [bookingsData, resourceType]);
-
-  // WARNINGS (30-day window)
-  const warnings = useMemo(() => {
-    if (!bookingsData || !resourceData) return [];
-    
-    const today = new Date();
-    const warningEnd = addDays(today, OVERBOOKING_WARNING_DAYS);
-    
-    const warningsList = [];
-    
-    Array.from(bookingsData.values()).forEach(booking => {
-      const bookingDate = new Date(booking.date);
-      if (bookingDate < today || bookingDate > warningEnd) return;
-      
-      const resource = resourceData.resourceById.get(booking.resourceId);
-      if (!resource) return;
-
-      if (resourceType === 'equipment' && booking.isOverbooked) {
-        warningsList.push({
-          resourceId: booking.resourceId,
-          resourceName: resource.name,
-          date: booking.date,
-          type: 'overbooked',
-          severity: booking.totalUsed > (resource.stock * 1.5) ? 'high' : 'medium',
-          details: {
-            stock: resource.stock,
-            used: booking.totalUsed,
-            overbooked: booking.totalUsed - resource.stock,
-            events: booking.bookings
-          }
-        });
-      }
-      
-      if (resourceType === 'crew' && booking.isOverbooked) {
-        warningsList.push({
-          resourceId: booking.resourceId,
-          resourceName: resource.name,
-          date: booking.date,
-          type: 'conflict',
-          severity: booking.totalAssignments > 2 ? 'high' : 'medium',
-          details: {
-            assignments: booking.assignments
-          }
-        });
-      }
-    });
-
-    return warningsList;
-  }, [bookingsData, resourceData, resourceType]);
 
   // FUNCTIONS
   const getBookingForEquipment = useCallback((resourceId: string, dateStr: string) => {
@@ -748,6 +804,11 @@ export function useTimelineHub({
     expandedGroups,
     expandedEquipment: expandedResources,
     equipmentProjectUsage: projectUsage,
+    
+    // Subrental data
+    subrentalSuggestions,
+    suggestionsByDate,
+    shouldShowSubrentalSection,
     
     // State
     isLoading: shouldShowLoading,
