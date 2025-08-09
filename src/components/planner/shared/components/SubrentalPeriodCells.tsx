@@ -109,7 +109,7 @@ const SubrentalPeriodCellsComponent = ({
       {periods.map((period) => (
         <div
           key={period.equipmentId}
-          className="absolute top-1 bottom-1 bg-blue-500 hover:bg-blue-600 rounded-lg border border-blue-400 shadow-sm cursor-pointer transition-all duration-200 hover:shadow-md group"
+          className="absolute top-1 bottom-1 bg-red-500 hover:bg-red-600 rounded-lg border border-red-400 shadow-sm cursor-pointer transition-all duration-200 hover:shadow-md group"
           style={{
             left: `${period.leftOffset}px`,
             width: `${period.daySpan * LAYOUT.DAY_CELL_WIDTH - 4}px`, // -4px for gap between cells
@@ -134,21 +134,21 @@ const SubrentalPeriodCellsComponent = ({
             </div>
             
             {/* Provider & Duration */}
-            <div className="flex items-center justify-between mt-0.5 text-blue-100">
+            <div className="flex items-center justify-between mt-0.5 text-red-100">
               <div className="flex items-center gap-1 truncate flex-1">
                 <Building2 size={10} className="flex-shrink-0" />
                 <span className="truncate text-xs">
                   {period.topProvider?.company_name || 'Multiple providers'}
                 </span>
                 {period.topProvider?.reliability_rating && (
-                  <span className="text-blue-200 text-xs">
+                  <span className="text-red-200 text-xs">
                     ★{period.topProvider.reliability_rating.toFixed(1)}
                   </span>
                 )}
               </div>
               
               {period.daySpan > 1 && (
-                <div className="flex items-center gap-1 text-blue-200 text-xs ml-2">
+                <div className="flex items-center gap-1 text-red-200 text-xs ml-2">
                   <Calendar size={10} />
                   <span>{period.daySpan}d</span>
                 </div>
@@ -157,7 +157,7 @@ const SubrentalPeriodCellsComponent = ({
           </div>
           
           {/* Hover overlay */}
-          <div className="absolute inset-0 bg-blue-400 opacity-0 group-hover:opacity-20 rounded-lg transition-opacity duration-200" />
+          <div className="absolute inset-0 bg-red-400 opacity-0 group-hover:opacity-20 rounded-lg transition-opacity duration-200" />
         </div>
       ))}
     </div>

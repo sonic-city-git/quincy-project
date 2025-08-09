@@ -11,6 +11,9 @@ export * from './project';
 // Variant Configuration  
 export * from './variant';
 
+// Stock Engine
+export * from './stock';
+
 // Event Operations
 export * from './event';
 

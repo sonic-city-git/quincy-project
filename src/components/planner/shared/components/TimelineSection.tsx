@@ -5,6 +5,7 @@ import { ProjectRow, CrewRoleCell } from "./ProjectRow";
 import { UnfilledRoleBadges } from "./UnfilledRoleBadges";
 import { SubrentalSuggestionBadges } from "./SubrentalSuggestionBadges";
 import { SubrentalPeriodCells } from "./SubrentalPeriodCells";
+import { ConfirmedSubrentalCells } from "./ConfirmedSubrentalCells";
 import { LAYOUT } from '../constants';
 import '../timeline-optimization.css';
 import { EquipmentGroup, EquipmentProjectUsage, ProjectQuantityCell } from '../types';
@@ -150,6 +151,8 @@ interface TimelineSectionProps {
   isSubrentalSection?: boolean; // New: identifies subrental sections
   suggestionsByDate?: Map<string, any[]>; // Subrental suggestions by date
   onSubrentalClick?: (suggestion: any, date: string) => void; // Subrental suggestion handler
+  confirmedPeriodsByDate?: Map<string, any[]>; // Confirmed subrental periods by date
+  onConfirmedSubrentalClick?: (period: any) => void; // Confirmed subrental click handler
   filters?: any;
   onDateSelect?: (date: string) => void;
 
@@ -171,6 +174,8 @@ const TimelineSectionComponent = ({
   isSubrentalSection = false,
   suggestionsByDate,
   onSubrentalClick,
+  confirmedPeriodsByDate,
+  onConfirmedSubrentalClick,
   filters,
   onDateSelect
 }: TimelineSectionProps) => {
@@ -230,8 +235,8 @@ const TimelineSectionComponent = ({
                     height: '100%'
                   }}
                 >
-                  {/* SUBRENTAL SECTION: Use period-spanning cells */}
-                  {isSubrentalSection && suggestionsByDate ? (
+                  {/* NEEDED SUBRENTAL SECTION: Use period-spanning cells for suggestions */}
+                  {isSubrentalSection && equipment.isNeededSubrental && suggestionsByDate ? (
                     <SubrentalPeriodCells
                       suggestions={Array.from(suggestionsByDate.values())
                         .flat()
@@ -240,6 +245,17 @@ const TimelineSectionComponent = ({
                       formattedDates={formattedDates}
                       onSuggestionClick={(suggestion, date) => {
                         onSubrentalClick?.(suggestion, date);
+                      }}
+                    />
+                  ) : isSubrentalSection && equipment.isConfirmedSubrental && confirmedPeriodsByDate ? (
+                    /* CONFIRMED SUBRENTAL SECTION: Use period-spanning cells for confirmed subrentals */
+                    <ConfirmedSubrentalCells
+                      confirmedPeriods={Array.from(confirmedPeriodsByDate.values())
+                        .flat()
+                        .filter(p => p.equipment_id === equipment.originalEquipmentId)}
+                      formattedDates={formattedDates}
+                      onSubrentalClick={(period) => {
+                        onConfirmedSubrentalClick?.(period);
                       }}
                     />
                   ) : (

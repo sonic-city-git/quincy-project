@@ -21,6 +21,7 @@ import { usePersistentExpandedGroups } from '@/hooks/ui';
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/types/equipment';
 import { PERFORMANCE } from '../constants';
 import { useSubrentalSuggestions } from '@/hooks/equipment/useSubrentalSuggestions';
+import { useConfirmedSubrentals } from '@/hooks/equipment/useConfirmedSubrentals';
 
 interface UseTimelineHubProps {
   resourceType: 'equipment' | 'crew';
@@ -485,24 +486,102 @@ export function useTimelineHub({
     return warningsList;
   }, [bookingsData, resourceData, resourceType]);
 
-  // SUBRENTAL SUGGESTIONS (Equipment only) - Must be before GROUPED RESOURCES
+  // ALL EQUIPMENT OVERBOOKINGS (for subrental analysis - independent of folder expansion)
+  const { data: allEquipmentOverbookings } = useQuery({
+    queryKey: [
+      'all-equipment-overbookings',
+      format(stableDataRange.start, 'yyyy-MM-dd'),
+      format(stableDataRange.end, 'yyyy-MM-dd'),
+      selectedOwner
+    ],
+    queryFn: async () => {
+      if (resourceType !== 'equipment') return [];
+      
+      // Get ALL equipment IDs, not just expanded ones
+      const allEquipmentIds = resourceData?.resources?.map(r => r.id) || [];
+      if (allEquipmentIds.length === 0) return [];
+      
+      return fetchEquipmentBookings(allEquipmentIds);
+    },
+    enabled: enabled && resourceType === 'equipment' && !!resourceData?.resources,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+  });
+
+  // GLOBAL WARNINGS (30-day window) - For subrental suggestions using ALL equipment data
+  const globalWarnings = useMemo(() => {
+    if (!allEquipmentOverbookings || !resourceData || resourceType !== 'equipment') return [];
+    
+    const today = new Date();
+    const warningEnd = addDays(today, OVERBOOKING_WARNING_DAYS);
+    
+    const warningsList = [];
+    
+    Array.from(allEquipmentOverbookings.values()).forEach(booking => {
+      const bookingDate = new Date(booking.date);
+      if (bookingDate < today || bookingDate > warningEnd) return;
+      
+      const resource = resourceData.resourceById.get(booking.resourceId);
+      if (!resource) return;
+
+      if (booking.isOverbooked) {
+        warningsList.push({
+          resourceId: booking.resourceId,
+          resourceName: resource.name,
+          date: booking.date,
+          type: 'overbooked',
+          severity: booking.totalUsed > (resource.stock * 1.5) ? 'high' : 'medium',
+          details: {
+            stock: resource.stock,
+            used: booking.totalUsed,
+            overbooked: booking.totalUsed - resource.stock,
+            events: booking.bookings
+          }
+        });
+      }
+    });
+
+    return warningsList;
+  }, [allEquipmentOverbookings, resourceData, resourceType]);
+
+  // SUBRENTAL SUGGESTIONS (Equipment only) - Using global warnings instead of folder-limited warnings
   const {
     subrentalSuggestions,
     suggestionsByDate,
     shouldShowSubrentalSection
   } = useSubrentalSuggestions({
-    warnings,
+    warnings: globalWarnings, // Use global warnings instead of folder-limited warnings
     resourceType,
     visibleTimelineStart,
     visibleTimelineEnd
   });
 
-  // ENSURE SUBRENTAL IS ALWAYS EXPANDED
+  // CONFIRMED SUBRENTALS (Equipment only)
+  const {
+    confirmedSubrentals,
+    confirmedPeriods,
+    periodsByDate: confirmedPeriodsByDate,
+    shouldShowConfirmedSection
+  } = useConfirmedSubrentals({
+    visibleTimelineStart,
+    visibleTimelineEnd,
+    enabled: resourceType === 'equipment'
+  });
+
+  // ENSURE SUBRENTAL SECTIONS ARE ALWAYS EXPANDED
   useEffect(() => {
-    if (shouldShowSubrentalSection && !expandedGroups.has('Subrental')) {
-      setExpandedGroups(prev => new Set([...prev, 'Subrental']));
+    const sectionsToExpand = [];
+    if (shouldShowSubrentalSection && !expandedGroups.has('Needed Subrental')) {
+      sectionsToExpand.push('Needed Subrental');
     }
-  }, [shouldShowSubrentalSection, expandedGroups, setExpandedGroups]);
+    if (shouldShowConfirmedSection && !expandedGroups.has('Confirmed Subrental')) {
+      sectionsToExpand.push('Confirmed Subrental');
+    }
+    
+    if (sectionsToExpand.length > 0) {
+      setExpandedGroups(prev => new Set([...prev, ...sectionsToExpand]));
+    }
+  }, [shouldShowSubrentalSection, shouldShowConfirmedSection, expandedGroups, setExpandedGroups]);
 
   // GROUPED RESOURCES
   const resourceGroups = useMemo(() => {
@@ -510,14 +589,27 @@ export function useTimelineHub({
 
     const groupsMap = new Map();
     
-    // Add Subrental section if we have suggestions (Equipment only)
+    // Add Needed Subrental section if we have suggestions (Equipment only)
     if (resourceType === 'equipment' && shouldShowSubrentalSection) {
-      groupsMap.set('Subrental', {
-        mainFolder: 'Subrental',
+      groupsMap.set('Needed Subrental', {
+        mainFolder: 'Needed Subrental',
         equipment: [], // Will be populated with suggestion placeholders
         subFolders: [],
         isExpanded: true, // Always expanded to show suggestions
-        isSubrentalSection: true // Special flag for identification
+        isSubrentalSection: true, // Special flag for identification
+        isNeededSubrental: true
+      });
+    }
+
+    // Add Confirmed Subrental section if we have confirmed subrentals (Equipment only)
+    if (resourceType === 'equipment' && shouldShowConfirmedSection) {
+      groupsMap.set('Confirmed Subrental', {
+        mainFolder: 'Confirmed Subrental',
+        equipment: [], // Will be populated with confirmed subrental placeholders
+        subFolders: [],
+        isExpanded: true, // Always expanded to show confirmed subrentals
+        isSubrentalSection: true, // Special flag for identification
+        isConfirmedSubrental: true
       });
     }
     
@@ -552,28 +644,57 @@ export function useTimelineHub({
       }
     });
 
-    // Populate Subrental section with suggestion placeholders
+    // Populate Needed Subrental section with suggestion placeholders
     if (resourceType === 'equipment' && shouldShowSubrentalSection) {
-      const subrentalGroup = groupsMap.get('Subrental');
-      if (subrentalGroup) {
+      const neededSubrentalGroup = groupsMap.get('Needed Subrental');
+      if (neededSubrentalGroup) {
         // Create unique placeholder items for each unique equipment suggestion
         const uniqueEquipment = new Map();
         subrentalSuggestions.forEach(suggestion => {
           if (!uniqueEquipment.has(suggestion.equipmentId)) {
             uniqueEquipment.set(suggestion.equipmentId, {
-              id: `subrental-${suggestion.equipmentId}`,
+              id: `needed-subrental-${suggestion.equipmentId}`,
               name: suggestion.equipmentName,
               stock: 0, // Placeholder, not actual stock
-              folderPath: 'Subrental',
-              mainFolder: 'Subrental',
+              folderPath: 'Needed Subrental',
+              mainFolder: 'Needed Subrental',
               subFolder: undefined,
               level: 1,
               isSubrentalPlaceholder: true,
+              isNeededSubrental: true,
               originalEquipmentId: suggestion.equipmentId
             });
           }
         });
-        subrentalGroup.equipment = Array.from(uniqueEquipment.values());
+        neededSubrentalGroup.equipment = Array.from(uniqueEquipment.values());
+      }
+    }
+
+    // Populate Confirmed Subrental section with confirmed subrental placeholders
+    if (resourceType === 'equipment' && shouldShowConfirmedSection) {
+      const confirmedSubrentalGroup = groupsMap.get('Confirmed Subrental');
+      if (confirmedSubrentalGroup) {
+        // Create placeholder items for each unique confirmed subrental
+        const uniqueEquipment = new Map();
+        confirmedPeriods.forEach(period => {
+          const key = `${period.equipment_id}-${period.id}`;
+          if (!uniqueEquipment.has(key)) {
+            uniqueEquipment.set(key, {
+              id: `confirmed-subrental-${period.id}`,
+              name: `${period.equipment_name} (${period.provider_name})`,
+              stock: period.quantity,
+              folderPath: 'Confirmed Subrental',
+              mainFolder: 'Confirmed Subrental',
+              subFolder: undefined,
+              level: 1,
+              isSubrentalPlaceholder: true,
+              isConfirmedSubrental: true,
+              originalEquipmentId: period.equipment_id,
+              subrentalPeriod: period
+            });
+          }
+        });
+        confirmedSubrentalGroup.equipment = Array.from(uniqueEquipment.values());
       }
     }
 
@@ -631,7 +752,7 @@ export function useTimelineHub({
         return a.mainFolder.localeCompare(b.mainFolder);
       });
     }
-  }, [resourceData?.resources, expandedGroups, resourceType, shouldShowSubrentalSection, subrentalSuggestions]);
+  }, [resourceData?.resources, expandedGroups, resourceType, shouldShowSubrentalSection, subrentalSuggestions, shouldShowConfirmedSection, confirmedPeriods]);
 
   // SIMPLIFIED PROJECT USAGE - No complex filtering
   const projectUsage = useMemo(() => {
@@ -809,6 +930,12 @@ export function useTimelineHub({
     subrentalSuggestions,
     suggestionsByDate,
     shouldShowSubrentalSection,
+    
+    // Confirmed subrental data
+    confirmedSubrentals,
+    confirmedPeriods,
+    confirmedPeriodsByDate,
+    shouldShowConfirmedSection,
     
     // State
     isLoading: shouldShowLoading,

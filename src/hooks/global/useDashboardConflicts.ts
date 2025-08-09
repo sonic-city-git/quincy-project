@@ -1,17 +1,19 @@
 /**
- * DASHBOARD-SPECIFIC CONFLICT DETECTION
+ * 🎯 DASHBOARD CONFLICTS - UNIFIED STOCK ENGINE VERSION
  * 
- * Critical fix: Fetches ALL equipment conflicts regardless of planner folder expansion state.
- * The main useTimelineHub only fetches data for expanded folders, which makes dashboard 
- * conflict detection incomplete and misleading.
+ * Replaces fragmented conflict detection with unified stock engine.
+ * Now includes virtual stock from subrental orders in conflict calculations.
  * 
- * This hook provides complete, reliable conflict detection for dashboard metrics.
+ * BREAKING CHANGE: Now uses effective stock (base + virtual) instead of just base stock.
+ * This means confirmed subrentals will resolve conflicts automatically.
  */
 
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { format, addDays } from 'date-fns';
+import { useDashboardStockConflicts } from '@/hooks/stock/useStockEngine';
+import { ConflictAnalysis } from '@/types/stock';
 import { supabase } from '@/integrations/supabase/client';
-import { OVERBOOKING_WARNING_DAYS, getWarningTimeframe } from '@/constants/timeframes';
+import { getWarningTimeframe } from '@/constants/timeframes';
 
 interface EquipmentConflict {
   equipmentId: string;
@@ -39,110 +41,28 @@ interface CrewConflict {
 }
 
 export function useDashboardConflicts(selectedOwner?: string) {
+  // Use the new unified stock engine for equipment conflicts
+  const stockEngine = useDashboardStockConflicts(selectedOwner);
+
+  // Transform conflicts to match the old interface for backward compatibility
+  const equipmentConflicts = useMemo((): EquipmentConflict[] => {
+    return stockEngine.conflicts.map((conflict: ConflictAnalysis) => ({
+      equipmentId: conflict.equipmentId,
+      equipmentName: conflict.equipmentName,
+      date: conflict.date,
+      totalStock: conflict.stockBreakdown.effectiveStock, // Now includes virtual stock!
+      totalUsed: conflict.stockBreakdown.totalUsed,
+      overbooked: conflict.conflict.deficit,
+      conflictingEvents: conflict.conflict.affectedEvents.map(event => ({
+        eventName: event.eventName,
+        projectName: event.projectName,
+        quantity: event.quantity
+      }))
+    }));
+  }, [stockEngine.conflicts]);
+
+  // Crew conflicts still use the old logic (not affected by virtual stock)
   const { startDate, endDate } = getWarningTimeframe();
-
-  const { data: equipmentConflicts, isLoading: isLoadingEquipment } = useQuery({
-    queryKey: ['dashboard-equipment-conflicts', startDate, endDate, selectedOwner],
-    queryFn: async () => {
-      // Step 1: Get ALL equipment (not filtered by expansion state)
-      const { data: equipment, error: equipmentError } = await supabase
-        .from('equipment')
-        .select('id, name, stock');
-
-      if (equipmentError) throw equipmentError;
-
-      // Step 2: Get events in the warning timeframe
-      let eventsQuery = supabase
-        .from('project_events')
-        .select(`
-          id, date, name, project_id,
-          project:projects!inner (name, owner_id)
-        `)
-        .gte('date', startDate)
-        .lte('date', endDate);
-
-      if (selectedOwner) {
-        eventsQuery = eventsQuery.eq('project.owner_id', selectedOwner);
-      }
-
-      const { data: events, error: eventsError } = await eventsQuery;
-      if (eventsError) throw eventsError;
-      if (!events?.length) return [];
-
-      // Step 3: Get ALL equipment bookings for these events
-      const { data: bookings, error: bookingsError } = await supabase
-        .from('project_event_equipment')
-        .select('event_id, equipment_id, quantity')
-        .in('event_id', events.map(e => e.id));
-
-      if (bookingsError) throw bookingsError;
-
-      // Step 4: Process conflicts
-      const equipmentMap = new Map(equipment?.map(eq => [eq.id, eq]) || []);
-      const eventMap = new Map(events.map(e => [e.id, e]));
-      
-      // Group bookings by equipment and date
-      const bookingsByEquipmentAndDate = new Map<string, {
-        equipment: any;
-        date: string;
-        bookings: Array<{
-          quantity: number;
-          eventName: string;
-          projectName: string;
-        }>;
-        totalUsed: number;
-      }>();
-
-      bookings?.forEach(booking => {
-        const event = eventMap.get(booking.event_id);
-        const equipment = equipmentMap.get(booking.equipment_id);
-        
-        if (!event || !equipment) return;
-        
-        const key = `${booking.equipment_id}-${event.date}`;
-        
-        if (!bookingsByEquipmentAndDate.has(key)) {
-          bookingsByEquipmentAndDate.set(key, {
-            equipment,
-            date: event.date,
-            bookings: [],
-            totalUsed: 0
-          });
-        }
-        
-        const dayBooking = bookingsByEquipmentAndDate.get(key)!;
-        dayBooking.bookings.push({
-          quantity: booking.quantity || 0,
-          eventName: event.name,
-          projectName: event.project.name
-        });
-        dayBooking.totalUsed += booking.quantity || 0;
-      });
-
-      // Step 5: Identify conflicts (where totalUsed > stock)
-      const conflicts: EquipmentConflict[] = [];
-      
-      bookingsByEquipmentAndDate.forEach(dayBooking => {
-        if (dayBooking.totalUsed > dayBooking.equipment.stock) {
-          conflicts.push({
-            equipmentId: dayBooking.equipment.id,
-            equipmentName: dayBooking.equipment.name,
-            date: dayBooking.date,
-            totalStock: dayBooking.equipment.stock,
-            totalUsed: dayBooking.totalUsed,
-            overbooked: dayBooking.totalUsed - dayBooking.equipment.stock,
-            conflictingEvents: dayBooking.bookings
-          });
-        }
-      });
-
-      return conflicts;
-    },
-    staleTime: 2 * 60 * 1000, // 2 minutes
-    refetchOnWindowFocus: true,
-    retry: 1,
-    enabled: true // Always enabled for planner usage
-  });
 
   const { data: crewConflicts, isLoading: isLoadingCrew } = useQuery({
     queryKey: ['dashboard-crew-conflicts', startDate, endDate, selectedOwner],
@@ -239,15 +159,21 @@ export function useDashboardConflicts(selectedOwner?: string) {
     staleTime: 2 * 60 * 1000, // 2 minutes
     refetchOnWindowFocus: true,
     retry: 1,
-    enabled: true // Always enabled for planner usage
+    enabled: true // Always enabled for dashboard usage
   });
 
   return {
-    equipmentConflicts: equipmentConflicts || [],
+    equipmentConflicts,
     crewConflicts: crewConflicts || [],
-    equipmentConflictCount: equipmentConflicts?.length || 0,
+    equipmentConflictCount: equipmentConflicts.length,
     crewConflictCount: crewConflicts?.length || 0,
-    isLoading: isLoadingEquipment || isLoadingCrew,
-    error: null
+    isLoading: (stockEngine as any).isLoading || isLoadingCrew,
+    error: (stockEngine as any).error,
+    
+    // Additional data from new engine
+    totalConflicts: stockEngine.totalConflicts,
+    totalDeficit: stockEngine.totalDeficit,
+    affectedEquipmentCount: stockEngine.affectedEquipmentCount,
+    suggestions: stockEngine.suggestions
   };
 }

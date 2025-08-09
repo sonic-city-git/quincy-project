@@ -211,6 +211,12 @@ export function UnifiedCalendar({
     subrentalSuggestions,
     suggestionsByDate,
     shouldShowSubrentalSection,
+    
+    // Confirmed subrental data
+    confirmedSubrentals,
+    confirmedPeriods,
+    confirmedPeriodsByDate,
+    shouldShowConfirmedSection,
     isLoading,
     isEquipmentReady,
     isBookingsReady,
@@ -500,6 +506,11 @@ export function UnifiedCalendar({
         // Subrental props
         suggestionsByDate={suggestionsByDate}
         onSubrentalClick={handleSubrentalClick}
+        confirmedPeriodsByDate={confirmedPeriodsByDate}
+        onConfirmedSubrentalClick={(period) => {
+          // TODO: Handle confirmed subrental clicks (e.g., show details or edit dialog)
+          console.log('Confirmed subrental clicked:', period);
+        }}
         isWithinScrollContainer={isWithinScrollContainer}
       />
       </div>

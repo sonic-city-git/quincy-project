@@ -342,13 +342,4 @@ function calculateAvailabilityConfidence(provider: any, equipmentName: string): 
   return Math.min(100, Math.max(0, confidence));
 }
 
-// =============================================================================
-// EXPORTS
-// =============================================================================
-
-export {
-  analyzeConflicts,
-  analyzeStockConflict,
-  generateSubrentalSuggestions,
-  calculateConflictSeverity
-};
+// Functions are already exported inline above - no need for explicit exports block

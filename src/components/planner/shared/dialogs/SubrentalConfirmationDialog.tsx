@@ -67,32 +67,40 @@ export function SubrentalConfirmationDialog({
     }
   }, [suggestion, conflictDate]);
 
-  const handleSubmit = async () => {
+  const handleConfirm = async () => {
     if (!suggestion || !selectedProvider || !startDate || !endDate) {
       toast.error('Please fill in all required fields');
+      return;
+    }
+
+    if (quantity <= 0) {
+      toast.error('Quantity must be greater than 0');
       return;
     }
 
     setIsSubmitting(true);
     
     try {
-      // For each affected event, create a subrental record
-      for (const event of suggestion.affectedEvents) {
-        await subrentalMutation.mutateAsync({
-          eventId: event.eventName, // This should be eventId, not eventName
-          equipmentId: suggestion.equipmentId,
-          providerId: selectedProvider.id,
-          cost: cost || null,
-          notes: notes.trim() || null
-        });
-      }
+      await subrentalMutation.createSubrental.mutateAsync({
+        equipment_id: suggestion.equipmentId,
+        equipment_name: suggestion.equipmentName,
+        provider_id: selectedProvider.id,
+        start_date: startDate,
+        end_date: endDate,
+        quantity: quantity,
+        cost: cost || undefined,
+        notes: notes.trim() || undefined
+      });
       
-      toast.success(`Subrental confirmed with ${selectedProvider.company_name}`);
+      toast.success(`Subrental confirmed with ${selectedProvider.company_name}`, {
+        description: `${quantity}x ${suggestion.equipmentName} from ${startDate} to ${endDate}`
+      });
+      
       onOpenChange(false);
       
     } catch (error) {
       console.error('Failed to confirm subrental:', error);
-      toast.error('Failed to confirm subrental');
+      toast.error('Failed to confirm subrental. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -271,7 +279,7 @@ export function SubrentalConfirmationDialog({
             Cancel
           </Button>
           <Button
-            onClick={handleSubmit}
+            onClick={handleConfirm}
             disabled={!selectedProvider || !startDate || !endDate || isSubmitting}
             className="bg-blue-600 hover:bg-blue-700"
           >

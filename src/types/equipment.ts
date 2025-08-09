@@ -3,7 +3,8 @@ import { Database } from "@/integrations/supabase/types";
 export type Equipment = Database["public"]["Tables"]["equipment"]["Row"];
 
 export const FOLDER_ORDER = [
-  "Subrental",
+  "Needed Subrental",
+  "Confirmed Subrental", 
   "Mixers",
   "Microphones",
   "DI-boxes",
@@ -21,7 +22,8 @@ export const FOLDER_ORDER = [
 export type MainFolder = typeof FOLDER_ORDER[number];
 
 export const SUBFOLDER_ORDER: Record<MainFolder, readonly string[]> = {
-  "Subrental": [],
+  "Needed Subrental": [],
+  "Confirmed Subrental": [],
   "Mixers": ["Mixrack", "Surface", "Expansion", "Small format"],
   "Microphones": ["Dynamic", "Condenser", "Ribbon", "Shotgun", "WL capsule", "Special/Misc"],
   "DI-boxes": ["Active", "Passive", "Special"],
@@ -122,4 +124,20 @@ export interface SubrentalEquipment {
   notes: string | null;
   equipment_type: string; // Original equipment name this replaces
   equipment_id: string; // Reference to original equipment
+}
+
+export interface ConfirmedSubrental {
+  id: string;
+  equipment_id: string;
+  equipment_name: string;
+  provider_id: string;
+  provider_name: string;
+  start_date: string;
+  end_date: string;
+  quantity: number;
+  cost: number | null;
+  temporary_serial?: string;
+  notes?: string;
+  created_at: string;
+  status: 'confirmed' | 'delivered' | 'returned' | 'cancelled';
 }

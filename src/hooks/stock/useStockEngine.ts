@@ -8,6 +8,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { 
   StockEngineConfig, 
   StockEngineResult, 
@@ -298,11 +299,33 @@ export function useDashboardStockConflicts(selectedOwner?: string) {
   const thirtyDaysFromNow = new Date();
   thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
 
+  // Get all equipment IDs for dashboard (not filtered by expansion state)
+  const { data: allEquipmentIds = [] } = useQuery({
+    queryKey: ['dashboard-equipment-ids', selectedOwner],
+    queryFn: async () => {
+      // Get ALL equipment, optionally filtered by owner
+      let query = supabase.from('equipment').select('id');
+      
+      // TODO: Add owner filtering if needed
+      // if (selectedOwner) {
+      //   query = query.eq('owner_id', selectedOwner);
+      // }
+      
+      const { data, error } = await query;
+      if (error) throw error;
+      
+      return data?.map(eq => eq.id) || [];
+    },
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+  });
+
   return useStockEngine({
     dateRange: {
       start: new Date(),
       end: thirtyDaysFromNow
     },
+    equipmentIds: allEquipmentIds,
     includeVirtualStock: true,
     includeConflictAnalysis: true,
     includeSuggestions: false, // Dashboard doesn't need suggestions
