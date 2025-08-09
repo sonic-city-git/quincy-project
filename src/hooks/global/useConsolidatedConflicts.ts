@@ -81,10 +81,15 @@ export function useConsolidatedConflicts({
 
   // Use unified stock engine for equipment conflicts
   const stockEngine = useStockEngine({
-    startDate,
-    endDate,
-    selectedOwner,
-    resourceType: 'equipment'
+    dateRange: {
+      start: new Date(startDate),
+      end: new Date(endDate)
+    },
+    includeVirtualStock: true,
+    includeConflictAnalysis: true,
+    includeSuggestions: true,
+    cacheResults: true,
+    batchSize: 100
   });
 
   // Transform stock engine conflicts to backward-compatible format
@@ -152,10 +157,15 @@ export function useEquipmentConflicts(selectedOwner?: string) {
   const { startDate, endDate } = getWarningTimeframe();
   
   const stockEngine = useStockEngine({
-    startDate,
-    endDate,
-    selectedOwner,
-    resourceType: 'equipment'
+    dateRange: {
+      start: new Date(startDate),
+      end: new Date(endDate)
+    },
+    includeVirtualStock: true,
+    includeConflictAnalysis: true,
+    includeSuggestions: true,
+    cacheResults: true,
+    batchSize: 100
   });
 
   return useMemo(() => {

@@ -61,11 +61,16 @@ export function useSubrentalSuggestions({
 
   // Get conflicts and suggestions from unified stock engine
   const stockEngine = useStockEngine({
-    startDate,
-    endDate,
-    selectedOwner,
-    resourceType,
-    equipmentIds
+    dateRange: {
+      start: new Date(startDate),
+      end: new Date(endDate)
+    },
+    equipmentIds,
+    includeVirtualStock: true,
+    includeConflictAnalysis: true,
+    includeSuggestions: true,
+    cacheResults: true,
+    batchSize: 100
   });
 
   // Check if date is within visible timeline

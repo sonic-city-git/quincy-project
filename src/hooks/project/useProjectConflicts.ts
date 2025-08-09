@@ -56,11 +56,16 @@ export function useProjectConflicts({
   
   // Get conflicts from unified stock engine
   const stockEngine = useStockEngine({
-    startDate,
-    endDate,
-    selectedOwner,
-    resourceType: 'equipment', // For now, focusing on equipment conflicts
-    equipmentIds
+    dateRange: {
+      start: new Date(startDate),
+      end: new Date(endDate)
+    },
+    equipmentIds,
+    includeVirtualStock: true,
+    includeConflictAnalysis: true,
+    includeSuggestions: true,
+    cacheResults: true,
+    batchSize: 100
   });
 
   // Process conflicts with filtering
@@ -127,10 +132,16 @@ export function useEventConflicts(eventId: string, eventDate: Date, equipmentIds
   const eventDateStr = eventDate.toISOString().split('T')[0];
   
   const stockEngine = useStockEngine({
-    startDate: eventDateStr,
-    endDate: eventDateStr,
-    resourceType: 'equipment',
-    equipmentIds
+    dateRange: {
+      start: new Date(eventDateStr),
+      end: new Date(eventDateStr)
+    },
+    equipmentIds,
+    includeVirtualStock: true,
+    includeConflictAnalysis: true,
+    includeSuggestions: true,
+    cacheResults: true,
+    batchSize: 100
   });
 
   return useMemo(() => {
@@ -168,10 +179,16 @@ export function useSectionConflicts(
   const endDate = dates[dates.length - 1];
 
   const stockEngine = useStockEngine({
-    startDate,
-    endDate,
-    resourceType: 'equipment',
-    equipmentIds
+    dateRange: {
+      start: new Date(startDate),
+      end: new Date(endDate)
+    },
+    equipmentIds,
+    includeVirtualStock: true,
+    includeConflictAnalysis: true,
+    includeSuggestions: true,
+    cacheResults: true,
+    batchSize: 100
   });
 
   return useMemo(() => {

@@ -54,11 +54,16 @@ export function useFolderWarnings(
 
   // Get conflicts from unified stock engine
   const stockEngine = useStockEngine({
-    startDate,
-    endDate,
-    selectedOwner,
-    resourceType: 'equipment',
-    equipmentIds: allEquipmentIds
+    dateRange: {
+      start: new Date(startDate),
+      end: new Date(endDate)
+    },
+    equipmentIds: allEquipmentIds,
+    includeVirtualStock: true,
+    includeConflictAnalysis: true,
+    includeSuggestions: true,
+    cacheResults: true,
+    batchSize: 100
   });
 
   if (stockEngine.isLoading) {
