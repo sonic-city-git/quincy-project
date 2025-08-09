@@ -7,7 +7,7 @@ import {
   DropdownMenuCheckboxItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useFolders } from "@/hooks/useFolders";
+import { useFolders } from "@/hooks/ui";
 
 interface EquipmentFolderFilterProps {
   selectedFolders: string[];

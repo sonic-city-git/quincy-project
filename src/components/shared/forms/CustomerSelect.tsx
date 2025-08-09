@@ -3,7 +3,7 @@
  * Reduced from 46 lines to 22 lines (52% reduction)
  */
 
-import { useCustomers } from "@/hooks/useCustomers";
+import { useCustomers } from "@/hooks/customer";
 import { DataSelect } from "@/components/shared/forms/SearchableSelect";
 
 interface CustomerSelectProps {

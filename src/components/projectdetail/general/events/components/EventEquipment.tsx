@@ -1,61 +1,27 @@
 /**
  * 🎯 EVENT EQUIPMENT COMPONENT
  * 
- * Handles equipment sync status and actions for events
- * Based on original: EquipmentIcon + BaseEquipmentIcon + EquipmentDifferenceDialog
+ * Shows operational equipment status: overbookings, warnings, subrentals
+ * Replaces sync functionality with operational intelligence
  */
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Package } from 'lucide-react';
-import { EquipmentDifferenceDialog } from '../dialogs/EquipmentDifferenceDialog';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { CalendarEvent } from '@/types/events';
-import { useEquipmentSync } from '@/hooks/useEquipmentSync';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-
-interface EquipmentItem {
-  id: string;
-  quantity: number;
-  equipment: {
-    name: string;
-    code: string | null;
-  };
-  group: {
-    name: string;
-  } | null;
-}
-
-interface EquipmentDifference {
-  added: EquipmentItem[];
-  removed: EquipmentItem[];
-  changed: {
-    item: EquipmentItem;
-    oldQuantity: number;
-    newQuantity: number;
-  }[];
-}
+import { useEquipmentConflicts } from '@/hooks/global/useConsolidatedConflicts';
+import { OverBookedEquipmentDialog } from '../dialogs/OverBookedEquipmentDialog';
 
 export interface EventEquipmentProps {
   event?: CalendarEvent;
   events?: CalendarEvent[];
   variant?: 'icon' | 'section';
-  isSynced?: boolean;
-  hasProjectEquipment?: boolean;
   disabled?: boolean;
   className?: string;
-  onSync?: (eventIds: string[]) => void;
 }
 
 
@@ -64,179 +30,105 @@ export function EventEquipment({
   event,
   events = [],
   variant = 'icon',
-  isSynced,
-  hasProjectEquipment,
   disabled = false,
-  className,
-  onSync
+  className
 }: EventEquipmentProps) {
-  const { syncEvent, syncEvents, isSyncing } = useEquipmentSync();
-  const [showDifferences, setShowDifferences] = useState(false);
-  const [differences, setDifferences] = useState<EquipmentDifference>({
-    added: [],
-    removed: [],
-    changed: []
-  });
-  
-  const targetEvent = event || events[0];
+  const targetEvent = event || (events.length > 0 ? events[0] : null);
   const targetEvents = events.length > 0 ? events : (targetEvent ? [targetEvent] : []);
+  const [dialogOpen, setDialogOpen] = useState(false);
   
-  // Don't render if no equipment needed or no project equipment
-  if (!targetEvent?.type?.needs_equipment || !hasProjectEquipment) {
+  // Don't render if no equipment needed or no valid event
+  if (!targetEvent?.type?.needs_equipment || !targetEvent.id) {
     return null;
   }
 
-  const isMultiple = targetEvents.length > 1;
-  const isEquipmentSynced = isSynced ?? false;
+  // Get real equipment conflicts for this event's date
+  const { conflicts: equipmentConflicts, isLoading } = useEquipmentConflicts();
+  
+  // Check if this specific event has equipment conflicts
+  const eventConflicts = useMemo(() => {
+    if (!targetEvent?.date || !equipmentConflicts?.length) return [];
+    
+    // Format the event date to match conflict date format (YYYY-MM-DD)
+    // Handle both Date objects and string dates
+    const eventDate = targetEvent.date instanceof Date 
+      ? targetEvent.date.toISOString().split('T')[0]
+      : new Date(targetEvent.date).toISOString().split('T')[0];
+    
+    // Find conflicts on this event's date
+    return equipmentConflicts.filter(conflict => conflict.date === eventDate);
+  }, [targetEvent?.date, equipmentConflicts]);
+  
+  // Operational status logic based on requirements:
+  // 🟢 Green: All equipment available (no overbookings) 
+  // 🔴 Red: Overbooking detected on any equipment on this date
+  // 🔵 Blue: Overbooking resolved with subrental (implement later)
+  
+  const hasOverbookings = eventConflicts.length > 0;
+  const hasSubrentals = false; // TODO: Implement subrental detection (later)
+  const isAvailable = !hasOverbookings && !hasSubrentals; // All equipment available
 
-  const handleSync = async () => {
-    console.log('🎯 handleSync called for event:', targetEvent.id);
-    await syncEvent(targetEvent.id, targetEvent.project_id);
-    onSync?.([targetEvent.id]);
+  // Determine operational status and styling based on requirements
+  const getEquipmentStatus = () => {
+    if (hasOverbookings) {
+      return {
+        color: 'text-red-600',
+        tooltip: 'Equipment overbooking detected - click to view conflicts',
+        clickable: true
+      };
+    }
+    if (hasSubrentals) {
+      return {
+        color: 'text-blue-500',
+        tooltip: 'Overbooking resolved with subrental equipment',
+        clickable: false
+      };
+    }
+    // Green - all equipment available
+    return {
+      color: 'text-green-600',
+      tooltip: 'All equipment available',
+      clickable: false
+    };
   };
 
-  const fetchDifferences = async () => {
-    try {
-      const { data: projectEquipment } = await supabase
-        .from('project_equipment')
-        .select(`
-          equipment_id,
-          quantity,
-          group_id,
-          equipment:equipment (
-            name,
-            code
-          ),
-          group:project_equipment_groups (
-            name
-          )
-        `)
-        .eq('project_id', targetEvent.project_id);
+  const status = getEquipmentStatus();
 
-      const { data: eventEquipment } = await supabase
-        .from('project_event_equipment')
-        .select(`
-          equipment_id,
-          quantity,
-          group_id,
-          equipment:equipment (
-            name,
-            code
-          ),
-          group:project_equipment_groups (
-            name
-          )
-        `)
-        .eq('event_id', targetEvent.id);
-
-      const projectMap = new Map(projectEquipment?.map(item => [item.equipment_id, item]) || []);
-      const eventMap = new Map(eventEquipment?.map(item => [item.equipment_id, item]) || []);
-
-      const added: EquipmentItem[] = [];
-      const removed: EquipmentItem[] = [];
-      const changed: EquipmentDifference['changed'] = [];
-
-      projectMap.forEach((projectItem, equipId) => {
-        const eventItem = eventMap.get(equipId);
-        
-        if (!eventItem) {
-          added.push({
-            id: equipId,
-            equipment: projectItem.equipment,
-            quantity: projectItem.quantity,
-            group: projectItem.group
-          });
-        } else if (eventItem.quantity !== projectItem.quantity) {
-          changed.push({
-            item: {
-              id: equipId,
-              equipment: projectItem.equipment,
-              quantity: eventItem.quantity,
-              group: projectItem.group
-            },
-            oldQuantity: eventItem.quantity,
-            newQuantity: projectItem.quantity
-          });
-        }
-      });
-
-      eventMap.forEach((eventItem, equipId) => {
-        if (!projectMap.has(equipId)) {
-          removed.push({
-            id: equipId,
-            equipment: eventItem.equipment,
-            quantity: eventItem.quantity,
-            group: eventItem.group
-          });
-        }
-      });
-
-      setDifferences({ added, removed, changed });
-    } catch (error) {
-      console.error('Error fetching differences:', error);
-      toast.error("Failed to fetch equipment differences");
+  // Handle click for overbooking conflicts
+  const handleClick = () => {
+    if (status.clickable && hasOverbookings) {
+      setDialogOpen(true);
     }
   };
 
-  const handleViewDifferences = () => {
-    setShowDifferences(true);
-    fetchDifferences();
-  };
-
-  // If synced, show simple icon
-  if (isEquipmentSynced) {
-    return (
+  // Operational status icon with click handling for conflicts
+  return (
+    <>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="h-10 w-10 flex items-center justify-center">
-            <Package className="h-5 w-5 text-green-500" />
+          <div 
+            className={`h-10 w-10 flex items-center justify-center ${
+              status.clickable ? 'cursor-pointer hover:bg-muted/50 rounded' : ''
+            }`}
+            onClick={handleClick}
+          >
+            <Package className={`h-5 w-5 ${status.color}`} />
           </div>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Equipment is synced</p>
+          <p>{status.tooltip}</p>
         </TooltipContent>
       </Tooltip>
-    );
-  }
 
-  // Interactive icon with dropdown
-  return (
-    <>
-      <DropdownMenu>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-10 w-10 p-0"
-                disabled={disabled}
-              >
-                <Package className={`h-5 w-5 ${isSyncing ? 'text-orange-500 animate-pulse' : 'text-blue-500'}`} />
-              </Button>
-            </DropdownMenuTrigger>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{isSyncing ? "Syncing equipment..." : "Equipment out of sync"}</p>
-          </TooltipContent>
-        </Tooltip>
-        <DropdownMenuContent align="start">
-          {!isMultiple && (
-            <DropdownMenuItem onClick={handleViewDifferences}>
-              View differences
-            </DropdownMenuItem>
-          )}
-          <DropdownMenuItem onClick={handleSync}>
-            Sync equipment
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <EquipmentDifferenceDialog
-        isOpen={showDifferences}
-        onOpenChange={setShowDifferences}
-        equipmentDifference={differences}
-      />
+      {/* Equipment Conflicts Dialog */}
+      {targetEvent && (
+        <OverBookedEquipmentDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          event={targetEvent}
+          conflicts={eventConflicts}
+        />
+      )}
     </>
   );
 }

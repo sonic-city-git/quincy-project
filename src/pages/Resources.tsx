@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Database } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { useTabPersistence } from "@/hooks/useTabPersistence";
-import { useFilterState } from "@/hooks/useFilterState";
+import { useTabPersistence } from "@/hooks/ui";
+import { useFilterState } from "@/hooks/ui";
 
 // Import the custom header and table components
 import { ResourcesHeader, ResourceFilters } from "@/components/resources/ResourcesHeader";

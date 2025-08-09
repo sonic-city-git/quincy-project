@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useProjects } from "@/hooks/useProjects";
+import { useProjects } from "@/hooks/project";
 import { ProjectFilters } from "../ProjectsHeader";
 import { COMPONENT_CLASSES, cn } from "@/design-system";
-import { useBatchProjectPGA } from "@/hooks/useProjectPGA";
+import { useBatchProjectPGA } from "@/hooks/project";
 import { formatPGA } from "@/utils/pgaCalculation";
 import { getSimplifiedProjectStatus, getInvoiceStatusStyles, INVOICE_STATUS_SCHEMES } from "@/utils/invoiceStatusColors";
 

@@ -3,7 +3,7 @@ import { AuthProvider } from "@/components/AuthProvider";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layouts/AppLayout";
-import { useGlobalKeyboard } from "@/hooks/useGlobalKeyboard";
+import { useGlobalKeyboard } from "@/hooks/global";
 import Auth from "@/pages/Auth";
 import Index from "@/pages/Index";
 import ProjectList from "@/pages/ProjectList";

@@ -17,42 +17,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { STATUS_PATTERNS } from '@/design-system';
-import { useConsolidatedProjectSync } from '@/hooks/useConsolidatedSyncStatus';
+import { EVENT_STATUS_CONFIG } from '@/constants/eventStatus';
 
-// Status configuration for bulk actions
-const STATUS_CONFIG = {
-  proposed: {
-    icon: Clock,
-    label: 'Proposed',
-    pattern: STATUS_PATTERNS.warning,
-    description: 'Waiting for confirmation'
-  },
-  confirmed: {
-    icon: CheckCircle,
-    label: 'Confirmed',
-    pattern: STATUS_PATTERNS.success,
-    description: 'Ready for production'
-  },
-  'invoice ready': {
-    icon: Send,
-    label: 'Invoice Ready',
-    pattern: STATUS_PATTERNS.info,
-    description: 'Ready to invoice'
-  },
-  cancelled: {
-    icon: XCircle,
-    label: 'Cancelled',
-    pattern: STATUS_PATTERNS.critical,
-    description: 'Event cancelled'
-  },
-  invoiced: {
-    icon: CheckCircle,
-    label: 'Invoiced',
-    pattern: STATUS_PATTERNS.operational,
-    description: 'Completed and invoiced'
-  }
-} as const;
+
+// Use unified status configuration
+const STATUS_CONFIG = EVENT_STATUS_CONFIG;
 
 // Shared grid column definitions - MUST stay in sync between header and cards
 // Optimized for Norwegian currency display and Event column protection
@@ -337,24 +306,22 @@ export function EventTableHeader({ className }: { className?: string }) {
  * Provides column context without overwhelming the section design
  * Now includes action icons for equipment, crew, and status management
  */
-export function EventSectionTableHeader({ 
+export function EventSectionTableHeader({
+  sectionTitle,
   className,
   events,
   onStatusChange,
-  onSyncSectionEquipment,
-  onSyncSectionCrew,
   onBulkStatusChange
 }: { 
+  sectionTitle?: string;
   className?: string;
   events?: any[];
   onStatusChange?: (event: any, newStatus: any) => void;
-  onSyncSectionEquipment?: () => void;
-  onSyncSectionCrew?: () => void;
   onBulkStatusChange?: (newStatus: string) => void;
 }) {
-  // Get consolidated sync data for all events
-  const projectId = events?.[0]?.project_id;
-  const { projectSyncData, isLoading } = useConsolidatedProjectSync(projectId || '');
+  // Count events that need equipment/crew for display purposes
+  const eventsWithEquipment = events?.filter(event => event.type?.needs_equipment) || [];
+  const eventsWithCrew = events?.filter(event => event.type?.needs_crew) || [];
   return (
     <div className={cn(
       'border-b border-border/10 bg-muted/20 rounded-b-lg',
@@ -385,109 +352,20 @@ export function EventSectionTableHeader({
 
             {/* Equipment Icon Column - Always visible */}
             <div className="flex items-center justify-center">
-              {events && events.length > 0 && events[0]?.type?.needs_equipment && (() => {
-                if (isLoading || !projectSyncData) {
-                  return (
-                    <Button variant="ghost" size="icon" className="h-10 w-10 p-0" disabled>
-                      <Package className="h-5 w-5 text-gray-400" />
-                    </Button>
-                  );
-                }
-                
-                // Check equipment sync status using consolidated data
-                const eventsWithEquipment = events.filter(event => event.type?.needs_equipment);
-                let allSynced = true;
-                
-                for (const event of eventsWithEquipment) {
-                  const eventEq = projectSyncData.eventEquipment.get(event.id) || [];
-                  if (eventEq.length === 0) {
-                    allSynced = false;
-                    break;
-                  }
-                  
-                  // Check if all equipment items are synced
-                  const hasUnsyncedEquipment = !projectSyncData.equipment.every(projEq => {
-                    const eventItem = eventEq.find(eq => eq.equipment_id === projEq.equipment_id);
-                    return eventItem && eventItem.is_synced;
-                  });
-                  
-                  if (hasUnsyncedEquipment) {
-                    allSynced = false;
-                    break;
-                  }
-                }
-                
-                let iconColor = allSynced ? 'text-green-500' : 'text-blue-500';
-                let tooltipText = allSynced ? 'All equipment synced' : `Sync equipment for all ${events.length} events`;
-                
-                return (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10 p-0"
-                    onClick={onSyncSectionEquipment}
-                    disabled={!onSyncSectionEquipment}
-                    title={tooltipText}
-                  >
-                    <Package className={`h-5 w-5 ${iconColor}`} />
-                  </Button>
-                );
-              })()}
+              {eventsWithEquipment.length > 0 && (
+                <div className="h-10 w-10 flex items-center justify-center" title="Equipment status">
+                  <Package className="h-5 w-5 text-green-500" />
+                </div>
+              )}
             </div>
 
             {/* Crew Icon Column - Always visible */}
             <div className="flex items-center justify-center">
-              {events && events.length > 0 && events[0]?.type?.needs_crew && (() => {
-                if (isLoading || !projectSyncData) {
-                  return (
-                    <Button variant="ghost" size="icon" className="h-10 w-10 p-0" disabled>
-                      <Users className="h-5 w-5 text-gray-400" />
-                    </Button>
-                  );
-                }
-                
-                // Check crew sync status using consolidated data
-                const eventsWithCrew = events.filter(event => event.type?.needs_crew);
-                
-                let allSynced = true;
-                for (const event of eventsWithCrew) {
-                  // Filter project roles by this event's variant
-                  const eventVariantId = event.variant_id;
-                  const variantProjectRoles = projectSyncData.projectRoles.filter(pr => pr.variant_id === eventVariantId);
-                  const hasProjectRoles = variantProjectRoles.length > 0;
-                  
-                  if (hasProjectRoles) {
-                    const eventRoles = projectSyncData.eventRoles.get(event.id) || [];
-                    
-                    // Check if all variant-specific project roles are assigned in this event
-                    const hasUnassignedRoles = variantProjectRoles.some(pr => {
-                      const eventRole = eventRoles.find(er => er.role_id === pr.role.id);
-                      return !eventRole?.crew_member_id;
-                    });
-                    
-                    if (hasUnassignedRoles) {
-                      allSynced = false;
-                      break;
-                    }
-                  }
-                }
-                
-                let iconColor = allSynced ? 'text-green-500' : 'text-blue-500';
-                let tooltipText = allSynced ? 'All crew synced' : `Sync crew for all ${events.length} events`;
-                
-                return (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-10 w-10 p-0"
-                    onClick={onSyncSectionCrew}
-                    disabled={!onSyncSectionCrew}
-                    title={tooltipText}
-                  >
-                    <Users className={`h-5 w-5 ${iconColor}`} />
-                  </Button>
-                );
-              })()}
+              {eventsWithCrew.length > 0 && (
+                <div className="h-10 w-10 flex items-center justify-center" title="Crew status">
+                  <Users className="h-5 w-5 text-green-500" />
+                </div>
+              )}
             </div>
         
             {/* Status Action Column - Always visible */}
@@ -506,7 +384,7 @@ export function EventSectionTableHeader({
                   </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56">
                       <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
-                        Bulk Actions ({events.length} events)
+                        {sectionTitle || 'Bulk'} Actions ({events.length} events)
                       </div>
                       <DropdownMenuSeparator />
                       

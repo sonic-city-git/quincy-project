@@ -2,7 +2,7 @@ import { CalendarEvent } from "@/types/events";
 import { EventSection } from "./EventSection";
 import { EventListEmpty } from "./EventListEmpty";
 import { EventListLoading } from "./EventListLoading";
-import { eventUtils } from "./utils";
+import { statusUtils } from "@/constants/eventStatus";
 import { Card } from "@/components/ui/card";
 import { Brush, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -27,7 +27,7 @@ export function EventList({ events, isLoading, onStatusChange, onEdit }: EventLi
 
   // Filter out null/undefined events before grouping
   const validEvents = events.filter(event => event && event.date && event.status);
-  const { proposed, confirmed, ready, cancelled, doneAndDusted } = eventUtils.groupEventsByStatus(validEvents);
+  const { proposed, confirmed, ready, cancelled, doneAndDusted } = statusUtils.groupByStatus(validEvents);
 
   const sections = [
     { title: "Proposed", events: proposed, variant: "warning" as const },

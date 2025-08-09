@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Mail, Phone, Folder } from "lucide-react";
-import { CrewRole } from "@/hooks/useCrewRoles";
+import { CrewRole } from "@/hooks/crew";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { getRoleBadgeStyle } from "@/design-system";
 

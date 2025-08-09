@@ -17,7 +17,7 @@ import { useQuery } from '@tanstack/react-query';
 import { format, addDays } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { OVERBOOKING_WARNING_DAYS, getWarningTimeframe } from '@/constants/timeframes';
-import { usePersistentExpandedGroups } from '@/hooks/usePersistentExpandedGroups';
+import { usePersistentExpandedGroups } from '@/hooks/ui';
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/types/equipment';
 import { PERFORMANCE } from '../constants';
 

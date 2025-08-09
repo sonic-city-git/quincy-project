@@ -2,7 +2,7 @@ import { AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDisplayDate } from "@/utils/dateFormatters";
-import { useDashboardConflicts } from "@/hooks/useDashboardConflicts";
+import { useDashboardConflicts } from "@/hooks/global";
 
 interface EquipmentConflict {
   equipmentId: string;

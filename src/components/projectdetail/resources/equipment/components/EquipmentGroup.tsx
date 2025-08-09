@@ -10,7 +10,7 @@ interface ProjectEquipmentWithFolder extends ProjectEquipment {
 import { ProjectEquipmentItem } from "./EquipmentItem";
 import { formatPrice } from "@/utils/priceFormatters";
 import { FOLDER_ORDER } from "@/types/equipment";
-import { useFolders } from "@/hooks/useFolders";
+import { useFolders } from "@/hooks/ui";
 import { useMemo, useEffect } from "react";
 import { 
   COMPONENT_CLASSES, 

@@ -157,7 +157,8 @@ export function isProjectVariant(obj: any): obj is ProjectVariant {
     typeof obj.id === 'string' &&
     typeof obj.project_id === 'string' &&
     typeof obj.variant_name === 'string' &&
-    typeof obj.is_default === 'boolean';
+    (typeof obj.is_default === 'boolean' || obj.is_default === undefined) && // Allow missing is_default for compatibility
+    typeof obj.sort_order === 'number';
 }
 
 export function isVariantCrewRole(obj: any): obj is VariantCrewRole {

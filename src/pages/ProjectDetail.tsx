@@ -1,5 +1,5 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { useProjectDetails } from "@/hooks/useProjectDetails";
+import { useProjectDetails } from "@/hooks/project";
 import { PageLayout } from "@/components/layout/PageLayout";
 import { DetailHeader } from "@/components/projectdetail/shared/header/DetailHeader";
 import { DetailTabs } from "@/components/projectdetail/shared/tabs/DetailTabs";

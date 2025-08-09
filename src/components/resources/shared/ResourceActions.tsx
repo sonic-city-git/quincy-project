@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { useCrew } from "@/hooks/useCrew";
-import { useEquipment } from "@/hooks/useEquipment";
+import { useCrew } from "@/hooks/crew";
+import { useEquipment } from "@/hooks/equipment";
 import { EditMemberDialog } from "@/components/resources/crew/EditMemberDialog";
 import { EditEquipmentDialog } from "@/components/resources/equipment/EditEquipmentDialog";
 import { useState } from "react";

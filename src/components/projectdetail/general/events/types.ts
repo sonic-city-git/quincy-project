@@ -41,37 +41,20 @@ export interface EventCardProps extends BaseEventProps {
   showFullActions?: boolean;
 }
 
-// Equipment sync status
-export interface EquipmentSyncStatus {
-  isSynced: boolean;
-  isChecking: boolean;
-  hasProjectEquipment: boolean;
-  canSync: boolean;
-}
+/**
+ * @deprecated These types have been moved to @/types/eventSync
+ * Import from there instead for the unified type system
+ */
+import { 
+  EquipmentSyncStatus,
+  CrewSyncStatus, 
+  SectionSyncStatus,
+  EventActionHandlers
+} from '@/types/eventSync';
 
-// Crew sync status
-export interface CrewSyncStatus {
-  isFullySynced: boolean;
-  hasConflicts: boolean;
-  hasProjectRoles: boolean;
-  assignedCount: number;
-  totalCount: number;
-  conflictCount: number;
-}
-
-// Section sync aggregation
-export interface SectionSyncStatus {
-  equipment: 'synced' | 'not-synced' | 'no-equipment' | 'syncing';
-  crew: 'synced' | 'partial' | 'conflicts' | 'not-synced' | 'no-crew';
-  hasActions: boolean;
-}
-
-// Event actions
-export interface EventActionHandlers {
-  onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
-  onEdit?: (event: CalendarEvent) => void;
-  onEquipmentSync?: (eventId: string) => void;
-  onCrewSync?: (eventId: string) => void;
-  onDuplicate?: (event: CalendarEvent) => void;
-  onDelete?: (event: CalendarEvent) => void;
-}
+export { 
+  EquipmentSyncStatus,
+  CrewSyncStatus, 
+  SectionSyncStatus,
+  EventActionHandlers
+};

@@ -20,9 +20,9 @@ import { COMPONENT_CLASSES, RESPONSIVE } from '@/design-system';
 import { VariantEquipmentList } from '../equipment/components/VariantEquipmentList';
 import { VariantCrewList } from '../crew/components/VariantCrewList';
 import { AvailableResourcesPanel } from './AvailableResourcesPanel';
-import { useVariantEquipment } from '@/hooks/useVariantEquipment';
-import { useVariantCrew } from '@/hooks/useVariantCrew';
-import { useProjectDetails } from '@/hooks/useProjectDetails';
+import { useVariantEquipment } from '@/hooks/variant';
+import { useVariantCrew } from '@/hooks/variant';
+import { useProjectDetails } from '@/hooks/project';
 import { Equipment } from '@/types/equipment';
 import { toast } from 'sonner';
 import { copyEquipmentBetweenVariants } from '@/utils/variantEquipmentCopy';
@@ -32,14 +32,16 @@ import { GroupDialogs } from '../equipment/components/GroupDialogs';
 // Equipment Section Button Component
 function EquipmentSectionButton({ 
   projectId, 
-  variantName, 
+  variantId, 
+  variantName,
   onAddGroup 
 }: { 
   projectId: string; 
+  variantId: string;
   variantName: string;
   onAddGroup: () => void;
 }) {
-  const { equipmentData } = useVariantEquipment(projectId, variantName);
+  const { equipmentData } = useVariantEquipment(projectId, variantId);
   
   const hasEquipment = equipmentData && (
     equipmentData.equipment_groups.length > 0 || 
@@ -93,10 +95,18 @@ function EquipmentSectionButton({
 }
 
 // Crew Section Button Component
-function CrewSectionButton({ projectId, variantName }: { projectId: string; variantName: string }) {
+function CrewSectionButton({ 
+  projectId, 
+  variantId,
+  variantName 
+}: { 
+  projectId: string; 
+  variantId: string;
+  variantName: string;
+}) {
   const [isAddRoleDialogOpen, setIsAddRoleDialogOpen] = useState(false);
   const { project } = useProjectDetails(projectId);
-  const { crewRoles } = useVariantCrew(projectId, variantName);
+  const { crewRoles } = useVariantCrew(projectId, variantId);
 
   const totalRoles = crewRoles?.length || 0;
 
@@ -117,6 +127,7 @@ function CrewSectionButton({ projectId, variantName }: { projectId: string; vari
           isOpen={isAddRoleDialogOpen}
           onClose={() => setIsAddRoleDialogOpen(false)}
           project={project}
+          variantId={variantId}
           variantName={variantName}
         />
       )}
@@ -128,6 +139,7 @@ interface ResourcesContentProps {
   projectId: string;
   variants: ProjectVariant[];
   selectedVariant: string;
+  selectedVariantObject: ProjectVariant | undefined;
   onVariantSelect: (variantName: string) => void;
   isLoading: boolean;
   onEditVariant?: (variant: ProjectVariant) => void;
@@ -138,6 +150,7 @@ export function ResourcesContent({
   projectId,
   variants,
   selectedVariant,
+  selectedVariantObject,
   onVariantSelect,
   isLoading,
   onEditVariant,
@@ -399,7 +412,8 @@ export function ResourcesContent({
                           <h3 className="font-medium text-sm">Equipment</h3>
                         </div>
                         <EquipmentSectionButton 
-                          projectId={projectId} 
+                          projectId={projectId}
+                          variantId={selectedVariantObject?.id || ''}
                           variantName={selectedVariant}
                           onAddGroup={() => setShowNewGroupDialog(true)}
                         />
@@ -409,7 +423,8 @@ export function ResourcesContent({
                       <div className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
                         <div className="p-4">
                           <VariantEquipmentList 
-                            projectId={projectId} 
+                            projectId={projectId}
+                            variantId={selectedVariantObject?.id || ''}
                             variantName={selectedVariant}
                             selectedGroupId={selectedGroupId}
                             onGroupSelect={setSelectedGroupId}
@@ -429,7 +444,8 @@ export function ResourcesContent({
                           <h3 className="font-medium text-sm">Crew Roles</h3>
                         </div>
                         <CrewSectionButton 
-                          projectId={projectId} 
+                          projectId={projectId}
+                          variantId={selectedVariantObject?.id || ''}
                           variantName={selectedVariant}
                         />
                       </div>
@@ -438,8 +454,9 @@ export function ResourcesContent({
                       <div className="absolute inset-0 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
                         <div className="p-4">
                           <VariantCrewList 
-                            projectId={projectId} 
-                            variantName={selectedVariant} 
+                            projectId={projectId}
+                            variantId={selectedVariantObject?.id || ''}
+                            variantName={selectedVariant}
                           />
                         </div>
                       </div>

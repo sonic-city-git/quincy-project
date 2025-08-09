@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { CalendarView } from "./CalendarView";
-import { useCalendarDate } from "@/hooks/useCalendarDate";
-import { useEventTypes } from "@/hooks/useEventTypes";
-import { useProjectEvents } from "@/hooks/useConsolidatedEvents";
+import { useCalendarDate } from "@/hooks/calendar";
+import { useEventTypes } from "@/hooks/event";
+import { useProjectEvents } from "@/hooks/event";
 import { CalendarEvent, EventType } from "@/types/events";
 import { EventFormDialog, EventFormData } from "@/components/shared/dialogs/EventFormDialog";
 

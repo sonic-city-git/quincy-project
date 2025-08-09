@@ -1,9 +1,9 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Equipment } from "@/types/equipment";
-import { useEquipment } from "@/hooks/useEquipment";
+import { useEquipment } from "@/hooks/equipment";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { useFolders } from "@/hooks/useFolders";
+import { useFolders } from "@/hooks/ui";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, Search } from "lucide-react";

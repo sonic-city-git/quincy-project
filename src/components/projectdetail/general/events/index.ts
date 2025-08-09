@@ -22,8 +22,4 @@ export { EventActions } from './components/EventActions';
 
 // Dialogs
 export { EquipmentDifferenceDialog } from './dialogs/EquipmentDifferenceDialog';
-export { CrewRolesDialog } from './dialogs/CrewRolesDialog';
-
-// Utilities
-export { eventUtils } from './utils';
 export type { EventCardProps, EventSectionProps, EventListProps } from './types';

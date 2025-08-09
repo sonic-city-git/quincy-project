@@ -1,5 +1,5 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCrew } from "@/hooks/useCrew";
+import { useCrew } from "@/hooks/crew";
 import { useCrewSort } from "@/components/resources/crew/useCrewSort";
 import { SONIC_CITY_FOLDER_ID } from "@/constants/organizations";
 import { FORM_PATTERNS, cn } from "@/design-system";

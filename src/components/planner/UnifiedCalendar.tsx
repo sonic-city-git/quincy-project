@@ -4,7 +4,7 @@ import { format } from "date-fns";
 
 // Option to test unified system
 import { useTimelineHub } from './shared/hooks/useTimelineHub';
-import { useDashboardConflicts } from '@/hooks/useDashboardConflicts';
+import { useDashboardConflicts } from '@/hooks/global';
 
 
 import { LAYOUT, PERFORMANCE } from './shared/constants';
