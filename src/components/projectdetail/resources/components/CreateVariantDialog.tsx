@@ -5,13 +5,7 @@ import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { FormDialog } from '@/components/shared/dialogs/FormDialog';
 import {
   Form,
   FormControl,
@@ -93,16 +87,14 @@ export function CreateVariantDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Create New Variant</DialogTitle>
-          <DialogDescription>
-            Create a new configuration variant for this project. Variants help organize different setups like "Trio", "Band", or "DJ" configurations.
-          </DialogDescription>
-        </DialogHeader>
-
-        <Form {...form}>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Create New Variant"
+      description="Create a new configuration variant for this project. Variants help organize different setups like 'Trio', 'Band', or 'DJ' configurations."
+      size="sm"
+    >
+      <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
@@ -167,7 +159,6 @@ export function CreateVariantDialog({
             </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+    </FormDialog>
   );
 }

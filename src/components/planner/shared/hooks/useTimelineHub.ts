@@ -80,14 +80,7 @@ export function useTimelineHub({
     const resources = [];
     const resourceById = new Map();
 
-    // Debug: Log all folder names from database
-    if (process.env.NODE_ENV === 'development') {
-      console.log('🗂️ All folders from database:', foldersResult.data?.map(f => ({ 
-        id: f.id, 
-        name: f.name, 
-        parent_id: f.parent_id 
-      })));
-    }
+    // Folders loaded from database (debug logging removed)
 
     equipmentResult.data?.forEach(eq => {
       const folder = folderMap.get(eq.folder_id);
@@ -97,16 +90,7 @@ export function useTimelineHub({
       const subFolder = folder?.parent_id ? folder.name : undefined;
       const folderPath = subFolder ? `${mainFolder}/${subFolder}` : mainFolder;
 
-      // Debug: Log folder derivation for first few items
-      if (process.env.NODE_ENV === 'development' && resources.length < 3) {
-        console.log(`📁 Equipment "${eq.name}":`, {
-          folderId: eq.folder_id,
-          folder: folder?.name,
-          parentFolder: parentFolder?.name,
-          derivedMainFolder: mainFolder,
-          derivedSubFolder: subFolder
-        });
-      }
+      // Folder derivation logic (debug logging removed)
 
       const resource = {
         id: eq.id,
@@ -232,7 +216,7 @@ export function useTimelineHub({
 
     // Simplified logging
     if (process.env.NODE_ENV === 'development' && equipmentBookings?.length) {
-      console.log(`📦 Loaded ${equipmentBookings.length} bookings`);
+      // Bookings loaded successfully (logging removed)
     }
 
     // Transform to booking map
@@ -396,10 +380,7 @@ export function useTimelineHub({
       }
     });
     
-    // Clean logging
-    if (process.env.NODE_ENV === 'development' && expandedIds.length > 0) {
-      console.log(`📂 ${expandedIds.length} items expanded`);
-    }
+    // Track expansion state (logging removed)
     
     return expandedIds;
   }, [resourceData?.resources, expandedGroups]);
@@ -511,11 +492,7 @@ export function useTimelineHub({
     });
     
     // Debug: Log all derived main folder names before sorting
-    if (process.env.NODE_ENV === 'development' && resourceType === 'equipment') {
-      const mainFolderNames = groups.map(g => g.mainFolder);
-      console.log('📂 All main folder names before sorting:', mainFolderNames);
-      console.log('📋 Expected FOLDER_ORDER:', FOLDER_ORDER);
-    }
+    // Sort equipment folders according to FOLDER_ORDER (logging removed)
     
     // Sort by resource type
     if (resourceType === 'equipment') {
@@ -525,8 +502,7 @@ export function useTimelineHub({
         
         // Debug logging to identify folder name mismatches
         if (process.env.NODE_ENV === 'development') {
-          if (indexA === -1) console.log(`🔍 Folder not in FOLDER_ORDER: "${a.mainFolder}"`);
-          if (indexB === -1) console.log(`🔍 Folder not in FOLDER_ORDER: "${b.mainFolder}"`);
+          // Handle unknown folders (logging removed for performance)
         }
         
         // Handle folders not in the predefined order

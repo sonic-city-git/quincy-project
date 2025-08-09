@@ -484,16 +484,18 @@ export function ResourcesContent({
       {/* Group Creation Dialog */}
       <GroupDialogs
         groups={equipmentData?.equipment_groups || []}
-        showDeleteDialog={false} // Not handling deletes at this level
-        showNewGroupDialog={showNewGroupDialog}
+        deleteDialogOpen={false} // Not handling deletes at this level
+        newGroupDialogOpen={showNewGroupDialog}
         groupToDelete={null}
         targetGroupId=""
         newGroupName={newGroupName}
-        onDeleteDialogClose={() => {}}
-        onNewGroupDialogClose={() => {
-          setShowNewGroupDialog(false);
-          setNewGroupName("");
-          setPendingEquipmentForGroup(null);
+        onDeleteDialogOpenChange={() => {}}
+        onNewGroupDialogOpenChange={(open) => {
+          setShowNewGroupDialog(open);
+          if (!open) {
+            setNewGroupName("");
+            setPendingEquipmentForGroup(null);
+          }
         }}
         onTargetGroupSelect={() => {}}
         onNewGroupNameChange={setNewGroupName}

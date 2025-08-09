@@ -7,13 +7,7 @@
 
 import React, { useState } from 'react';
 import { Users, AlertTriangle, UserCheck, UserX, Calendar, ExternalLink } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { FormDialog } from '@/components/shared/dialogs/FormDialog';
 import {
   Table,
   TableBody,
@@ -126,27 +120,37 @@ export function CrewAssignmentDialog({
 
   const statusColor = getStatusColor();
 
+  const dialogTitle = (
+    <div className="flex items-center gap-2">
+      <Users className={`h-5 w-5 ${
+        statusColor === 'red' ? 'text-red-500' : 
+        statusColor === 'blue' ? 'text-blue-500' : 'text-green-500'
+      }`} />
+      Crew Status: {event.name}
+    </div>
+  );
+
+  const dialogDescription = (
+    <>
+      Crew assignments and conflicts for{' '}
+      <strong>{formatDate(event.date)}</strong>
+      {getStatusSummary() && (
+        <span className="block mt-1 font-medium text-foreground">
+          Issues found: {getStatusSummary()}
+        </span>
+      )}
+    </>
+  );
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Users className={`h-5 w-5 ${
-              statusColor === 'red' ? 'text-red-500' : 
-              statusColor === 'blue' ? 'text-blue-500' : 'text-green-500'
-            }`} />
-            Crew Status: {event.name}
-          </DialogTitle>
-          <DialogDescription>
-            Crew assignments and conflicts for{' '}
-            <strong>{formatDate(event.date)}</strong>
-            {getStatusSummary() && (
-              <span className="block mt-1 font-medium text-foreground">
-                Issues found: {getStatusSummary()}
-              </span>
-            )}
-          </DialogDescription>
-        </DialogHeader>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={dialogTitle}
+      description={dialogDescription}
+      size="full"
+      contentClassName="max-h-[80vh] overflow-y-auto"
+    >
 
         <div className="space-y-6">
           {/* Status Summary Cards */}
@@ -361,7 +365,6 @@ export function CrewAssignmentDialog({
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+    </FormDialog>
   );
 }

@@ -28,9 +28,18 @@ export function useDialogState({
 }: DialogStateProps = {}): DialogStateResult {
   const [internalOpen, setInternalOpen] = useState(false);
   
-  // Use external control if provided, otherwise use internal state
-  const open = externalOpen !== undefined ? externalOpen : internalOpen;
-  const setOpen = externalOnOpenChange || setInternalOpen;
+  // Always use internal state, but sync with external control
+  const isControlled = externalOpen !== undefined;
+  const open = isControlled ? externalOpen : internalOpen;
+  
+  const setOpen = (newOpen: boolean) => {
+    if (!isControlled) {
+      setInternalOpen(newOpen);
+    }
+    if (externalOnOpenChange) {
+      externalOnOpenChange(newOpen);
+    }
+  };
 
   // Unified handler that works for both controlled and uncontrolled
   const handleOpenChange = (newOpen: boolean) => {

@@ -84,7 +84,7 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
             *,
             crew_members(id, name),
             crew_roles(id, name),
-            project_roles!project_event_roles_role_id_fkey(
+            project_roles!project_event_roles_project_role_id_fkey(
               id,
               preferred_id
             )

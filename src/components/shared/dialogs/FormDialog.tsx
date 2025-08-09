@@ -78,7 +78,7 @@ export function FormDialog({
         <DialogHeader>
           <DialogTitle id="dialog-title">{title}</DialogTitle>
           {description && (
-            <DialogDescription id="dialog-description" asChild={typeof description !== 'string'}>
+            <DialogDescription id="dialog-description">
               {typeof description === 'string' ? description : <div>{description}</div>}
             </DialogDescription>
           )}

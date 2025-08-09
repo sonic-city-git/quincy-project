@@ -5,13 +5,7 @@ import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { FormDialog } from '@/components/shared/dialogs/FormDialog';
 import {
   Form,
   FormControl,
@@ -96,16 +90,14 @@ export function EditVariantDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Edit Variant</DialogTitle>
-          <DialogDescription>
-            Update the configuration for "{variant.variant_name}" variant.
-          </DialogDescription>
-        </DialogHeader>
-
-        <Form {...form}>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Edit Variant"
+      description={`Update the configuration for "${variant.variant_name}" variant.`}
+      size="sm"
+    >
+      <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
@@ -127,18 +119,6 @@ export function EditVariantDialog({
               )}
             />
 
-            {/* Show variant name as read-only */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium leading-none text-muted-foreground">
-                Variant Name
-              </label>
-              <div className="px-3 py-2 text-sm bg-muted rounded-md font-mono">
-                {variant.variant_name}
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Variant names cannot be changed after creation
-              </p>
-            </div>
 
             <FormField
               control={form.control}
@@ -183,7 +163,6 @@ export function EditVariantDialog({
             </div>
           </form>
         </Form>
-      </DialogContent>
-    </Dialog>
+    </FormDialog>
   );
 }

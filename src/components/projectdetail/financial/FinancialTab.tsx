@@ -5,9 +5,7 @@
 import { DollarSign } from "lucide-react";
 import { Project } from "@/types/projects";
 import { ProjectTabCard } from "../shared/ProjectTabCard";
-import { InvoiceDialog } from "./InvoiceDialog";
-import { InvoiceSummary } from "./InvoiceSummary";
-import { InvoiceButton } from "./InvoiceButton";
+// Invoice functionality will be rebuilt later
 
 interface FinancialTabProps {
   project: Project;
@@ -22,9 +20,10 @@ export function FinancialTab({ project, projectId }: FinancialTabProps) {
         title="Invoice Management"
         icon={DollarSign}
         iconColor="text-green-500"
-        headerExtra={<InvoiceButton projectId={projectId} />}
       >
-        <InvoiceSummary project={project} />
+        <div className="text-center text-muted-foreground py-8">
+          Invoice functionality coming soon
+        </div>
       </ProjectTabCard>
     </div>
   );
