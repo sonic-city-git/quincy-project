@@ -4,7 +4,7 @@ import { format } from "date-fns";
 
 // Option to test unified system
 import { useTimelineHub } from './shared/hooks/useTimelineHub';
-import { useDashboardConflicts } from '@/hooks/global';
+import { useDashboardStock } from '@/hooks/useGlobalStockEngine';
 
 
 import { LAYOUT, PERFORMANCE } from './shared/constants';
@@ -235,13 +235,12 @@ export function UnifiedCalendar({
     resolveConflict,
   } = currentHub;
 
-  // CRITICAL FIX: When "View Problems" is active, use comprehensive conflict detection
-  // that fetches ALL equipment conflicts regardless of folder expansion state
+  // ONE ENGINE: When "View Problems" is active, use unified stock engine
+  // that includes virtual stock calculations and real-time conflict resolution
   const { 
-    equipmentConflicts: allEquipmentConflicts, 
-    crewConflicts: allCrewConflicts,
+    conflicts: allConflicts,
     isLoading: isLoadingAllConflicts 
-  } = useDashboardConflicts(selectedOwner);
+  } = useDashboardStock(selectedOwner);
 
   // Transform comprehensive conflicts into warnings format for TimelineContent
   const comprehensiveWarnings = useMemo(() => {
@@ -249,49 +248,38 @@ export function UnifiedCalendar({
       return hubWarnings; // Use normal hub warnings when not in problems-only mode
     }
 
-    // When in problems-only mode, use comprehensive conflict data
+    // When in problems-only mode, use ONE ENGINE conflict data (virtual stock aware)
     const allWarnings = [];
     
-    if (resourceType === 'equipment' && allEquipmentConflicts) {
-      allEquipmentConflicts.forEach(conflict => {
+    if (resourceType === 'equipment' && allConflicts) {
+      allConflicts.forEach(conflict => {
         allWarnings.push({
           resourceId: conflict.equipmentId,
           resourceName: conflict.equipmentName,
           date: conflict.date,
           type: 'overbooked',
-          severity: conflict.overbooked > (conflict.totalStock * 0.5) ? 'high' : 'medium',
+          severity: conflict.conflict.severity,
           details: {
-            stock: conflict.totalStock,
-            used: conflict.totalUsed,
-            overbooked: conflict.overbooked,
-            events: conflict.conflictingEvents
-          }
-        });
-      });
-    } else if (resourceType === 'crew' && allCrewConflicts) {
-      allCrewConflicts.forEach(conflict => {
-        allWarnings.push({
-          resourceId: conflict.crewMemberId,
-          resourceName: conflict.crewMemberName,
-          date: conflict.date,
-          type: 'conflict',
-          severity: conflict.conflictingAssignments.length > 2 ? 'high' : 'medium',
-          details: {
-            assignments: conflict.conflictingAssignments
+            stock: conflict.stockBreakdown.effectiveStock, // Virtual stock aware!
+            used: conflict.stockBreakdown.totalUsed,
+            overbooked: conflict.conflict.deficit,
+            virtualAdditions: conflict.stockBreakdown.virtualAdditions, // NEW: Show subrental additions
+            events: conflict.conflict.affectedEvents
           }
         });
       });
     }
+    // TODO: Crew conflicts will be integrated into stock engine later
 
     // Debug logging for crew conflicts
     if (process.env.NODE_ENV === 'development' && resourceType === 'crew') {
-      console.log('👥 Crew mode - allCrewConflicts:', allCrewConflicts);
-      console.log('⚠️ Transformed crew warnings:', allWarnings);
+      console.log('👥 Crew mode - ONE ENGINE conflicts:', allConflicts);
+      console.log('⚠️ Transformed warnings:', allWarnings);
       console.log('🔍 showProblemsOnly:', showProblemsOnly, 'warnings found:', allWarnings.length);
     }
 
     return allWarnings;
-  }, [showProblemsOnly, resourceType, allEquipmentConflicts, allCrewConflicts, hubWarnings]);
+  }, [showProblemsOnly, resourceType, allConflicts, hubWarnings]);
 
   // Use comprehensive warnings when available, fallback to hub warnings
   const warnings = comprehensiveWarnings;

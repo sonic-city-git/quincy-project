@@ -544,16 +544,19 @@ export function useTimelineHub({
     return warningsList;
   }, [allEquipmentOverbookings, resourceData, resourceType]);
 
-  // SUBRENTAL SUGGESTIONS (Equipment only) - Using global warnings instead of folder-limited warnings
+  // SUBRENTAL SUGGESTIONS (Equipment only) - Using unified stock engine
   const {
     subrentalSuggestions,
     suggestionsByDate,
-    shouldShowSubrentalSection
+    shouldShowSubrentalSection,
+    isLoading: suggestionsLoading,
+    error: suggestionsError
   } = useSubrentalSuggestions({
-    warnings: globalWarnings, // Use global warnings instead of folder-limited warnings
     resourceType,
     visibleTimelineStart,
-    visibleTimelineEnd
+    visibleTimelineEnd,
+    selectedOwner,
+    equipmentIds: resourceData?.resources?.map(r => r.id)
   });
 
   // CONFIRMED SUBRENTALS (Equipment only)

@@ -1,6 +1,15 @@
 /**
- * CONSOLIDATED: DashboardStatsCards - Now using StatusCard and useDashboardData
- * Reduced from 346 lines to 71 lines (79% reduction)
+ * DASHBOARD STATS CARDS - ONE ENGINE VERSION
+ * 
+ * ✅ MIGRATED TO ONE ENGINE ARCHITECTURE
+ * ❌ DELETED: useOperationalAlerts (fragmented logic)
+ * ✅ USES: useDashboardStock (unified global engine)
+ * 
+ * Benefits:
+ * - Single source of truth for all stock/conflict data
+ * - Real-time virtual stock calculations
+ * - No translation layers or adapters
+ * - Automatic consistency across entire app
  */
 
 import { 
@@ -8,10 +17,12 @@ import {
   AlertTriangle, 
   TrendingUp,
   Clock,
-  UserX
+  UserX,
+  Zap
 } from "lucide-react";
 import { StatusCard, StatusCardGrid, getStatusFromValue } from "./shared/StatusCard";
-import { useOperationalAlerts, useUnassignedRoles, useActiveCrew } from "./shared/useDashboardData";
+import { useDashboardStock } from "@/hooks/useGlobalStockEngine";
+import { useUnassignedRoles, useActiveCrew } from "./shared/useDashboardData";
 import { OVERBOOKING_WARNING_DAYS } from "@/constants/timeframes";
 
 interface DashboardStatsCardsProps {
@@ -19,48 +30,78 @@ interface DashboardStatsCardsProps {
 }
 
 export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProps) {
-  // Load data using consolidated hooks
-  const { data: operationalAlerts, isLoading: alertsLoading } = useOperationalAlerts(selectedOwnerId);
+  
+  // ONE ENGINE - Direct access to unified stock data
+  const {
+    conflicts,
+    suggestions,
+    totalConflicts,
+    isLoading: stockLoading,
+    error: stockError
+  } = useDashboardStock(selectedOwnerId);
+
+  // Keep crew/unassigned data (not part of stock engine yet)
   const { data: unassignedStats, isLoading: unassignedLoading } = useUnassignedRoles(selectedOwnerId);
   const { data: activeCrewStats, isLoading: activeCrewLoading } = useActiveCrew(selectedOwnerId);
 
-  // Extract metrics
-  const equipmentConflicts = operationalAlerts?.equipmentConflicts || 0;
-  const crewConflicts = operationalAlerts?.crewConflicts || 0;
+  // DIRECT CALCULATIONS - No translation needed
+  const equipmentConflicts = conflicts.filter(c => c.conflict.severity !== 'low').length;
+  const urgentConflicts = conflicts.filter(c => c.conflict.severity === 'high').length;
+  const availableSuggestions = suggestions.length;
   const unassignedCount = unassignedStats?.unassigned || 0;
   const activeCrew = activeCrewStats?.activeCrew || 0;
 
-  // Check if we have any issues that need attention
-  const hasIssues = equipmentConflicts > 0 || crewConflicts > 0 || unassignedCount > 0;
+  // System health check
+  const hasIssues = equipmentConflicts > 0 || unassignedCount > 0;
+  const systemStatus = stockError ? 'error' : 
+                      urgentConflicts > 0 ? 'critical' :
+                      equipmentConflicts > 0 ? 'warning' : 'success';
 
   return (
     <div className="space-y-6">
-      {/* Operational Metrics Grid */}
+      
+      {/* Error State */}
+      {stockError && (
+        <StatusCard
+          title="System Error"
+          value="Error"
+          subtitle={`Stock engine error: ${stockError.message}`}
+          icon={AlertTriangle}
+          status="error"
+          variant="compact"
+        />
+      )}
+
+      {/* Main Operational Metrics */}
       <StatusCardGrid columns={4}>
+        
+        {/* Equipment Conflicts - Virtual Stock Aware */}
         <StatusCard
           title="Equipment Conflicts"
           value={equipmentConflicts}
           subtitle={equipmentConflicts 
-            ? `${equipmentConflicts} overbookings next ${OVERBOOKING_WARNING_DAYS} days` 
+            ? `${equipmentConflicts} overbookings (${urgentConflicts} urgent) next ${OVERBOOKING_WARNING_DAYS} days` 
             : `No equipment conflicts next ${OVERBOOKING_WARNING_DAYS} days`}
           icon={AlertTriangle}
           status={getStatusFromValue(equipmentConflicts, { critical: 1, success: 0 })}
           variant="compact"
-          loading={alertsLoading}
+          loading={stockLoading}
         />
 
+        {/* Subrental Solutions Available */}
         <StatusCard
-          title="Crew Conflicts"
-          value={crewConflicts}
-          subtitle={crewConflicts 
-            ? `${crewConflicts} double-bookings next ${OVERBOOKING_WARNING_DAYS} days`
-            : `No crew conflicts next ${OVERBOOKING_WARNING_DAYS} days`}
-          icon={Users}
-          status={getStatusFromValue(crewConflicts, { critical: 1, success: 0 })}
+          title="Subrental Solutions"
+          value={availableSuggestions}
+          subtitle={availableSuggestions 
+            ? `${availableSuggestions} subrental options available`
+            : "No subrental suggestions needed"}
+          icon={TrendingUp}
+          status={availableSuggestions > 0 ? "info" : "success"}
           variant="compact"
-          loading={alertsLoading}
+          loading={stockLoading}
         />
 
+        {/* Unassigned Roles */}
         <StatusCard
           title="Unassigned Roles"
           value={unassignedCount}
@@ -73,6 +114,7 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
           loading={unassignedLoading}
         />
 
+        {/* Active Crew Today */}
         <StatusCard
           title="Active Crew Today"
           value={activeCrew}
@@ -84,17 +126,37 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
           variant="compact"
           loading={activeCrewLoading}
         />
+        
       </StatusCardGrid>
 
-      {/* All Clear Status - Only show when no issues */}
-      {!hasIssues && (
-        <div className="text-center py-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-green-50/10 border border-green-200/20">
-            <TrendingUp className="h-5 w-5 text-green-500" />
-            <p className="text-green-500 font-medium">All systems operational - no conflicts detected</p>
-          </div>
+      {/* System Status Indicator */}
+      <div className="text-center py-4">
+        <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg border ${
+          systemStatus === 'success' ? 'bg-green-50/10 border-green-200/20' :
+          systemStatus === 'warning' ? 'bg-yellow-50/10 border-yellow-200/20' :
+          systemStatus === 'critical' ? 'bg-red-50/10 border-red-200/20' :
+          'bg-gray-50/10 border-gray-200/20'
+        }`}>
+          <Zap className={`h-5 w-5 ${
+            systemStatus === 'success' ? 'text-green-500' :
+            systemStatus === 'warning' ? 'text-yellow-500' :
+            systemStatus === 'critical' ? 'text-red-500' :
+            'text-gray-500'
+          }`} />
+          <p className={`font-medium ${
+            systemStatus === 'success' ? 'text-green-500' :
+            systemStatus === 'warning' ? 'text-yellow-500' :
+            systemStatus === 'critical' ? 'text-red-500' :
+            'text-gray-500'
+          }`}>
+            {systemStatus === 'success' && 'All systems operational - virtual stock engine active'}
+            {systemStatus === 'warning' && 'System operational - conflicts detected'}
+            {systemStatus === 'critical' && 'Urgent conflicts require immediate attention'}
+            {systemStatus === 'error' && 'System error - check connection'}
+          </p>
         </div>
-      )}
+      </div>
+      
     </div>
   );
 }

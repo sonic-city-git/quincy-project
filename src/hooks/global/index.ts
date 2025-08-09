@@ -6,5 +6,5 @@
 
 export { useGlobalSearch } from './useGlobalSearch';
 export { useGlobalKeyboard } from './useGlobalKeyboard';
-export { useConsolidatedConflicts } from './useConsolidatedConflicts';
-export { useDashboardConflicts } from './useDashboardConflicts';
+// ❌ DELETED: useDashboardConflicts, useConsolidatedConflicts - replaced by ONE ENGINE
+// ✅ Use: import { useDashboardStock, useGlobalStockEngine } from '@/hooks/useGlobalStockEngine';

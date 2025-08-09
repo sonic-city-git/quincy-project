@@ -1,37 +1,41 @@
 /**
- * 🎯 EVENT OPERATIONAL STATUS HOOK
+ * 🎯 EVENT OPERATIONAL STATUS - ONE ENGINE VERSION
  * 
- * Provides real-time operational intelligence for individual events.
- * Replaces placeholder logic with comprehensive status detection:
- * - Equipment overbookings specific to this event
- * - Crew conflicts involving this event's assignments
- * - Non-preferred crew assignments
- * - Unfilled role positions
+ * ✅ MIGRATED TO ONE ENGINE ARCHITECTURE
+ * ❌ DELETED: useEquipmentConflicts, useConsolidatedConflicts (fragmented logic)
+ * ✅ USES: useProjectStock (unified global engine)
  * 
- * Key Benefits:
- * - Event-specific filtering (no false positives)
+ * Provides real-time operational intelligence for individual events using
+ * the unified stock engine with virtual stock calculations.
+ * 
+ * Benefits:
+ * - Virtual stock awareness (subrentals resolve conflicts)
+ * - Single source of truth for all conflict data
+ * - Event-specific filtering with global consistency
  * - Real business intelligence (not technical sync status)
- * - Optimized queries for individual event cards
  */
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useEquipmentConflicts, useConsolidatedConflicts } from '@/hooks/global/useConsolidatedConflicts';
+import { useProjectStock } from '@/hooks/useGlobalStockEngine';
 import { CalendarEvent } from '@/types/events';
 
 // ============================================================================
-// INTERFACES - Following Established Patterns
+// INTERFACES
 // ============================================================================
 
 interface EventOperationalStatus {
-  // Core Data (consistent with other hooks)
+  // Equipment - Virtual Stock Aware
   equipment: {
-    status: 'available' | 'overbooked' | 'subrental';
+    status: 'available' | 'overbooked' | 'resolved'; // resolved = virtual stock fixed conflicts
     conflicts: Array<{
       equipmentId: string;
       equipmentName: string;
-      overbooked: number;
+      deficit: number;
+      effectiveStock: number; // includes virtual stock
+      totalUsed: number;
+      virtualAdditions: number; // from subrentals
       conflictingEvents: Array<{
         eventName: string;
         projectName: string;
@@ -40,6 +44,7 @@ interface EventOperationalStatus {
     }>;
   };
   
+  // Crew - TODO: Will be integrated into stock engine later
   crew: {
     status: 'complete' | 'conflicts' | 'unfilled' | 'non-preferred';
     overbookings: Array<{
@@ -58,56 +63,31 @@ interface EventOperationalStatus {
     nonPreferredRoles: any[];
   };
   
-  // Meta (consistent with established patterns)
   isLoading: boolean;
   error: Error | null;
 }
 
 export function useEventOperationalStatus(event: CalendarEvent): EventOperationalStatus {
   
-  // Get equipment conflicts using existing efficient hook
-  const { conflicts: allEquipmentConflicts, isLoading: equipmentLoading } = useEquipmentConflicts();
-  
-  // Get crew conflicts using existing efficient hook
-  const { crewConflictDetails, isLoading: crewConflictsLoading } = useConsolidatedConflicts();
-  
-  // Get detailed event role assignments for crew analysis
-  const { data: eventRoles, isLoading: rolesLoading, error } = useQuery({
-    queryKey: ['event-roles', event.id], // Consistent with established patterns
+  // Get event equipment IDs for targeted conflict analysis
+  const { data: eventEquipment } = useQuery({
+    queryKey: ['event-equipment', event.id],
     queryFn: async () => {
-      if (!event.id) return null;
+      if (!event.id) return [];
       
-      try {
-        const { data, error: queryError } = await supabase
-          .from('project_event_roles')
-          .select(`
-            *,
-            crew_members(id, name),
-            crew_roles(id, name),
-            project_roles!project_event_roles_project_role_id_fkey(
-              id,
-              preferred_id
-            )
-          `)
-          .eq('event_id', event.id);
-        
-        if (queryError) {
-          throw new Error(`Failed to fetch event roles: ${queryError.message}`);
-        }
-        
-        return data || [];
-      } catch (error) {
-        console.error('Event roles query failed:', error);
-        throw error;
-      }
+      const { data, error } = await supabase
+        .from('project_event_equipment')
+        .select('equipment_id')
+        .eq('event_id', event.id);
+      
+      if (error) throw error;
+      return data?.map(item => item.equipment_id) || [];
     },
-    enabled: !!event.id && !!event.type?.needs_crew,
-    staleTime: 2 * 60 * 1000, // 2 minutes cache
-    retry: 1,
-    refetchOnWindowFocus: false
+    enabled: !!event.id,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
-  
-  // Memoize event date formatting (performance optimization)
+
+  // ONE ENGINE - Get conflicts for this event's equipment and dates
   const eventDateString = useMemo(() => {
     if (!event.date) return '';
     return event.date instanceof Date 
@@ -115,33 +95,90 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
       : new Date(event.date).toISOString().split('T')[0];
   }, [event.date]);
 
-  // Process equipment conflicts specific to this event
+  const {
+    hasConflicts,
+    conflicts,
+    isLoading: stockLoading
+  } = useProjectStock(eventEquipment || [], [eventDateString]);
+  
+  // Get detailed event role assignments for crew analysis
+  const { data: eventRoles, isLoading: rolesLoading, error } = useQuery({
+    queryKey: ['event-roles', event.id],
+    queryFn: async () => {
+      if (!event.id) return null;
+      
+      const { data, error: queryError } = await supabase
+        .from('project_event_roles')
+        .select(`
+          *,
+          crew_members(id, name),
+          crew_roles(id, name),
+          project_roles!project_event_roles_project_role_id_fkey(
+            id,
+            preferred_id
+          )
+        `)
+        .eq('event_id', event.id);
+      
+      if (queryError) throw queryError;
+      return data || [];
+    },
+    enabled: !!event.id && !!event.type?.needs_crew,
+    staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+
+  // Equipment status using ONE ENGINE data
   const equipmentStatus = useMemo(() => {
-    if (!eventDateString || !allEquipmentConflicts?.length) {
+    if (!eventDateString || !conflicts?.length) {
       return {
         status: 'available' as const,
         conflicts: []
       };
     }
     
-    // Find conflicts on this event's date that involve this event
-    const relevantConflicts = allEquipmentConflicts.filter(conflict => {
-      if (conflict.date !== eventDateString) return false;
-      
-      // Check if this event is actually involved in the conflict
-      return conflict.conflictingEvents?.some(conflictEvent => 
-        conflictEvent.eventName === event.name ||
-        conflictEvent.projectName === event.project?.name
+    // Filter conflicts to only those affecting this event
+    const relevantConflicts = conflicts.filter(conflict => {
+      return conflict.conflict.affectedEvents?.some(affectedEvent => 
+        affectedEvent.eventName === event.name ||
+        affectedEvent.projectName === event.project?.name
       );
     });
     
+    // Check if conflicts are resolved by virtual stock
+    const hasUnresolvedConflicts = relevantConflicts.some(conflict => 
+      conflict.conflict.deficit > 0
+    );
+    
+    const hasResolvedConflicts = relevantConflicts.some(conflict => 
+      conflict.stockBreakdown.virtualAdditions > 0 && conflict.conflict.deficit === 0
+    );
+    
+    let status: 'available' | 'overbooked' | 'resolved' = 'available';
+    if (hasUnresolvedConflicts) {
+      status = 'overbooked';
+    } else if (hasResolvedConflicts) {
+      status = 'resolved';
+    }
+    
     return {
-      status: relevantConflicts.length > 0 ? 'overbooked' as const : 'available' as const,
-      conflicts: relevantConflicts
+      status,
+      conflicts: relevantConflicts.map(conflict => ({
+        equipmentId: conflict.equipmentId,
+        equipmentName: conflict.equipmentName,
+        deficit: conflict.conflict.deficit,
+        effectiveStock: conflict.stockBreakdown.effectiveStock,
+        totalUsed: conflict.stockBreakdown.totalUsed,
+        virtualAdditions: conflict.stockBreakdown.virtualAdditions,
+        conflictingEvents: conflict.conflict.affectedEvents.map(event => ({
+          eventName: event.eventName,
+          projectName: event.projectName,
+          quantity: event.quantity
+        }))
+      }))
     };
-  }, [eventDateString, event.name, event.project?.name, allEquipmentConflicts]);
+  }, [eventDateString, event.name, event.project?.name, conflicts]);
   
-  // Process crew conflicts and role analysis (optimized single pass)
+  // Crew analysis (placeholder - will be integrated into stock engine later)
   const crewAnalysis = useMemo(() => {
     if (!eventRoles || !event.type?.needs_crew) {
       return {
@@ -154,15 +191,7 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
       };
     }
     
-    // Find crew overbookings that affect this event's date
-    const eventCrewOverbookings = crewConflictDetails?.filter(conflict => 
-      conflict.date === eventDateString
-    ).map(conflict => ({
-      ...conflict,
-      date: conflict.date // Ensure date field is explicitly included
-    })) || [];
-    
-    // Single pass analysis of role assignments (performance optimization)
+    // TODO: Replace with stock engine crew conflicts when available
     const unfilledRoles: any[] = [];
     const nonPreferredRoles: any[] = [];
     
@@ -175,12 +204,8 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
       }
     });
     
-    // Determine primary status
     let status: 'complete' | 'conflicts' | 'unfilled' | 'non-preferred' = 'complete';
-    
-    if (eventCrewOverbookings.length > 0) {
-      status = 'conflicts';
-    } else if (unfilledRoles.length > 0) {
+    if (unfilledRoles.length > 0) {
       status = 'unfilled';
     } else if (nonPreferredRoles.length > 0) {
       status = 'non-preferred';
@@ -188,25 +213,21 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
     
     return {
       status,
-      overbookings: eventCrewOverbookings,
+      overbookings: [], // TODO: Integrate crew conflicts from stock engine
       unfilledRoles,
       nonPreferredRoles,
       unfilledCount: unfilledRoles.length,
       nonPreferredCount: nonPreferredRoles.length
     };
-  }, [eventRoles, eventDateString, event.type?.needs_crew, crewConflictDetails]);
+  }, [eventRoles, event.type?.needs_crew]);
   
-  // Determine loading state
-  const isLoading = equipmentLoading || crewConflictsLoading || rolesLoading;
+  const isLoading = stockLoading || rolesLoading;
   
   return {
-    // Equipment (structured data object)
     equipment: {
       status: equipmentStatus.status,
       conflicts: equipmentStatus.conflicts
     },
-    
-    // Crew (structured data object)
     crew: {
       status: crewAnalysis.status,
       overbookings: crewAnalysis.overbookings,
@@ -215,8 +236,6 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
       roles: eventRoles || [],
       nonPreferredRoles: crewAnalysis.nonPreferredRoles
     },
-    
-    // Meta (consistent with established patterns)
     isLoading,
     error: error as Error | null
   };
@@ -224,15 +243,13 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
 
 /**
  * 🎯 SIMPLIFIED EQUIPMENT STATUS HOOK
- * 
- * Optimized for event cards that only need equipment status.
  */
 export function useEventEquipmentStatus(event: CalendarEvent) {
   const { equipment, isLoading, error } = useEventOperationalStatus(event);
   
   return {
     hasOverbookings: equipment.status === 'overbooked',
-    hasSubrentals: equipment.status === 'subrental',
+    hasResolvedConflicts: equipment.status === 'resolved', // NEW: Virtual stock resolved conflicts
     isAvailable: equipment.status === 'available',
     conflicts: equipment.conflicts,
     isLoading,
@@ -242,8 +259,6 @@ export function useEventEquipmentStatus(event: CalendarEvent) {
 
 /**
  * 🎯 SIMPLIFIED CREW STATUS HOOK
- * 
- * Optimized for event cards that only need crew status.
  */
 export function useEventCrewStatus(event: CalendarEvent) {
   const { crew, isLoading, error } = useEventOperationalStatus(event);
