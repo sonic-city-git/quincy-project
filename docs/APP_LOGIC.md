@@ -56,46 +56,44 @@ location: required text field
 
 ---
 
-## **🔄 SYNC ARCHITECTURE** (FIXED)
+## **🏗️ HYBRID EVENT OWNERSHIP ARCHITECTURE** (FIXED)
 
-### **Delete + Insert Pattern**
+### **Event Resource Ownership Pattern**
 ```typescript
-// Core sync algorithm (IMMUTABLE)
-async function syncEventResources(eventId: string, variantId: string) {
-  // 1. Clean slate approach
-  await supabase
-    .from('project_event_roles')
-    .delete()
-    .eq('event_id', eventId);
-    
-  await supabase
-    .from('project_event_equipment') 
-    .delete()
-    .eq('event_id', eventId);
+// Core ownership model (IMMUTABLE)
+// Events OWN their resources (copied from variants at creation)
+// Variants serve as "discardable templates"
 
-  // 2. Fresh insert from variant template
+async function createEventFromVariant(eventData: EventData, variantId: string) {
+  // 1. Create event
+  const event = await createEvent(eventData);
+  
+  // 2. Copy resources from variant (ONE-TIME operation)
   await supabase.rpc('sync_event_crew', {
-    p_event_id: eventId,
+    p_event_id: event.id,
     p_project_id: projectId,
     p_variant_id: variantId
   });
   
   await supabase.rpc('sync_event_equipment_unified', {
-    p_event_id: eventId,
+    p_event_id: event.id,
     p_project_id: projectId, 
     p_variant_id: variantId
   });
 
-  // 3. Recalculate pricing
-  await updateEventPricing(eventId);
+  // 3. Event now OWNS the resources - variant can change independently
+  // 4. Recalculate pricing
+  await updateEventPricing(event.id);
+  
+  return event;
 }
 ```
 
-### **Why Delete + Insert?**
-- **🎯 Consistency**: Ensures event exactly matches variant
-- **🧹 Clean**: No orphaned or stale assignments
-- **🔒 Reliable**: No complex merge logic or edge cases
-- **⚡ Performance**: Single operation, optimized indexes
+### **Why Hybrid Ownership?**
+- **🎯 Tour Safety**: Past events retain actual resources even if variants change
+- **🧹 Simplicity**: No complex "sync" operations or state management  
+- **🔒 Reliability**: Events are self-contained and independent
+- **⚡ Flexibility**: Variants can evolve without breaking event history
 
 ---
 
@@ -103,16 +101,16 @@ async function syncEventResources(eventId: string, variantId: string) {
 
 ### **Order of Operations** (IMMUTABLE)
 ```sql
--- 1. Sync resources from variant
+-- 1. Copy resources from variant (ONE-TIME at event creation)
 CALL sync_event_crew(event_id, project_id, variant_id);
 CALL sync_event_equipment_unified(event_id, project_id, variant_id);
 
--- 2. Calculate crew pricing
+-- 2. Calculate crew pricing (from event's owned resources)
 UPDATE project_events 
 SET crew_price = (calculation_logic)  -- Business rule
 WHERE id = event_id;
 
--- 3. Calculate equipment pricing  
+-- 3. Calculate equipment pricing (from event's owned resources)
 UPDATE project_events
 SET equipment_price = (calculation_logic)  -- Business rule
 WHERE id = event_id;
@@ -128,12 +126,13 @@ WHERE id = event_id;
 
 ### **Database Functions** (IMMUTABLE SIGNATURES)
 ```sql
--- RPC function contracts
+-- RPC function contracts (USAGE CHANGED: from "sync" to "copy")
 sync_event_crew(p_event_id uuid, p_project_id uuid, p_variant_id uuid)
 sync_event_equipment_unified(p_event_id uuid, p_project_id uuid, p_variant_id uuid)
 
 -- Return: void (success) | error (with message)
 -- Side effects: Updates project_events pricing columns
+-- NEW PURPOSE: One-time resource copying at event creation (not ongoing sync)
 ```
 
 ---
@@ -143,13 +142,13 @@ sync_event_equipment_unified(p_event_id uuid, p_project_id uuid, p_variant_id uu
 ### **Frontend Hook Architecture**
 ```typescript
 // Variant-scoped hooks (IMMUTABLE PATTERN)
-useVariantCrew(projectId: string, variantName: string)
-useVariantEquipment(projectId: string, variantName: string)
-useVariantData(projectId: string, variantName: string) // Combined
+useVariantCrew(projectId: string, variantId: string)
+useVariantEquipment(projectId: string, variantId: string)
+useVariantData(projectId: string, variantId: string) // Combined
 
-// Event-scoped hooks (IMMUTABLE PATTERN)
-useUnifiedEventSync(event: CalendarEvent)
+// Event-scoped hooks (IMMUTABLE PATTERN) - SYNC HOOKS ELIMINATED
 useEventData(eventId: string)
+useEventOperationalStatus(eventId: string) // NEW: Operational intelligence
 
 // Project-scoped hooks (IMMUTABLE PATTERN)  
 useProjectVariants(projectId: string)
