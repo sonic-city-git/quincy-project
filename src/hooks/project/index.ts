@@ -11,3 +11,4 @@ export { useProjectConflicts } from './useProjectConflicts';
 export { useProjectFilters } from './useProjectFilters';
 export { useProjects } from './useProjects';
 export { useAddProject } from './useAddProject';
+export { useUpdateProject } from './useUpdateProject';

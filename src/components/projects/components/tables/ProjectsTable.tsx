@@ -93,11 +93,10 @@ export function ProjectsTable({ activeTab, filters }: ProjectsTableProps) {
       <div className="w-full">
         {/* Sticky table header */}
         <div className={cn("sticky top-[136px] z-20", COMPONENT_CLASSES.table.header)}>
-          <div className="grid grid-cols-[240px_2fr_160px_80px] gap-6 p-4 bg-muted/50 font-semibold text-sm">
-            <div>Owner</div>
-            <div className="text-center">Project Name</div>
-                            <div>Amount</div>
-            <div></div>
+          <div className="grid grid-cols-[2fr_120px_140px] sm:grid-cols-[2fr_180px_160px] gap-3 sm:gap-4 p-4 bg-muted/50 font-semibold text-sm">
+            <div>Project Name</div>
+            <div className="text-center sm:text-left">Owner</div>
+            <div className="text-right">Amount</div>
           </div>
         </div>
         

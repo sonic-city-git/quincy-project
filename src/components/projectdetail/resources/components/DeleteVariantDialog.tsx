@@ -54,36 +54,38 @@ export function DeleteVariantDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className={FORM_PATTERNS.dialog.container}>
-        <AlertDialogHeader className={FORM_PATTERNS.dialog.header}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
             Delete Variant
           </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-2">
-            {canDelete ? (
-              <>
-                <p>
-                  Are you sure you want to delete the <strong>"{variant.variant_name}"</strong> variant?
-                </p>
-                <p className="text-sm">
-                  This action will permanently remove the variant and all its associated crew roles and equipment configurations. This action cannot be undone.
-                </p>
-              </>
-            ) : (
-              <>
-                <p>
-                  The <strong>"{variant.variant_name}"</strong> variant cannot be deleted.
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {getRestrictionReason()}
-                </p>
-              </>
-            )}
+          <AlertDialogDescription asChild>
+            <div className="space-y-2">
+              {canDelete ? (
+                <>
+                  <p>
+                    Are you sure you want to delete the <strong>"{variant.variant_name}"</strong> variant?
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    This action will permanently remove the variant and all its associated crew roles and equipment configurations. This action cannot be undone.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p>
+                    The <strong>"{variant.variant_name}"</strong> variant cannot be deleted.
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {getRestrictionReason()}
+                  </p>
+                </>
+              )}
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
         
-        <AlertDialogFooter className={FORM_PATTERNS.dialog.footer}>
+        <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>
             Cancel
           </AlertDialogCancel>

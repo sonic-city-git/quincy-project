@@ -2,6 +2,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { FORM_PATTERNS, cn } from "@/design-system";
+import { AlertTriangle, Plus } from 'lucide-react';
 
 // Proper type definition for equipment group
 interface EquipmentGroupData {
@@ -12,13 +13,13 @@ interface EquipmentGroupData {
 
 interface GroupDialogsProps {
   groups: EquipmentGroupData[];
-  showDeleteDialog: boolean;
-  showNewGroupDialog: boolean;
+  deleteDialogOpen: boolean;
+  newGroupDialogOpen: boolean;
   groupToDelete: string | null;
   targetGroupId: string;
   newGroupName: string;
-  onDeleteDialogClose: () => void;
-  onNewGroupDialogClose: () => void;
+  onDeleteDialogOpenChange: (open: boolean) => void;
+  onNewGroupDialogOpenChange: (open: boolean) => void;
   onTargetGroupSelect: (id: string) => void;
   onNewGroupNameChange: (name: string) => void;
   onConfirmDelete: () => void;
@@ -27,13 +28,13 @@ interface GroupDialogsProps {
 
 export function GroupDialogs({
   groups,
-  showDeleteDialog,
-  showNewGroupDialog,
+  deleteDialogOpen,
+  newGroupDialogOpen,
   groupToDelete,
   targetGroupId,
   newGroupName,
-  onDeleteDialogClose,
-  onNewGroupDialogClose,
+  onDeleteDialogOpenChange,
+  onNewGroupDialogOpenChange,
   onTargetGroupSelect,
   onNewGroupNameChange,
   onConfirmDelete,
@@ -42,21 +43,26 @@ export function GroupDialogs({
   return (
     <>
       <AlertDialog 
-        open={showDeleteDialog} 
-        onOpenChange={onDeleteDialogClose}
+        open={deleteDialogOpen} 
+        onOpenChange={onDeleteDialogOpenChange}
       >
-        <AlertDialogContent className={FORM_PATTERNS.dialog.container}>
-          <AlertDialogHeader className={FORM_PATTERNS.dialog.header}>
-            <AlertDialogTitle>Delete Group with Equipment</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p>
-                The group <strong>"{groups.find(g => g.id === groupToDelete)?.name || 'Unknown'}"</strong> contains equipment. 
-                Choose what to do with the equipment:
-              </p>
-              <ul className="text-sm space-y-1 ml-4">
-                <li>• <strong>Move to another group:</strong> Select a target group below</li>
-                <li>• <strong>Delete equipment with group:</strong> Leave selection empty to delete all equipment</li>
-              </ul>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" />
+              Delete Group with Equipment
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  The group <strong>"{groups.find(g => g.id === groupToDelete)?.name || 'Unknown'}"</strong> contains equipment. 
+                  Choose what to do with the equipment:
+                </p>
+                <ul className="text-sm space-y-1 ml-4">
+                  <li>• <strong>Move to another group:</strong> Select a target group below</li>
+                  <li>• <strong>Delete equipment with group:</strong> Leave selection empty to delete all equipment</li>
+                </ul>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className={FORM_PATTERNS.field.group}>
@@ -101,12 +107,15 @@ export function GroupDialogs({
       </AlertDialog>
 
       <AlertDialog 
-        open={showNewGroupDialog} 
-        onOpenChange={onNewGroupDialogClose}
+        open={newGroupDialogOpen} 
+        onOpenChange={onNewGroupDialogOpenChange}
       >
-        <AlertDialogContent className={FORM_PATTERNS.dialog.container}>
-          <AlertDialogHeader className={FORM_PATTERNS.dialog.header}>
-            <AlertDialogTitle>Create New Equipment Group</AlertDialogTitle>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Create New Equipment Group
+            </AlertDialogTitle>
             <AlertDialogDescription>
               Enter a name for the new equipment group
             </AlertDialogDescription>

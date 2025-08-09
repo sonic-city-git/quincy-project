@@ -168,7 +168,7 @@ export function useSimpleInfiniteScroll({ selectedDate, resourceType, targetScro
   const setEquipmentRowsRef = useCallback((element: HTMLDivElement | null) => {
     equipmentRowsRef.current = element;
     if (element?.clientWidth > 0) {
-      console.log('📦 Container just mounted with width:', element.clientWidth);
+      // Container mounted (logging removed)
       setContainerMounted(true);
     }
   }, []);
@@ -176,7 +176,7 @@ export function useSimpleInfiniteScroll({ selectedDate, resourceType, targetScro
   // Alternative: Watch for container mounting via ref changes
   useEffect(() => {
     if (equipmentRowsRef.current?.clientWidth && !containerMounted) {
-      console.log('📦 Container detected via ref with width:', equipmentRowsRef.current.clientWidth);
+      // Container detected via ref (logging removed)
       setContainerMounted(true);
     }
   }, [equipmentRowsRef.current, containerMounted]);

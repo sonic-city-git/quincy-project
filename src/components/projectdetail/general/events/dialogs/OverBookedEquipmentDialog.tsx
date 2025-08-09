@@ -7,13 +7,7 @@
 
 import React from 'react';
 import { AlertTriangle, Package, Calendar, Users, ExternalLink } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { FormDialog } from '@/components/shared/dialogs/FormDialog';
 import {
   Table,
   TableBody,
@@ -25,6 +19,17 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CalendarEvent } from '@/types/events';
+import { useSubrentalManagement } from '@/hooks/equipment/useSubrentalManagement';
+import { useExternalProviders } from '@/hooks/equipment/useExternalProviders';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { useState } from 'react';
 
 interface EquipmentConflict {
   equipmentId: string;
@@ -62,13 +67,26 @@ export function OverBookedEquipmentDialog({
     });
   };
 
+  // Subrental management
+  const { mutate: markAsSubrental } = useSubrentalManagement();
+  const { data: providers = [], isLoading: providersLoading } = useExternalProviders();
+  const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
+  const [subrentalCost, setSubrentalCost] = useState<string>('');
+  const [subrentalNotes, setSubrentalNotes] = useState<string>('');
+
   const handleMarkAsSubrental = (equipmentId: string) => {
-    // TODO: Implement subrental marking
-    console.log('Marking as subrental:', equipmentId);
-    // This will:
-    // 1. Create subrental record
-    // 2. Update equipment status to "resolved with subrental"
-    // 3. Change icon to blue
+    if (!selectedProvider) {
+      toast.error('Please select a provider');
+      return;
+    }
+
+    markAsSubrental({
+      eventId: event.id,
+      equipmentId,
+      providerId: selectedProvider,
+      cost: subrentalCost ? parseFloat(subrentalCost) : null,
+      notes: subrentalNotes || null
+    });
   };
 
   const handleViewPlanner = () => {
@@ -79,20 +97,30 @@ export function OverBookedEquipmentDialog({
 
   if (!conflicts.length) return null;
 
+  const dialogTitle = (
+    <div className="flex items-center gap-2">
+      <AlertTriangle className="h-5 w-5 text-red-500" />
+      Equipment Overbooking Detected
+    </div>
+  );
+
+  const dialogDescription = (
+    <>
+      The following equipment is overbooked for <strong>{event.name}</strong> on{' '}
+      <strong>{formatDate(event.date instanceof Date ? event.date.toISOString() : event.date)}</strong>.
+      Review conflicts and choose resolution options.
+    </>
+  );
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-red-500" />
-            Equipment Overbooking Detected
-          </DialogTitle>
-          <DialogDescription>
-            The following equipment is overbooked for <strong>{event.name}</strong> on{' '}
-            <strong>{formatDate(event.date instanceof Date ? event.date.toISOString() : event.date)}</strong>.
-            Review conflicts and choose resolution options.
-          </DialogDescription>
-        </DialogHeader>
+    <FormDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={dialogTitle}
+      description={dialogDescription}
+      size="xl"
+      contentClassName="max-h-[80vh] overflow-y-auto"
+    >
 
         <div className="space-y-6">
           {/* Conflict Summary */}
@@ -205,7 +233,6 @@ export function OverBookedEquipmentDialog({
             </Button>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+    </FormDialog>
   );
 }

@@ -19,18 +19,20 @@ interface ProjectFormData {
 interface ProjectFormProps {
   onSubmit: (data: ProjectFormData) => Promise<void>;
   onCancel: () => void;
+  initialData?: Partial<ProjectFormData>;
+  mode?: 'create' | 'edit';
 }
 
-export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
+export function ProjectForm({ onSubmit, onCancel, initialData, mode = 'create' }: ProjectFormProps) {
   // Get a random legendary artist for the placeholder - only once per form instance
   const [randomArtistPlaceholder] = useState(() => getRandomLegendaryArtist());
   
   const form = useForm<ProjectFormData>({
     defaultValues: {
-      name: '',
-      customer_id: '',
-      crew_member_id: '',
-      project_type_id: ''
+      name: initialData?.name || '',
+      customer_id: initialData?.customer_id || '',
+      crew_member_id: initialData?.crew_member_id || '',
+      project_type_id: initialData?.project_type_id || ''
     },
     mode: 'onBlur'
   });
@@ -147,7 +149,7 @@ export function ProjectForm({ onSubmit, onCancel }: ProjectFormProps) {
             {form.formState.isSubmitting && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
-            Create Project
+            {mode === 'edit' ? 'Update Project' : 'Create Project'}
           </Button>
         </div>
       </form>

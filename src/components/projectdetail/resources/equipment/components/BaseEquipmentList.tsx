@@ -218,19 +218,23 @@ export function BaseEquipmentList({
 
       <GroupDialogs
         groups={groups}
-        showDeleteDialog={!!groupToDelete}
-        showNewGroupDialog={showNewGroupDialog}
+        deleteDialogOpen={!!groupToDelete}
+        newGroupDialogOpen={showNewGroupDialog}
         groupToDelete={groupToDelete}
         targetGroupId={targetGroupId}
         newGroupName={newGroupName}
-        onDeleteDialogClose={() => {
-          setGroupToDelete(null);
-          setTargetGroupId("");
+        onDeleteDialogOpenChange={(open) => {
+          if (!open) {
+            setGroupToDelete(null);
+            setTargetGroupId("");
+          }
         }}
-        onNewGroupDialogClose={() => {
-          setShowNewGroupDialog(false);
-          setNewGroupName("");
-          setPendingDropData(null);
+        onNewGroupDialogOpenChange={(open) => {
+          if (!open) {
+            setShowNewGroupDialog(false);
+            setNewGroupName("");
+            setPendingDropData(null);
+          }
         }}
         onTargetGroupSelect={setTargetGroupId}
         onNewGroupNameChange={setNewGroupName}

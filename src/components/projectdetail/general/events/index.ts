@@ -21,5 +21,5 @@ export { EventCrew } from './components/EventCrew';
 export { EventActions } from './components/EventActions';
 
 // Dialogs
-export { EquipmentDifferenceDialog } from './dialogs/EquipmentDifferenceDialog';
+
 export type { EventCardProps, EventSectionProps, EventListProps } from './types';

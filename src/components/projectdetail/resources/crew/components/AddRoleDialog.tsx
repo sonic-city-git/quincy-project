@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FormDialog } from "@/components/shared/dialogs/FormDialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import { CrewMemberSelectContent } from "@/components/resources/crew/CrewMemberS
 
 interface AddRoleDialogProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose: (open: boolean) => void;
   project: Project;
   variantId: string;
   variantName: string;
@@ -76,7 +76,7 @@ export function AddRoleDialog({ isOpen, onClose, project, variantId, variantName
       ]);
 
       toast.success('Role added successfully');
-      onClose();
+      onClose(false);
     } catch (error) {
       console.error('Error adding role:', error);
       toast.error('Failed to add role');
@@ -86,13 +86,14 @@ export function AddRoleDialog({ isOpen, onClose, project, variantId, variantName
   const currencyInputStyles = createCurrencyInput();
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={FORM_PATTERNS.dialog.container}>
-        <DialogHeader className={FORM_PATTERNS.dialog.header}>
-          <DialogTitle>Add Role</DialogTitle>
-        </DialogHeader>
-        
-        <form onSubmit={handleSubmit(onSubmit)} className={FORM_PATTERNS.dialog.content}>
+    <FormDialog
+      open={isOpen}
+      onOpenChange={onClose}
+      title="Add Role"
+      description={`Add a new crew role to the ${variantName} variant.`}
+      size="sm"
+    >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           {/* Role Selection */}
           <div className={FORM_PATTERNS.field.default}>
             <Label htmlFor="role" className={FORM_PATTERNS.label.required}>Role</Label>
@@ -162,7 +163,7 @@ export function AddRoleDialog({ isOpen, onClose, project, variantId, variantName
 
           {/* Form Actions */}
           <div className={FORM_PATTERNS.dialog.footer}>
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
             <Button type="submit">
@@ -170,7 +171,6 @@ export function AddRoleDialog({ isOpen, onClose, project, variantId, variantName
             </Button>
           </div>
         </form>
-      </DialogContent>
-    </Dialog>
+    </FormDialog>
   );
 }
