@@ -19,7 +19,7 @@ import { ProjectCalendar } from "./calendar/ProjectCalendar";
 import { EventList } from "./events/EventList";
 import { Project } from "@/types/projects";
 import { ProjectInfo } from "./information/ProjectInfo";
-import { useProjectEvents } from "@/hooks/useConsolidatedEvents";
+import { useProjectEvents } from "@/hooks/event";
 import { Calendar, Info, List } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { COMPONENT_CLASSES, RESPONSIVE } from "@/design-system";
@@ -37,12 +37,13 @@ export function ProjectGeneralTab({ project, projectId }: ProjectGeneralTabProps
   // Use info colors to match Resources tab styling
   const infoColors = STATUS_COLORS.info;
 
-  const handleStatusChange = async (event, newStatus) => {
+  const handleStatusChange = async (event: CalendarEvent, newStatus: CalendarEvent['status']) => {
     await updateEventStatus(event, newStatus);
   };
 
-  const handleEditEvent = (event) => {
-    // TODO: Implement edit functionality
+  const handleEditEvent = (event: CalendarEvent) => {
+    console.log('Edit event:', event);
+    // Event editing is handled by EventFormDialog in ProjectCalendar
   };
 
   return (

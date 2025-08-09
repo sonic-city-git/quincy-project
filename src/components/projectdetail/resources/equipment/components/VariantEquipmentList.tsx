@@ -7,11 +7,12 @@
  */
 
 import { Package } from 'lucide-react';
-import { useVariantEquipment } from '@/hooks/useVariantEquipment';
+import { useVariantEquipment } from '@/hooks/variant';
 import { BaseEquipmentList } from './BaseEquipmentList';
 
 interface VariantEquipmentListProps {
   projectId: string;
+  variantId: string;
   variantName: string;
   selectedGroupId: string | null;
   onGroupSelect: (groupId: string | null) => void;
@@ -19,7 +20,8 @@ interface VariantEquipmentListProps {
 }
 
 export function VariantEquipmentList({ 
-  projectId, 
+  projectId,
+  variantId,
   variantName,
   selectedGroupId,
   onGroupSelect,
@@ -29,7 +31,7 @@ export function VariantEquipmentList({
     equipmentData, 
     isLoading, 
     error 
-  } = useVariantEquipment(projectId, variantName);
+  } = useVariantEquipment(projectId, variantId);
 
   // Note: Group management is handled by BaseEquipmentList through useVariantEquipment hook
 
@@ -59,7 +61,8 @@ export function VariantEquipmentList({
       {/* Equipment Content - Always show BaseEquipmentList for drag & drop */}
       <div className="space-y-1.5">
         <BaseEquipmentList 
-          projectId={projectId} 
+          projectId={projectId}
+          variantId={variantId}
           variantName={variantName}
           selectedGroupId={selectedGroupId}
           onGroupSelect={onGroupSelect}

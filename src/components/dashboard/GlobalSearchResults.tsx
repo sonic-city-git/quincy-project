@@ -15,7 +15,7 @@ import {
   Mail,
   Calendar
 } from "lucide-react";
-import { SearchResult, GlobalSearchResults } from "@/hooks/useGlobalSearch";
+import { SearchResult, GlobalSearchResults } from "@/hooks/global";
 
 interface GlobalSearchResultsProps {
   results: GlobalSearchResults;

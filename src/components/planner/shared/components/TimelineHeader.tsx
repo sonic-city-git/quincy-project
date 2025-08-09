@@ -2,8 +2,8 @@ import { Search, Package, Users, Mic, Volume2, Lightbulb, Video, Cable, Building
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useCrewRoles } from "@/hooks/useCrewRoles";
-import { useFolders } from "@/hooks/useFolders";
+import { useCrewRoles } from "@/hooks/crew";
+import { useFolders } from "@/hooks/ui";
 import { FOLDER_ORDER } from "@/types/equipment";
 import { format } from "date-fns";
 import { SectionHeader } from "@/components/shared/SectionHeader";

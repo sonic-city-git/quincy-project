@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { LayoutDashboard, TrendingUp, AlertTriangle, Calendar, CalendarDays } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { useFilterState } from "@/hooks/useFilterState";
+import { useFilterState } from "@/hooks/ui";
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,10 +12,10 @@ import { RevenueChart } from "@/components/dashboard/RevenueChart";
 import { DashboardHeader, DashboardFilters } from "@/components/dashboard/DashboardHeader";
 import { DashboardStatsCards } from "@/components/dashboard/DashboardStatsCards";
 import { GlobalSearchResults } from "@/components/dashboard/GlobalSearchResults";
-import { useGlobalSearch } from "@/hooks/useGlobalSearch";
+import { useGlobalSearch } from "@/hooks/global";
 import { formatPrice } from "@/utils/priceFormatters";
 import { useAuth } from "@/components/AuthProvider";
-import { useProjects } from "@/hooks/useProjects";
+import { useProjects } from "@/hooks/project";
 
 const Index = () => {
   const { session } = useAuth();

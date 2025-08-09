@@ -27,7 +27,8 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Calendar, Copy } from "lucide-react";
 import { CalendarEvent, EventType } from "@/types/events";
-import { VariantSelector } from "@/components/shared/forms/VariantSelector";
+import { SimpleVariantSelector } from "@/components/shared/forms/SimpleVariantSelector";
+import { useProjectVariants } from "@/hooks/project";
 
 // Only allow specific event types for multi-event creation
 const ALLOWED_EVENT_TYPES = [
@@ -69,11 +70,19 @@ export function MultiEventDialog({
   onAddEvents
 }: MultiEventDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-
+  
+  // Preload variants - simple approach
+  const { data: variants = [], isLoading: variantsLoading } = useProjectVariants(projectId);
+  
   // Filter event types to only allowed ones
   const filteredEventTypes = eventTypes.filter(type => 
     ALLOWED_EVENT_TYPES.includes(type.name)
   );
+
+  // Get intelligent default variant (fallback to first variant or 'default')
+  const defaultVariant = variants.find(v => v.is_default)?.variant_name || 
+                         variants[0]?.variant_name || 
+                         'default';
 
   // Form setup
   const form = useForm<MultiEventFormData>({
@@ -81,7 +90,7 @@ export function MultiEventDialog({
     defaultValues: {
       eventTypeId: '',
       status: 'proposed',
-      variantName: 'default'
+      variantName: defaultVariant // Clean default, no flicker
     },
   });
 
@@ -112,6 +121,11 @@ export function MultiEventDialog({
 
   // Don't render if no dates are selected
   if (!selectedDates?.length) {
+    return null;
+  }
+
+  // Don't show dialog until variants are loaded (prevents flicker)
+  if (variantsLoading) {
     return null;
   }
 
@@ -189,28 +203,26 @@ export function MultiEventDialog({
               )}
             />
 
-            {/* Variant Selection */}
-            {projectId && (
-              <FormField
-                control={form.control}
-                name="variantName"
-                render={({ field }) => (
-                  <FormItem>
-                    <VariantSelector
-                      projectId={projectId}
-                      value={field.value}
-                      onValueChange={field.onChange}
-                      disabled={isSubmitting}
-                      showLabel={true}
-                    />
-                    <FormDescription>
-                      All events will use this variant configuration
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
+            {/* Variant Selection - Simple approach */}
+            <FormField
+              control={form.control}
+              name="variantName"
+              render={({ field }) => (
+                <FormItem>
+                  <SimpleVariantSelector
+                    variants={variants}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    disabled={isSubmitting || variantsLoading}
+                    showLabel={true}
+                  />
+                  <FormDescription>
+                    All events will use this variant configuration
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             {/* Action Buttons */}
             <div className="flex items-center justify-end gap-2 pt-4">

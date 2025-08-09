@@ -1,32 +1,22 @@
 /**
  * 🎯 EVENT CREW COMPONENT
  * 
- * Handles crew assignment status and actions for events
- * Consolidated from: HeaderCrewIcon, crew logic in EventCardIcons
+ * Shows operational crew status: conflicts, warnings, assignments
+ * Replaces sync functionality with operational intelligence
  */
 
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Users } from 'lucide-react';
-import { CrewRolesDialog } from '../dialogs/CrewRolesDialog';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
 import { CalendarEvent } from '@/types/events';
-import { useEventSyncStatus } from '@/hooks/useConsolidatedSyncStatus';
+import { useConsolidatedConflicts } from '@/hooks/global/useConsolidatedConflicts';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useMemo } from 'react';
+import { CrewAssignmentDialog } from '../dialogs/CrewAssignmentDialog';
 
 export interface EventCrewProps {
   event?: CalendarEvent;
@@ -34,9 +24,6 @@ export interface EventCrewProps {
   variant?: 'icon' | 'section';
   disabled?: boolean;
   className?: string;
-  isSynced?: boolean;
-  hasProjectRoles?: boolean;
-  onSyncPreferredCrew?: () => void;
   onViewConflicts?: () => void;
   onManualAssign?: () => void;
 }
@@ -49,176 +36,153 @@ export function EventCrew({
   variant = 'icon',
   disabled = false,
   className,
-  isSynced,
-  hasProjectRoles,
-  onSyncPreferredCrew,
   onViewConflicts,
   onManualAssign
 }: EventCrewProps) {
   const targetEvent = event || events[0];
-  const targetEvents = events.length > 0 ? events : (targetEvent ? [targetEvent] : []);
-  const [showRolesDialog, setShowRolesDialog] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   
-  // Use props if provided, otherwise get from hook
-  const syncStatus = useEventSyncStatus(targetEvent);
-  const actualHasProjectRoles = hasProjectRoles ?? syncStatus.hasProjectRoles;
-  const actualIsCrewSynced = isSynced ?? syncStatus.isCrewSynced;
-  
-  // Get crew assignments for the event(s)
-  const { data: eventRoles } = useQuery({
-    queryKey: ['event-roles', targetEvents.map(e => e.id)],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from('project_event_roles')
-        .select('event_id, crew_member_id, role_id')
-        .in('event_id', targetEvents.map(e => e.id));
-      return data || [];
-    },
-    enabled: targetEvents.length > 0
-  });
-
-  // Calculate sync status like HeaderCrewIcon
-  const allEventsSynced = useMemo(() => {
-    if (!eventRoles?.length) return false;
-    
-    // Group roles by event
-    const rolesByEvent = new Map();
-    eventRoles.forEach(role => {
-      if (!rolesByEvent.has(role.event_id)) {
-        rolesByEvent.set(role.event_id, []);
-      }
-      rolesByEvent.get(role.event_id).push(role);
-    });
-    
-    // Check if each crew-needing event has all its roles assigned
-    for (const evt of targetEvents) {
-      if (!evt.type.needs_crew) continue;
-      
-      const eventRolesList = rolesByEvent.get(evt.id) || [];
-      if (eventRolesList.length === 0) continue;
-      
-      const hasUnassignedRoles = eventRolesList.some(role => !role.crew_member_id);
-      if (hasUnassignedRoles) {
-        return false;
-      }
-    }
-    
-    return true;
-  }, [targetEvents, eventRoles]);
-
-  // Don't render if no crew needed or no project roles
-  if (!targetEvent?.type?.needs_crew || !actualHasProjectRoles) {
+  // Don't render if no crew needed or no valid event
+  if (!targetEvent?.type?.needs_crew || !targetEvent.id) {
     return null;
   }
 
-  const hasConflicts = false; // TODO: Implement conflict detection like HeaderCrewIcon
-  const isMultiple = targetEvents.length > 1;
-
-  // Priority: Red (conflicts) > Green (all assigned) > Blue (unassigned)
-  if (hasConflicts) {
-    return (
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-10 w-10"
-            disabled={disabled}
-          >
-            <Users className="h-5 w-5 text-red-500" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuItem 
-            onClick={onSyncPreferredCrew}
-            className="flex items-center gap-2"
-          >
-            Sync preferred crew
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={onViewConflicts}
-            className="flex items-center gap-2"
-          >
-            View conflicts
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    );
-  }
+  // Get real crew conflicts and event role data
+  const { crewConflictDetails, isLoading: conflictsLoading } = useConsolidatedConflicts();
   
-  // If all crew is assigned and no conflicts, show green icon without dropdown
-  if (actualIsCrewSynced || allEventsSynced) {
-    return (
+  // Get event roles to check for unfilled positions
+  const { data: eventRoles, isLoading: rolesLoading } = useQuery({
+    queryKey: ['event-roles', targetEvent?.id],
+    queryFn: async () => {
+      if (!targetEvent?.id) return [];
+      
+      const { data } = await supabase
+        .from('project_event_roles')
+        .select(`
+          *,
+          crew_members(id, name),
+          crew_roles(id, name)
+        `)
+        .eq('event_id', targetEvent.id);
+      
+      return data || [];
+    },
+    enabled: !!targetEvent?.id
+  });
+  
+  // Check if this specific event has crew conflicts
+  const eventCrewConflicts = useMemo(() => {
+    if (!targetEvent?.date || !crewConflictDetails?.length) return [];
+    
+    // Format the event date to match conflict date format (YYYY-MM-DD)
+    // Handle both Date objects and string dates
+    const eventDate = targetEvent.date instanceof Date 
+      ? targetEvent.date.toISOString().split('T')[0]
+      : new Date(targetEvent.date).toISOString().split('T')[0];
+    
+    // Find crew conflicts on this event's date
+    return crewConflictDetails.filter(conflict => conflict.date === eventDate);
+  }, [targetEvent?.date, crewConflictDetails]);
+  
+  // Check for unfilled roles and non-preferred crew assignments
+  const crewStatus = useMemo(() => {
+    if (!eventRoles) return { allRolesFilled: true, hasNonPreferredCrew: false };
+    
+    const unfilledRoles = eventRoles.filter(role => !role.crew_member_id);
+    
+    // TODO: Implement non-preferred crew detection
+    // This requires getting preferred crew from project_roles table
+    // For now, we'll focus on filled vs unfilled roles
+    const nonPreferredAssignments: any[] = []; // Placeholder for future implementation
+    
+    return {
+      allRolesFilled: unfilledRoles.length === 0,
+      hasNonPreferredCrew: nonPreferredAssignments.length > 0,
+      unfilledCount: unfilledRoles.length,
+      nonPreferredCount: nonPreferredAssignments.length
+    };
+  }, [eventRoles]);
+  
+  // Operational status logic based on requirements:
+  // 🟢 Green: All roles filled with preferred crew
+  // 🔴 Red: Crew member assigned to multiple events (overbooking) OR unfilled roles
+  // 🔵 Blue: Event resolved with non-preferred crew
+  
+  const hasCrewOverbookings = eventCrewConflicts.length > 0;
+  const hasNonPreferredCrew = crewStatus.hasNonPreferredCrew;
+  const allRolesFilled = crewStatus.allRolesFilled;
+
+  // Determine operational status and styling based on requirements
+  const getCrewStatus = () => {
+    if (hasCrewOverbookings) {
+      return {
+        color: 'text-red-600',
+        tooltip: 'Crew member assigned to multiple events - click to resolve',
+        clickable: true
+      };
+    }
+    if (!allRolesFilled) {
+      return {
+        color: 'text-red-600',
+        tooltip: 'Some roles unfilled - click to assign crew',
+        clickable: true
+      };
+    }
+    if (hasNonPreferredCrew) {
+      return {
+        color: 'text-blue-500',
+        tooltip: 'Event resolved with non-preferred crew - click to view',
+        clickable: true
+      };
+    }
+    // Green - all roles filled with preferred crew
+    return {
+      color: 'text-green-600',
+      tooltip: 'All roles filled - click to view assignments',
+      clickable: true
+    };
+  };
+
+  const status = getCrewStatus();
+
+  // Handle click to open crew assignment dialog
+  const handleClick = () => {
+    if (status.clickable) {
+      setDialogOpen(true);
+    }
+  };
+
+  // Operational status icon with click handling for crew management
+  return (
+    <>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="h-10 w-10 flex items-center justify-center">
-            <Users className="h-5 w-5 text-green-500" />
+          <div 
+            className={`h-10 w-10 flex items-center justify-center ${
+              status.clickable ? 'cursor-pointer hover:bg-muted/50 rounded' : ''
+            }`}
+            onClick={handleClick}
+          >
+            <Users className={`h-5 w-5 ${status.color}`} />
           </div>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Crew is assigned</p>
+          <p>{status.tooltip}</p>
         </TooltipContent>
       </Tooltip>
-    );
-  }
 
-  // Show blue icon with dropdown for unassigned crew
-  return (
-    <>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-10 w-10"
-            disabled={disabled}
-          >
-            <Users className={cn("h-5 w-5", "text-blue-500")} />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
-          <DropdownMenuItem 
-            onClick={onSyncPreferredCrew}
-            className="flex items-center gap-2"
-          >
-            Sync preferred crew
-          </DropdownMenuItem>
-          <DropdownMenuItem 
-            onClick={() => setShowRolesDialog(true)}
-            className="flex items-center gap-2"
-          >
-            View crew roles
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {/* Crew Roles Dialog */}
-      {targetEvent && (
-        <CrewRolesDialog
-          isOpen={showRolesDialog}
-          onOpenChange={setShowRolesDialog}
+      {/* Crew Assignment Dialog */}
+      {targetEvent && eventRoles && (
+        <CrewAssignmentDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
           event={targetEvent}
-          onSyncPreferredCrew={onSyncPreferredCrew}
+          conflicts={eventCrewConflicts}
+          eventRoles={eventRoles}
+          unfilledCount={crewStatus.unfilledCount}
+          nonPreferredCount={crewStatus.nonPreferredCount}
         />
       )}
     </>
   );
 }
-
-/**
- * Crew status utilities
- */
-export const crewUtils = {
-  getStatus: (assignedCount: number, totalCount: number, hasConflicts: boolean) => {
-    if (hasConflicts) return 'conflicts';
-    if (assignedCount === totalCount && totalCount > 0) return 'synced';
-    if (assignedCount > 0) return 'partial';
-    return 'not-synced';
-  },
-  
-  getStatusConfig: (status: keyof typeof CREW_STATUS) => 
-    CREW_STATUS[status],
-  
-  getAssignmentSummary: (assignedCount: number, totalCount: number, hasConflicts: boolean) => 
-    `${assignedCount}/${totalCount} assigned${hasConflicts ? ' • conflicts detected' : ''}`
-} as const;

@@ -31,7 +31,8 @@ import { Loader2, Trash2, Calendar, MapPin } from "lucide-react";
 import { format } from "date-fns";
 import { CalendarEvent, EventType } from "@/types/events";
 import { ConfirmationDialog } from "@/components/shared/dialogs/ConfirmationDialog";
-import { VariantSelector } from "@/components/shared/forms/VariantSelector";
+import { SimpleVariantSelector } from "@/components/shared/forms/SimpleVariantSelector";
+import { useProjectVariants } from "@/hooks/project";
 import { CityLocationInput } from "@/components/shared/forms/CityLocationInput";
 
 // Form validation schema
@@ -94,7 +95,17 @@ export function EventFormDialog({
   const [randomFestivalPlaceholder, setRandomFestivalPlaceholder] = useState(getRandomLegendaryFestival());
   const [selectedLocationData, setSelectedLocationData] = useState<any>(null);
 
-  // Form setup
+  // Preload variants - simple approach
+  const { variants = [], isLoading: variantsLoading } = useProjectVariants(projectId);
+  
+
+
+  // Get intelligent default variant (fallback to first variant or 'default')
+  const defaultVariant = variants.find(v => v.is_default)?.variant_name || 
+                         variants[0]?.variant_name || 
+                         'default';
+
+  // Form setup - simple defaults, no magic
   const form = useForm<EventFormData>({
     resolver: zodResolver(eventFormSchema),
     defaultValues: {
@@ -102,7 +113,7 @@ export function EventFormDialog({
       typeId: '',
       status: defaultStatus,
       location: '',
-      variantName: 'default'
+      variantName: defaultVariant
     },
   });
 
@@ -112,7 +123,7 @@ export function EventFormDialog({
 
   // Reset form when dialog opens/closes or event changes
   useEffect(() => {
-    if (open) {
+    if (open && !variantsLoading) {
       // Get a new random festival placeholder each time dialog opens
       setRandomFestivalPlaceholder(getRandomLegendaryFestival());
       
@@ -122,7 +133,7 @@ export function EventFormDialog({
           typeId: event.type.id,
           status: event.status,
           location: event.location || '',
-          variantName: event.variant_name || 'default'
+          variantName: event.variant_name || defaultVariant
         });
       } else {
         form.reset({
@@ -130,11 +141,11 @@ export function EventFormDialog({
           typeId: '',
           status: defaultStatus,
           location: '',
-          variantName: 'default'
+          variantName: defaultVariant // Clean default, no flicker
         });
       }
     }
-  }, [open, mode, event, defaultStatus, form]);
+  }, [open, mode, event, defaultStatus, form, variantsLoading, defaultVariant]);
 
   // Handle form submission
   const handleSubmit = async (data: EventFormData) => {
@@ -175,6 +186,11 @@ export function EventFormDialog({
       ? `Update the details for this ${selectedDate ? format(selectedDate, 'MMMM d') : ''} event.`
       : `Create a new event${selectedDate ? ` for ${format(selectedDate, 'EEEE, MMMM d, yyyy')}` : ''}.`
   );
+
+  // Don't show dialog until variants are loaded (prevents flicker)
+  if (variantsLoading) {
+    return null;
+  }
 
   return (
     <>
@@ -262,17 +278,17 @@ export function EventFormDialog({
                 )}
               />
 
-              {/* Variant Selection */}
+              {/* Variant Selection - Simple approach */}
               <FormField
                 control={form.control}
                 name="variantName"
                 render={({ field }) => (
                   <FormItem>
-                    <VariantSelector
-                      projectId={projectId}
+                    <SimpleVariantSelector
+                      variants={variants}
                       value={field.value}
                       onValueChange={field.onChange}
-                      disabled={isSubmitting}
+                      disabled={isSubmitting || variantsLoading}
                       showLabel={true}
                     />
                     <FormMessage />

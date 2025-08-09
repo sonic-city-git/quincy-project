@@ -1,8 +1,8 @@
 import { Clock, Archive, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useProjects } from "@/hooks/useProjects";
-import { useOwnerOptions } from "@/hooks/useOwnerOptions";
+import { useProjects } from "@/hooks/project";
+import { useOwnerOptions } from "@/hooks/ui";
 import { SectionHeader } from "@/components/shared/SectionHeader";
 import type { Tab } from "@/components/shared/SectionHeader";
 import { OwnerFilters } from "@/types/ui-common";

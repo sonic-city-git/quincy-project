@@ -10,22 +10,24 @@ import { Users } from 'lucide-react';
 import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
 import { cn } from '@/design-system';
 import { CompactCrewRolesList } from './CompactCrewRolesList';
-import { useVariantCrew } from '@/hooks/useVariantCrew';
+import { useVariantCrew } from '@/hooks/variant';
 
 interface VariantCrewListProps {
   projectId: string;
+  variantId: string;
   variantName: string;
 }
 
 export function VariantCrewList({ 
-  projectId, 
+  projectId,
+  variantId,
   variantName 
 }: VariantCrewListProps) {
   const { 
     crewRoles, 
     isLoading, 
     error 
-  } = useVariantCrew(projectId, variantName);
+  } = useVariantCrew(projectId, variantId);
 
   // Calculate crew stats
   const totalRoles = crewRoles?.length || 0;
@@ -56,8 +58,9 @@ export function VariantCrewList({
       {/* Crew Content */}
       {totalRoles > 0 ? (
         <CompactCrewRolesList 
-          projectId={projectId} 
-          variantName={variantName} 
+          projectId={projectId}
+          variantId={variantId}
+          variantName={variantName}
         />
       ) : (
         <div className="text-center py-8">

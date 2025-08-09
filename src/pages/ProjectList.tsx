@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { CalendarDays } from "lucide-react";
 import { PageLayout } from "@/components/layout/PageLayout";
-import { useTabPersistence } from "@/hooks/useTabPersistence";
-import { useFilterState } from "@/hooks/useFilterState";
+import { useTabPersistence } from "@/hooks/ui";
+import { useFilterState } from "@/hooks/ui";
 
 // Import the new unified header and table components
 import { ProjectsHeader, ProjectFilters } from "@/components/projects/components/ProjectsHeader";

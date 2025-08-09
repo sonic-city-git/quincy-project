@@ -4,8 +4,8 @@
  */
 
 import { useState, useEffect } from "react";
-import { useEquipment } from "@/hooks/useEquipment";
-import { useFolders } from "@/hooks/useFolders";
+import { useEquipment } from "@/hooks/equipment";
+import { useFolders } from "@/hooks/ui";
 import { EquipmentTable } from "../equipment/EquipmentTable";
 
 import { EquipmentTableHeader } from "../equipment/EquipmentTableHeader";
@@ -18,7 +18,7 @@ import { useResourceFiltering } from "../shared/hooks/useResourceFiltering";
 import { COMPONENT_CLASSES, cn } from "@/design-system";
 import { Package, ChevronRight } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { usePersistentExpandedGroups } from "@/hooks/usePersistentExpandedGroups";
+import { usePersistentExpandedGroups } from "@/hooks/ui";
 
 interface ResourceEquipmentTableProps {
   filters: ResourceFilters;

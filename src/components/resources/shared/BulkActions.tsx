@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Resource, ResourceType, isCrewResource } from "../types/resource";
-import { useCrew } from "@/hooks/useCrew";
-import { useEquipment } from "@/hooks/useEquipment";
+import { useCrew } from "@/hooks/crew";
+import { useEquipment } from "@/hooks/equipment";
 import { Trash2, AlertCircle } from "lucide-react";
 import {
   AlertDialog,

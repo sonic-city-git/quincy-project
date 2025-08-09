@@ -8,10 +8,11 @@ import { LayersIcon } from 'lucide-react';
 import { ResourcesContent } from './components/ResourcesContent';
 import { CreateVariantDialog } from './components/CreateVariantDialog';
 import { EditVariantDialog } from './components/EditVariantDialog';
-import { useProjectVariants } from '@/hooks/useProjectVariants';
+import { useProjectVariants } from '@/hooks/project';
 import { ErrorBoundary } from 'react-error-boundary';
 import { Button } from '@/components/ui/button';
 import { RefreshCw } from 'lucide-react';
+
 
 interface ResourcesTabProps {
   projectId: string;
@@ -41,6 +42,7 @@ export function ResourcesTab({ projectId, project }: ResourcesTabProps) {
   const {
     variants,
     selectedVariant,
+    selectedVariantObject,
     setSelectedVariant,
     isLoading: variantsLoading,
     error: variantsError,
@@ -94,6 +96,7 @@ export function ResourcesTab({ projectId, project }: ResourcesTabProps) {
           projectId={projectId}
           variants={variants}
           selectedVariant={selectedVariant}
+          selectedVariantObject={selectedVariantObject}
           onVariantSelect={setSelectedVariant}
           isLoading={variantsLoading}
           onEditVariant={handleEditVariant}

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
 import { useState } from "react";
 import { EditMemberDialog } from "./EditMemberDialog";
-import { useCrew } from "@/hooks/useCrew";
+import { useCrew } from "@/hooks/crew";
 
 interface CrewActionsProps {
   selectedItems: string[];

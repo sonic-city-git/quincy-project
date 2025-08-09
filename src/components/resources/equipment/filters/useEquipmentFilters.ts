@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Equipment } from "@/integrations/supabase/types/equipment";
-import { useFolders } from "@/hooks/useFolders";
+import { useFolders } from "@/hooks/ui";
 
 export function useEquipmentFilters() {
   const [searchQuery, setSearchQuery] = useState('');

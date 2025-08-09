@@ -2,13 +2,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useCrewRoles } from "@/hooks/useCrewRoles";
+import { useCrewRoles } from "@/hooks/crew";
 import { Project } from "@/types/projects";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useCrew } from "@/hooks/useCrew";
+import { useCrew } from "@/hooks/crew";
 import { useQueryClient } from "@tanstack/react-query";
 import { SONIC_CITY_FOLDER_ID } from "@/constants/organizations";
 import { FORM_PATTERNS, createCurrencyInput, cn } from "@/design-system";
@@ -18,6 +18,7 @@ interface AddRoleDialogProps {
   isOpen: boolean;
   onClose: () => void;
   project: Project;
+  variantId: string;
   variantName: string;
   eventId?: string;
 }
@@ -29,7 +30,7 @@ interface FormData {
   preferred_id?: string;
 }
 
-export function AddRoleDialog({ isOpen, onClose, project, variantName }: AddRoleDialogProps) {
+export function AddRoleDialog({ isOpen, onClose, project, variantId, variantName }: AddRoleDialogProps) {
   const { roles } = useCrewRoles();
   // PERFORMANCE OPTIMIZATION: Use consistent folder ID for crew data
   const { crew } = useCrew();
@@ -44,24 +45,12 @@ export function AddRoleDialog({ isOpen, onClose, project, variantName }: AddRole
 
   const onSubmit = async (data: FormData) => {
     try {
-      // First get the variant_id from the variant_name
-      const { data: variant, error: variantError } = await supabase
-        .from('project_variants')
-        .select('id')
-        .eq('project_id', project.id)
-        .eq('variant_name', variantName)
-        .single();
-
-      if (variantError || !variant) {
-        throw new Error(`Failed to find variant: ${variantError?.message || 'Variant not found'}`);
-      }
-      
-      // Add the project role
+      // Add the project role directly using the provided variantId
       const { error } = await supabase
         .from('project_roles')
         .insert({
           project_id: project.id,
-          variant_id: variant.id,
+          variant_id: variantId,
           role_id: data.role_id,
           daily_rate: data.daily_rate,
           hourly_rate: data.hourly_rate,
@@ -76,7 +65,7 @@ export function AddRoleDialog({ isOpen, onClose, project, variantName }: AddRole
           queryKey: ['project-roles', project.id] 
         }),
         queryClient.invalidateQueries({ 
-          queryKey: ['variant-crew', project.id, variantName] 
+          queryKey: ['variant-crew', project.id, variantId] 
         }),
         queryClient.invalidateQueries({
           queryKey: ['project-event-roles']

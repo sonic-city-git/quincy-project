@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useQueryClient } from "@tanstack/react-query";
 import { Equipment } from "@/integrations/supabase/types/equipment";
-import { useFolders } from "@/hooks/useFolders";
+import { useFolders } from "@/hooks/ui";
 import { DeleteEquipmentAlert } from "./edit/DeleteEquipmentAlert";
 import { RestockDialog } from "./edit/RestockDialog";
 import { EditEquipmentForm } from "./edit/EditEquipmentForm";
