@@ -43,7 +43,13 @@ export function EventEquipment({
   }
 
   // Get real equipment operational status for this specific event
-  const { hasOverbookings, hasSubrentals, isAvailable, conflicts: eventConflicts, isLoading } = useEventEquipmentStatus(targetEvent!);
+  const { hasOverbookings, hasSubrentals, isAvailable, conflicts: eventConflicts, isLoading, error } = useEventEquipmentStatus(targetEvent!);
+  
+  // Handle errors gracefully - show equipment as available if error occurs
+  if (error) {
+    console.error('Equipment operational status error:', error);
+    // Fail gracefully - don't block UI rendering
+  }
   
   // Operational status logic based on requirements:
   // 🟢 Green: All equipment available (no overbookings) 

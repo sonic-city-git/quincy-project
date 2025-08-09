@@ -56,8 +56,15 @@ export function EventCrew({
     nonPreferredCount,
     eventRoles,
     nonPreferredRoles,
-    isLoading
+    isLoading,
+    error
   } = useEventCrewStatus(targetEvent!);
+  
+  // Handle errors gracefully - show crew as complete if error occurs
+  if (error) {
+    console.error('Crew operational status error:', error);
+    // Fail gracefully - don't block UI rendering
+  }
   
   // Operational status logic based on requirements:
   // 🟢 Green: All roles filled with preferred crew
