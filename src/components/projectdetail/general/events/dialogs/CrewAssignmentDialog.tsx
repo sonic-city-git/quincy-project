@@ -55,6 +55,7 @@ interface CrewAssignmentDialogProps {
   eventRoles: EventRole[];
   unfilledCount: number;
   nonPreferredCount: number;
+  nonPreferredRoles?: EventRole[];
 }
 
 export function CrewAssignmentDialog({
@@ -64,7 +65,8 @@ export function CrewAssignmentDialog({
   conflicts,
   eventRoles,
   unfilledCount,
-  nonPreferredCount
+  nonPreferredCount,
+  nonPreferredRoles = []
 }: CrewAssignmentDialogProps) {
   
   const [activeTab, setActiveTab] = useState<string>(() => {

@@ -13,9 +13,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { CalendarEvent } from '@/types/events';
-import { useConsolidatedConflicts } from '@/hooks/global/useConsolidatedConflicts';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useEventCrewStatus } from '@/hooks/event/useEventOperationalStatus';
 import { CrewAssignmentDialog } from '../dialogs/CrewAssignmentDialog';
 
 export interface EventCrewProps {
@@ -47,70 +45,25 @@ export function EventCrew({
     return null;
   }
 
-  // Get real crew conflicts and event role data
-  const { crewConflictDetails, isLoading: conflictsLoading } = useConsolidatedConflicts();
-  
-  // Get event roles to check for unfilled positions
-  const { data: eventRoles, isLoading: rolesLoading } = useQuery({
-    queryKey: ['event-roles', targetEvent?.id],
-    queryFn: async () => {
-      if (!targetEvent?.id) return [];
-      
-      const { data } = await supabase
-        .from('project_event_roles')
-        .select(`
-          *,
-          crew_members(id, name),
-          crew_roles(id, name)
-        `)
-        .eq('event_id', targetEvent.id);
-      
-      return data || [];
-    },
-    enabled: !!targetEvent?.id
-  });
-  
-  // Check if this specific event has crew conflicts
-  const eventCrewConflicts = useMemo(() => {
-    if (!targetEvent?.date || !crewConflictDetails?.length) return [];
-    
-    // Format the event date to match conflict date format (YYYY-MM-DD)
-    // Handle both Date objects and string dates
-    const eventDate = targetEvent.date instanceof Date 
-      ? targetEvent.date.toISOString().split('T')[0]
-      : new Date(targetEvent.date).toISOString().split('T')[0];
-    
-    // Find crew conflicts on this event's date
-    return crewConflictDetails.filter(conflict => conflict.date === eventDate);
-  }, [targetEvent?.date, crewConflictDetails]);
-  
-  // Check for unfilled roles and non-preferred crew assignments
-  const crewStatus = useMemo(() => {
-    if (!eventRoles) return { allRolesFilled: true, hasNonPreferredCrew: false };
-    
-    const unfilledRoles = eventRoles.filter(role => !role.crew_member_id);
-    
-    // TODO: Implement non-preferred crew detection
-    // This requires getting preferred crew from project_roles table
-    // For now, we'll focus on filled vs unfilled roles
-    const nonPreferredAssignments: any[] = []; // Placeholder for future implementation
-    
-    return {
-      allRolesFilled: unfilledRoles.length === 0,
-      hasNonPreferredCrew: nonPreferredAssignments.length > 0,
-      unfilledCount: unfilledRoles.length,
-      nonPreferredCount: nonPreferredAssignments.length
-    };
-  }, [eventRoles]);
+  // Get real crew operational status for this specific event
+  const { 
+    hasCrewOverbookings, 
+    hasUnfilledRoles, 
+    hasNonPreferredCrew, 
+    allRolesFilled,
+    conflicts: eventCrewConflicts,
+    unfilledCount,
+    nonPreferredCount,
+    eventRoles,
+    nonPreferredRoles,
+    isLoading
+  } = useEventCrewStatus(targetEvent!);
   
   // Operational status logic based on requirements:
   // 🟢 Green: All roles filled with preferred crew
   // 🔴 Red: Crew member assigned to multiple events (overbooking) OR unfilled roles
   // 🔵 Blue: Event resolved with non-preferred crew
-  
-  const hasCrewOverbookings = eventCrewConflicts.length > 0;
-  const hasNonPreferredCrew = crewStatus.hasNonPreferredCrew;
-  const allRolesFilled = crewStatus.allRolesFilled;
+  // Status is now provided directly by the specialized hook
 
   // Determine operational status and styling based on requirements
   const getCrewStatus = () => {
@@ -172,15 +125,16 @@ export function EventCrew({
       </Tooltip>
 
       {/* Crew Assignment Dialog */}
-      {targetEvent && eventRoles && (
+      {targetEvent && (
         <CrewAssignmentDialog
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           event={targetEvent}
           conflicts={eventCrewConflicts}
           eventRoles={eventRoles}
-          unfilledCount={crewStatus.unfilledCount}
-          nonPreferredCount={crewStatus.nonPreferredCount}
+          unfilledCount={unfilledCount}
+          nonPreferredCount={nonPreferredCount}
+          nonPreferredRoles={nonPreferredRoles}
         />
       )}
     </>

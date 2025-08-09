@@ -13,7 +13,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { CalendarEvent } from '@/types/events';
-import { useEquipmentConflicts } from '@/hooks/global/useConsolidatedConflicts';
+import { useEventEquipmentStatus } from '@/hooks/event/useEventOperationalStatus';
 import { OverBookedEquipmentDialog } from '../dialogs/OverBookedEquipmentDialog';
 
 export interface EventEquipmentProps {
@@ -42,31 +42,14 @@ export function EventEquipment({
     return null;
   }
 
-  // Get real equipment conflicts for this event's date
-  const { conflicts: equipmentConflicts, isLoading } = useEquipmentConflicts();
-  
-  // Check if this specific event has equipment conflicts
-  const eventConflicts = useMemo(() => {
-    if (!targetEvent?.date || !equipmentConflicts?.length) return [];
-    
-    // Format the event date to match conflict date format (YYYY-MM-DD)
-    // Handle both Date objects and string dates
-    const eventDate = targetEvent.date instanceof Date 
-      ? targetEvent.date.toISOString().split('T')[0]
-      : new Date(targetEvent.date).toISOString().split('T')[0];
-    
-    // Find conflicts on this event's date
-    return equipmentConflicts.filter(conflict => conflict.date === eventDate);
-  }, [targetEvent?.date, equipmentConflicts]);
+  // Get real equipment operational status for this specific event
+  const { hasOverbookings, hasSubrentals, isAvailable, conflicts: eventConflicts, isLoading } = useEventEquipmentStatus(targetEvent!);
   
   // Operational status logic based on requirements:
   // 🟢 Green: All equipment available (no overbookings) 
   // 🔴 Red: Overbooking detected on any equipment on this date
   // 🔵 Blue: Overbooking resolved with subrental (implement later)
-  
-  const hasOverbookings = eventConflicts.length > 0;
-  const hasSubrentals = false; // TODO: Implement subrental detection (later)
-  const isAvailable = !hasOverbookings && !hasSubrentals; // All equipment available
+  // Status is now provided directly by the specialized hook
 
   // Determine operational status and styling based on requirements
   const getEquipmentStatus = () => {
