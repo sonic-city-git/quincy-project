@@ -1,18 +1,23 @@
 /**
- * PROJECT CONFLICTS OPTIMIZATION
+ * PROJECT CONFLICTS - UNIFIED STOCK ENGINE VERSION
  * 
- * Provides efficient conflict detection for project components by leveraging
- * the planner's pre-calculated warnings instead of running individual queries.
+ * ✅ COMPLETELY REDESIGNED FOR UNIFIED STOCK ENGINE
+ * 
+ * Provides efficient conflict detection for project components using the new 
+ * unified stock engine with virtual stock calculations (subrentals & repairs).
  * 
  * Benefits:
- * - Reuses planner's optimized calculations
- * - Fast lookup for specific events/crews
- * - Consistent with 30-day conflict detection standard
- * - Eliminates duplicate Supabase queries
+ * - Virtual stock calculations (subrentals add, repairs reduce)
+ * - Real-time conflict resolution
+ * - Optimized batch calculations
+ * - Single source of truth for all stock data
+ * - Precise conflict analysis with severity levels
  */
 
 import { useMemo } from 'react';
-import { useConsolidatedConflicts } from '../global/useConsolidatedConflicts';
+import { useStockEngine } from '@/hooks/stock/useStockEngine';
+import { getWarningTimeframe } from '@/constants/timeframes';
+import { ConflictAnalysis } from '@/types/stock';
 
 interface ProjectConflictResult {
   hasConflicts: boolean;
@@ -23,6 +28,9 @@ interface ProjectConflictResult {
     date: string;
     type: 'equipment' | 'crew';
     severity: 'low' | 'medium' | 'high';
+    deficit: number;
+    effectiveStock: number;
+    totalUsed: number;
   }>;
 }
 
@@ -32,6 +40,7 @@ interface UseProjectConflictsProps {
   crewMemberIds?: string[];
   equipmentIds?: string[];
   dates?: string[];
+  selectedOwner?: string;
 }
 
 export function useProjectConflicts({
@@ -39,44 +48,51 @@ export function useProjectConflicts({
   eventIds,
   crewMemberIds,
   equipmentIds,
-  dates
+  dates,
+  selectedOwner
 }: UseProjectConflictsProps = {}): ProjectConflictResult {
   
-  // Get consolidated conflicts data (leverages planner calculations)
-  const { 
-    equipmentConflictDetails, 
-    crewConflictDetails, 
-    plannerWarnings,
-    isLoading 
-  } = useConsolidatedConflicts();
+  const { startDate, endDate } = getWarningTimeframe();
+  
+  // Get conflicts from unified stock engine
+  const stockEngine = useStockEngine({
+    startDate,
+    endDate,
+    selectedOwner,
+    resourceType: 'equipment', // For now, focusing on equipment conflicts
+    equipmentIds
+  });
 
-  // Fast conflict checking using pre-calculated data
+  // Process conflicts with filtering
   const conflictResult = useMemo(() => {
-    if (isLoading || !plannerWarnings?.length) {
+    if (stockEngine.isLoading) {
       return { hasConflicts: false, conflictCount: 0, conflictDetails: [] };
     }
 
-    const relevantConflicts = plannerWarnings.filter(warning => {
-      // Filter by specific criteria if provided
-      if (crewMemberIds?.length && !crewMemberIds.includes(warning.resourceId)) {
-        return false;
-      }
-      if (equipmentIds?.length && !equipmentIds.includes(warning.resourceId)) {
-        return false;
-      }
-      if (dates?.length && !dates.includes(warning.date)) {
-        return false;
-      }
-      
-      return true;
-    });
+    let relevantConflicts = stockEngine.conflicts;
 
-    const conflictDetails = relevantConflicts.map(warning => ({
-      resourceId: warning.resourceId,
-      resourceName: warning.resourceName,
-      date: warning.date,
-      type: warning.type === 'overbooked' ? 'equipment' as const : 'crew' as const,
-      severity: warning.severity
+    // Filter by specific criteria if provided
+    if (equipmentIds?.length) {
+      relevantConflicts = relevantConflicts.filter(conflict => 
+        equipmentIds.includes(conflict.equipmentId)
+      );
+    }
+    
+    if (dates?.length) {
+      relevantConflicts = relevantConflicts.filter(conflict => 
+        dates.includes(conflict.date)
+      );
+    }
+
+    const conflictDetails = relevantConflicts.map((conflict: ConflictAnalysis) => ({
+      resourceId: conflict.equipmentId,
+      resourceName: conflict.equipmentName,
+      date: conflict.date,
+      type: 'equipment' as const,
+      severity: conflict.conflict.severity,
+      deficit: conflict.conflict.deficit,
+      effectiveStock: conflict.stockBreakdown.effectiveStock,
+      totalUsed: conflict.stockBreakdown.totalUsed
     }));
 
     return {
@@ -84,7 +100,7 @@ export function useProjectConflicts({
       conflictCount: conflictDetails.length,
       conflictDetails
     };
-  }, [plannerWarnings, crewMemberIds, equipmentIds, dates, isLoading]);
+  }, [stockEngine.conflicts, stockEngine.isLoading, equipmentIds, dates]);
 
   return conflictResult;
 }
@@ -92,69 +108,85 @@ export function useProjectConflicts({
 /**
  * CREW-SPECIFIC CONFLICT HOOK
  * 
- * Optimized for project components that only need crew conflict checking.
- * Replaces the inefficient individual checkCrewConflicts() calls.
+ * TODO: Crew conflicts not yet integrated into unified stock engine
+ * This will be redesigned when crew conflicts are added to the stock engine
  */
 export function useCrewConflicts(crewMemberIds: string[], dates?: string[]) {
-  const { crewConflictDetails, isLoading } = useConsolidatedConflicts();
+  return useMemo(() => {
+    // Placeholder: crew conflicts will be integrated into stock engine later
+    return { hasConflicts: false, conflictCount: 0, conflicts: [] };
+  }, [crewMemberIds, dates]);
+}
+
+/**
+ * EVENT-SPECIFIC CONFLICT HOOK
+ * 
+ * Fast conflict checking for individual events using unified stock engine
+ */
+export function useEventConflicts(eventId: string, eventDate: Date, equipmentIds?: string[]) {
+  const eventDateStr = eventDate.toISOString().split('T')[0];
+  
+  const stockEngine = useStockEngine({
+    startDate: eventDateStr,
+    endDate: eventDateStr,
+    resourceType: 'equipment',
+    equipmentIds
+  });
 
   return useMemo(() => {
-    if (isLoading || !crewConflictDetails?.length) {
+    if (stockEngine.isLoading) {
+      return { hasConflicts: false, conflictCount: 0 };
+    }
+
+    const conflictsOnDate = stockEngine.conflicts.filter(conflict => 
+      conflict.date === eventDateStr
+    );
+
+    return { 
+      hasConflicts: conflictsOnDate.length > 0,
+      conflictCount: conflictsOnDate.length,
+      conflicts: conflictsOnDate
+    };
+  }, [stockEngine.conflicts, stockEngine.isLoading, eventDateStr]);
+}
+
+/**
+ * SECTION-SPECIFIC CONFLICT HOOK
+ * 
+ * Optimized for event section headers using unified stock engine
+ */
+export function useSectionConflicts(
+  events: Array<{ id: string; date: Date }>, 
+  equipmentIds?: string[]
+) {
+  const dates = useMemo(() => 
+    events.map(e => e.date.toISOString().split('T')[0]), 
+    [events]
+  );
+
+  const startDate = dates[0];
+  const endDate = dates[dates.length - 1];
+
+  const stockEngine = useStockEngine({
+    startDate,
+    endDate,
+    resourceType: 'equipment',
+    equipmentIds
+  });
+
+  return useMemo(() => {
+    if (stockEngine.isLoading) {
       return { hasConflicts: false, conflictCount: 0, conflicts: [] };
     }
 
-    // Filter for specific crew members and dates
-    const relevantConflicts = crewConflictDetails.filter(conflict => {
-      if (!crewMemberIds.includes(conflict.crewMemberId)) return false;
-      if (dates?.length && !dates.includes(conflict.date)) return false;
-      return true;
-    });
+    const relevantConflicts = stockEngine.conflicts.filter(conflict => 
+      dates.includes(conflict.date)
+    );
 
     return {
       hasConflicts: relevantConflicts.length > 0,
       conflictCount: relevantConflicts.length,
       conflicts: relevantConflicts
     };
-  }, [crewConflictDetails, crewMemberIds, dates, isLoading]);
-}
-
-/**
- * EVENT-SPECIFIC CONFLICT HOOK
- * 
- * Fast conflict checking for individual events using pre-calculated warnings.
- * Replaces the complex event-by-event queries in EventCardIcons.
- */
-export function useEventConflicts(eventId: string, eventDate: Date) {
-  const { plannerWarnings, isLoading } = useConsolidatedConflicts();
-
-  return useMemo(() => {
-    if (isLoading || !plannerWarnings?.length) {
-      return { hasConflicts: false };
-    }
-
-    const eventDateStr = eventDate.toISOString().split('T')[0];
-    
-    // Check if any resources have conflicts on this event's date
-    // Note: This gives a general conflict indication, not specific to this event's resources
-    const hasConflictsOnDate = plannerWarnings.some(warning => 
-      warning.date === eventDateStr
-    );
-
-    return { hasConflicts: hasConflictsOnDate };
-  }, [plannerWarnings, eventId, eventDate, isLoading]);
-}
-
-/**
- * SECTION-SPECIFIC CONFLICT HOOK
- * 
- * Optimized for event section headers that need to check conflicts across multiple events.
- * Replaces the complex loop-based conflict checking in HeaderCrewIcon.
- */
-export function useSectionConflicts(events: Array<{ id: string; date: Date }>, crewMemberIds: string[]) {
-  const dates = useMemo(() => 
-    events.map(e => e.date.toISOString().split('T')[0]), 
-    [events]
-  );
-
-  return useCrewConflicts(crewMemberIds, dates);
+  }, [stockEngine.conflicts, stockEngine.isLoading, dates]);
 }

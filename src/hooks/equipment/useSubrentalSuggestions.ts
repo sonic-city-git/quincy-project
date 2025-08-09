@@ -1,76 +1,72 @@
 /**
- * 🎯 SUBRENTAL SUGGESTIONS HOOK
+ * 🎯 SUBRENTAL SUGGESTIONS - UNIFIED STOCK ENGINE VERSION
+ * 
+ * ✅ COMPLETELY REDESIGNED FOR UNIFIED STOCK ENGINE
  * 
  * Detects equipment overbookings and provides intelligent subrental suggestions
- * with geographic and provider matching logic.
+ * using the new unified stock engine with virtual stock calculations.
+ * 
+ * Benefits:
+ * - Real-time conflict detection with virtual stock
+ * - Built-in subrental suggestion engine
+ * - Optimized batch calculations
+ * - Geographic and provider matching
+ * - Conflict severity analysis
  */
 
 import { useMemo } from 'react';
-import { useExternalProviders } from './useExternalProviders';
-import { SubrentalSuggestion, ExternalProvider } from '@/types/equipment';
+import { useStockEngine } from '@/hooks/stock/useStockEngine';
+import { getWarningTimeframe } from '@/constants/timeframes';
 
 interface UseSubrentalSuggestionsProps {
-  warnings: Array<{
-    resourceId: string;
-    resourceName: string;
-    date: string;
-    type: string;
-    severity: string;
-    details: {
-      stock: number;
-      used: number;
-      overbooked: number;
-      events: Array<{
-        eventName: string;
-        projectName: string;
-        quantity: number;
-        location?: string;
-      }>;
-    };
-  }>;
   resourceType: 'equipment' | 'crew';
   visibleTimelineStart?: Date;
   visibleTimelineEnd?: Date;
+  selectedOwner?: string;
+  equipmentIds?: string[];
+}
+
+interface SubrentalSuggestion {
+  equipmentId: string;
+  equipmentName: string;
+  date: string;
+  overbooked: number;
+  affectedEvents: Array<{
+    eventName: string;
+    projectName: string;
+    quantity: number;
+  }>;
+  suggestedProviders: Array<{
+    id: string;
+    name: string;
+    contact_info: any;
+    geographic_coverage: string[];
+    reliability_rating: number;
+    preferred_status: boolean;
+  }>;
 }
 
 export function useSubrentalSuggestions({
-  warnings,
   resourceType,
   visibleTimelineStart,
-  visibleTimelineEnd
+  visibleTimelineEnd,
+  selectedOwner,
+  equipmentIds
 }: UseSubrentalSuggestionsProps) {
-  const { data: externalProviders = [] } = useExternalProviders();
+  
+  // Use custom date range if provided, otherwise use standard timeframe
+  const { startDate: defaultStart, endDate: defaultEnd } = getWarningTimeframe();
+  const startDate = visibleTimelineStart?.toISOString().split('T')[0] || defaultStart;
+  const endDate = visibleTimelineEnd?.toISOString().split('T')[0] || defaultEnd;
 
-  // Smart provider matching logic
-  const getProviderSuggestions = (
-    equipmentName: string, 
-    projectLocation?: string
-  ): ExternalProvider[] => {
-    return externalProviders
-      .filter(provider => {
-        // Geographic match - check if provider covers the project location
-        const locationMatch = !projectLocation || 
-          !provider.geographic_coverage ||
-          provider.geographic_coverage.some(area => 
-            projectLocation.toLowerCase().includes(area.toLowerCase()) ||
-            area.toLowerCase().includes(projectLocation.toLowerCase())
-          );
-        
-        // For now, assume all providers can handle all equipment types
-        // This could be enhanced with equipment category matching
-        const capabilityMatch = true;
-        
-        return locationMatch && capabilityMatch;
-      })
-      .sort((a, b) => {
-        // Sort by: preferred_status first, then reliability_rating
-        if (a.preferred_status !== b.preferred_status) {
-          return a.preferred_status ? -1 : 1;
-        }
-        return (b.reliability_rating || 0) - (a.reliability_rating || 0);
-      })
-      .slice(0, 3); // Top 3 suggestions
-  };
+  // Get conflicts and suggestions from unified stock engine
+  const stockEngine = useStockEngine({
+    startDate,
+    endDate,
+    selectedOwner,
+    resourceType,
+    equipmentIds
+  });
 
   // Check if date is within visible timeline
   const isDateVisible = (dateStr: string): boolean => {
@@ -80,47 +76,32 @@ export function useSubrentalSuggestions({
     return date >= visibleTimelineStart && date <= visibleTimelineEnd;
   };
 
-  // Generate subrental suggestions from warnings
+  // Transform stock engine suggestions to legacy format
   const subrentalSuggestions = useMemo((): SubrentalSuggestion[] => {
-    if (resourceType !== 'equipment') return [];
+    if (resourceType !== 'equipment' || stockEngine.isLoading) return [];
     
-    const suggestions: SubrentalSuggestion[] = [];
-    
-    warnings.forEach(warning => {
-      if (warning.type === 'overbooked') {
-        const { stock, used, overbooked, events } = warning.details;
-        
-        // Only suggest subrental if:
-        // 1. Actually overbooked (not just fully booked)
-        // 2. Multiple projects involved OR significant overbooking
-        // 3. Within visible timeline (user is looking at this period)
-        
-        const isActuallyOverbooked = overbooked > 0;
-        const hasConflicts = events.length > 1 || overbooked >= 2;
-        const isVisible = isDateVisible(warning.date);
-        
-        if (isActuallyOverbooked && hasConflicts && isVisible) {
-          // Get project location from first event (could be enhanced to check all)
-          const primaryLocation = events[0]?.location;
-          
-          suggestions.push({
-            equipmentId: warning.resourceId,
-            equipmentName: warning.resourceName,
-            date: warning.date,
-            overbooked,
-            affectedEvents: events.map(event => ({
-              eventName: event.eventName,
-              projectName: event.projectName,
-              quantity: event.quantity
-            })),
-            suggestedProviders: getProviderSuggestions(warning.resourceName, primaryLocation)
-          });
-        }
-      }
-    });
-    
-    return suggestions;
-  }, [warnings, resourceType, externalProviders, visibleTimelineStart, visibleTimelineEnd]);
+    return stockEngine.suggestions
+      .filter(suggestion => isDateVisible(suggestion.date))
+      .map(suggestion => ({
+        equipmentId: suggestion.equipmentId,
+        equipmentName: suggestion.equipmentName,
+        date: suggestion.date,
+        overbooked: suggestion.requiredQuantity,
+        affectedEvents: suggestion.conflictingEvents.map(event => ({
+          eventName: event.eventName,
+          projectName: event.projectName,
+          quantity: event.quantity
+        })),
+        suggestedProviders: suggestion.providers.map(provider => ({
+          id: provider.id,
+          name: provider.name,
+          contact_info: provider.contactInfo,
+          geographic_coverage: provider.coverage || [],
+          reliability_rating: provider.rating || 0,
+          preferred_status: provider.isPreferred || false
+        }))
+      }));
+  }, [stockEngine.suggestions, stockEngine.isLoading, resourceType, visibleTimelineStart, visibleTimelineEnd]);
 
   // Group suggestions by date for timeline display
   const suggestionsByDate = useMemo(() => {
@@ -143,6 +124,11 @@ export function useSubrentalSuggestions({
     suggestionsByDate,
     shouldShowSubrentalSection,
     totalConflicts: subrentalSuggestions.length,
-    affectedDates: Array.from(suggestionsByDate.keys()).sort()
+    affectedDates: Array.from(suggestionsByDate.keys()).sort(),
+    // New unified stock engine capabilities
+    isLoading: stockEngine.isLoading,
+    error: stockEngine.error,
+    conflicts: stockEngine.conflicts, // Raw conflict data
+    virtualStock: stockEngine.virtualStock // Virtual stock breakdown
   };
 }

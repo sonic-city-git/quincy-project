@@ -41,13 +41,6 @@ interface CrewConflict {
 }
 
 export function useDashboardConflicts(selectedOwner?: string) {
-  // Test database function on first load
-  useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
-      testDatabaseFunction().catch(console.error);
-    }
-  }, []);
-
   // Use the new unified stock engine for equipment conflicts
   const stockEngine = useDashboardStockConflicts(selectedOwner);
 
