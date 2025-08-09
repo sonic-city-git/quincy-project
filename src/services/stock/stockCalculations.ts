@@ -77,7 +77,9 @@ export async function calculateBatchEffectiveStock(
 
   if (error) {
     console.error('Error calculating batch effective stock:', error);
-    throw new Error(`Failed to calculate effective stock: ${error.message}`);
+    console.error('Function parameters:', { equipmentIds, startDate, endDate });
+    console.error('Error details:', { details: error.details, hint: error.hint, code: error.code });
+    throw new Error(`Database function failed: ${error.message} - ${error.details || error.hint || ''}`);
   }
 
   // Get total usage for all equipment/dates
