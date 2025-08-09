@@ -72,7 +72,7 @@ export function EventEquipment({
   const getEquipmentStatus = () => {
     if (hasOverbookings) {
       return {
-        color: 'text-red-500',
+        color: 'text-red-600',
         tooltip: 'Equipment overbooking detected - click to view conflicts',
         clickable: true
       };
@@ -86,7 +86,7 @@ export function EventEquipment({
     }
     // Green - all equipment available
     return {
-      color: 'text-green-500',
+      color: 'text-green-600',
       tooltip: 'All equipment available',
       clickable: false
     };

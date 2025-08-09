@@ -116,14 +116,14 @@ export function EventCrew({
   const getCrewStatus = () => {
     if (hasCrewOverbookings) {
       return {
-        color: 'text-red-500',
+        color: 'text-red-600',
         tooltip: 'Crew member assigned to multiple events - click to resolve',
         clickable: true
       };
     }
     if (!allRolesFilled) {
       return {
-        color: 'text-red-500',
+        color: 'text-red-600',
         tooltip: 'Some roles unfilled - click to assign crew',
         clickable: true
       };
@@ -137,7 +137,7 @@ export function EventCrew({
     }
     // Green - all roles filled with preferred crew
     return {
-      color: 'text-green-500',
+      color: 'text-green-600',
       tooltip: 'All roles filled - click to view assignments',
       clickable: true
     };
