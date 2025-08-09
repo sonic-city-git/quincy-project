@@ -59,6 +59,8 @@ interface TimelineContentProps {
   visibleTimelineStart?: Date; // Visible timeline start for performance
   visibleTimelineEnd?: Date; // Visible timeline end for performance
   isWithinScrollContainer?: boolean; // Flag to remove own scroll area when within unified container
+  suggestionsByDate?: Map<string, any[]>; // Subrental suggestions by date
+  onSubrentalClick?: (suggestion: any, date: string) => void; // Subrental suggestion handler
 }
 
 const TimelineContentComponent = ({
@@ -91,7 +93,9 @@ const TimelineContentComponent = ({
   warnings, // PERFORMANCE: Pre-calculated warnings
   visibleTimelineStart,
   visibleTimelineEnd,
-  isWithinScrollContainer = false
+  isWithinScrollContainer = false,
+  suggestionsByDate,
+  onSubrentalClick
 }: TimelineContentProps) => {
   
   // Combined ref callback to handle both ref object and callback
@@ -409,6 +413,9 @@ const TimelineContentComponent = ({
                   resourceType={resourceType}
                   filters={filters}
                   isUnfilledRolesSection={(group as any).isUnfilledRolesSection}
+                  isSubrentalSection={(group as any).isSubrentalSection}
+                  suggestionsByDate={suggestionsByDate}
+                  onSubrentalClick={onSubrentalClick}
                 />
             ))}
             </div>

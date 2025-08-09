@@ -105,7 +105,7 @@ const SubrentalPeriodCellsComponent = ({
   if (periods.length === 0) return null;
   
   return (
-    <div className="relative h-16 min-h-16">
+    <div className="relative w-full" style={{ height: LAYOUT.EQUIPMENT_ROW_HEIGHT }}>
       {periods.map((period) => (
         <div
           key={period.equipmentId}
