@@ -170,7 +170,7 @@ export function ResourcesContent({
     showNewGroupDialog,
     newGroupName,
     setNewGroupName
-  } = useVariantEquipment(projectId, selectedVariant);
+  } = useVariantEquipment(projectId, selectedVariantObject?.id || '');
 
   // State for pending equipment to add after group creation
   const [pendingEquipmentForGroup, setPendingEquipmentForGroup] = useState<Equipment | null>(null);

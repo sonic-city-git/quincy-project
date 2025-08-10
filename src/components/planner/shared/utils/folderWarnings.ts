@@ -1,12 +1,22 @@
 /**
- * Folder Warning Detection Utilities
+ * FOLDER WARNING DETECTION - EQUIPMENT STOCK ENGINE VERSION
  * 
- * Detects overbookings and empties at the folder and subfolder level
- * to show warning indicators on folder headers and timeline rows.
+ * ✅ COMPLETELY REDESIGNED FOR EQUIPMENT STOCK ENGINE
+ * 
+ * Detects overbookings and conflicts at the folder and subfolder level
+ * using the ONE EQUIPMENT ENGINE with virtual stock calculations.
+ * 
+ * Benefits:
+ * - Virtual stock awareness (subrentals resolve conflicts)
+ * - Real-time conflict resolution indicators
+ * - Optimized batch calculations
+ * - Folder-level conflict aggregation
+ * - Smart severity analysis
  */
 
+import { useEquipmentStockEngine } from '@/hooks/useEquipmentStockEngine';
+import { ConflictAnalysis } from '@/types/stock';
 import { EquipmentGroup } from '../types';
-import { analyzeWarnings, extractEquipmentIssues } from './warningAnalysis';
 
 export interface FolderWarning {
   hasOverbookings: boolean;
@@ -15,6 +25,11 @@ export interface FolderWarning {
   overboookingCount: number;
   emptyCount: number;
   conflictCount: number;
+  // NEW: Virtual stock awareness
+  virtualStockResolved: number; // Conflicts resolved by virtual stock
+  severity: 'low' | 'medium' | 'high';
+  affectedEquipment: string[];
+  suggestedActions: string[];
 }
 
 export interface FolderWarnings {
@@ -22,71 +37,89 @@ export interface FolderWarnings {
 }
 
 /**
- * Analyzes all equipment in a folder for conflicts across the date range
+ * Hook to analyze folder warnings using unified stock engine
+ */
+export function useFolderWarnings(
+  equipmentGroups: EquipmentGroup[],
+  startDate: string,
+  endDate: string,
+  selectedOwner?: string
+): FolderWarnings {
+  
+  // Get all equipment IDs for batch processing
+  const allEquipmentIds = equipmentGroups.flatMap(group => [
+    ...group.equipment.map(e => e.id),
+    ...(group.subFolders?.flatMap(sf => sf.equipment.map(e => e.id)) || [])
+  ]);
+
+  // Get conflicts from EQUIPMENT ENGINE
+  const stockEngine = useEquipmentStockEngine();
+
+  // Filter conflicts to our equipment and date range
+  const relevantConflicts = stockEngine.getConflicts({
+    equipmentIds: allEquipmentIds,
+    dateRange: { start: startDate, end: endDate }
+  });
+
+  if (stockEngine.isLoading) {
+    return {};
+  }
+
+  return analyzeFolderWarnings(equipmentGroups, relevantConflicts);
+}
+
+/**
+ * Analyzes all equipment in folders for conflicts using stock engine results
  */
 export function analyzeFolderWarnings(
   equipmentGroups: EquipmentGroup[],
-  formattedDates: Array<{ dateStr: string }>,
-  getBookingForEquipment: (equipmentId: string, dateStr: string) => any
+  conflicts: ConflictAnalysis[]
 ): FolderWarnings {
   const warnings: FolderWarnings = {};
+
+  // Create conflict lookup by equipment ID
+  const conflictsByEquipment = new Map<string, ConflictAnalysis[]>();
+  conflicts.forEach(conflict => {
+    const existing = conflictsByEquipment.get(conflict.equipmentId) || [];
+    existing.push(conflict);
+    conflictsByEquipment.set(conflict.equipmentId, existing);
+  });
 
   equipmentGroups.forEach(group => {
     const mainFolderPath = group.mainFolder;
     
     // Initialize main folder warning
-    if (!warnings[mainFolderPath]) {
-      warnings[mainFolderPath] = {
-        hasOverbookings: false,
-        hasEmpties: false,
-        hasConflicts: false,
-        overboookingCount: 0,
-        emptyCount: 0,
-        conflictCount: 0
-      };
-    }
+    warnings[mainFolderPath] = createEmptyFolderWarning();
 
     // Analyze main folder equipment
     group.equipment.forEach(equipment => {
-      analyzeSingleEquipment(
-        equipment,
-        formattedDates,
-        getBookingForEquipment,
-        warnings[mainFolderPath]
-      );
+      const equipmentConflicts = conflictsByEquipment.get(equipment.id) || [];
+      aggregateEquipmentWarnings(equipmentConflicts, warnings[mainFolderPath]);
     });
 
     // Analyze subfolders
     group.subFolders?.forEach(subFolder => {
       const subFolderPath = `${mainFolderPath}/${subFolder.name}`;
-      
-      if (!warnings[subFolderPath]) {
-        warnings[subFolderPath] = {
-          hasOverbookings: false,
-          hasEmpties: false,
-          hasConflicts: false,
-          overboookingCount: 0,
-          emptyCount: 0,
-          conflictCount: 0
-        };
-      }
+      warnings[subFolderPath] = createEmptyFolderWarning();
 
       subFolder.equipment.forEach(equipment => {
-        analyzeSingleEquipment(
-          equipment,
-          formattedDates,
-          getBookingForEquipment,
-          warnings[subFolderPath]
-        );
-
+        const equipmentConflicts = conflictsByEquipment.get(equipment.id) || [];
+        
+        // Add to subfolder
+        aggregateEquipmentWarnings(equipmentConflicts, warnings[subFolderPath]);
+        
         // Also roll up to main folder
-        analyzeSingleEquipment(
-          equipment,
-          formattedDates,
-          getBookingForEquipment,
-          warnings[mainFolderPath]
-        );
+        aggregateEquipmentWarnings(equipmentConflicts, warnings[mainFolderPath]);
       });
+    });
+
+    // Calculate final metrics for main folder
+    finalizeFolderWarning(warnings[mainFolderPath]);
+    
+    // Calculate final metrics for subfolders
+    group.subFolders?.forEach(subFolder => {
+      const subFolderPath = `${mainFolderPath}/${subFolder.name}`;
+      finalizeFolderWarning(warnings[subFolderPath]);
     });
   });
 
@@ -94,45 +127,87 @@ export function analyzeFolderWarnings(
 }
 
 /**
- * Analyzes a single piece of equipment for conflicts
+ * Create empty folder warning structure
  */
-function analyzeSingleEquipment(
-  equipment: any,
-  formattedDates: Array<{ dateStr: string }>,
-  getBookingForEquipment: (equipmentId: string, dateStr: string) => any,
+function createEmptyFolderWarning(): FolderWarning {
+  return {
+    hasOverbookings: false,
+    hasEmpties: false,
+    hasConflicts: false,
+    overboookingCount: 0,
+    emptyCount: 0,
+    conflictCount: 0,
+    virtualStockResolved: 0,
+    severity: 'low',
+    affectedEquipment: [],
+    suggestedActions: []
+  };
+}
+
+/**
+ * Aggregate conflicts for a single piece of equipment into folder warning
+ */
+function aggregateEquipmentWarnings(
+  conflicts: ConflictAnalysis[],
   warning: FolderWarning
 ): void {
-  formattedDates.forEach(({ dateStr }) => {
-    const booking = getBookingForEquipment(equipment.id, dateStr);
+  
+  conflicts.forEach(conflict => {
+    // Track conflicts
+    warning.hasConflicts = true;
+    warning.conflictCount++;
     
-    if (!booking) {
-      // Empty - no bookings for this equipment on this date
-      warning.hasEmpties = true;
-      warning.emptyCount++;
-    } else {
-      // Check for overbookings
-      if (booking.isOverbooked) {
-        warning.hasOverbookings = true;
-        warning.overboookingCount++;
-      }
-      
-      // Check for conflicts
-      if (booking.conflict && booking.conflict.severity !== 'resolved') {
-        warning.hasConflicts = true;
-        warning.conflictCount++;
-      }
+    // Track overbookings (after virtual stock calculations!)
+    if (conflict.conflict.deficit > 0) {
+      warning.hasOverbookings = true;
+      warning.overboookingCount += conflict.conflict.deficit;
     }
+    
+    // Track virtual stock resolutions
+    const virtualAdditions = conflict.stockBreakdown.virtualAdditions;
+    if (virtualAdditions > 0) {
+      warning.virtualStockResolved += virtualAdditions;
+    }
+    
+    // Track affected equipment
+    if (!warning.affectedEquipment.includes(conflict.equipmentName)) {
+      warning.affectedEquipment.push(conflict.equipmentName);
+    }
+    
+    // Aggregate suggested actions
+    conflict.conflict.suggestedActions.forEach(action => {
+      if (!warning.suggestedActions.includes(action.type)) {
+        warning.suggestedActions.push(action.type);
+      }
+    });
   });
+}
+
+/**
+ * Finalize folder warning calculations
+ */
+function finalizeFolderWarning(warning: FolderWarning): void {
+  // Determine overall severity
+  if (warning.overboookingCount > 5) {
+    warning.severity = 'high';
+  } else if (warning.overboookingCount > 0) {
+    warning.severity = 'medium';
+  } else {
+    warning.severity = 'low';
+  }
 }
 
 /**
  * Determines the visual indicator type for a folder
  */
-export function getFolderWarningType(warning: FolderWarning): 'critical' | 'warning' | 'none' {
-  if (warning.hasOverbookings || warning.hasConflicts) {
+export function getFolderWarningType(warning: FolderWarning): 'critical' | 'warning' | 'resolved' | 'none' {
+  if (warning.hasOverbookings) {
     return 'critical';
   }
-  if (warning.hasEmpties) {
+  if (warning.hasConflicts && warning.virtualStockResolved > 0) {
+    return 'resolved'; // NEW: Conflicts resolved by virtual stock
+  }
+  if (warning.hasConflicts) {
     return 'warning';
   }
   return 'none';
@@ -152,12 +227,17 @@ export function getFolderWarningDescription(warning: FolderWarning): string {
     issues.push(`${warning.conflictCount} conflict${warning.conflictCount !== 1 ? 's' : ''}`);
   }
   
+  // NEW: Show virtual stock resolutions
+  if (warning.virtualStockResolved > 0) {
+    issues.push(`${warning.virtualStockResolved} resolved by subrentals`);
+  }
+  
   if (warning.hasEmpties) {
     issues.push(`${warning.emptyCount} empty slot${warning.emptyCount !== 1 ? 's' : ''}`);
   }
   
   if (issues.length === 0) {
-    return 'No issues';
+    return 'No issues detected';
   }
   
   return issues.join(', ');

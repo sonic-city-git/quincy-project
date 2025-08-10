@@ -20,6 +20,9 @@ import { OVERBOOKING_WARNING_DAYS, getWarningTimeframe } from '@/constants/timef
 import { usePersistentExpandedGroups } from '@/hooks/ui';
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/types/equipment';
 import { PERFORMANCE } from '../constants';
+// ✅ NEW: Using ONE ENGINE directly via page wrapper
+import { useTimelineStock } from '@/hooks/useTimelineStock';
+import { useConfirmedSubrentals } from '@/hooks/equipment/useConfirmedSubrentals';
 
 interface UseTimelineHubProps {
   resourceType: 'equipment' | 'crew';
@@ -173,87 +176,8 @@ export function useTimelineHub({
     return { resources, resourceById };
   }, []);
 
-  const fetchEquipmentBookings = useCallback(async (expandedIds: string[]) => {
-    const dateStart = format(stableDataRange.start, 'yyyy-MM-dd');
-    const dateEnd = format(stableDataRange.end, 'yyyy-MM-dd');
-    
-    // Get events
-    let eventsQuery = supabase
-      .from('project_events')
-      .select(`
-        id, date, name, project_id,
-        project:projects!inner (name, owner_id)
-      `)
-      .gte('date', dateStart)
-      .lte('date', dateEnd);
-
-    if (selectedOwner) {
-      eventsQuery = eventsQuery.eq('project.owner_id', selectedOwner);
-    }
-
-    const { data: events, error: eventsError } = await eventsQuery;
-    if (eventsError) throw eventsError;
-    if (!events?.length) return new Map();
-
-    // Smart folder: Only fetch if equipment is expanded
-    if (expandedIds.length === 0) {
-      return new Map(); // No expanded folders = no bookings needed
-    }
-
-    // Get equipment bookings - FILTERED to expanded equipment only
-    let equipmentQuery = supabase
-      .from('project_event_equipment')
-      .select('event_id, equipment_id, quantity')
-      .in('event_id', events.map(e => e.id));
-
-    // Apply equipment ID filter for expanded folders only
-    if (expandedIds.length > 0) {
-      equipmentQuery = equipmentQuery.in('equipment_id', expandedIds);
-    }
-
-    const { data: equipmentBookings, error: equipmentError } = await equipmentQuery;
-    if (equipmentError) throw equipmentError;
-
-    // Simplified logging
-    if (process.env.NODE_ENV === 'development' && equipmentBookings?.length) {
-      // Bookings loaded successfully (logging removed)
-    }
-
-    // Transform to booking map
-    const eventMap = new Map(events.map(e => [e.id, e]));
-    const bookingsByKey = new Map();
-    
-    equipmentBookings?.forEach(booking => {
-      const event = eventMap.get(booking.event_id);
-      if (!event) return;
-      
-      const key = `${booking.equipment_id}-${event.date}`;
-      
-      if (!bookingsByKey.has(key)) {
-        bookingsByKey.set(key, {
-          resourceId: booking.equipment_id,
-          resourceName: 'Unknown', // Will be set in processing step
-          date: event.date,
-          stock: 0, // Will be set in processing step
-          bookings: [],
-          totalUsed: 0,
-          isOverbooked: false,
-          folderPath: 'Uncategorized' // Will be set in processing step
-        });
-      }
-      
-      const bookingData = bookingsByKey.get(key);
-      bookingData.bookings.push({
-        quantity: booking.quantity || 0,
-        projectName: event.project.name,
-        eventName: event.name
-      });
-      bookingData.totalUsed += booking.quantity || 0;
-      // isOverbooked will be calculated in processing step when we have stock info
-    });
-
-    return bookingsByKey;
-  }, [stableDataRange, selectedOwner]);
+  // ✅ ELIMINATED: Equipment bookings now come from stock engine
+  // The stock engine provides comprehensive project assignment details
 
   const fetchCrewAssignments = useCallback(async () => {
     const dateStart = format(stableDataRange.start, 'yyyy-MM-dd');
@@ -312,7 +236,41 @@ export function useTimelineHub({
     return assignmentsByKey;
   }, [stableDataRange]);
 
+
+
+  // ✅ USE ONE ENGINE - Define stock engine FIRST before any dependencies
+  const timelineStock = resourceType === 'equipment' && visibleTimelineStart && visibleTimelineEnd 
+    ? useTimelineStock({
+        start: visibleTimelineStart,
+        end: visibleTimelineEnd
+        // ✅ NO OWNER FILTER: Timeline shows ALL equipment across all owners
+      })
+    : { 
+        // Core stock access - proper fallback methods
+        getEquipmentStock: () => null,
+        getBooking: () => null,
+        getAvailability: () => 0,
+        isOverbooked: () => false,
+        
+        // Batch data
+        bookings: new Map(),
+        conflicts: [],
+        suggestions: [],
+        
+        // Performance helpers
+        getBookingsForDateRange: () => [],
+        preloadEquipmentData: async () => {},
+        
+        // Status
+        isLoading: false,
+        error: null
+      };
+
+
+
   // RESOURCE DATA (Equipment or Crew)
+  // ✅ FOR EQUIPMENT: Use stock engine data instead of manual fetch
+  // For CREW: Still use manual fetch until crew engine is implemented
   const { data: resourceData, isLoading: isLoadingResources } = useQuery({
     queryKey: [`timeline-${resourceType}`, selectedOwner],
     queryFn: resourceType === 'equipment' ? fetchEquipmentData : fetchCrewData,
@@ -322,15 +280,19 @@ export function useTimelineHub({
     refetchOnWindowFocus: false,
   });
 
+  // ✅ SIMPLIFIED: Always use manual resource data for equipment listing
+  // Stock engine only provides calculations, not equipment listing
+  const mergedResourceData = resourceData;
+
   // EARLY CALCULATION: Get expanded equipment IDs before booking fetch for smart optimization
   const expandedEquipmentIds = useMemo(() => {
-    if (!resourceData?.resources) return [];
+    if (!mergedResourceData?.resources) return [];
     
     const expandedIds: string[] = [];
     const groupsMap = new Map();
     
     // Build groups structure first
-    resourceData.resources.forEach(resource => {
+    mergedResourceData.resources.forEach(resource => {
       const { mainFolder, subFolder } = resource;
       
       if (!groupsMap.has(mainFolder)) {
@@ -383,7 +345,7 @@ export function useTimelineHub({
     // Track expansion state (logging removed)
     
     return expandedIds;
-  }, [resourceData?.resources, expandedGroups]);
+  }, [mergedResourceData?.resources, expandedGroups]);
 
   // SIMPLIFIED BOOKING DATA - Stable query with longer cache times
   const { data: rawBookingsData, isLoading: isLoadingBookings } = useQuery({
@@ -396,7 +358,7 @@ export function useTimelineHub({
       expandedEquipmentIds.length > 0 ? expandedEquipmentIds.sort().join(',') : 'none'
     ],
     queryFn: () => resourceType === 'equipment' 
-      ? fetchEquipmentBookings(expandedEquipmentIds) 
+      ? new Map() // ✅ ELIMINATED: Equipment bookings now come from stock engine
       : fetchCrewAssignments(),
     enabled: enabled && (resourceType === 'crew' || expandedEquipmentIds.length > 0),
     staleTime: 5 * 60 * 1000, // 5 minutes - longer cache
@@ -408,18 +370,17 @@ export function useTimelineHub({
 
   // PROCESS BOOKING DATA - Memoized to prevent recalculation flashing
   const bookingsData = useMemo(() => {
-    if (!rawBookingsData || !resourceData?.resourceById) return rawBookingsData;
+    if (!rawBookingsData || !mergedResourceData?.resourceById) return rawBookingsData;
     
     // Add stock info from resource data
     const processedBookings = new Map();
     
     rawBookingsData.forEach((booking, key) => {
-      const resource = resourceData.resourceById.get(booking.resourceId);
+      const resource = mergedResourceData.resourceById.get(booking.resourceId);
       const processedBooking = { ...booking };
       
       if (resourceType === 'equipment' && resource) {
-        processedBooking.stock = resource.stock || 0;
-        processedBooking.isOverbooked = processedBooking.totalUsed > processedBooking.stock;
+        // ✅ NO MANUAL CALCULATIONS - data comes from stock engine
         processedBooking.resourceName = resource.name;
         processedBooking.folderPath = resource.folderPath;
       } else if (resourceType === 'crew' && resource) {
@@ -433,15 +394,142 @@ export function useTimelineHub({
     });
     
     return processedBookings;
-  }, [rawBookingsData, resourceData?.resourceById, resourceType]);
+  }, [rawBookingsData, mergedResourceData?.resourceById, resourceType]);
+
+  // ✅ EQUIPMENT ENGINE INTEGRATION - replaces ALL manual conflict/warning logic
+  const equipmentIds = useMemo(() => 
+    mergedResourceData?.resources?.map(r => r.id) || [], 
+    [mergedResourceData]
+  );
+  
+  const visibleDates = useMemo(() => {
+    if (!visibleTimelineStart || !visibleTimelineEnd) return [];
+    
+    const dates = [];
+    let currentDate = new Date(visibleTimelineStart);
+    const endDate = new Date(visibleTimelineEnd);
+    
+    while (currentDate <= endDate) {
+      dates.push(format(currentDate, 'yyyy-MM-dd'));
+      currentDate = addDays(currentDate, 1);
+    }
+    
+    return dates;
+  }, [visibleTimelineStart, visibleTimelineEnd]);
+
+  // ✅ timelineStock already defined above - no duplicate needed
+  
+  // Transform conflicts to warning format for backward compatibility
+  const warnings = useMemo(() => {
+    if (resourceType === 'equipment') {
+      return timelineStock.conflicts.map(conflict => ({
+        resourceId: conflict.equipmentId,
+        resourceName: conflict.equipmentName,
+        date: conflict.date,
+        type: conflict.conflict.deficit > 0 ? 'overbooked' : 'resolved',
+        severity: conflict.conflict.deficit > 5 ? 'high' : 'medium',
+        details: {
+          stock: conflict.stockBreakdown.effectiveStock,
+          used: conflict.stockBreakdown.totalUsed,
+          overbooked: conflict.conflict.deficit,
+          virtualAdditions: conflict.stockBreakdown.virtualAdditions,
+          events: conflict.conflict.affectedEvents || []
+        }
+      }));
+    } else {
+      // Crew logic remains separate (for now)
+      return [];
+    }
+  }, [resourceType, timelineStock.conflicts]);
+
+  // ✅ ELIMINATED: Manual equipment bookings calculation - using ONE ENGINE now
+
+  // ✅ GLOBAL WARNINGS - Using engine conflicts (for subrental analysis)
+  const globalWarnings = useMemo(() => {
+    if (resourceType !== 'equipment') return [];
+    
+    // Use timelineStock conflicts as global warnings
+    return timelineStock.conflicts.map(conflict => ({
+      resourceId: conflict.equipmentId,
+      resourceName: conflict.equipmentName,
+      date: conflict.date,
+      type: 'overbooked',
+      severity: conflict.conflict.deficit > 5 ? 'high' : 'medium',
+      details: {
+        stock: conflict.stockBreakdown.effectiveStock,
+        used: conflict.stockBreakdown.totalUsed,
+        overbooked: conflict.conflict.deficit,
+        events: conflict.conflict.affectedEvents || []
+      }
+    }));
+  }, [resourceType, timelineStock.conflicts]);
+
+  // SUBRENTAL SUGGESTIONS - TODO: Integrate with ONE ENGINE later
+  // For now, return empty data to prevent timeline errors
+  const subrentalSuggestions = [];
+  const suggestionsByDate = new Map();
+  const shouldShowSubrentalSection = false;
+  const suggestionsLoading = false;
+  const suggestionsError = null;
+
+  // CONFIRMED SUBRENTALS (Equipment only)
+  const {
+    confirmedSubrentals,
+    confirmedPeriods,
+    periodsByDate: confirmedPeriodsByDate,
+    shouldShowConfirmedSection
+  } = useConfirmedSubrentals({
+    visibleTimelineStart,
+    visibleTimelineEnd,
+    enabled: resourceType === 'equipment'
+  });
+
+  // ENSURE SUBRENTAL SECTIONS ARE ALWAYS EXPANDED
+  useEffect(() => {
+    const sectionsToExpand = [];
+    if (shouldShowSubrentalSection && !expandedGroups.has('Needed Subrental')) {
+      sectionsToExpand.push('Needed Subrental');
+    }
+    if (shouldShowConfirmedSection && !expandedGroups.has('Confirmed Subrental')) {
+      sectionsToExpand.push('Confirmed Subrental');
+    }
+    
+    if (sectionsToExpand.length > 0) {
+      setExpandedGroups(prev => new Set([...prev, ...sectionsToExpand]));
+    }
+  }, [shouldShowSubrentalSection, shouldShowConfirmedSection, expandedGroups, setExpandedGroups]);
 
   // GROUPED RESOURCES
   const resourceGroups = useMemo(() => {
-    if (!resourceData?.resources) return [];
+    if (!mergedResourceData?.resources) return [];
 
     const groupsMap = new Map();
     
-    resourceData.resources.forEach(resource => {
+    // Add Needed Subrental section if we have suggestions (Equipment only)
+    if (resourceType === 'equipment' && shouldShowSubrentalSection) {
+      groupsMap.set('Needed Subrental', {
+        mainFolder: 'Needed Subrental',
+        equipment: [], // Will be populated with suggestion placeholders
+        subFolders: [],
+        isExpanded: true, // Always expanded to show suggestions
+        isSubrentalSection: true, // Special flag for identification
+        isNeededSubrental: true
+      });
+    }
+
+    // Add Confirmed Subrental section if we have confirmed subrentals (Equipment only)
+    if (resourceType === 'equipment' && shouldShowConfirmedSection) {
+      groupsMap.set('Confirmed Subrental', {
+        mainFolder: 'Confirmed Subrental',
+        equipment: [], // Will be populated with confirmed subrental placeholders
+        subFolders: [],
+        isExpanded: true, // Always expanded to show confirmed subrentals
+        isSubrentalSection: true, // Special flag for identification
+        isConfirmedSubrental: true
+      });
+    }
+    
+    mergedResourceData.resources.forEach(resource => {
       const { mainFolder, subFolder } = resource;
       
       if (!groupsMap.has(mainFolder)) {
@@ -471,6 +559,60 @@ export function useTimelineHub({
         group.equipment.push(resource);
       }
     });
+
+    // Populate Needed Subrental section with suggestion placeholders
+    if (resourceType === 'equipment' && shouldShowSubrentalSection) {
+      const neededSubrentalGroup = groupsMap.get('Needed Subrental');
+      if (neededSubrentalGroup) {
+        // Create unique placeholder items for each unique equipment suggestion
+        const uniqueEquipment = new Map();
+        subrentalSuggestions.forEach(suggestion => {
+          if (!uniqueEquipment.has(suggestion.equipmentId)) {
+            uniqueEquipment.set(suggestion.equipmentId, {
+              id: `needed-subrental-${suggestion.equipmentId}`,
+              name: suggestion.equipmentName,
+              stock: 0, // Placeholder, not actual stock
+              folderPath: 'Needed Subrental',
+              mainFolder: 'Needed Subrental',
+              subFolder: undefined,
+              level: 1,
+              isSubrentalPlaceholder: true,
+              isNeededSubrental: true,
+              originalEquipmentId: suggestion.equipmentId
+            });
+          }
+        });
+        neededSubrentalGroup.equipment = Array.from(uniqueEquipment.values());
+      }
+    }
+
+    // Populate Confirmed Subrental section with confirmed subrental placeholders
+    if (resourceType === 'equipment' && shouldShowConfirmedSection) {
+      const confirmedSubrentalGroup = groupsMap.get('Confirmed Subrental');
+      if (confirmedSubrentalGroup) {
+        // Create placeholder items for each unique confirmed subrental
+        const uniqueEquipment = new Map();
+        confirmedPeriods.forEach(period => {
+          const key = `${period.equipment_id}-${period.id}`;
+          if (!uniqueEquipment.has(key)) {
+            uniqueEquipment.set(key, {
+              id: `confirmed-subrental-${period.id}`,
+              name: `${period.equipment_name} (${period.provider_name})`,
+              stock: period.quantity,
+              folderPath: 'Confirmed Subrental',
+              mainFolder: 'Confirmed Subrental',
+              subFolder: undefined,
+              level: 1,
+              isSubrentalPlaceholder: true,
+              isConfirmedSubrental: true,
+              originalEquipmentId: period.equipment_id,
+              subrentalPeriod: period
+            });
+          }
+        });
+        confirmedSubrentalGroup.equipment = Array.from(uniqueEquipment.values());
+      }
+    }
 
     let groups = Array.from(groupsMap.values());
     
@@ -526,15 +668,63 @@ export function useTimelineHub({
         return a.mainFolder.localeCompare(b.mainFolder);
       });
     }
-  }, [resourceData?.resources, expandedGroups, resourceType]);
+  }, [mergedResourceData?.resources, expandedGroups, resourceType, shouldShowSubrentalSection, subrentalSuggestions, shouldShowConfirmedSection, confirmedPeriods]);
 
-  // SIMPLIFIED PROJECT USAGE - No complex filtering
+  // ✅ PROJECT USAGE - Use stock engine data for equipment, manual for crew
   const projectUsage = useMemo(() => {
+    if (resourceType === 'equipment') {
+      // ✅ FIXED: Return stock engine projectUsage data for equipment project assignments
+      return timelineStock.bookings ? (() => {
+        const usage = new Map();
+        
+        // Transform stock engine bookings into projectUsage format
+        timelineStock.bookings.forEach((booking, key) => {
+          const equipmentId = booking.equipmentId;
+          
+          if (!usage.has(equipmentId)) {
+            usage.set(equipmentId, {
+              equipmentId,
+              projectNames: [],
+              projectQuantities: new Map()
+            });
+          }
+          
+          const equipmentUsage = usage.get(equipmentId);
+          
+          booking.bookings?.forEach(b => {
+            if (!equipmentUsage.projectNames.includes(b.projectName)) {
+              equipmentUsage.projectNames.push(b.projectName);
+            }
+            
+            if (!equipmentUsage.projectQuantities.has(b.projectName)) {
+              equipmentUsage.projectQuantities.set(b.projectName, new Map());
+            }
+            
+            const projectQuantities = equipmentUsage.projectQuantities.get(b.projectName);
+            const existing = projectQuantities.get(booking.date);
+            
+            if (existing) {
+              existing.quantity += b.quantity;
+            } else {
+              projectQuantities.set(booking.date, {
+                date: booking.date,
+                quantity: b.quantity,
+                eventName: b.eventName,
+                projectName: b.projectName
+              });
+            }
+          });
+        });
+        
+        return usage;
+      })() : new Map();
+    }
+    
+    // Crew: manual calculation until crew engine is implemented
     if (!bookingsData) return new Map();
 
     const usage = new Map();
     
-    // Process all bookings - simpler and more reliable
     Array.from(bookingsData.values()).forEach(booking => {
       const resourceId = booking.resourceId;
       
@@ -547,143 +737,127 @@ export function useTimelineHub({
       }
       
       const resourceUsage = usage.get(resourceId);
+      const assignments = booking.assignments || [];
       
-      booking.bookings?.forEach(b => {
-        if (!resourceUsage.projectNames.includes(b.projectName)) {
-          resourceUsage.projectNames.push(b.projectName);
+      assignments.forEach(assignment => {
+        if (!resourceUsage.projectNames.includes(assignment.projectName)) {
+          resourceUsage.projectNames.push(assignment.projectName);
         }
         
-        if (!resourceUsage.projectQuantities.has(b.projectName)) {
-          resourceUsage.projectQuantities.set(b.projectName, new Map());
+        if (!resourceUsage.projectQuantities.has(assignment.projectName)) {
+          resourceUsage.projectQuantities.set(assignment.projectName, new Map());
         }
         
-        const projectQuantities = resourceUsage.projectQuantities.get(b.projectName);
+        const projectQuantities = resourceUsage.projectQuantities.get(assignment.projectName);
         const existing = projectQuantities.get(booking.date);
         
         if (existing) {
-          existing.quantity += (resourceType === 'equipment' ? b.quantity : 1);
+          existing.quantity += 1;
         } else {
           projectQuantities.set(booking.date, {
             date: booking.date,
-            quantity: resourceType === 'equipment' ? b.quantity : 1,
-            eventName: b.eventName,
-            projectName: b.projectName,
-            role: resourceType === 'crew' ? b.role : undefined
+            quantity: 1,
+            eventName: assignment.eventName,
+            projectName: assignment.projectName,
+            role: assignment.role
           });
         }
       });
     });
 
     return usage;
-  }, [bookingsData, resourceType]);
-
-  // WARNINGS (30-day window)
-  const warnings = useMemo(() => {
-    if (!bookingsData || !resourceData) return [];
-    
-    const today = new Date();
-    const warningEnd = addDays(today, OVERBOOKING_WARNING_DAYS);
-    
-    const warningsList = [];
-    
-    Array.from(bookingsData.values()).forEach(booking => {
-      const bookingDate = new Date(booking.date);
-      if (bookingDate < today || bookingDate > warningEnd) return;
-      
-      const resource = resourceData.resourceById.get(booking.resourceId);
-      if (!resource) return;
-
-      if (resourceType === 'equipment' && booking.isOverbooked) {
-        warningsList.push({
-          resourceId: booking.resourceId,
-          resourceName: resource.name,
-          date: booking.date,
-          type: 'overbooked',
-          severity: booking.totalUsed > (resource.stock * 1.5) ? 'high' : 'medium',
-          details: {
-            stock: resource.stock,
-            used: booking.totalUsed,
-            overbooked: booking.totalUsed - resource.stock,
-            events: booking.bookings
-          }
-        });
-      }
-      
-      if (resourceType === 'crew' && booking.isOverbooked) {
-        warningsList.push({
-          resourceId: booking.resourceId,
-          resourceName: resource.name,
-          date: booking.date,
-          type: 'conflict',
-          severity: booking.totalAssignments > 2 ? 'high' : 'medium',
-          details: {
-            assignments: booking.assignments
-          }
-        });
-      }
-    });
-
-    return warningsList;
-  }, [bookingsData, resourceData, resourceType]);
+  }, [bookingsData, resourceType, timelineStock.bookings]);
 
   // FUNCTIONS
   const getBookingForEquipment = useCallback((resourceId: string, dateStr: string) => {
-    if (!resourceData?.resourceById || !bookingsData) return undefined;
+    if (resourceType === 'equipment' && timelineStock.getBooking) {
+      // ✅ USE ONE ENGINE - comprehensive booking data with project details
+      const booking = timelineStock.getBooking(resourceId, dateStr);
+      if (booking) return booking;
+      
+
+      
+      // Fallback: Stock data without project details for equipment without bookings
+      const stockData = timelineStock.getEquipmentStock(resourceId, dateStr);
+      
+
+      
+      if (!stockData) return undefined;
+      
+      return {
+        equipmentId: stockData.equipmentId,
+        equipmentName: stockData.equipmentName,
+        date: stockData.date,
+        stock: stockData.effectiveStock,
+        totalUsed: stockData.totalUsed,
+        available: stockData.available, // ✅ ADD: Include available from stock engine
+        isOverbooked: stockData.isOverbooked,
+        folderPath: mergedResourceData?.resourceById?.get(resourceId)?.folderPath || '',
+        bookings: []
+      };
+    }
     
-    const resource = resourceData.resourceById.get(resourceId);
+    // Fallback for crew (will be migrated later)
+    if (!mergedResourceData?.resourceById || !bookingsData) return undefined;
+    
+    const resource = mergedResourceData.resourceById.get(resourceId);
     if (!resource) return undefined;
     
     const booking = bookingsData.get(`${resourceId}-${dateStr}`);
     
-    if (resourceType === 'equipment') {
+    if (resourceType === 'crew') {
       return booking || {
-        equipmentId: resourceId,
-        equipmentName: resource.name,
-        date: dateStr,
-        stock: resource.stock,
-        bookings: [],
-        totalUsed: 0,
-        isOverbooked: false,
-        folderPath: resource.folderPath
-      };
-    } else {
-      return booking ? {
         crewMemberId: resourceId,
         crewMemberName: resource.name,
         date: dateStr,
-        department: resource.department,
-        role: resource.role,
-        bookings: booking.assignments || [], // UI expects 'bookings' not 'assignments'
-        assignments: booking.assignments || [], // Keep for compatibility
-        totalAssignments: booking.totalAssignments || 0,
-        isOverbooked: booking.isOverbooked || false,
-        availability: booking.assignments?.length > 0 ? 'busy' : 'available'
-      } : undefined;
+        bookings: [],
+        totalAssignments: 0,
+        isOverbooked: false,
+        department: resource.department
+      };
     }
-  }, [resourceData, bookingsData, resourceType]);
+    
+    return booking;
+  }, [mergedResourceData?.resourceById, bookingsData, resourceType, timelineStock.getEquipmentStock]);
 
   const getProjectQuantityForDate = useCallback((projectName: string, resourceId: string, dateStr: string) => {
+    if (resourceType === 'equipment') {
+      // ✅ FIXED: Use stock engine booking data directly for equipment
+      const booking = timelineStock.getBooking(resourceId, dateStr);
+      if (!booking) return undefined;
+      
+      // Find project quantity from booking details
+      const projectBooking = booking.bookings?.find(b => b.projectName === projectName);
+      return projectBooking ? {
+        date: dateStr,
+        quantity: projectBooking.quantity,
+        eventName: projectBooking.eventName,
+        projectName: projectBooking.projectName
+      } : undefined;
+    }
+    
+    // Crew: use manual calculation
     const usage = projectUsage.get(resourceId);
     if (!usage) return undefined;
 
     const projectQuantities = usage.projectQuantities.get(projectName);
     return projectQuantities?.get(dateStr);
-  }, [projectUsage]);
+  }, [projectUsage, resourceType, timelineStock]);
 
   const getLowestAvailable = useCallback((resourceId: string, dateStrings?: string[]) => {
-    const resource = resourceData?.resourceById.get(resourceId);
+    const resource = mergedResourceData?.resourceById.get(resourceId);
     if (!resource) return 0;
 
     if (resourceType === 'equipment') {
       if (!dateStrings?.length) return resource.stock;
       
+      // ✅ USE STOCK ENGINE: Optimized availability calculation
       let lowest = resource.stock;
       dateStrings.forEach(dateStr => {
-        const booking = bookingsData?.get(`${resourceId}-${dateStr}`);
-        const available = resource.stock - (booking?.totalUsed || 0);
-        if (available < lowest) lowest = available;
+        const availability = timelineStock.getAvailability(resourceId, dateStr);
+        if (availability < lowest) lowest = availability;
       });
-      return lowest;
+      return Math.max(0, lowest); // Ensure non-negative
     } else {
       // Crew: 1 = available, 0 = busy
       if (!dateStrings?.length) return 1;
@@ -695,7 +869,7 @@ export function useTimelineHub({
       
       return hasAssignments ? 0 : 1;
     }
-  }, [resourceData, bookingsData, resourceType]);
+  }, [mergedResourceData, bookingsData, resourceType, timelineStock]);
 
   // EXPANSION HANDLERS
   const toggleGroup = useCallback((groupKey: string, expandAllSubfolders?: boolean) => {
@@ -731,7 +905,7 @@ export function useTimelineHub({
   // Loading state with flash prevention
   const hasStableData = useRef(false);
   const isLoading = isLoadingResources || isLoadingBookings;
-  const isReady = !!resourceData && !!bookingsData;
+  const isReady = !!mergedResourceData && !!bookingsData;
   
   if (isReady && !isLoading) {
     hasStableData.current = true;
@@ -743,15 +917,26 @@ export function useTimelineHub({
   return {
     // Data
     equipmentGroups: resourceGroups, // Named for compatibility
-    equipmentById: resourceData?.resourceById || new Map(),
+    equipmentById: mergedResourceData?.resourceById || new Map(),
     bookingsData: bookingsData || new Map(),
     expandedGroups,
     expandedEquipment: expandedResources,
-    equipmentProjectUsage: projectUsage,
+    equipmentProjectUsage: projectUsage, // Now properly includes stock engine data for equipment
+    
+    // Subrental data
+    subrentalSuggestions,
+    suggestionsByDate,
+    shouldShowSubrentalSection,
+    
+    // Confirmed subrental data
+    confirmedSubrentals,
+    confirmedPeriods,
+    confirmedPeriodsByDate,
+    shouldShowConfirmedSection,
     
     // State
     isLoading: shouldShowLoading,
-    isEquipmentReady: !!resourceData,
+    isEquipmentReady: !!mergedResourceData,
     isBookingsReady: !!bookingsData,
     
     // Functions

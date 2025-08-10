@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCallback } from 'react';
+import { useStockCacheInvalidation } from '@/hooks/useStockCacheInvalidation';
 import {
   VariantCrewRole,
   isVariantCrewRole
@@ -24,6 +25,8 @@ export function useVariantCrew(projectId: string, variantId: string) {
 
   // === CACHE MANAGEMENT ===
   
+  const { invalidateProjectStock } = useStockCacheInvalidation();
+  
   const invalidateCrewCache = useCallback(async () => {
     console.log('🔄 [useVariantCrew] Invalidating variant crew cache');
     await Promise.all([
@@ -40,10 +43,12 @@ export function useVariantCrew(projectId: string, variantId: string) {
       }),
       queryClient.invalidateQueries({ 
         queryKey: ['batch-reactive-pricing'] 
-      })
+      }),
+      // ✅ NEW: Invalidate stock engine caches when crew changes
+      invalidateProjectStock(projectId)
     ]);
     console.log('✅ [useVariantCrew] Cache invalidation complete');
-  }, [queryClient, projectId, variantId]);
+  }, [queryClient, projectId, variantId, invalidateProjectStock]);
 
   // === DATA FETCHING ===
 

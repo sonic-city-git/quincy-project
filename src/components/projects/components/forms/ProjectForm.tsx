@@ -8,6 +8,7 @@ import { CustomerSelect } from "@/components/shared/forms/CustomerSelect";
 import { OwnerSelect } from "@/components/shared/forms/OwnerSelect";
 import { Loader2, FolderOpen, Users, User, Settings } from "lucide-react";
 import { FORM_PATTERNS, createInputClasses, createFieldIconClasses, createFormFieldContainer, createDropdownClasses, getRandomLegendaryArtist } from "@/design-system";
+import { useProjectTypes } from "@/hooks/project";
 
 interface ProjectFormData {
   name: string;
@@ -26,6 +27,9 @@ interface ProjectFormProps {
 export function ProjectForm({ onSubmit, onCancel, initialData, mode = 'create' }: ProjectFormProps) {
   // Get a random legendary artist for the placeholder - only once per form instance
   const [randomArtistPlaceholder] = useState(() => getRandomLegendaryArtist());
+  
+  // Fetch project types from database
+  const { data: projectTypes = [], isLoading: isLoadingProjectTypes } = useProjectTypes();
   
   const form = useForm<ProjectFormData>({
     defaultValues: {
@@ -115,15 +119,16 @@ export function ProjectForm({ onSubmit, onCancel, initialData, mode = 'create' }
               <FormControl>
                 <div className={createDropdownClasses('iconContainer')}>
                   <Settings className={createDropdownClasses('iconInside')} />
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={isLoadingProjectTypes}>
                     <SelectTrigger className={createDropdownClasses('triggerWithIcon')}>
-                      <SelectValue placeholder="Select project type" />
+                      <SelectValue placeholder={isLoadingProjectTypes ? "Loading..." : "Select project type"} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="artist">Artist</SelectItem>
-                      <SelectItem value="corporate">Corporate</SelectItem>
-                      <SelectItem value="broadcast">Broadcast</SelectItem>
-                      <SelectItem value="dry_hire">Dry Hire</SelectItem>
+                      {projectTypes.map((type) => (
+                        <SelectItem key={type.id} value={type.id}>
+                          {type.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

@@ -136,9 +136,10 @@ interface EventCardProps {
   onStatusChange: (event: CalendarEvent, newStatus: CalendarEvent['status']) => void;
   onEdit: ((event: CalendarEvent) => void) | undefined;
   sectionTitle?: string;
+  projectConflicts?: any[]; // Stock conflicts for this project
 }
 
-export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: EventCardProps) {
+export function EventCard({ event, onStatusChange, onEdit, sectionTitle, projectConflicts }: EventCardProps) {
   const isEditingDisabled = !statusUtils.canEdit(event);
   
   // 🔄 Get reactive pricing that automatically updates with variant changes
@@ -226,6 +227,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
               event={event}
               variant="icon"
               disabled={isEditingDisabled}
+              projectConflicts={projectConflicts}
             />
           </EventGridColumns.Icon>
 
@@ -235,6 +237,7 @@ export function EventCard({ event, onStatusChange, onEdit, sectionTitle }: Event
               event={event}
               variant="icon" 
               disabled={isEditingDisabled}
+              projectConflicts={projectConflicts}
             />
           </EventGridColumns.Icon>
 

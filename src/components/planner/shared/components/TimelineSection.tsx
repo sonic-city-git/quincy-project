@@ -3,6 +3,9 @@ import { Collapsible, CollapsibleContent } from "../../../ui/collapsible";
 import { TimelineDayCell } from "./TimelineDayCell";
 import { ProjectRow, CrewRoleCell } from "./ProjectRow";
 import { UnfilledRoleBadges } from "./UnfilledRoleBadges";
+import { SubrentalSuggestionBadges } from "./SubrentalSuggestionBadges";
+import { SubrentalPeriodCells } from "./SubrentalPeriodCells";
+import { ConfirmedSubrentalCells } from "./ConfirmedSubrentalCells";
 import { LAYOUT } from '../constants';
 import '../timeline-optimization.css';
 import { EquipmentGroup, EquipmentProjectUsage, ProjectQuantityCell } from '../types';
@@ -145,6 +148,11 @@ interface TimelineSectionProps {
   onToggleGroupExpansion?: (groupPath: string) => void; // For expanding folders
   resourceType?: 'equipment' | 'crew';
   isUnfilledRolesSection?: boolean; // New: identifies unfilled roles sections
+  isSubrentalSection?: boolean; // New: identifies subrental sections
+  suggestionsByDate?: Map<string, any[]>; // Subrental suggestions by date
+  onSubrentalClick?: (suggestion: any, date: string) => void; // Subrental suggestion handler
+  confirmedPeriodsByDate?: Map<string, any[]>; // Confirmed subrental periods by date
+  onConfirmedSubrentalClick?: (period: any) => void; // Confirmed subrental click handler
   filters?: any;
   onDateSelect?: (date: string) => void;
 
@@ -163,6 +171,11 @@ const TimelineSectionComponent = ({
   onToggleGroupExpansion,
   resourceType = 'equipment',
   isUnfilledRolesSection = false,
+  isSubrentalSection = false,
+  suggestionsByDate,
+  onSubrentalClick,
+  confirmedPeriodsByDate,
+  onConfirmedSubrentalClick,
   filters,
   onDateSelect
 }: TimelineSectionProps) => {
@@ -204,6 +217,20 @@ const TimelineSectionComponent = ({
           const isEquipmentExpanded = expandedEquipment.has(equipment.id);
           const equipmentUsage = equipmentProjectUsage.get(equipment.id);
           
+          // Debug: Check if usage data exists for this equipment
+          if (equipment.name === 'A&H dLive CDM48') {
+            console.log('🔍 [TIMELINE SECTION] CDM48 usage check:', {
+              equipmentId: equipment.id,
+              equipmentName: equipment.name,
+              hasUsage: !!equipmentUsage,
+              projectNamesCount: equipmentUsage?.projectNames?.length || 0,
+              projectNames: equipmentUsage?.projectNames,
+              isExpanded: isEquipmentExpanded,
+              totalUsageMapSize: equipmentProjectUsage.size,
+              willShowProjectRows: !isUnfilledRolesSection && isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0
+            });
+          }
+          
           return (
             <div key={equipment.id}>
               {/* Main equipment row */}
@@ -216,57 +243,82 @@ const TimelineSectionComponent = ({
               >
                 {/* Timeline cells - NO MORE DUPLICATE NAME COLUMN! */}
                 <div 
-                  className="flex items-center" 
+                  className="relative flex items-center" 
                   style={{ 
                     minWidth: `${timelineWidthPx}px`,
                     height: '100%'
                   }}
                 >
-                                                       {formattedDates.map((dateInfo, index) => {
-                    if (isUnfilledRolesSection) {
-                      const booking = getBookingForEquipment(equipment.id, dateInfo.dateStr);
-                      const needsCrew = booking?.needsCrew && !booking?.hasAssignedCrew;
-                      
-                      return (
-                        <div
-                          key={dateInfo.date.toISOString()}
-                          className="flex items-center justify-center h-full"
-                          style={{ 
-                            width: LAYOUT.DAY_CELL_WIDTH,
-                            minHeight: LAYOUT.PROJECT_ROW_HEIGHT
-                          }}
-                        >
-                          <UnfilledRoleBadges
-                            roles={needsCrew ? [{
-                              id: equipment.id,
-                              role: '',
-                              projectName: booking.projectName || '',
-                              eventName: booking.eventName || '',
-                              eventTypeColor: booking.eventTypeColor || '#666'
-                            }] : []}
-                            dateStr={dateInfo.dateStr}
-                            onRoleClick={(roleId, date) => {
-                              onDateSelect?.(date);
-
+                  {/* NEEDED SUBRENTAL SECTION: Use period-spanning cells for suggestions */}
+                  {isSubrentalSection && equipment.isNeededSubrental && suggestionsByDate ? (
+                    <SubrentalPeriodCells
+                      suggestions={Array.from(suggestionsByDate.values())
+                        .flat()
+                        .filter(s => s.equipmentId === equipment.originalEquipmentId)}
+                      suggestionsByDate={suggestionsByDate}
+                      formattedDates={formattedDates}
+                      onSuggestionClick={(suggestion, date) => {
+                        onSubrentalClick?.(suggestion, date);
+                      }}
+                    />
+                  ) : isSubrentalSection && equipment.isConfirmedSubrental && confirmedPeriodsByDate ? (
+                    /* CONFIRMED SUBRENTAL SECTION: Use period-spanning cells for confirmed subrentals */
+                    <ConfirmedSubrentalCells
+                      confirmedPeriods={Array.from(confirmedPeriodsByDate.values())
+                        .flat()
+                        .filter(p => p.equipment_id === equipment.originalEquipmentId)}
+                      formattedDates={formattedDates}
+                      onSubrentalClick={(period) => {
+                        onConfirmedSubrentalClick?.(period);
+                      }}
+                    />
+                  ) : (
+                    /* REGULAR SECTIONS: Individual day cells */
+                    formattedDates.map((dateInfo, index) => {
+                      if (isUnfilledRolesSection) {
+                        const booking = getBookingForEquipment(equipment.id, dateInfo.dateStr);
+                        const needsCrew = booking?.needsCrew && !booking?.hasAssignedCrew;
+                        
+                        return (
+                          <div
+                            key={dateInfo.date.toISOString()}
+                            className="flex items-center justify-center h-full"
+                            style={{ 
+                              width: LAYOUT.DAY_CELL_WIDTH,
+                              minHeight: LAYOUT.PROJECT_ROW_HEIGHT
                             }}
-                          />
-                        </div>
-                      );
-                    }
+                          >
+                            <UnfilledRoleBadges
+                              roles={needsCrew ? [{
+                                id: equipment.id,
+                                role: '',
+                                projectName: booking.projectName || '',
+                                eventName: booking.eventName || '',
+                                eventTypeColor: booking.eventTypeColor || '#666'
+                              }] : []}
+                              dateStr={dateInfo.dateStr}
+                              onRoleClick={(roleId, date) => {
+                                onDateSelect?.(date);
+                              }}
+                            />
+                          </div>
+                        );
+                      }
 
-                    return (
-                      <TimelineDayCell
-                        key={dateInfo.date.toISOString()}
-                        equipment={equipment}
-                        dateInfo={dateInfo}
-                        getBookingForEquipment={getBookingForEquipment}
-                        isExpanded={isEquipmentExpanded}
-                        onToggleExpansion={onToggleEquipmentExpansion}
-                        isFirstCell={index === 0} // Only show toggle on first cell
-                        isCrew={resourceType === 'crew'}
-                      />
-                    );
-                  })}
+                      return (
+                        <TimelineDayCell
+                          key={dateInfo.date.toISOString()}
+                          equipment={equipment}
+                          dateInfo={dateInfo}
+                          getBookingForEquipment={getBookingForEquipment}
+                          isExpanded={isEquipmentExpanded}
+                          onToggleExpansion={onToggleEquipmentExpansion}
+                          isFirstCell={index === 0} // Only show toggle on first cell
+                          isCrew={resourceType === 'crew'}
+                        />
+                      );
+                    })
+                  )}
                 </div>
               </div>
               
@@ -386,6 +438,8 @@ const TimelineSectionComponent = ({
                         </div>
                       );
                     }
+
+
 
                             return (
                               <TimelineDayCell

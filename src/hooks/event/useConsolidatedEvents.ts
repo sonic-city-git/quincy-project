@@ -22,6 +22,7 @@
 import { useState, useCallback, useMemo } from 'react';
 import { CalendarEvent, EventType } from '@/types/events';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useStockCacheInvalidation } from '@/hooks/useStockCacheInvalidation';
 import { fetchEvents, createEvent, updateEvent as updateEventQuery, deleteEvent as deleteEventQuery } from '@/utils/eventQueries';
 import { createRoleAssignments } from '@/utils/roleAssignments';
 import { compareDates } from '@/utils/dateFormatters';
@@ -122,6 +123,8 @@ export function useConsolidatedEvents({
   // QUERY INVALIDATION HELPER
   // =============================================================================
   
+  const { invalidateProjectStock, invalidateEventStock } = useStockCacheInvalidation();
+  
   const invalidateEventQueries = useCallback(async (eventId?: string) => {
     const baseQueries = [
       ['events', projectId],
@@ -137,9 +140,13 @@ export function useConsolidatedEvents({
     
     await Promise.all([
       ...baseQueries.map(queryKey => queryClient.invalidateQueries({ queryKey })),
-      ...eventSpecificQueries.map(queryKey => queryClient.invalidateQueries({ queryKey }))
+      ...eventSpecificQueries.map(queryKey => queryClient.invalidateQueries({ queryKey })),
+      // ✅ NEW: Invalidate stock engine caches when events change
+      invalidateProjectStock(projectId),
+      // ✅ NEW: Invalidate event-specific stock if specific event
+      ...(eventId ? [invalidateEventStock(eventId, projectId)] : [])
     ]);
-  }, [projectId, queryClient]);
+  }, [projectId, queryClient, invalidateProjectStock, invalidateEventStock]);
 
   // =============================================================================
   // OPTIMISTIC UPDATE HELPER

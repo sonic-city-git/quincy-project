@@ -6,5 +6,9 @@
 
 export { useGlobalSearch } from './useGlobalSearch';
 export { useGlobalKeyboard } from './useGlobalKeyboard';
-export { useConsolidatedConflicts } from './useConsolidatedConflicts';
-export { useDashboardConflicts } from './useDashboardConflicts';
+// ❌ DELETED: useDashboardConflicts, useConsolidatedConflicts - replaced by EQUIPMENT STOCK ENGINE
+// ✅ OPTIMIZED WRAPPERS:
+// import { useDashboardConflicts } from '@/hooks/useDashboardConflicts';
+// import { useProjectConflicts } from '@/hooks/useProjectConflicts';
+// import { useTimelineStock } from '@/hooks/useTimelineStock';
+// ✅ CORE ENGINE: import { useEquipmentStockEngine } from '@/hooks/useEquipmentStockEngine';

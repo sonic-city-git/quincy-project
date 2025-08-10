@@ -9,9 +9,9 @@ import { useVariantCrew } from './useVariantCrew';
  * Use this when you need both types of resources in a single component
  * For focused operations, use useVariantEquipment or useVariantCrew directly
  */
-export function useVariantData(projectId: string, variantName: string) {
-  const equipmentHook = useVariantEquipment(projectId, variantName);
-  const crewHook = useVariantCrew(projectId, variantName);
+export function useVariantData(projectId: string, variantId: string) {
+  const equipmentHook = useVariantEquipment(projectId, variantId);
+  const crewHook = useVariantCrew(projectId, variantId);
 
   // Combined loading state
   const isLoading = equipmentHook.isLoading || crewHook.isLoading;

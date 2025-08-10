@@ -376,28 +376,16 @@ export function useSimpleInfiniteScroll({ selectedDate, resourceType, targetScro
   useEffect(() => {
     const currentScrollPosition = equipmentRowsRef.current?.scrollLeft || 0;
     
-    console.log(`🎯 [${resourceType.toUpperCase()}] SCROLL EFFECT CHECK:`, {
-      selectedDate: format(selectedDate, 'MMM dd yyyy'),
-      timelineDatesLength: timelineDates.length,
-      containerMounted: containerMounted,
-      hasContainer: !!equipmentRowsRef.current,
-      currentScrollPosition: currentScrollPosition,
-      willExecute: timelineDates.length > 0 && containerMounted && equipmentRowsRef.current
-    });
+
     
     // Always scroll to selectedDate when timeline is ready and selectedDate changes
     if (timelineDates.length > 0 && containerMounted && equipmentRowsRef.current) {
-      console.log(`🎯 [${resourceType.toUpperCase()}] EXECUTING SCROLL TO:`, format(selectedDate, 'MMM dd yyyy'), 'from position:', currentScrollPosition);
-      
       // Small delay to ensure rendering is complete
       const timer = setTimeout(() => {
-        console.log(`🎯 [${resourceType.toUpperCase()}] CALLING scrollToDate`);
         scrollToDate(selectedDate);
       }, 100);
       
       return () => clearTimeout(timer);
-    } else {
-      console.log(`🔴 [${resourceType.toUpperCase()}] SCROLL CONDITIONS NOT MET`);
     }
   }, [selectedDate, timelineDates.length, containerMounted, scrollToDate, resourceType]);
   

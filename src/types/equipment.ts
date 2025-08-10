@@ -3,6 +3,8 @@ import { Database } from "@/integrations/supabase/types";
 export type Equipment = Database["public"]["Tables"]["equipment"]["Row"];
 
 export const FOLDER_ORDER = [
+  "Needed Subrental",
+  "Confirmed Subrental", 
   "Mixers",
   "Microphones",
   "DI-boxes",
@@ -20,6 +22,8 @@ export const FOLDER_ORDER = [
 export type MainFolder = typeof FOLDER_ORDER[number];
 
 export const SUBFOLDER_ORDER: Record<MainFolder, readonly string[]> = {
+  "Needed Subrental": [],
+  "Confirmed Subrental": [],
   "Mixers": ["Mixrack", "Surface", "Expansion", "Small format"],
   "Microphones": ["Dynamic", "Condenser", "Ribbon", "Shotgun", "WL capsule", "Special/Misc"],
   "DI-boxes": ["Active", "Passive", "Special"],
@@ -81,4 +85,59 @@ export interface ProjectEquipment {
   quantity: number;
   rental_price: number | null;
   group_id: string | null;
+}
+
+// Subrental functionality
+export interface SubrentalSuggestion {
+  equipmentId: string;
+  equipmentName: string;
+  date: string;
+  overbooked: number;
+  affectedEvents: Array<{
+    eventName: string;
+    projectName: string;
+    quantity: number;
+  }>;
+  suggestedProviders: ExternalProvider[];
+}
+
+export interface ExternalProvider {
+  id: string;
+  company_name: string;
+  contact_email: string | null;
+  phone: string | null;
+  website: string | null;
+  geographic_coverage: string[] | null;
+  reliability_rating: number | null;
+  preferred_status: boolean;
+}
+
+export interface SubrentalEquipment {
+  id: string;
+  name: string;
+  temporary_serial: string; // e.g., "Oslo Equipment Rentals MX1 #1"
+  provider_id: string;
+  provider_name: string;
+  start_date: string;
+  end_date: string;
+  cost: number | null;
+  notes: string | null;
+  equipment_type: string; // Original equipment name this replaces
+  equipment_id: string; // Reference to original equipment
+}
+
+export interface ConfirmedSubrental {
+  id: string;
+  equipment_id: string;
+  equipment_name: string;
+  provider_id: string;
+  provider_name: string;
+  start_date: string;
+  end_date: string;
+  quantity: number;
+  cost: number | null;
+  temporary_serial?: string;
+  notes?: string;
+  created_at: string;
+  status: 'confirmed' | 'delivered' | 'returned' | 'cancelled';
 }

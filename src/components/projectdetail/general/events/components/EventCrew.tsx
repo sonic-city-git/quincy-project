@@ -24,6 +24,7 @@ export interface EventCrewProps {
   className?: string;
   onViewConflicts?: () => void;
   onManualAssign?: () => void;
+  projectConflicts?: any[]; // Pre-fetched conflicts for performance optimization
 }
 
 
@@ -35,7 +36,8 @@ export function EventCrew({
   disabled = false,
   className,
   onViewConflicts,
-  onManualAssign
+  onManualAssign,
+  projectConflicts
 }: EventCrewProps) {
   const targetEvent = event || events[0];
   const [dialogOpen, setDialogOpen] = useState(false);

@@ -4,7 +4,7 @@ import { format } from "date-fns";
 
 // Option to test unified system
 import { useTimelineHub } from './shared/hooks/useTimelineHub';
-import { useDashboardConflicts } from '@/hooks/global';
+import { useDashboardConflicts } from '@/hooks/useDashboardConflicts';
 
 
 import { LAYOUT, PERFORMANCE } from './shared/constants';
@@ -13,6 +13,7 @@ import { LAYOUT, PERFORMANCE } from './shared/constants';
 import { PlannerFilters, TimelineHeader } from './shared/components/TimelineHeader';
 import { TimelineContent } from './shared/components/TimelineContent';
 import { useSimpleInfiniteScroll as useTimelineScroll } from './shared/hooks/useSimpleInfiniteScroll';
+import { SubrentalConfirmationDialog } from './shared/dialogs/SubrentalConfirmationDialog';
 
 interface UnifiedCalendarProps {
   selectedDate: Date;
@@ -62,6 +63,17 @@ export function UnifiedCalendar({
   renderOnlyLeft = false,
   renderOnlyTimeline = false
 }: UnifiedCalendarProps) {
+  // Subrental dialog state
+  const [subrentalDialogOpen, setSubrentalDialogOpen] = useState(false);
+  const [selectedSuggestion, setSelectedSuggestion] = useState<any>(null);
+  const [conflictDate, setConflictDate] = useState<string>('');
+
+  // Subrental suggestion click handler
+  const handleSubrentalClick = useCallback((suggestion: any, date: string) => {
+    setSelectedSuggestion(suggestion);
+    setConflictDate(date);
+    setSubrentalDialogOpen(true);
+  }, []);
 
   // DEBUG: Track selectedDate at UnifiedCalendar level
   useEffect(() => {
@@ -195,6 +207,16 @@ export function UnifiedCalendar({
     expandedGroups,
     expandedEquipment,
     equipmentProjectUsage,
+    // Subrental data
+    subrentalSuggestions,
+    suggestionsByDate,
+    shouldShowSubrentalSection,
+    
+    // Confirmed subrental data
+    confirmedSubrentals,
+    confirmedPeriods,
+    confirmedPeriodsByDate,
+    shouldShowConfirmedSection,
     isLoading,
     isEquipmentReady,
     isBookingsReady,
@@ -213,11 +235,10 @@ export function UnifiedCalendar({
     resolveConflict,
   } = currentHub;
 
-  // CRITICAL FIX: When "View Problems" is active, use comprehensive conflict detection
-  // that fetches ALL equipment conflicts regardless of folder expansion state
+  // ONE ENGINE: When "View Problems" is active, use unified stock engine
+  // that includes virtual stock calculations and real-time conflict resolution
   const { 
-    equipmentConflicts: allEquipmentConflicts, 
-    crewConflicts: allCrewConflicts,
+    conflicts: allConflicts,
     isLoading: isLoadingAllConflicts 
   } = useDashboardConflicts(selectedOwner);
 
@@ -227,49 +248,38 @@ export function UnifiedCalendar({
       return hubWarnings; // Use normal hub warnings when not in problems-only mode
     }
 
-    // When in problems-only mode, use comprehensive conflict data
+    // When in problems-only mode, use ONE ENGINE conflict data (virtual stock aware)
     const allWarnings = [];
     
-    if (resourceType === 'equipment' && allEquipmentConflicts) {
-      allEquipmentConflicts.forEach(conflict => {
+    if (resourceType === 'equipment' && allConflicts) {
+      allConflicts.forEach(conflict => {
         allWarnings.push({
           resourceId: conflict.equipmentId,
           resourceName: conflict.equipmentName,
           date: conflict.date,
           type: 'overbooked',
-          severity: conflict.overbooked > (conflict.totalStock * 0.5) ? 'high' : 'medium',
+          severity: conflict.conflict.severity,
           details: {
-            stock: conflict.totalStock,
-            used: conflict.totalUsed,
-            overbooked: conflict.overbooked,
-            events: conflict.conflictingEvents
-          }
-        });
-      });
-    } else if (resourceType === 'crew' && allCrewConflicts) {
-      allCrewConflicts.forEach(conflict => {
-        allWarnings.push({
-          resourceId: conflict.crewMemberId,
-          resourceName: conflict.crewMemberName,
-          date: conflict.date,
-          type: 'conflict',
-          severity: conflict.conflictingAssignments.length > 2 ? 'high' : 'medium',
-          details: {
-            assignments: conflict.conflictingAssignments
+            stock: conflict.stockBreakdown.effectiveStock, // Virtual stock aware!
+            used: conflict.stockBreakdown.totalUsed,
+            overbooked: conflict.conflict.deficit,
+            virtualAdditions: conflict.stockBreakdown.virtualAdditions, // NEW: Show subrental additions
+            events: conflict.conflict.affectedEvents
           }
         });
       });
     }
+    // TODO: Crew conflicts will be integrated into stock engine later
 
     // Debug logging for crew conflicts
     if (process.env.NODE_ENV === 'development' && resourceType === 'crew') {
-      console.log('👥 Crew mode - allCrewConflicts:', allCrewConflicts);
-      console.log('⚠️ Transformed crew warnings:', allWarnings);
+      console.log('👥 Crew mode - ONE ENGINE conflicts:', allConflicts);
+      console.log('⚠️ Transformed warnings:', allWarnings);
       console.log('🔍 showProblemsOnly:', showProblemsOnly, 'warnings found:', allWarnings.length);
     }
 
     return allWarnings;
-  }, [showProblemsOnly, resourceType, allEquipmentConflicts, allCrewConflicts, hubWarnings]);
+  }, [showProblemsOnly, resourceType, allConflicts, hubWarnings]);
 
   // Use comprehensive warnings when available, fallback to hub warnings
   const warnings = comprehensiveWarnings;
@@ -481,9 +491,25 @@ export function UnifiedCalendar({
         warnings={warnings} // PERFORMANCE: Pass pre-calculated warnings for optimized problems view
         visibleTimelineStart={timelineStart}
         visibleTimelineEnd={timelineEnd}
+        // Subrental props
+        suggestionsByDate={suggestionsByDate}
+        onSubrentalClick={handleSubrentalClick}
+        confirmedPeriodsByDate={confirmedPeriodsByDate}
+        onConfirmedSubrentalClick={(period) => {
+          // TODO: Handle confirmed subrental clicks (e.g., show details or edit dialog)
+          console.log('Confirmed subrental clicked:', period);
+        }}
         isWithinScrollContainer={isWithinScrollContainer}
       />
       </div>
+      
+      {/* Subrental Confirmation Dialog */}
+      <SubrentalConfirmationDialog
+        open={subrentalDialogOpen}
+        onOpenChange={setSubrentalDialogOpen}
+        suggestion={selectedSuggestion}
+        conflictDate={conflictDate}
+      />
     </div>
   );
 }
