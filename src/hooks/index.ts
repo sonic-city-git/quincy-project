@@ -12,7 +12,8 @@ export * from './project';
 export * from './variant';
 
 // Stock Engine
-export * from './stock';
+// ❌ DELETED: export * from './stock' - old fragmented hooks removed
+// ✅ Use: import from '@/hooks/useEquipmentStockEngine' directly
 
 // Event Operations
 export * from './event';

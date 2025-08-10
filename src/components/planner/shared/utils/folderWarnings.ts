@@ -1,10 +1,10 @@
 /**
- * FOLDER WARNING DETECTION - UNIFIED STOCK ENGINE VERSION
+ * FOLDER WARNING DETECTION - EQUIPMENT STOCK ENGINE VERSION
  * 
- * ✅ COMPLETELY REDESIGNED FOR UNIFIED STOCK ENGINE
+ * ✅ COMPLETELY REDESIGNED FOR EQUIPMENT STOCK ENGINE
  * 
  * Detects overbookings and conflicts at the folder and subfolder level
- * using the new unified stock engine with virtual stock calculations.
+ * using the ONE EQUIPMENT ENGINE with virtual stock calculations.
  * 
  * Benefits:
  * - Virtual stock awareness (subrentals resolve conflicts)
@@ -14,7 +14,7 @@
  * - Smart severity analysis
  */
 
-import { useStockEngine } from '@/hooks/stock/useStockEngine';
+import { useEquipmentStockEngine } from '@/hooks/useEquipmentStockEngine';
 import { ConflictAnalysis } from '@/types/stock';
 import { EquipmentGroup } from '../types';
 
@@ -52,25 +52,20 @@ export function useFolderWarnings(
     ...(group.subFolders?.flatMap(sf => sf.equipment.map(e => e.id)) || [])
   ]);
 
-  // Get conflicts from unified stock engine
-  const stockEngine = useStockEngine({
-    dateRange: {
-      start: new Date(startDate),
-      end: new Date(endDate)
-    },
+  // Get conflicts from EQUIPMENT ENGINE
+  const stockEngine = useEquipmentStockEngine();
+
+  // Filter conflicts to our equipment and date range
+  const relevantConflicts = stockEngine.getConflicts({
     equipmentIds: allEquipmentIds,
-    includeVirtualStock: true,
-    includeConflictAnalysis: true,
-    includeSuggestions: true,
-    cacheResults: true,
-    batchSize: 100
+    dateRange: { start: startDate, end: endDate }
   });
 
   if (stockEngine.isLoading) {
     return {};
   }
 
-  return analyzeFolderWarnings(equipmentGroups, stockEngine.conflicts);
+  return analyzeFolderWarnings(equipmentGroups, relevantConflicts);
 }
 
 /**

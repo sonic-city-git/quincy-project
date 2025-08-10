@@ -4,14 +4,8 @@
  * Central exports for the unified stock management system
  */
 
-// Main engine hooks
-export { 
-  useStockEngine,
-  useDashboardStockConflicts,
-  useProjectStockConflicts,
-  useTimelineStockEngine,
-  useEffectiveStock
-} from './useStockEngine';
+// ❌ DELETED: useStockEngine and all related hooks - replaced by useEquipmentStockEngine
+// ✅ Use: import { useEquipmentStockEngine, useDashboardStock, useProjectStock, useTimelineStock } from '@/hooks/useEquipmentStockEngine';
 
 // Subrental order management (will be created in next phase)
 // export { useSubrentalOrders, useCreateSubrentalOrder } from './useSubrentalOrders';
