@@ -246,29 +246,23 @@ export function useTimelineHub({
         // ✅ NO OWNER FILTER: Timeline shows ALL equipment across all owners
       })
     : { 
-        conflicts: [], 
-        isLoading: false, 
+        // Core stock access - proper fallback methods
         getEquipmentStock: () => null,
-        equipment: new Map(),
-        virtualStock: new Map(),
-        suggestions: [],
-        // ✅ ADDED: Timeline data
-        bookings: new Map(),
-        projectUsage: new Map(),
-        // ✅ ADDED: Date range
-        startDate: '',
-        endDate: '',
-        totalConflicts: 0,
-        totalDeficit: 0,
-        affectedEquipmentCount: 0,
-        getConflicts: () => [],
-        getSuggestions: () => [],
-        isOverbooked: () => false,
-        getAvailability: () => 0,
-        // ✅ ADDED: Timeline methods
         getBooking: () => null,
-        getProjectUsage: () => null,
-        getProjectQuantityForDate: () => null,
+        getAvailability: () => 0,
+        isOverbooked: () => false,
+        
+        // Batch data
+        bookings: new Map(),
+        conflicts: [],
+        suggestions: [],
+        
+        // Performance helpers
+        getBookingsForDateRange: () => [],
+        preloadEquipmentData: async () => {},
+        
+        // Status
+        isLoading: false,
         error: null
       };
 
@@ -676,19 +670,18 @@ export function useTimelineHub({
     }
   }, [mergedResourceData?.resources, expandedGroups, resourceType, shouldShowSubrentalSection, subrentalSuggestions, shouldShowConfirmedSection, confirmedPeriods]);
 
-  // SIMPLIFIED PROJECT USAGE - No complex filtering
-  // ✅ USE ONE ENGINE - Project usage data comes from stock engine for equipment
+  // ✅ SIMPLIFIED PROJECT USAGE - Always use stock engine for equipment
   const projectUsage = useMemo(() => {
-    if (resourceType === 'equipment' && timelineStock.projectUsage) {
-      return timelineStock.projectUsage;
+    if (resourceType === 'equipment') {
+      // Always return empty Map for equipment - project usage comes from stock engine directly
+      return new Map();
     }
     
-    // Fallback for crew: manual calculation until crew engine is implemented
+    // Crew: manual calculation until crew engine is implemented
     if (!bookingsData) return new Map();
 
     const usage = new Map();
     
-    // Process all bookings - simpler and more reliable
     Array.from(bookingsData.values()).forEach(booking => {
       const resourceId = booking.resourceId;
       
@@ -701,37 +694,36 @@ export function useTimelineHub({
       }
       
       const resourceUsage = usage.get(resourceId);
+      const assignments = booking.assignments || [];
       
-      // For crew, use assignments instead of bookings
-      const assignments = resourceType === 'crew' ? booking.assignments : booking.bookings;
-      assignments?.forEach(b => {
-        if (!resourceUsage.projectNames.includes(b.projectName)) {
-          resourceUsage.projectNames.push(b.projectName);
+      assignments.forEach(assignment => {
+        if (!resourceUsage.projectNames.includes(assignment.projectName)) {
+          resourceUsage.projectNames.push(assignment.projectName);
         }
         
-        if (!resourceUsage.projectQuantities.has(b.projectName)) {
-          resourceUsage.projectQuantities.set(b.projectName, new Map());
+        if (!resourceUsage.projectQuantities.has(assignment.projectName)) {
+          resourceUsage.projectQuantities.set(assignment.projectName, new Map());
         }
         
-        const projectQuantities = resourceUsage.projectQuantities.get(b.projectName);
+        const projectQuantities = resourceUsage.projectQuantities.get(assignment.projectName);
         const existing = projectQuantities.get(booking.date);
         
         if (existing) {
-          existing.quantity += (resourceType === 'equipment' ? b.quantity : 1);
+          existing.quantity += 1;
         } else {
           projectQuantities.set(booking.date, {
             date: booking.date,
-            quantity: resourceType === 'equipment' ? b.quantity : 1,
-            eventName: b.eventName,
-            projectName: b.projectName,
-            role: resourceType === 'crew' ? b.role : undefined
+            quantity: 1,
+            eventName: assignment.eventName,
+            projectName: assignment.projectName,
+            role: assignment.role
           });
         }
       });
     });
 
     return usage;
-  }, [bookingsData, resourceType, timelineStock.projectUsage]);
+  }, [bookingsData, resourceType]);
 
   // FUNCTIONS
   const getBookingForEquipment = useCallback((resourceId: string, dateStr: string) => {
@@ -786,18 +778,28 @@ export function useTimelineHub({
   }, [mergedResourceData?.resourceById, bookingsData, resourceType, timelineStock.getEquipmentStock]);
 
   const getProjectQuantityForDate = useCallback((projectName: string, resourceId: string, dateStr: string) => {
-    if (resourceType === 'equipment' && timelineStock.getProjectQuantityForDate) {
-      // ✅ USE ONE ENGINE - project quantity data from stock engine
-      return timelineStock.getProjectQuantityForDate(projectName, resourceId, dateStr);
+    if (resourceType === 'equipment') {
+      // ✅ FIXED: Use stock engine booking data directly for equipment
+      const booking = timelineStock.getBooking(resourceId, dateStr);
+      if (!booking) return undefined;
+      
+      // Find project quantity from booking details
+      const projectBooking = booking.bookings?.find(b => b.projectName === projectName);
+      return projectBooking ? {
+        date: dateStr,
+        quantity: projectBooking.quantity,
+        eventName: projectBooking.eventName,
+        projectName: projectBooking.projectName
+      } : undefined;
     }
     
-    // Fallback for crew: manual calculation
+    // Crew: use manual calculation
     const usage = projectUsage.get(resourceId);
     if (!usage) return undefined;
 
     const projectQuantities = usage.projectQuantities.get(projectName);
     return projectQuantities?.get(dateStr);
-  }, [projectUsage, resourceType, timelineStock.getProjectQuantityForDate]);
+  }, [projectUsage, resourceType, timelineStock]);
 
   const getLowestAvailable = useCallback((resourceId: string, dateStrings?: string[]) => {
     const resource = mergedResourceData?.resourceById.get(resourceId);
@@ -806,16 +808,13 @@ export function useTimelineHub({
     if (resourceType === 'equipment') {
       if (!dateStrings?.length) return resource.stock;
       
-      // ✅ USE STOCK ENGINE for equipment availability calculation
+      // ✅ USE STOCK ENGINE: Optimized availability calculation
       let lowest = resource.stock;
       dateStrings.forEach(dateStr => {
-        const stockData = timelineStock.getEquipmentStock(resourceId, dateStr);
-        if (stockData) {
-          // ✅ USE ENGINE: Direct available property (includes virtual stock)
-          if (stockData.available < lowest) lowest = stockData.available;
-        }
+        const availability = timelineStock.getAvailability(resourceId, dateStr);
+        if (availability < lowest) lowest = availability;
       });
-      return lowest;
+      return Math.max(0, lowest); // Ensure non-negative
     } else {
       // Crew: 1 = available, 0 = busy
       if (!dateStrings?.length) return 1;
@@ -827,7 +826,7 @@ export function useTimelineHub({
       
       return hasAssignments ? 0 : 1;
     }
-  }, [mergedResourceData, bookingsData, resourceType, timelineStock.getEquipmentStock]);
+  }, [mergedResourceData, bookingsData, resourceType, timelineStock]);
 
   // EXPANSION HANDLERS
   const toggleGroup = useCallback((groupKey: string, expandAllSubfolders?: boolean) => {
@@ -879,7 +878,7 @@ export function useTimelineHub({
     bookingsData: bookingsData || new Map(),
     expandedGroups,
     expandedEquipment: expandedResources,
-    equipmentProjectUsage: projectUsage,
+    equipmentProjectUsage: resourceType === 'equipment' ? new Map() : projectUsage, // Equipment uses stock engine directly
     
     // Subrental data
     subrentalSuggestions,
