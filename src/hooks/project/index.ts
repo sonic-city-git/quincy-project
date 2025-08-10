@@ -13,3 +13,4 @@ export { useProjectFilters } from './useProjectFilters';
 export { useProjects } from './useProjects';
 export { useAddProject } from './useAddProject';
 export { useUpdateProject } from './useUpdateProject';
+export { useProjectTypes } from './useProjectTypes';
