@@ -204,52 +204,14 @@ export function useGlobalSearch(query: string) {
         console.error('Error searching equipment:', equipmentError);
       }
 
-      // Check for equipment overbookings in parallel
-      const equipmentWithBookings = await Promise.all(
-        (equipmentData || []).map(async (item) => {
-          try {
-            // Get total bookings for this equipment in the timeframe
-            // First get events in the timeframe
-            const { data: eventsInRange, error: eventsError } = await supabase
-              .from('project_events')
-              .select('id')
-              .gte('date', startDate)
-              .lte('date', endDate)
-              .in('status', ['confirmed', 'active']);
-
-            if (eventsError) {
-              console.error('Error fetching events:', eventsError);
-              return { ...item, totalBooked: 0 };
-            }
-
-            const eventIds = eventsInRange?.map(e => e.id) || [];
-            
-            if (eventIds.length === 0) {
-              return { ...item, totalBooked: 0 };
-            }
-
-            // Then get bookings for this equipment in those events
-            const { data: bookings, error: bookingError } = await supabase
-              .from('project_event_equipment')
-              .select('quantity')
-              .eq('equipment_id', item.id)
-              .in('event_id', eventIds);
-
-            if (bookingError) {
-              console.error('Error fetching bookings for equipment:', item.name, bookingError);
-              return { ...item, totalBooked: 0 };
-            }
-
-            // Calculate total quantity booked
-            const totalBooked = (bookings || []).reduce((sum, booking) => sum + (booking.quantity || 0), 0);
-            
-            return { ...item, totalBooked };
-          } catch (error) {
-            console.error('Error checking bookings for equipment:', item.name, error);
-            return { ...item, totalBooked: 0 };
-          }
-        })
-      );
+      // ✅ USE ENGINE DATA - No manual booking calculations needed
+      const equipmentWithBookings = (equipmentData || []).map(item => {
+        // Find conflicts for this equipment from engine
+        const equipmentConflicts = conflicts.filter(c => c.equipmentId === item.id);
+        const totalBooked = equipmentConflicts.reduce((sum, c) => sum + c.stockBreakdown.totalUsed, 0);
+        
+        return { ...item, totalBooked };
+      });
 
       // Check for project issues in parallel
       const projectsWithIssues = await Promise.all(
