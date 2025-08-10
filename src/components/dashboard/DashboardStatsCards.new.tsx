@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { useDashboardStock } from '@/hooks/useGlobalStockEngine';
+import { useDashboardStock } from '@/hooks/useEquipmentStockEngine';
 import { StandardizedCard } from '@/components/shared/StandardizedCard';
 import { Zap, AlertTriangle, TrendingUp } from 'lucide-react';
 

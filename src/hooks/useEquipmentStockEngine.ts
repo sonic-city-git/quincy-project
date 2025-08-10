@@ -1,8 +1,8 @@
 /**
- * 🎯 GLOBAL STOCK ENGINE - SINGLE SOURCE OF TRUTH
+ * 🎯 EQUIPMENT STOCK ENGINE - SINGLE SOURCE OF TRUTH
  * 
- * ONE ENGINE FOR THE ENTIRE APP
- * Every component uses the same data - no translation layers, no adapters.
+ * ONE ENGINE FOR ALL EQUIPMENT STOCK OPERATIONS
+ * Every component uses the same equipment data - no translation layers, no adapters.
  * 
  * Revolutionary Architecture:
  * - Global state management
@@ -76,7 +76,7 @@ interface SuggestionFilters {
 // THE ONE ENGINE
 // =============================================================================
 
-export function useGlobalStockEngine(): GlobalStockEngineResult {
+export function useEquipmentStockEngine(): GlobalStockEngineResult {
   
   // GLOBAL TIME RANGE - 30 days standard for entire app
   const { startDate, endDate } = getWarningTimeframe();
@@ -289,7 +289,7 @@ export function useGlobalStockEngine(): GlobalStockEngineResult {
  * Dashboard view - uses global engine with dashboard-specific filters
  */
 export function useDashboardStock(selectedOwner?: string) {
-  const engine = useGlobalStockEngine();
+  const engine = useEquipmentStockEngine();
   
   // Dashboard only cares about conflicts in next 30 days
   const dashboardConflicts = engine.getConflicts({
@@ -309,7 +309,7 @@ export function useDashboardStock(selectedOwner?: string) {
  * Timeline view - uses global engine with timeline-specific helpers
  */
 export function useTimelineStock(equipmentIds: string[], visibleDates: string[]) {
-  const engine = useGlobalStockEngine();
+  const engine = useEquipmentStockEngine();
   
   return {
     getStock: engine.getEquipmentStock,
@@ -325,7 +325,7 @@ export function useTimelineStock(equipmentIds: string[], visibleDates: string[])
  * Project view - uses global engine with project-specific filters
  */
 export function useProjectStock(equipmentIds: string[], projectDates: string[]) {
-  const engine = useGlobalStockEngine();
+  const engine = useEquipmentStockEngine();
   
   const projectConflicts = engine.getConflicts({ 
     equipmentIds, 

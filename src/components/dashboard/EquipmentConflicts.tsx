@@ -16,7 +16,7 @@ import { AlertTriangle, TrendingUp } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDisplayDate } from "@/utils/dateFormatters";
-import { useDashboardStock } from "@/hooks/useGlobalStockEngine";
+import { useDashboardStock } from "@/hooks/useEquipmentStockEngine";
 
 interface EquipmentConflictsProps {
   ownerId?: string;

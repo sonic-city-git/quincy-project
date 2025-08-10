@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { useTimelineStock } from '@/hooks/useGlobalStockEngine';
+import { useTimelineStock } from '@/hooks/useEquipmentStockEngine';
 import { cn } from '@/lib/utils';
 
 interface TimelineCellProps {

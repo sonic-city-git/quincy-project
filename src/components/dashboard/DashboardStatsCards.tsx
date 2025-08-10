@@ -21,7 +21,7 @@ import {
   Zap
 } from "lucide-react";
 import { StatusCard, StatusCardGrid, getStatusFromValue } from "./shared/StatusCard";
-import { useDashboardStock } from "@/hooks/useGlobalStockEngine";
+import { useDashboardStock } from "@/hooks/useEquipmentStockEngine";
 import { useUnassignedRoles, useActiveCrew } from "./shared/useDashboardData";
 import { OVERBOOKING_WARNING_DAYS } from "@/constants/timeframes";
 

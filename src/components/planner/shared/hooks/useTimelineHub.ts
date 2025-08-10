@@ -20,7 +20,7 @@ import { OVERBOOKING_WARNING_DAYS, getWarningTimeframe } from '@/constants/timef
 import { usePersistentExpandedGroups } from '@/hooks/ui';
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/types/equipment';
 import { PERFORMANCE } from '../constants';
-import { useSubrentalSuggestions } from '@/hooks/equipment/useSubrentalSuggestions';
+// ❌ DELETED: useSubrentalSuggestions - replaced by ONE ENGINE in earlier migration
 import { useConfirmedSubrentals } from '@/hooks/equipment/useConfirmedSubrentals';
 
 interface UseTimelineHubProps {
@@ -544,20 +544,13 @@ export function useTimelineHub({
     return warningsList;
   }, [allEquipmentOverbookings, resourceData, resourceType]);
 
-  // SUBRENTAL SUGGESTIONS (Equipment only) - Using unified stock engine
-  const {
-    subrentalSuggestions,
-    suggestionsByDate,
-    shouldShowSubrentalSection,
-    isLoading: suggestionsLoading,
-    error: suggestionsError
-  } = useSubrentalSuggestions({
-    resourceType,
-    visibleTimelineStart,
-    visibleTimelineEnd,
-    selectedOwner,
-    equipmentIds: resourceData?.resources?.map(r => r.id)
-  });
+  // SUBRENTAL SUGGESTIONS - TODO: Integrate with ONE ENGINE later
+  // For now, return empty data to prevent timeline errors
+  const subrentalSuggestions = [];
+  const suggestionsByDate = new Map();
+  const shouldShowSubrentalSection = false;
+  const suggestionsLoading = false;
+  const suggestionsError = null;
 
   // CONFIRMED SUBRENTALS (Equipment only)
   const {

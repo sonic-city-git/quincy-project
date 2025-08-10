@@ -4,7 +4,7 @@ import { format } from "date-fns";
 
 // Option to test unified system
 import { useTimelineHub } from './shared/hooks/useTimelineHub';
-import { useDashboardStock } from '@/hooks/useGlobalStockEngine';
+import { useDashboardStock } from '@/hooks/useEquipmentStockEngine';
 
 
 import { LAYOUT, PERFORMANCE } from './shared/constants';
