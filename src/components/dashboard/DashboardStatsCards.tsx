@@ -40,13 +40,7 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
     error: stockError
   } = useDashboardStock(selectedOwnerId);
   
-  console.log('🔍 [DASHBOARD] Stock engine result:', {
-    conflictsLength: conflicts?.length || 0,
-    totalConflicts,
-    isLoading: stockLoading,
-    hasError: !!stockError,
-    selectedOwnerId
-  });
+
 
   // Keep crew/unassigned data (not part of stock engine yet)
   const { data: unassignedStats, isLoading: unassignedLoading } = useUnassignedRoles(selectedOwnerId);
@@ -95,7 +89,7 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
           loading={stockLoading}
         />
 
-        {/* Crew Overbookings - TODO: Implement crew conflict detection */}
+        {/* Crew Overbookings - Phase 6: Crew engine integration */}
         <StatusCard
           title="Crew Overbookings"
           value={0}

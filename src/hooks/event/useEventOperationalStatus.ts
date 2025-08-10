@@ -44,7 +44,7 @@ interface EventOperationalStatus {
     }>;
   };
   
-  // Crew - TODO: Will be integrated into stock engine later
+  // Crew - Phase 6: Will be integrated into stock engine
   crew: {
     status: 'complete' | 'conflicts' | 'unfilled' | 'non-preferred';
     overbookings: Array<{
@@ -96,7 +96,7 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
   }, [event.date]);
 
   // Get project ID for this event  
-  const projectId = event.projectId || '';
+  const projectId = event.project_id || '';
   
   const {
     conflicts,
@@ -138,13 +138,11 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
       };
     }
     
-    // Filter conflicts to only those affecting this event
-    const relevantConflicts = conflicts.filter(conflict => {
-      return conflict.conflict.affectedEvents?.some(affectedEvent => 
-        affectedEvent.eventName === event.name ||
-        affectedEvent.projectName === event.projectName
-      );
-    });
+    // Filter conflicts to only those affecting this event's date
+    // Since we're using useProjectStock(projectId), conflicts are already project-scoped
+    const relevantConflicts = conflicts.filter(conflict => 
+      conflict.date === eventDateString
+    );
     
     // Check if conflicts are resolved by virtual stock
     const hasUnresolvedConflicts = relevantConflicts.some(conflict => 
@@ -171,14 +169,14 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
         effectiveStock: conflict.stockBreakdown.effectiveStock,
         totalUsed: conflict.stockBreakdown.totalUsed,
         virtualAdditions: conflict.stockBreakdown.virtualAdditions,
-        conflictingEvents: conflict.conflict.affectedEvents.map(event => ({
-          eventName: event.eventName,
-          projectName: event.projectName,
-          quantity: event.quantity
+        conflictingEvents: conflict.conflict.affectedEvents.map(affectedEvent => ({
+          eventName: affectedEvent.eventName,
+          projectName: affectedEvent.projectName,
+          quantity: affectedEvent.quantity
         }))
       }))
     };
-  }, [eventDateString, event.name, event.projectName, conflicts]);
+  }, [eventDateString, event.name, conflicts]);
   
   // Crew analysis (placeholder - will be integrated into stock engine later)
   const crewAnalysis = useMemo(() => {
@@ -193,14 +191,14 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
       };
     }
     
-    // TODO: Replace with stock engine crew conflicts when available
+    // Phase 6: Replace with stock engine crew conflicts
     const unfilledRoles: any[] = [];
     const nonPreferredRoles: any[] = [];
     
     eventRoles.forEach(role => {
       if (!role.crew_member_id) {
         unfilledRoles.push(role);
-      // TODO: Fix project_roles relationship
+      // Project roles relationship needs database schema fix
       } else if (false) {
         nonPreferredRoles.push(role);
       }
@@ -215,7 +213,7 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
     
     return {
       status,
-      overbookings: [], // TODO: Integrate crew conflicts from stock engine
+      overbookings: [], // Phase 6: Integrate crew conflicts from stock engine
       unfilledRoles,
       nonPreferredRoles,
       unfilledCount: unfilledRoles.length,

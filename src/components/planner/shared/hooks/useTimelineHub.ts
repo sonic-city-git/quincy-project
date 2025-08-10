@@ -386,8 +386,7 @@ export function useTimelineHub({
       const processedBooking = { ...booking };
       
       if (resourceType === 'equipment' && resource) {
-        processedBooking.stock = resource.stock || 0;
-        processedBooking.isOverbooked = processedBooking.totalUsed > processedBooking.stock;
+        // ✅ NO MANUAL CALCULATIONS - data comes from stock engine
         processedBooking.resourceName = resource.name;
         processedBooking.folderPath = resource.folderPath;
       } else if (resourceType === 'crew' && resource) {
@@ -807,24 +806,13 @@ export function useTimelineHub({
       if (!dateStrings?.length) return resource.stock;
       
       // ✅ USE STOCK ENGINE for equipment availability calculation
-      if (timelineStock.getEquipmentStock) {
-        let lowest = resource.stock;
-        dateStrings.forEach(dateStr => {
-          const stockData = timelineStock.getEquipmentStock(resourceId, dateStr);
-          if (stockData) {
-            const available = stockData.effectiveStock - stockData.totalUsed;
-            if (available < lowest) lowest = available;
-          }
-        });
-        return lowest;
-      }
-      
-      // Fallback to manual calculation if engine data not available
       let lowest = resource.stock;
       dateStrings.forEach(dateStr => {
-        const booking = bookingsData?.get(`${resourceId}-${dateStr}`);
-        const available = resource.stock - (booking?.totalUsed || 0);
-        if (available < lowest) lowest = available;
+        const stockData = timelineStock.getEquipmentStock(resourceId, dateStr);
+        if (stockData) {
+          // ✅ USE ENGINE: Direct available property (includes virtual stock)
+          if (stockData.available < lowest) lowest = stockData.available;
+        }
       });
       return lowest;
     } else {

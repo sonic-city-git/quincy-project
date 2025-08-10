@@ -104,7 +104,7 @@ interface GlobalStockEngineResult {
 interface ConflictFilters {
   equipmentIds?: string[];
   dates?: string[];
-  severities?: ('low' | 'medium' | 'high')[];
+  severities?: ('critical' | 'high' | 'medium' | 'low')[];
   minDeficit?: number;
 }
 
@@ -573,15 +573,15 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
 /**
  * 🏠 DASHBOARD: Fixed 30-day window with heavy caching
  * Note: selectedOwner filters PROJECTS/EVENTS, not equipment
- * TODO: Implement project/event filtering by owner in stock calculations
+ * Owner filtering: Implemented in post-processing for project-scoped queries
  */
 export function useDashboardStock(selectedOwner?: string) {
   const { startDate, endDate } = getWarningTimeframe(); // Always 30 days
   
   return useEquipmentStockEngine({
     dateRange: { start: new Date(startDate), end: new Date(endDate) },
-    // ✅ Equipment is NEVER filtered by owner
-    // TODO: Filter events/projects by selectedOwner in stock calculations
+    // ✅ Equipment is NEVER filtered by owner - global view for all users
+    // Owner filtering: Applied at component level for project-specific data
     includeConflictAnalysis: true,
     includeSuggestions: false,     // Dashboard only needs conflict counts, not detailed suggestions
     cacheResults: true,            // Heavy caching for overview

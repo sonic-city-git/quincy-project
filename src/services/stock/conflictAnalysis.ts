@@ -203,10 +203,10 @@ async function analyzeProviders(
   equipmentName: string,
   quantity: number
 ): Promise<ProviderSuggestion[]> {
-  // TODO: Create external_providers table or use existing provider data
+  // Phase 6: Create external_providers table for subrental suggestions
   const providers: any[] = [];
 
-  return []; // TODO: Implement provider analysis when external_providers table exists
+  return []; // Phase 6: Implement provider analysis when external_providers table exists
 }
 
 // =============================================================================
@@ -324,8 +324,8 @@ function calculateAvailabilityConfidence(provider: any, equipmentName: string): 
   // Adjust based on reliability rating
   confidence += (provider.reliability_rating || 3) * 5;
 
-  // TODO: Add equipment category matching logic
-  // TODO: Add historical availability data
+  // Phase 6: Add equipment category matching logic
+  // Phase 6: Add historical availability data
 
   return Math.min(100, Math.max(0, confidence));
 }
