@@ -4,47 +4,44 @@ import { VISUAL, LAYOUT } from '../constants';
 import { EquipmentBookingFlat } from '../types';
 import { formatPlannerTooltip } from '../../../../utils/tooltipFormatters';
 
-// Crew availability color calculation (binary + event type colors)
-const getCrewAvailabilityColor = (booking: any, isCrew: boolean = false) => {
+// Crew color logic
+const getCrewColor = (booking: any) => {
   const { HEATMAP } = VISUAL;
+  const assignments = booking?.bookings || [];
   
-  // Use explicit isCrew flag only - no automatic detection
-  const isCrewData = isCrew;
-  
-  if (isCrewData) {
-    // Crew-specific display logic
-    const assignments = booking?.bookings || [];
-    
-    if (assignments.length === 0) {
-      // Available crew member - subtle grey
-      return {
-        backgroundColor: HEATMAP.COLORS.AVAILABLE_BASE,
-        color: HEATMAP.TEXT_COLORS.LIGHT_GREY // light text on dark background
-      };
-    }
-    
-    if (assignments.length > 1) {
-      // Conflict - crew member assigned to multiple events
-      return {
-        backgroundColor: HEATMAP.COLORS.OVERBOOKED_BASE,
-        color: HEATMAP.TEXT_COLORS.WHITE
-      };
-    }
-    
-    // Single assignment - use event type color
-    const assignment = assignments[0];
-    const eventTypeColor = assignment.eventTypeColor || '#6B7280';
-    
+  if (assignments.length === 0) {
+    // Available crew member - subtle grey
     return {
-      backgroundColor: eventTypeColor,
+      backgroundColor: HEATMAP.COLORS.AVAILABLE_BASE,
+      color: HEATMAP.TEXT_COLORS.LIGHT_GREY
+    };
+  }
+  
+  if (assignments.length > 1) {
+    // Conflict - crew member assigned to multiple events
+    return {
+      backgroundColor: HEATMAP.COLORS.OVERBOOKED_BASE,
       color: HEATMAP.TEXT_COLORS.WHITE
     };
   }
   
-  // Equipment-specific display logic - SIMPLE
-  const available = booking?.available ?? (equipment.stock || 0);
+  // Single assignment - use event type color
+  const assignment = assignments[0];
+  const eventTypeColor = assignment.eventTypeColor || '#6B7280';
   
-  // SIMPLE: Red if negative, Orange if zero, otherwise based on utilization
+  return {
+    backgroundColor: eventTypeColor,
+    color: HEATMAP.TEXT_COLORS.WHITE
+  };
+};
+
+// Equipment color logic - SIMPLE
+const getEquipmentColor = (booking: any, equipment: any) => {
+  const { HEATMAP } = VISUAL;
+  const available = booking?.available ?? (equipment.stock || 0);
+  const baseStock = booking?.stock ?? equipment.stock ?? 0;
+  
+  // SIMPLE: Red if negative
   if (available < 0) {
     return {
       backgroundColor: HEATMAP.COLORS.OVERBOOKED_BASE, // Red
@@ -52,25 +49,10 @@ const getCrewAvailabilityColor = (booking: any, isCrew: boolean = false) => {
     };
   }
   
-  if (available === 0) {
+  // Orange ONLY if we have base stock but available = 0 (all stock used up)
+  if (available === 0 && baseStock > 0) {
     return {
       backgroundColor: '#F97316', // Orange
-      color: HEATMAP.TEXT_COLORS.WHITE
-    };
-  }
-  
-  // Handle edge case: no stock and no usage
-  if (stock === 0 && totalUsed === 0) {
-    return {
-      backgroundColor: HEATMAP.COLORS.NORMAL_DARK_GREY,
-      color: HEATMAP.TEXT_COLORS.LIGHT_GREY
-    };
-  }
-  
-  // If empty (all stock used but not overbooked), use orange
-  if (stock > 0 && totalUsed === stock) {
-    return {
-      backgroundColor: HEATMAP.COLORS.WARNING_ORANGE,
       color: HEATMAP.TEXT_COLORS.WHITE
     };
   }
@@ -115,7 +97,7 @@ const TimelineDayCellComponent = ({
   // Crew assignments data available for rendering
   
   // Calculate styling based on crew vs equipment
-  const heatmapStyle = getCrewAvailabilityColor(booking, isCrew);
+  const heatmapStyle = isCrew ? getCrewColor(booking) : getEquipmentColor(booking, equipment);
   
   // Get display values based on crew vs equipment - ✅ USE ENGINE DATA
   const displayValue = isCrew 
