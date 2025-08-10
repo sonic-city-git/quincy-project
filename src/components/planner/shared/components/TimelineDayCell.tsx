@@ -41,16 +41,20 @@ const getCrewAvailabilityColor = (booking: any, isCrew: boolean = false) => {
     };
   }
   
-  // Equipment-specific display logic - ✅ USE ENGINE DATA (already calculated)
-  const stock = booking?.stock || 0;
-  const totalUsed = booking?.totalUsed || 0;
-  // ✅ Stock engine data is used - booking.isOverbooked is authoritative
+  // Equipment-specific display logic - SIMPLE
+  const available = booking?.available ?? (equipment.stock || 0);
   
-  // CRITICAL: Check overbooked first, regardless of stock level
-  // ✅ USE ENGINE: booking.isOverbooked is calculated by stock engine
-  if (booking?.isOverbooked) {
+  // SIMPLE: Red if negative, Orange if zero, otherwise based on utilization
+  if (available < 0) {
     return {
-      backgroundColor: HEATMAP.COLORS.OVERBOOKED_BASE,
+      backgroundColor: HEATMAP.COLORS.OVERBOOKED_BASE, // Red
+      color: HEATMAP.TEXT_COLORS.WHITE
+    };
+  }
+  
+  if (available === 0) {
+    return {
+      backgroundColor: '#F97316', // Orange
       color: HEATMAP.TEXT_COLORS.WHITE
     };
   }

@@ -46,9 +46,9 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
   const { data: unassignedStats, isLoading: unassignedLoading } = useUnassignedRoles(selectedOwnerId);
   const { data: activeCrewStats, isLoading: activeCrewLoading } = useActiveCrew(selectedOwnerId);
 
-  // DIRECT CALCULATIONS - Key operational metrics only
-  const equipmentOverbookings = conflicts.length; // All equipment overbookings
-  const urgentEquipmentOverbookings = conflicts.filter(c => c.severity === 'high' || c.severity === 'critical').length;
+  // SIMPLE CALCULATIONS - Any overbooking = conflict
+  const equipmentOverbookings = conflicts.length; // Any equipment with available < 0 in next 30 days
+  const urgentEquipmentOverbookings = conflicts.length; // All overbookings are urgent
   const unassignedCount = unassignedStats?.unassigned || 0;
   const activeCrew = activeCrewStats?.activeCrew || 0;
 

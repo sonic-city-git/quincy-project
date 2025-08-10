@@ -40,7 +40,8 @@ export async function analyzeConflicts(
 
   stockData.forEach((dateMap, equipmentId) => {
     dateMap.forEach((stock, date) => {
-      if (stock.isOverbooked) {
+      // SIMPLE: available < 0 = conflict (stock - repairs + subrental - booked < 0)
+      if (stock.available < 0) {
         const analysis = analyzeStockConflict(stock);
         
         // Apply filters if provided
