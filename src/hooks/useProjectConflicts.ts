@@ -85,7 +85,8 @@ export function useProjectConflicts(projectId: string): ProjectConflictResult {
     includeConflictAnalysis: true,
     includeSuggestions: false,     // Project detail doesn't need suggestions yet
     cacheResults: false,           // Less caching (project-specific)
-    batchSize: 50                  // Smaller batches for responsiveness
+    batchSize: 50,                 // Smaller batches for responsiveness
+    cacheStrategy: 'project'       // ✅ FIXED: Apply project caching strategy
   });
 
   // Filter conflicts to only project equipment

@@ -31,7 +31,8 @@ export function useTimelineStock(visibleRange: { start: Date; end: Date }): Time
     includeConflictAnalysis: true,
     includeSuggestions: true,        // Timeline needs suggestions for planning
     cacheResults: false,             // Dynamic range - less caching
-    batchSize: 50                    // Smaller batches for responsiveness
+    batchSize: 50,                   // Smaller batches for responsiveness
+    cacheStrategy: 'timeline'        // ✅ FIXED: Apply timeline caching strategy
   });
 
   // 🚀 OPTIMIZED BOOKING ACCESS with memoization

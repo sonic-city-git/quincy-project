@@ -28,7 +28,8 @@ export function useDashboardConflicts(selectedOwner?: string): DashboardConflict
     includeConflictAnalysis: true,
     includeSuggestions: false,     // Dashboard doesn't need suggestions
     cacheResults: true,            // Heavy caching for dashboard
-    batchSize: 200                 // Larger batches for overview
+    batchSize: 200,                // Larger batches for overview
+    cacheStrategy: 'dashboard'     // ✅ FIXED: Apply dashboard caching strategy
   });
 
   // EFFICIENT: Process conflicts once for both counts and display

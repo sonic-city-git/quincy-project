@@ -30,6 +30,19 @@ import {
   ConflictAnalysis, 
   SubrentalSuggestion 
 } from '@/types/stock';
+import { CACHE_STRATEGIES } from '@/types/stock-optimized';
+
+// =============================================================================
+// CACHE CONFIGURATION HELPER
+// =============================================================================
+
+function getCacheConfig(strategy: string, cacheResults: boolean) {
+  if (!cacheResults) {
+    return { staleTime: 0, gcTime: 1000 }; // Minimal caching
+  }
+  
+  return CACHE_STRATEGIES[strategy] || CACHE_STRATEGIES.timeline;
+}
 
 // =============================================================================
 // GLOBAL ENGINE INTERFACE
@@ -142,7 +155,8 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
     includeConflictAnalysis = true,
     includeSuggestions = false,
     cacheResults = true,
-    batchSize = 100
+    batchSize = 100,
+    cacheStrategy = 'timeline'
   } = config;
   
   const startDate = format(dateRange.start, 'yyyy-MM-dd');
@@ -198,8 +212,8 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
       return equipmentMap;
     },
     enabled: true,
-    staleTime: cacheResults ? 10 * 60 * 1000 : 1 * 60 * 1000, // Configurable caching
-    gcTime: cacheResults ? 30 * 60 * 1000 : 5 * 60 * 1000,
+    staleTime: getCacheConfig(cacheStrategy, cacheResults).staleTime,
+    gcTime: getCacheConfig(cacheStrategy, cacheResults).gcTime,
   });
 
   // ============================================================================
@@ -223,8 +237,8 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
       return result;
     },
     enabled: includeVirtualStock && equipment.size > 0,
-    staleTime: cacheResults ? 5 * 60 * 1000 : 30 * 1000, // Configurable caching
-    gcTime: cacheResults ? 15 * 60 * 1000 : 2 * 60 * 1000,
+    staleTime: getCacheConfig(cacheStrategy, cacheResults).staleTime,
+    gcTime: getCacheConfig(cacheStrategy, cacheResults).gcTime,
   });
 
   // ============================================================================
@@ -251,8 +265,8 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
       // Debug removed
       return isEnabled;
     })(),
-    staleTime: cacheResults ? 3 * 60 * 1000 : 15 * 1000, // Configurable caching
-    gcTime: cacheResults ? 10 * 60 * 1000 : 1 * 60 * 1000,
+    staleTime: getCacheConfig(cacheStrategy, cacheResults).staleTime,
+    gcTime: getCacheConfig(cacheStrategy, cacheResults).gcTime,
   });
 
   // ============================================================================
@@ -270,8 +284,8 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
       return await generateSubrentalSuggestions(conflicts);
     },
     enabled: includeSuggestions && conflicts.length > 0,
-    staleTime: cacheResults ? 5 * 60 * 1000 : 30 * 1000, // Configurable caching
-    gcTime: cacheResults ? 15 * 60 * 1000 : 2 * 60 * 1000,
+    staleTime: getCacheConfig(cacheStrategy, cacheResults).staleTime,
+    gcTime: getCacheConfig(cacheStrategy, cacheResults).gcTime,
   });
 
   // ============================================================================
@@ -345,8 +359,8 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
       return bookingsByKey;
     },
     enabled: equipment.size > 0,
-    staleTime: cacheResults ? 3 * 60 * 1000 : 15 * 1000,
-    gcTime: cacheResults ? 10 * 60 * 1000 : 1 * 60 * 1000,
+    staleTime: getCacheConfig(cacheStrategy, cacheResults).staleTime,
+    gcTime: getCacheConfig(cacheStrategy, cacheResults).gcTime,
   });
 
   // ============================================================================
@@ -597,6 +611,7 @@ export function useGlobalSearchStock(query: string) {
     includeConflictAnalysis: true,
     includeSuggestions: false,     // Search doesn't need suggestions
     cacheResults: true,            // Cache search results
-    batchSize: 20                  // Small batches for quick results
+    batchSize: 20,                 // Small batches for quick results
+    cacheStrategy: 'search'        // ✅ FIXED: Apply search caching strategy
   });
 }
