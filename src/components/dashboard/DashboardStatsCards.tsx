@@ -39,23 +39,30 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
     isLoading: stockLoading,
     error: stockError
   } = useDashboardStock(selectedOwnerId);
+  
+  console.log('🔍 [DASHBOARD] Stock engine result:', {
+    conflictsLength: conflicts?.length || 0,
+    totalConflicts,
+    isLoading: stockLoading,
+    hasError: !!stockError,
+    selectedOwnerId
+  });
 
   // Keep crew/unassigned data (not part of stock engine yet)
   const { data: unassignedStats, isLoading: unassignedLoading } = useUnassignedRoles(selectedOwnerId);
   const { data: activeCrewStats, isLoading: activeCrewLoading } = useActiveCrew(selectedOwnerId);
 
-  // DIRECT CALCULATIONS - No translation needed
-  const equipmentConflicts = conflicts.filter(c => c.conflict.severity !== 'low').length;
-  const urgentConflicts = conflicts.filter(c => c.conflict.severity === 'high').length;
-  const availableSuggestions = suggestions.length;
+  // DIRECT CALCULATIONS - Key operational metrics only
+  const equipmentOverbookings = conflicts.length; // All equipment overbookings
+  const urgentEquipmentOverbookings = conflicts.filter(c => c.severity === 'high' || c.severity === 'critical').length;
   const unassignedCount = unassignedStats?.unassigned || 0;
   const activeCrew = activeCrewStats?.activeCrew || 0;
 
   // System health check
-  const hasIssues = equipmentConflicts > 0 || unassignedCount > 0;
+  const hasIssues = equipmentOverbookings > 0 || unassignedCount > 0;
   const systemStatus = stockError ? 'error' : 
-                      urgentConflicts > 0 ? 'critical' :
-                      equipmentConflicts > 0 ? 'warning' : 'success';
+                      urgentEquipmentOverbookings > 0 ? 'critical' :
+                      equipmentOverbookings > 0 ? 'warning' : 'success';
 
   return (
     <div className="space-y-6">
@@ -73,58 +80,43 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
       )}
 
       {/* Main Operational Metrics */}
-      <StatusCardGrid columns={4}>
+      <StatusCardGrid columns={3}>
         
-        {/* Equipment Conflicts - Virtual Stock Aware */}
+        {/* Equipment Overbookings - Virtual Stock Aware */}
         <StatusCard
-          title="Equipment Conflicts"
-          value={equipmentConflicts}
-          subtitle={equipmentConflicts 
-            ? `${equipmentConflicts} overbookings (${urgentConflicts} urgent) next ${OVERBOOKING_WARNING_DAYS} days` 
-            : `No equipment conflicts next ${OVERBOOKING_WARNING_DAYS} days`}
+          title="Equipment Overbookings"
+          value={equipmentOverbookings}
+          subtitle={equipmentOverbookings 
+            ? `${equipmentOverbookings} overbooked items (${urgentEquipmentOverbookings} urgent) next ${OVERBOOKING_WARNING_DAYS} days` 
+            : `No equipment overbookings next ${OVERBOOKING_WARNING_DAYS} days`}
           icon={AlertTriangle}
-          status={getStatusFromValue(equipmentConflicts, { critical: 1, success: 0 })}
+          status={getStatusFromValue(equipmentOverbookings, { critical: 1, success: 0 })}
           variant="compact"
           loading={stockLoading}
         />
 
-        {/* Subrental Solutions Available */}
+        {/* Crew Overbookings - TODO: Implement crew conflict detection */}
         <StatusCard
-          title="Subrental Solutions"
-          value={availableSuggestions}
-          subtitle={availableSuggestions 
-            ? `${availableSuggestions} subrental options available`
-            : "No subrental suggestions needed"}
-          icon={TrendingUp}
-          status={availableSuggestions > 0 ? "info" : "success"}
+          title="Crew Overbookings"
+          value={0}
+          subtitle="Crew conflict detection coming soon"
+          icon={Users}
+          status="info"
           variant="compact"
-          loading={stockLoading}
+          loading={false}
         />
 
         {/* Unassigned Roles */}
         <StatusCard
-          title="Unassigned Roles"
+          title="Unfilled Roles"
           value={unassignedCount}
           subtitle={unassignedCount 
             ? `${unassignedCount} roles need crew next ${OVERBOOKING_WARNING_DAYS} days` 
-            : `All roles assigned next ${OVERBOOKING_WARNING_DAYS} days`}
+            : `All roles filled next ${OVERBOOKING_WARNING_DAYS} days`}
           icon={UserX}
           status={getStatusFromValue(unassignedCount, { warning: 1, success: 0 })}
           variant="compact"
           loading={unassignedLoading}
-        />
-
-        {/* Active Crew Today */}
-        <StatusCard
-          title="Active Crew Today"
-          value={activeCrew}
-          subtitle={activeCrew 
-            ? `${activeCrew} crew members deployed`
-            : "No active assignments today"}
-          icon={Clock}
-          status="info"
-          variant="compact"
-          loading={activeCrewLoading}
         />
         
       </StatusCardGrid>

@@ -176,87 +176,8 @@ export function useTimelineHub({
     return { resources, resourceById };
   }, []);
 
-  const fetchEquipmentBookings = useCallback(async (expandedIds: string[]) => {
-    const dateStart = format(stableDataRange.start, 'yyyy-MM-dd');
-    const dateEnd = format(stableDataRange.end, 'yyyy-MM-dd');
-    
-    // Get events
-    let eventsQuery = supabase
-      .from('project_events')
-      .select(`
-        id, date, name, project_id,
-        project:projects!inner (name, owner_id)
-      `)
-      .gte('date', dateStart)
-      .lte('date', dateEnd);
-
-    if (selectedOwner) {
-      eventsQuery = eventsQuery.eq('project.owner_id', selectedOwner);
-    }
-
-    const { data: events, error: eventsError } = await eventsQuery;
-    if (eventsError) throw eventsError;
-    if (!events?.length) return new Map();
-
-    // Smart folder: Only fetch if equipment is expanded
-    if (expandedIds.length === 0) {
-      return new Map(); // No expanded folders = no bookings needed
-    }
-
-    // Get equipment bookings - FILTERED to expanded equipment only
-    let equipmentQuery = supabase
-      .from('project_event_equipment')
-      .select('event_id, equipment_id, quantity')
-      .in('event_id', events.map(e => e.id));
-
-    // Apply equipment ID filter for expanded folders only
-    if (expandedIds.length > 0) {
-      equipmentQuery = equipmentQuery.in('equipment_id', expandedIds);
-    }
-
-    const { data: equipmentBookings, error: equipmentError } = await equipmentQuery;
-    if (equipmentError) throw equipmentError;
-
-    // Simplified logging
-    if (process.env.NODE_ENV === 'development' && equipmentBookings?.length) {
-      // Bookings loaded successfully (logging removed)
-    }
-
-    // Transform to booking map
-    const eventMap = new Map(events.map(e => [e.id, e]));
-    const bookingsByKey = new Map();
-    
-    equipmentBookings?.forEach(booking => {
-      const event = eventMap.get(booking.event_id);
-      if (!event) return;
-      
-      const key = `${booking.equipment_id}-${event.date}`;
-      
-      if (!bookingsByKey.has(key)) {
-        bookingsByKey.set(key, {
-          resourceId: booking.equipment_id,
-          resourceName: 'Unknown', // Will be set in processing step
-          date: event.date,
-          stock: 0, // Will be set in processing step
-          bookings: [],
-          totalUsed: 0,
-          isOverbooked: false,
-          folderPath: 'Uncategorized' // Will be set in processing step
-        });
-      }
-      
-      const bookingData = bookingsByKey.get(key);
-      bookingData.bookings.push({
-        quantity: booking.quantity || 0,
-        projectName: event.project.name,
-        eventName: event.name
-      });
-      bookingData.totalUsed += booking.quantity || 0;
-      // isOverbooked will be calculated in processing step when we have stock info
-    });
-
-    return bookingsByKey;
-  }, [stableDataRange, selectedOwner]);
+  // ✅ ELIMINATED: Equipment bookings now come from stock engine
+  // The stock engine provides comprehensive project assignment details
 
   const fetchCrewAssignments = useCallback(async () => {
     const dateStart = format(stableDataRange.start, 'yyyy-MM-dd');
@@ -315,7 +236,47 @@ export function useTimelineHub({
     return assignmentsByKey;
   }, [stableDataRange]);
 
+
+
+  // ✅ USE ONE ENGINE - Define stock engine FIRST before any dependencies
+  const timelineStock = resourceType === 'equipment' && visibleTimelineStart && visibleTimelineEnd 
+    ? useTimelineStock({
+        start: visibleTimelineStart,
+        end: visibleTimelineEnd
+        // ✅ NO OWNER FILTER: Timeline shows ALL equipment across all owners
+      })
+    : { 
+        conflicts: [], 
+        isLoading: false, 
+        getEquipmentStock: () => null,
+        equipment: new Map(),
+        virtualStock: new Map(),
+        suggestions: [],
+        // ✅ ADDED: Timeline data
+        bookings: new Map(),
+        projectUsage: new Map(),
+        // ✅ ADDED: Date range
+        startDate: '',
+        endDate: '',
+        totalConflicts: 0,
+        totalDeficit: 0,
+        affectedEquipmentCount: 0,
+        getConflicts: () => [],
+        getSuggestions: () => [],
+        isOverbooked: () => false,
+        getAvailability: () => 0,
+        // ✅ ADDED: Timeline methods
+        getBooking: () => null,
+        getProjectUsage: () => null,
+        getProjectQuantityForDate: () => null,
+        error: null
+      };
+
+
+
   // RESOURCE DATA (Equipment or Crew)
+  // ✅ FOR EQUIPMENT: Use stock engine data instead of manual fetch
+  // For CREW: Still use manual fetch until crew engine is implemented
   const { data: resourceData, isLoading: isLoadingResources } = useQuery({
     queryKey: [`timeline-${resourceType}`, selectedOwner],
     queryFn: resourceType === 'equipment' ? fetchEquipmentData : fetchCrewData,
@@ -325,15 +286,19 @@ export function useTimelineHub({
     refetchOnWindowFocus: false,
   });
 
+  // ✅ SIMPLIFIED: Always use manual resource data for equipment listing
+  // Stock engine only provides calculations, not equipment listing
+  const mergedResourceData = resourceData;
+
   // EARLY CALCULATION: Get expanded equipment IDs before booking fetch for smart optimization
   const expandedEquipmentIds = useMemo(() => {
-    if (!resourceData?.resources) return [];
+    if (!mergedResourceData?.resources) return [];
     
     const expandedIds: string[] = [];
     const groupsMap = new Map();
     
     // Build groups structure first
-    resourceData.resources.forEach(resource => {
+    mergedResourceData.resources.forEach(resource => {
       const { mainFolder, subFolder } = resource;
       
       if (!groupsMap.has(mainFolder)) {
@@ -386,7 +351,7 @@ export function useTimelineHub({
     // Track expansion state (logging removed)
     
     return expandedIds;
-  }, [resourceData?.resources, expandedGroups]);
+  }, [mergedResourceData?.resources, expandedGroups]);
 
   // SIMPLIFIED BOOKING DATA - Stable query with longer cache times
   const { data: rawBookingsData, isLoading: isLoadingBookings } = useQuery({
@@ -399,7 +364,7 @@ export function useTimelineHub({
       expandedEquipmentIds.length > 0 ? expandedEquipmentIds.sort().join(',') : 'none'
     ],
     queryFn: () => resourceType === 'equipment' 
-      ? fetchEquipmentBookings(expandedEquipmentIds) 
+      ? new Map() // ✅ ELIMINATED: Equipment bookings now come from stock engine
       : fetchCrewAssignments(),
     enabled: enabled && (resourceType === 'crew' || expandedEquipmentIds.length > 0),
     staleTime: 5 * 60 * 1000, // 5 minutes - longer cache
@@ -411,13 +376,13 @@ export function useTimelineHub({
 
   // PROCESS BOOKING DATA - Memoized to prevent recalculation flashing
   const bookingsData = useMemo(() => {
-    if (!rawBookingsData || !resourceData?.resourceById) return rawBookingsData;
+    if (!rawBookingsData || !mergedResourceData?.resourceById) return rawBookingsData;
     
     // Add stock info from resource data
     const processedBookings = new Map();
     
     rawBookingsData.forEach((booking, key) => {
-      const resource = resourceData.resourceById.get(booking.resourceId);
+      const resource = mergedResourceData.resourceById.get(booking.resourceId);
       const processedBooking = { ...booking };
       
       if (resourceType === 'equipment' && resource) {
@@ -436,12 +401,12 @@ export function useTimelineHub({
     });
     
     return processedBookings;
-  }, [rawBookingsData, resourceData?.resourceById, resourceType]);
+  }, [rawBookingsData, mergedResourceData?.resourceById, resourceType]);
 
   // ✅ EQUIPMENT ENGINE INTEGRATION - replaces ALL manual conflict/warning logic
   const equipmentIds = useMemo(() => 
-    resourceData?.resources?.map(r => r.id) || [], 
-    [resourceData]
+    mergedResourceData?.resources?.map(r => r.id) || [], 
+    [mergedResourceData]
   );
   
   const visibleDates = useMemo(() => {
@@ -459,13 +424,7 @@ export function useTimelineHub({
     return dates;
   }, [visibleTimelineStart, visibleTimelineEnd]);
 
-  // ✅ USE ONE ENGINE - replace ALL manual equipment logic
-  const timelineStock = resourceType === 'equipment' && visibleTimelineStart && visibleTimelineEnd 
-    ? useTimelineStock({
-        start: visibleTimelineStart,
-        end: visibleTimelineEnd
-      })
-    : { conflicts: [], isLoading: false };
+  // ✅ timelineStock already defined above - no duplicate needed
   
   // Transform conflicts to warning format for backward compatibility
   const warnings = useMemo(() => {
@@ -549,7 +508,7 @@ export function useTimelineHub({
 
   // GROUPED RESOURCES
   const resourceGroups = useMemo(() => {
-    if (!resourceData?.resources) return [];
+    if (!mergedResourceData?.resources) return [];
 
     const groupsMap = new Map();
     
@@ -577,7 +536,7 @@ export function useTimelineHub({
       });
     }
     
-    resourceData.resources.forEach(resource => {
+    mergedResourceData.resources.forEach(resource => {
       const { mainFolder, subFolder } = resource;
       
       if (!groupsMap.has(mainFolder)) {
@@ -716,10 +675,16 @@ export function useTimelineHub({
         return a.mainFolder.localeCompare(b.mainFolder);
       });
     }
-  }, [resourceData?.resources, expandedGroups, resourceType, shouldShowSubrentalSection, subrentalSuggestions, shouldShowConfirmedSection, confirmedPeriods]);
+  }, [mergedResourceData?.resources, expandedGroups, resourceType, shouldShowSubrentalSection, subrentalSuggestions, shouldShowConfirmedSection, confirmedPeriods]);
 
   // SIMPLIFIED PROJECT USAGE - No complex filtering
+  // ✅ USE ONE ENGINE - Project usage data comes from stock engine for equipment
   const projectUsage = useMemo(() => {
+    if (resourceType === 'equipment' && timelineStock.projectUsage) {
+      return timelineStock.projectUsage;
+    }
+    
+    // Fallback for crew: manual calculation until crew engine is implemented
     if (!bookingsData) return new Map();
 
     const usage = new Map();
@@ -738,7 +703,9 @@ export function useTimelineHub({
       
       const resourceUsage = usage.get(resourceId);
       
-      booking.bookings?.forEach(b => {
+      // For crew, use assignments instead of bookings
+      const assignments = resourceType === 'crew' ? booking.assignments : booking.bookings;
+      assignments?.forEach(b => {
         if (!resourceUsage.projectNames.includes(b.projectName)) {
           resourceUsage.projectNames.push(b.projectName);
         }
@@ -765,59 +732,94 @@ export function useTimelineHub({
     });
 
     return usage;
-  }, [bookingsData, resourceType]);
+  }, [bookingsData, resourceType, timelineStock.projectUsage]);
 
   // FUNCTIONS
   const getBookingForEquipment = useCallback((resourceId: string, dateStr: string) => {
-    if (!resourceData?.resourceById || !bookingsData) return undefined;
+    if (resourceType === 'equipment' && timelineStock.getBooking) {
+      // ✅ USE ONE ENGINE - comprehensive booking data with project details
+      const booking = timelineStock.getBooking(resourceId, dateStr);
+      if (booking) return booking;
+      
+
+      
+      // Fallback: Stock data without project details for equipment without bookings
+      const stockData = timelineStock.getEquipmentStock(resourceId, dateStr);
+      
+
+      
+      if (!stockData) return undefined;
+      
+      return {
+        equipmentId: stockData.equipmentId,
+        equipmentName: stockData.equipmentName,
+        date: stockData.date,
+        stock: stockData.effectiveStock,
+        totalUsed: stockData.totalUsed,
+        isOverbooked: stockData.isOverbooked,
+        folderPath: mergedResourceData?.resourceById?.get(resourceId)?.folderPath || '',
+        bookings: []
+      };
+    }
     
-    const resource = resourceData.resourceById.get(resourceId);
+    // Fallback for crew (will be migrated later)
+    if (!mergedResourceData?.resourceById || !bookingsData) return undefined;
+    
+    const resource = mergedResourceData.resourceById.get(resourceId);
     if (!resource) return undefined;
     
     const booking = bookingsData.get(`${resourceId}-${dateStr}`);
     
-    if (resourceType === 'equipment') {
+    if (resourceType === 'crew') {
       return booking || {
-        equipmentId: resourceId,
-        equipmentName: resource.name,
-        date: dateStr,
-        stock: resource.stock,
-        bookings: [],
-        totalUsed: 0,
-        isOverbooked: false,
-        folderPath: resource.folderPath
-      };
-    } else {
-      return booking ? {
         crewMemberId: resourceId,
         crewMemberName: resource.name,
         date: dateStr,
-        department: resource.department,
-        role: resource.role,
-        bookings: booking.assignments || [], // UI expects 'bookings' not 'assignments'
-        assignments: booking.assignments || [], // Keep for compatibility
-        totalAssignments: booking.totalAssignments || 0,
-        isOverbooked: booking.isOverbooked || false,
-        availability: booking.assignments?.length > 0 ? 'busy' : 'available'
-      } : undefined;
+        bookings: [],
+        totalAssignments: 0,
+        isOverbooked: false,
+        department: resource.department
+      };
     }
-  }, [resourceData, bookingsData, resourceType]);
+    
+    return booking;
+  }, [mergedResourceData?.resourceById, bookingsData, resourceType, timelineStock.getEquipmentStock]);
 
   const getProjectQuantityForDate = useCallback((projectName: string, resourceId: string, dateStr: string) => {
+    if (resourceType === 'equipment' && timelineStock.getProjectQuantityForDate) {
+      // ✅ USE ONE ENGINE - project quantity data from stock engine
+      return timelineStock.getProjectQuantityForDate(projectName, resourceId, dateStr);
+    }
+    
+    // Fallback for crew: manual calculation
     const usage = projectUsage.get(resourceId);
     if (!usage) return undefined;
 
     const projectQuantities = usage.projectQuantities.get(projectName);
     return projectQuantities?.get(dateStr);
-  }, [projectUsage]);
+  }, [projectUsage, resourceType, timelineStock.getProjectQuantityForDate]);
 
   const getLowestAvailable = useCallback((resourceId: string, dateStrings?: string[]) => {
-    const resource = resourceData?.resourceById.get(resourceId);
+    const resource = mergedResourceData?.resourceById.get(resourceId);
     if (!resource) return 0;
 
     if (resourceType === 'equipment') {
       if (!dateStrings?.length) return resource.stock;
       
+      // ✅ USE STOCK ENGINE for equipment availability calculation
+      if (timelineStock.getEquipmentStock) {
+        let lowest = resource.stock;
+        dateStrings.forEach(dateStr => {
+          const stockData = timelineStock.getEquipmentStock(resourceId, dateStr);
+          if (stockData) {
+            const available = stockData.effectiveStock - stockData.totalUsed;
+            if (available < lowest) lowest = available;
+          }
+        });
+        return lowest;
+      }
+      
+      // Fallback to manual calculation if engine data not available
       let lowest = resource.stock;
       dateStrings.forEach(dateStr => {
         const booking = bookingsData?.get(`${resourceId}-${dateStr}`);
@@ -836,7 +838,7 @@ export function useTimelineHub({
       
       return hasAssignments ? 0 : 1;
     }
-  }, [resourceData, bookingsData, resourceType]);
+  }, [mergedResourceData, bookingsData, resourceType, timelineStock.getEquipmentStock]);
 
   // EXPANSION HANDLERS
   const toggleGroup = useCallback((groupKey: string, expandAllSubfolders?: boolean) => {
@@ -872,7 +874,7 @@ export function useTimelineHub({
   // Loading state with flash prevention
   const hasStableData = useRef(false);
   const isLoading = isLoadingResources || isLoadingBookings;
-  const isReady = !!resourceData && !!bookingsData;
+  const isReady = !!mergedResourceData && !!bookingsData;
   
   if (isReady && !isLoading) {
     hasStableData.current = true;
@@ -884,7 +886,7 @@ export function useTimelineHub({
   return {
     // Data
     equipmentGroups: resourceGroups, // Named for compatibility
-    equipmentById: resourceData?.resourceById || new Map(),
+    equipmentById: mergedResourceData?.resourceById || new Map(),
     bookingsData: bookingsData || new Map(),
     expandedGroups,
     expandedEquipment: expandedResources,
@@ -903,7 +905,7 @@ export function useTimelineHub({
     
     // State
     isLoading: shouldShowLoading,
-    isEquipmentReady: !!resourceData,
+    isEquipmentReady: !!mergedResourceData,
     isBookingsReady: !!bookingsData,
     
     // Functions

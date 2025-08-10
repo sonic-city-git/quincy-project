@@ -20,6 +20,7 @@ import { addDays, format, parseISO } from 'date-fns';
 
 /**
  * Calculate effective stock for specific equipment on specific date
+ * Calculates: Stock - Equipment Booked + Subrental - Repairs = Actual Available
  */
 export async function calculateEffectiveStock(
   equipmentId: string, 
@@ -55,6 +56,7 @@ export async function calculateEffectiveStock(
 
 /**
  * Batch calculate effective stock for multiple equipment over date range
+ * Calculates: Stock - Equipment Booked + Subrental - Repairs = Actual Available
  */
 export async function calculateBatchEffectiveStock(
   equipmentIds: string[],
@@ -66,6 +68,7 @@ export async function calculateBatchEffectiveStock(
   }
 
   // Use the optimized database function for batch calculations
+  // This gives us: baseStock + virtualAdditions - virtualReductions = effectiveStock
   const { data: stockData, error } = await supabase.rpc(
     'get_equipment_virtual_stock',
     {
@@ -245,6 +248,7 @@ async function getVirtualReductions(equipmentId: string, date: string): Promise<
 
 /**
  * Get total usage from project bookings
+ * Simple: just get all equipment usage from non-cancelled events
  */
 async function getTotalUsed(equipmentId: string, date: string): Promise<number> {
   const { data, error } = await supabase
@@ -252,11 +256,13 @@ async function getTotalUsed(equipmentId: string, date: string): Promise<number> 
     .select(`
       quantity,
       project_events!inner (
-        date
+        date,
+        status
       )
     `)
     .eq('equipment_id', equipmentId)
-    .eq('project_events.date', date);
+    .eq('project_events.date', date)
+    .neq('project_events.status', 'cancelled'); // ✅ Exclude cancelled events
 
   if (error) {
     console.error('Error fetching total used:', error);
@@ -268,6 +274,7 @@ async function getTotalUsed(equipmentId: string, date: string): Promise<number> 
 
 /**
  * Batch get total usage for multiple equipment/dates
+ * Simple: just get all equipment usage from non-cancelled events
  */
 async function getBatchTotalUsed(
   equipmentIds: string[],
@@ -280,12 +287,14 @@ async function getBatchTotalUsed(
       equipment_id,
       quantity,
       project_events!inner (
-        date
+        date,
+        status
       )
     `)
     .in('equipment_id', equipmentIds)
     .gte('project_events.date', startDate)
-    .lte('project_events.date', endDate);
+    .lte('project_events.date', endDate)
+    .neq('project_events.status', 'cancelled'); // ✅ Exclude cancelled events
 
   if (error) {
     console.error('Error fetching batch total used:', error);
@@ -400,13 +409,15 @@ async function getBookingDetails(
         id,
         name,
         date,
+        status,
         projects!inner (
           name
         )
       )
     `)
     .eq('equipment_id', equipmentId)
-    .eq('project_events.date', date);
+    .eq('project_events.date', date)
+    .neq('project_events.status', 'cancelled'); // ✅ FIXED: Exclude cancelled events
 
   if (error) {
     console.error('Error fetching booking details:', error);

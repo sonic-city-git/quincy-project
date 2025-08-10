@@ -24,17 +24,16 @@ interface EquipmentConflictsProps {
 
 export function EquipmentConflicts({ ownerId }: EquipmentConflictsProps) {
   
-  // ONE ENGINE - Direct access to conflict data
+  // ONE ENGINE - Direct access to conflict data (Dashboard focus: counts only)
   const {
     conflicts,
-    suggestions,
     isLoading,
     error
   } = useDashboardStock(ownerId);
   
   // Show only actionable conflicts (medium/high severity)
   const displayConflicts = conflicts
-    .filter(c => c.conflict.severity !== 'low')
+    .filter(c => c.severity !== 'low')
     .slice(0, 5); // Limit to 5 most critical
 
   if (isLoading) {
@@ -79,11 +78,11 @@ export function EquipmentConflicts({ ownerId }: EquipmentConflictsProps) {
       {displayConflicts.map((conflict) => (
         <Alert 
           key={`${conflict.equipmentId}-${conflict.date}`} 
-          variant={conflict.conflict.severity === 'high' ? 'destructive' : 'default'}
-          className={conflict.conflict.severity === 'high' ? '' : 'border-yellow-200 bg-yellow-50/10'}
+          variant={conflict.severity === 'high' || conflict.severity === 'critical' ? 'destructive' : 'default'}
+          className={conflict.severity === 'high' || conflict.severity === 'critical' ? '' : 'border-yellow-200 bg-yellow-50/10'}
         >
           <AlertTriangle className={`h-4 w-4 ${
-            conflict.conflict.severity === 'high' ? 'text-red-500' : 'text-yellow-500'
+            conflict.severity === 'high' || conflict.severity === 'critical' ? 'text-red-500' : 'text-yellow-500'
           }`} />
           <AlertDescription>
             <div className="space-y-1">
@@ -112,10 +111,10 @@ export function EquipmentConflicts({ ownerId }: EquipmentConflictsProps) {
                 ).join(' • ')}
               </div>
               
-              {/* Suggestions Available */}
-              {conflict.conflict.suggestedActions.length > 0 && (
+              {/* Potential Solutions Count (Dashboard overview) */}
+              {conflict.conflict.potentialSolutions.length > 0 && (
                 <div className="text-xs text-blue-600">
-                  💡 {conflict.conflict.suggestedActions.length} solution(s) available
+                  💡 {conflict.conflict.potentialSolutions.length} solution(s) available
                 </div>
               )}
               
@@ -127,8 +126,7 @@ export function EquipmentConflicts({ ownerId }: EquipmentConflictsProps) {
       {/* Summary Footer */}
       {conflicts.length > displayConflicts.length && (
         <div className="text-xs text-center text-muted-foreground pt-2 border-t">
-          Showing {displayConflicts.length} of {conflicts.length} conflicts
-          {suggestions.length > 0 && ` • ${suggestions.length} subrental solutions available`}
+          Showing {displayConflicts.length} of {conflicts.length} total conflicts
         </div>
       )}
       

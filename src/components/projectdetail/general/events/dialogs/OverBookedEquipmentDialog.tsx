@@ -19,7 +19,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CalendarEvent } from '@/types/events';
-// ❌ DELETED: useSubrentalManagement - replaced by future subrental orders system
 import { useExternalProviders } from '@/hooks/equipment/useExternalProviders';
 import {
   Select,
@@ -67,8 +66,8 @@ export function OverBookedEquipmentDialog({
     });
   };
 
-  // Subrental management
-  const { mutate: markAsSubrental } = useSubrentalManagement();
+  // TODO: Future subrental orders system will replace this
+  // const { mutate: markAsSubrental } = useSubrentalManagement();
   const { data: providers = [], isLoading: providersLoading } = useExternalProviders();
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null);
   const [subrentalCost, setSubrentalCost] = useState<string>('');

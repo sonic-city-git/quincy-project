@@ -35,12 +35,51 @@ import {
 // GLOBAL ENGINE INTERFACE
 // =============================================================================
 
+// Timeline-specific data structures
+interface EquipmentBooking {
+  equipmentId: string;
+  equipmentName: string;
+  date: string;
+  stock: number;
+  totalUsed: number;
+  isOverbooked: boolean;
+  folderPath: string;
+  bookings: Array<{
+    id: string;
+    quantity: number;
+    projectName: string;
+    eventName: string;
+    eventType: string;
+    eventTypeColor: string;
+    location?: string;
+  }>;
+}
+
+interface EquipmentProjectUsage {
+  equipmentId: string;
+  projectNames: string[];
+  projectQuantities: Map<string, Map<string, {
+    date: string;
+    quantity: number;
+    eventName: string;
+    projectName: string;
+  }>>;
+}
+
 interface GlobalStockEngineResult {
   // CORE DATA - Same for everyone
   equipment: Map<string, any>; // equipmentId -> equipment data
   virtualStock: Map<string, Map<string, EffectiveStock>>; // equipmentId -> date -> stock
   conflicts: ConflictAnalysis[];
   suggestions: SubrentalSuggestion[];
+  
+  // TIMELINE DATA - Project assignments and bookings
+  bookings: Map<string, EquipmentBooking>; // "equipmentId-date" -> booking details
+  projectUsage: Map<string, EquipmentProjectUsage>; // equipmentId -> project usage
+  
+  // DATE RANGE - For Timeline debugging and validation
+  startDate: string;
+  endDate: string;
   
   // SUMMARY DATA
   totalConflicts: number;
@@ -49,6 +88,9 @@ interface GlobalStockEngineResult {
   
   // UNIVERSAL METHODS - Every component uses these
   getEquipmentStock: (equipmentId: string, date: string) => EffectiveStock | null;
+  getBooking: (equipmentId: string, date: string) => EquipmentBooking | null;
+  getProjectUsage: (equipmentId: string) => EquipmentProjectUsage | null;
+  getProjectQuantityForDate: (projectName: string, equipmentId: string, date: string) => { date: string; quantity: number; eventName: string; projectName: string } | null;
   getConflicts: (filters?: ConflictFilters) => ConflictAnalysis[];
   getSuggestions: (filters?: SuggestionFilters) => SubrentalSuggestion[];
   isOverbooked: (equipmentId: string, date: string, additionalUsage?: number) => boolean;
@@ -80,11 +122,6 @@ interface EquipmentEngineConfig {
   // REQUIRED: Each component defines its date needs
   dateRange: { start: Date; end: Date };
   
-  // OPTIONAL: Scope filtering
-  equipmentIds?: string[];
-  selectedOwner?: string;
-  folderPaths?: string[];
-  
   // OPTIONAL: Feature flags
   includeVirtualStock?: boolean;
   includeConflictAnalysis?: boolean;
@@ -98,9 +135,6 @@ interface EquipmentEngineConfig {
 export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalStockEngineResult {
   const {
     dateRange,
-    equipmentIds,
-    selectedOwner,
-    folderPaths,
     includeVirtualStock = true,
     includeConflictAnalysis = true,
     includeSuggestions = false,
@@ -115,37 +149,49 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
   // EQUIPMENT DATA - Global for entire app
   // ============================================================================
   
+  // ============================================================================
+  // EQUIPMENT DATA - ALWAYS GLOBAL, NEVER FILTERED
+  // All users see all equipment and all problems at all times
+  // ============================================================================
+  
   const { 
     data: equipment = new Map(), 
     isLoading: isLoadingEquipment 
   } = useQuery({
-    queryKey: ['equipment-filtered', equipmentIds, selectedOwner, folderPaths],
+    queryKey: ['equipment-global'], // ✅ FIXED: Global cache key, no filters
     queryFn: async () => {
-      let query = supabase
-        .from('equipment')
-        .select('id, name, stock, folder_id, rental_price')
-        .order('name');
+      // ✅ ALWAYS load ALL equipment with folder information
+      const [equipmentResult, foldersResult] = await Promise.all([
+        supabase.from('equipment')
+          .select('id, name, stock, folder_id, rental_price')
+          .order('name'),
+        supabase.from('equipment_folders')
+          .select('*')
+      ]);
       
-      // Filter by specific equipment IDs if provided
-      if (equipmentIds && equipmentIds.length > 0) {
-        query = query.in('id', equipmentIds);
-      }
+      if (equipmentResult.error) throw equipmentResult.error;
+      if (foldersResult.error) throw foldersResult.error;
       
-      // Filter by owner if provided  
-      if (selectedOwner) {
-        query = query.eq('owner_id', selectedOwner);
-      }
-      
-      // TODO: Add folder filtering when needed
-      // if (folderPaths && folderPaths.length > 0) {
-      //   query = query.in('folder_path', folderPaths);
-      // }
-      
-      const { data, error } = await query;
-      if (error) throw error;
+      // Build folder map for folder path calculation
+      const folderMap = new Map(foldersResult.data?.map(f => [f.id, f]) || []);
       
       const equipmentMap = new Map();
-      data?.forEach(item => equipmentMap.set(item.id, item));
+      (equipmentResult.data || []).forEach(item => {
+        const folder = folderMap.get(item.folder_id);
+        const parentFolder = folder?.parent_id ? folderMap.get(folder.parent_id) : null;
+        
+        const mainFolder = parentFolder?.name || folder?.name || 'Uncategorized';
+        const subFolder = folder?.parent_id ? folder.name : undefined;
+        const folderPath = subFolder ? `${mainFolder}/${subFolder}` : mainFolder;
+        
+        equipmentMap.set(item.id, {
+          ...item,
+          folderPath,
+          mainFolder,
+          subFolder
+        });
+      });
+      
       return equipmentMap;
     },
     enabled: true,
@@ -169,7 +215,9 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
       const filteredEquipmentIds = Array.from(equipment.keys());
       if (filteredEquipmentIds.length === 0) return new Map();
       
-      return await calculateBatchEffectiveStock(filteredEquipmentIds, startDate, endDate);
+      const result = await calculateBatchEffectiveStock(filteredEquipmentIds, startDate, endDate);
+      
+      return result;
     },
     enabled: includeVirtualStock && equipment.size > 0,
     staleTime: cacheResults ? 5 * 60 * 1000 : 30 * 1000, // Configurable caching
@@ -191,7 +239,7 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
       const filteredEquipmentIds = Array.from(equipment.keys());
       if (filteredEquipmentIds.length === 0) return [];
       
-      return await analyzeConflicts(filteredEquipmentIds, startDate, endDate);
+      return await analyzeConflicts(filteredEquipmentIds, startDate, endDate); // ✅ Simplified
     },
     enabled: includeConflictAnalysis && equipment.size > 0,
     staleTime: cacheResults ? 3 * 60 * 1000 : 15 * 1000, // Configurable caching
@@ -210,12 +258,135 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
     queryFn: async () => {
       if (!includeSuggestions || conflicts.length === 0) return [];
       
-      return await generateSubrentalSuggestions(conflicts, startDate, endDate);
+      return await generateSubrentalSuggestions(conflicts);
     },
     enabled: includeSuggestions && conflicts.length > 0,
     staleTime: cacheResults ? 5 * 60 * 1000 : 30 * 1000, // Configurable caching
     gcTime: cacheResults ? 15 * 60 * 1000 : 2 * 60 * 1000,
   });
+
+  // ============================================================================
+  // PROJECT BOOKINGS - Equipment assignment details for Timeline
+  // ============================================================================
+  
+  const { 
+    data: rawBookings = new Map(), 
+    isLoading: isLoadingBookings 
+  } = useQuery({
+    queryKey: ['project-bookings', Array.from(equipment.keys()), startDate, endDate],
+    queryFn: async () => {
+      const equipmentIds = Array.from(equipment.keys());
+      
+      
+      if (equipmentIds.length === 0) return new Map();
+      
+      const { data: eventEquipment, error } = await supabase
+        .from('project_event_equipment')
+        .select(`
+          id, equipment_id, quantity,
+          project_events!inner(name, date, location, projects(name), event_types(name, color))
+        `)
+        .gte('project_events.date', startDate)
+        .lte('project_events.date', endDate)
+        .neq('project_events.status', 'cancelled')
+        .in('equipment_id', equipmentIds);
+
+      if (error) throw error;
+
+
+
+      const bookingsByKey = new Map();
+      
+      eventEquipment?.forEach(booking => {
+        if (!booking.equipment_id || !booking.project_events) return;
+        
+        const key = `${booking.equipment_id}-${booking.project_events.date}`;
+        
+        if (!bookingsByKey.has(key)) {
+          const equipmentData = equipment.get(booking.equipment_id);
+          bookingsByKey.set(key, {
+            equipmentId: booking.equipment_id,
+            equipmentName: equipmentData?.name || 'Unknown',
+            date: booking.project_events.date,
+            stock: equipmentData?.stock || 0,
+            totalUsed: 0,
+            isOverbooked: false,
+            folderPath: equipmentData?.folderPath || 'Unknown',
+            bookings: []
+          });
+        }
+        
+        const bookingData = bookingsByKey.get(key);
+        const eventTypeColor = booking.project_events.event_types?.color || '#6B7280';
+        const eventTypeName = booking.project_events.event_types?.name || 'Unknown';
+        
+        bookingData.bookings.push({
+          id: booking.id,
+          quantity: booking.quantity || 0,
+          projectName: booking.project_events.projects?.name || 'Unknown',
+          eventName: booking.project_events.name || 'Unknown',
+          eventType: eventTypeName,
+          eventTypeColor: eventTypeColor,
+          location: booking.project_events.location
+        });
+        
+        bookingData.totalUsed += booking.quantity || 0;
+      });
+
+      return bookingsByKey;
+    },
+    enabled: equipment.size > 0,
+    staleTime: cacheResults ? 3 * 60 * 1000 : 15 * 1000,
+    gcTime: cacheResults ? 10 * 60 * 1000 : 1 * 60 * 1000,
+  });
+
+  // ============================================================================
+  // PROJECT USAGE - Equipment project usage summary for Timeline expansion
+  // ============================================================================
+  
+  const projectUsage = useMemo(() => {
+    const usage = new Map();
+    
+    rawBookings.forEach((booking, key) => {
+      const equipmentId = booking.equipmentId;
+      
+      if (!usage.has(equipmentId)) {
+        usage.set(equipmentId, {
+          equipmentId,
+          projectNames: [],
+          projectQuantities: new Map()
+        });
+      }
+      
+      const equipmentUsage = usage.get(equipmentId);
+      
+      booking.bookings?.forEach(b => {
+        if (!equipmentUsage.projectNames.includes(b.projectName)) {
+          equipmentUsage.projectNames.push(b.projectName);
+        }
+        
+        if (!equipmentUsage.projectQuantities.has(b.projectName)) {
+          equipmentUsage.projectQuantities.set(b.projectName, new Map());
+        }
+        
+        const projectQuantities = equipmentUsage.projectQuantities.get(b.projectName);
+        const existing = projectQuantities.get(booking.date);
+        
+        if (existing) {
+          existing.quantity += b.quantity;
+        } else {
+          projectQuantities.set(booking.date, {
+            date: booking.date,
+            quantity: b.quantity,
+            eventName: b.eventName,
+            projectName: b.projectName
+          });
+        }
+      });
+    });
+
+    return usage;
+  }, [rawBookings]);
 
   // ============================================================================
   // UNIVERSAL METHODS - Same logic for all components
@@ -228,6 +399,29 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
     }, 
     [virtualStock]
   );
+
+  // ============================================================================
+  // ENHANCED BOOKINGS - Merge stock calculations with project details  
+  // ============================================================================
+  
+  const bookings = useMemo(() => {
+    const enhanced = new Map();
+    
+    // Add bookings with stock calculations
+    rawBookings.forEach((booking, key) => {
+      const [equipmentId, date] = key.split('-');
+      const stockData = getEquipmentStock(equipmentId, date);
+      
+      enhanced.set(key, {
+        ...booking,
+        stock: stockData?.effectiveStock || booking.stock,
+        totalUsed: stockData?.totalUsed || booking.totalUsed,
+        isOverbooked: stockData?.isOverbooked || false
+      });
+    });
+    
+    return enhanced;
+  }, [rawBookings, getEquipmentStock]);
 
   const getConflicts = useMemo(() => 
     (filters?: ConflictFilters): ConflictAnalysis[] => {
@@ -242,7 +436,7 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
       }
       
       if (filters?.severities?.length) {
-        filtered = filtered.filter(c => filters.severities!.includes(c.conflict.severity));
+        filtered = filtered.filter(c => filters.severities!.includes(c.severity));
       }
       
       if (filters?.minDeficit) {
@@ -267,7 +461,7 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
       }
       
       if (filters?.minQuantity) {
-        filtered = filtered.filter(s => s.requiredQuantity >= filters.minQuantity!);
+        filtered = filtered.filter(s => s.deficit >= filters.minQuantity!);
       }
       
       return filtered;
@@ -293,6 +487,32 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
     [getEquipmentStock]
   );
 
+  const getBooking = useMemo(() => 
+    (equipmentId: string, date: string): EquipmentBooking | null => {
+      const key = `${equipmentId}-${date}`;
+      return bookings.get(key) || null;
+    }, 
+    [bookings]
+  );
+
+  const getProjectUsage = useMemo(() => 
+    (equipmentId: string): EquipmentProjectUsage | null => {
+      return projectUsage.get(equipmentId) || null;
+    }, 
+    [projectUsage]
+  );
+
+  const getProjectQuantityForDate = useMemo(() => 
+    (projectName: string, equipmentId: string, date: string) => {
+      const usage = projectUsage.get(equipmentId);
+      if (!usage) return null;
+      
+      const projectQuantities = usage.projectQuantities.get(projectName);
+      return projectQuantities?.get(date) || null;
+    }, 
+    [projectUsage]
+  );
+
   // ============================================================================
   // SUMMARY DATA
   // ============================================================================
@@ -305,8 +525,10 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
   // LOADING & ERROR STATE
   // ============================================================================
 
-  const isLoading = isLoadingEquipment || isLoadingStock || isLoadingConflicts || isLoadingSuggestions;
+  const isLoading = isLoadingEquipment || isLoadingStock || isLoadingConflicts || isLoadingSuggestions || isLoadingBookings;
   const error = stockError;
+  
+
 
   return {
     // Core data
@@ -315,6 +537,14 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
     conflicts,
     suggestions,
     
+    // Timeline data
+    bookings,
+    projectUsage,
+    
+    // Date range
+    startDate,
+    endDate,
+    
     // Summary
     totalConflicts,
     totalDeficit,
@@ -322,6 +552,9 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
     
     // Universal methods
     getEquipmentStock,
+    getBooking,
+    getProjectUsage,
+    getProjectQuantityForDate,
     getConflicts,
     getSuggestions,
     isOverbooked,
@@ -339,42 +572,92 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
 
 /**
  * 🏠 DASHBOARD: Fixed 30-day window with heavy caching
+ * Note: selectedOwner filters PROJECTS/EVENTS, not equipment
+ * TODO: Implement project/event filtering by owner in stock calculations
  */
 export function useDashboardStock(selectedOwner?: string) {
   const { startDate, endDate } = getWarningTimeframe(); // Always 30 days
   
   return useEquipmentStockEngine({
     dateRange: { start: new Date(startDate), end: new Date(endDate) },
-    selectedOwner,
+    // ✅ Equipment is NEVER filtered by owner
+    // TODO: Filter events/projects by selectedOwner in stock calculations
     includeConflictAnalysis: true,
-    includeSuggestions: false,     // Dashboard doesn't need suggestions
+    includeSuggestions: false,     // Dashboard only needs conflict counts, not detailed suggestions
     cacheResults: true,            // Heavy caching for overview
     batchSize: 200                 // Large batches for overview
   });
 }
 
 /**
- * Timeline view - uses global engine with timeline-specific helpers
+ * 📅 TIMELINE/PLANNER: Shows ALL equipment across all owners
+ * - No owner filtering (global view)
+ * - Dynamic date range (user scrolling)
+ * - Includes suggestions for subrental analysis
  */
 export function useTimelineStock(visibleRange: { start: Date; end: Date }) {
   return useEquipmentStockEngine({
-    dateRange: visibleRange,       // User-controlled scrolling range
+    dateRange: visibleRange,
+    // ✅ NO FILTERS: Timeline shows ALL equipment for global planning view
     includeConflictAnalysis: true,
-    includeSuggestions: true,      // Timeline shows suggestions
-    cacheResults: false,           // Less caching (range changes frequently)
-    batchSize: 50                  // Small batches for responsiveness
+    includeSuggestions: true,             // Timeline shows suggestions
+    cacheResults: false,                  // Less caching (range changes frequently)
+    batchSize: 50                         // Small batches for responsiveness
   });
 }
 
 /**
- * Project view - uses global engine with project-specific filters
+ * Project view - uses global engine with project-specific date range
  */
 export function useProjectStock(projectId: string) {
-  // TODO: Get project date range from projectId
-  const { startDate, endDate } = getWarningTimeframe(); // Temporary fallback
+  // Get project-specific date range from actual events
+  const { data: projectDates } = useQuery({
+    queryKey: ['project-date-range', projectId],
+    queryFn: async () => {
+      if (!projectId) throw new Error('Project ID required');
+      
+      const { data, error } = await supabase
+        .from('project_events')
+        .select('date')
+        .eq('project_id', projectId)
+        .neq('status', 'cancelled')    // ✅ FIXED: Exclude cancelled events
+        .order('date');
+      
+      if (error) throw error;
+      if (!data?.length) {
+        // No events - use 30-day window as fallback
+        const { startDate, endDate } = getWarningTimeframe();
+        return { start: startDate, end: endDate };
+      }
+      
+      // Get actual project event range with buffer
+      const dates = data.map(e => e.date).sort();
+      const firstDate = new Date(dates[0]);
+      const lastDate = new Date(dates[dates.length - 1]);
+      
+      // Add 7-day buffer on each side for context
+      const start = new Date(firstDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const end = new Date(lastDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+      
+      return {
+        start: start.toISOString().split('T')[0],
+        end: end.toISOString().split('T')[0]
+      };
+    },
+    enabled: !!projectId,
+    staleTime: 5 * 60 * 1000, // 5 minutes - events don't change often
+  });
+  
+  const dateRange = projectDates ? {
+    start: new Date(projectDates.start),
+    end: new Date(projectDates.end)
+  } : {
+    start: new Date(),
+    end: new Date()
+  };
   
   return useEquipmentStockEngine({
-    dateRange: { start: new Date(startDate), end: new Date(endDate) }, // Will be project-specific
+    dateRange,                     // ✅ FIXED: Project-specific date range
     includeConflictAnalysis: true,
     includeSuggestions: true,      // Projects need subrental suggestions
     cacheResults: true,            // Moderate caching

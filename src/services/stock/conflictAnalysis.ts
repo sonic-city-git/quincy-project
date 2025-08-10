@@ -24,6 +24,7 @@ import { differenceInDays, parseISO } from 'date-fns';
 
 /**
  * Analyze conflicts for multiple equipment over date range
+ * Shows ACTUAL remaining problems after subrentals and repairs
  */
 export async function analyzeConflicts(
   equipmentIds: string[],
@@ -32,6 +33,7 @@ export async function analyzeConflicts(
   filters?: ConflictFilters
 ): Promise<ConflictAnalysis[]> {
   // Get effective stock for all equipment/dates
+  // This already includes: Stock + Subrental - Repairs - Equipment Booked
   const stockData = await calculateBatchEffectiveStock(equipmentIds, startDate, endDate);
   
   const conflicts: ConflictAnalysis[] = [];
@@ -201,24 +203,10 @@ async function analyzeProviders(
   equipmentName: string,
   quantity: number
 ): Promise<ProviderSuggestion[]> {
-  const { data: providers, error } = await supabase
-    .from('external_providers')
-    .select('*')
-    .order('reliability_rating', { ascending: false });
+  // TODO: Create external_providers table or use existing provider data
+  const providers: any[] = [];
 
-  if (error) {
-    console.error('Error fetching providers:', error);
-    return [];
-  }
-
-  return providers?.map(provider => ({
-    providerId: provider.id,
-    providerName: provider.company_name,
-    reliabilityRating: provider.reliability_rating || 0,
-    estimatedCost: estimateProviderCost(provider, quantity),
-    geographicMatch: true, // TODO: Implement geographic matching
-    availabilityConfidence: calculateAvailabilityConfidence(provider, equipmentName)
-  })).slice(0, 3) || []; // Top 3 providers
+  return []; // TODO: Implement provider analysis when external_providers table exists
 }
 
 // =============================================================================

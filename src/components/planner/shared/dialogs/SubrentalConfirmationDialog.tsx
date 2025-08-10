@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { SubrentalSuggestion, ExternalProvider } from '@/types/equipment';
-// ❌ DELETED: useSubrentalManagement - replaced by future subrental orders system
+// TODO: Future subrental orders system will replace this
 import { toast } from 'sonner';
 
 interface SubrentalConfirmationDialogProps {
@@ -44,7 +44,8 @@ export function SubrentalConfirmationDialog({
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const subrentalMutation = useSubrentalManagement();
+  // TODO: Future subrental orders system will replace this
+  // const subrentalMutation = useSubrentalManagement();
 
   // Initialize form when suggestion changes
   useEffect(() => {

@@ -5,6 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useCallback, useState } from 'react';
+import { useStockCacheInvalidation } from '@/hooks/useStockCacheInvalidation';
 import {
   VariantEquipmentGroup,
   VariantEquipmentItem,
@@ -48,6 +49,8 @@ export function useVariantEquipment(projectId: string, variantId: string) {
 
   // === CACHE MANAGEMENT ===
   
+  const { invalidateProjectStock } = useStockCacheInvalidation();
+  
   const invalidateEquipmentCache = useCallback(async () => {
     console.log('🔄 [useVariantEquipment] Invalidating caches for:', { projectId, variantId });
     await Promise.all([
@@ -62,10 +65,12 @@ export function useVariantEquipment(projectId: string, variantId: string) {
       }),
       queryClient.invalidateQueries({
         queryKey: ['project-event-equipment', projectId]
-      })
+      }),
+      // ✅ NEW: Invalidate stock engine caches when equipment changes
+      invalidateProjectStock(projectId)
     ]);
     console.log('✅ [useVariantEquipment] Cache invalidation complete');
-  }, [queryClient, projectId, variantId]);
+  }, [queryClient, projectId, variantId, invalidateProjectStock]);
 
   // === DATA FETCHING ===
 

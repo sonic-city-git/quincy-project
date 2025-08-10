@@ -41,14 +41,14 @@ const getCrewAvailabilityColor = (booking: any, isCrew: boolean = false) => {
     };
   }
   
-  // Equipment-specific display logic
+  // Equipment-specific display logic - ✅ USE ENGINE DATA (already calculated)
   const stock = booking?.stock || 0;
   const totalUsed = booking?.totalUsed || 0;
-  const available = stock - totalUsed; // Always calculate properly, even when stock is 0
+  const available = stock - totalUsed; // This data comes from stock engine now
   
   // CRITICAL: Check overbooked first, regardless of stock level
   // This handles cases where stock is 0 but totalUsed > 0
-  if (available < 0) {
+  if (booking?.isOverbooked || available < 0) {
     return {
       backgroundColor: HEATMAP.COLORS.OVERBOOKED_BASE,
       color: HEATMAP.TEXT_COLORS.WHITE
@@ -106,19 +106,36 @@ const TimelineDayCellComponent = ({
   // Use optimized function instead of direct Map access
   const booking = getBookingForEquipment(equipment.id, dateInfo.dateStr);
   
+  // Debug: Check what booking data looks like
+  if (equipment.name === 'A&H dLive CDM48' && dateInfo.dateStr === '2025-08-10') {
+    console.log('🔍 [DAY CELL] Sample booking data:', {
+      equipmentName: equipment.name,
+      date: dateInfo.dateStr,
+      hasBooking: !!booking,
+      bookingStructure: booking ? {
+        stock: booking.stock,
+        totalUsed: booking.totalUsed,
+        isOverbooked: booking.isOverbooked,
+        hasBookingsArray: !!booking.bookings,
+        bookingsCount: booking.bookings?.length || 0,
+        sampleBooking: booking.bookings?.[0]
+      } : null
+    });
+  }
+  
   // Crew assignments data available for rendering
   
   // Calculate styling based on crew vs equipment
   const heatmapStyle = getCrewAvailabilityColor(booking, isCrew);
   
-  // Get display values based on crew vs equipment
+  // Get display values based on crew vs equipment - ✅ USE ENGINE DATA
   const displayValue = isCrew 
     ? (booking?.bookings?.length > 0 ? booking.bookings.length : '') 
     : (booking ? booking.stock - booking.totalUsed : equipment.stock || 0);
     
   const isConflict = isCrew 
     ? (booking?.bookings?.length > 1) 
-    : (booking ? booking.stock - booking.totalUsed < 0 : false);
+    : (booking?.isOverbooked || false); // ✅ USE ENGINE isOverbooked calculation
   
   // Generate simple tooltip
   const tooltipText = formatPlannerTooltip({

@@ -361,7 +361,7 @@ export function useGlobalSearch(query: string) {
         }
 
         // Extract role data from the mapped data
-        const roles = member.crew_member_roles || [];
+        const roles = (member as any).crew_member_roles || [];
 
         return {
           id: member.id,

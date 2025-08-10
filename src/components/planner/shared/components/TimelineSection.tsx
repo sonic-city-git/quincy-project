@@ -217,6 +217,20 @@ const TimelineSectionComponent = ({
           const isEquipmentExpanded = expandedEquipment.has(equipment.id);
           const equipmentUsage = equipmentProjectUsage.get(equipment.id);
           
+          // Debug: Check if usage data exists for this equipment
+          if (equipment.name === 'A&H dLive CDM48') {
+            console.log('🔍 [TIMELINE SECTION] CDM48 usage check:', {
+              equipmentId: equipment.id,
+              equipmentName: equipment.name,
+              hasUsage: !!equipmentUsage,
+              projectNamesCount: equipmentUsage?.projectNames?.length || 0,
+              projectNames: equipmentUsage?.projectNames,
+              isExpanded: isEquipmentExpanded,
+              totalUsageMapSize: equipmentProjectUsage.size,
+              willShowProjectRows: !isUnfilledRolesSection && isEquipmentExpanded && equipmentUsage && equipmentUsage.projectNames.length > 0
+            });
+          }
+          
           return (
             <div key={equipment.id}>
               {/* Main equipment row */}
