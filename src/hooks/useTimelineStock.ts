@@ -21,6 +21,7 @@ export function useTimelineStock(visibleRange: { start: Date; end: Date }): Time
     suggestions,
     bookings: rawBookings,
     getBooking: engineGetBooking,
+    getEquipmentStock: engineGetEquipmentStock,
     getAvailability: engineGetAvailability,
     isOverbooked: engineIsOverbooked,
     isLoading,
@@ -37,6 +38,10 @@ export function useTimelineStock(visibleRange: { start: Date; end: Date }): Time
   const getBooking = useCallback((equipmentId: string, date: string): EquipmentBooking | null => {
     return engineGetBooking(equipmentId, date);
   }, [engineGetBooking]);
+
+  const getEquipmentStock = useCallback((equipmentId: string, date: string) => {
+    return engineGetEquipmentStock(equipmentId, date);
+  }, [engineGetEquipmentStock]);
 
   const getAvailability = useCallback((equipmentId: string, date: string): number => {
     return engineGetAvailability(equipmentId, date);
@@ -83,7 +88,8 @@ export function useTimelineStock(visibleRange: { start: Date; end: Date }): Time
   } : null;
 
   return {
-    // Core booking access
+    // Core stock access (FIXED: Added missing method)
+    getEquipmentStock,
     getBooking,
     getAvailability,
     isOverbooked,

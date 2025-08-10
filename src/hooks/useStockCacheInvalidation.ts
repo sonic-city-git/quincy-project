@@ -12,57 +12,49 @@ export function useStockCacheInvalidation() {
   const queryClient = useQueryClient();
 
   /**
-   * Invalidate all stock engine caches for a specific project
-   * Call this when:
-   * - Adding/removing equipment to variants
-   * - Adding/removing/changing dates of events
-   * - Changing event status (especially to/from cancelled)
-   * - Adding/removing crew roles
-   * - Any project resource changes
+   * 🚀 FIXED: Invalidate all stock engine caches for a specific project
+   * Uses CORRECT cache keys from the optimized system
    */
   const invalidateProjectStock = useCallback(async (projectId: string) => {
     console.log('🔄 [StockCache] Invalidating project stock caches for:', projectId);
     
     await Promise.all([
-      // ✅ Project date range cache (affects which dates to analyze)
+      // ✅ Project scope cache (new optimized system)
       queryClient.invalidateQueries({ 
-        queryKey: ['project-date-range', projectId] 
+        queryKey: ['project-scope', projectId] 
       }),
       
-      // ✅ Equipment filter cache (affects which equipment to analyze)
+      // ✅ CORRECT: Equipment global cache
       queryClient.invalidateQueries({ 
-        queryKey: ['equipment-filtered'] 
+        queryKey: ['equipment-global'] 
       }),
       
-      // ✅ Virtual stock calculations (core stock engine data)
+      // ✅ CORRECT: Virtual stock with dynamic params (invalidate all variations)
       queryClient.invalidateQueries({ 
         queryKey: ['virtual-stock'] 
       }),
       
-      // ✅ Conflict analysis (overbooking detection)
+      // ✅ CORRECT: Conflicts with dynamic params
       queryClient.invalidateQueries({ 
         queryKey: ['conflicts'] 
       }),
       
-      // ✅ Subrental suggestions (based on conflicts)
+      // ✅ CORRECT: Suggestions cache
       queryClient.invalidateQueries({ 
         queryKey: ['suggestions'] 
       }),
       
-      // ✅ Event operational status (per-event conflict data)
+      // ✅ CORRECT: Project bookings cache  
+      queryClient.invalidateQueries({ 
+        queryKey: ['project-bookings'] 
+      }),
+      
+      // ✅ Event operational status
       queryClient.invalidateQueries({ 
         queryKey: ['event-equipment'] 
       }),
       queryClient.invalidateQueries({ 
         queryKey: ['event-roles'] 
-      }),
-      
-      // ✅ PLANNER: Timeline cache invalidation 
-      queryClient.invalidateQueries({
-        queryKey: ['timeline-equipment']
-      }),
-      queryClient.invalidateQueries({
-        queryKey: ['timeline-equipment-bookings']
       }),
     ]);
     
@@ -80,32 +72,29 @@ export function useStockCacheInvalidation() {
     console.log('🔄 [StockCache] Invalidating global stock caches');
     
     await Promise.all([
-      // ✅ All equipment data
+      // ✅ CORRECT: Global equipment cache
       queryClient.invalidateQueries({ 
-        queryKey: ['equipment-filtered'] 
+        queryKey: ['equipment-global'] 
       }),
       
-      // ✅ All virtual stock calculations
+      // ✅ CORRECT: All virtual stock variations
       queryClient.invalidateQueries({ 
         queryKey: ['virtual-stock'] 
       }),
       
-      // ✅ All conflict analysis
+      // ✅ CORRECT: All conflict variations
       queryClient.invalidateQueries({ 
         queryKey: ['conflicts'] 
       }),
       
-      // ✅ All suggestions
+      // ✅ CORRECT: All suggestions
       queryClient.invalidateQueries({ 
         queryKey: ['suggestions'] 
       }),
       
-      // ✅ PLANNER: All timeline caches
+      // ✅ CORRECT: Project bookings
       queryClient.invalidateQueries({
-        queryKey: ['timeline-equipment']
-      }),
-      queryClient.invalidateQueries({
-        queryKey: ['timeline-equipment-bookings']
+        queryKey: ['project-bookings']
       }),
     ]);
     

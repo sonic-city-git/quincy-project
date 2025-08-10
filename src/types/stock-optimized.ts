@@ -69,6 +69,31 @@ export interface SearchStockResult {
 }
 
 // =============================================================================
+// TIMELINE OPTIMIZED INTERFACE
+// =============================================================================
+
+export interface TimelineStockResult {
+  // Core stock access
+  getEquipmentStock: (equipmentId: string, date: string) => any | null;
+  getBooking: (equipmentId: string, date: string) => any | null;
+  getAvailability: (equipmentId: string, date: string) => number;
+  isOverbooked: (equipmentId: string, date: string) => boolean;
+  
+  // Batch data
+  bookings: Map<string, any>;
+  conflicts: any[];
+  suggestions: any[];
+  
+  // Performance helpers
+  getBookingsForDateRange: (equipmentId: string, startDate: string, endDate: string) => any[];
+  preloadEquipmentData: (equipmentIds: string[]) => Promise<void>;
+  
+  // Status
+  isLoading: boolean;
+  error: EngineError | null;
+}
+
+// =============================================================================
 // SUPPORTING TYPES
 // =============================================================================
 
