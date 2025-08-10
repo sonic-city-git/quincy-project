@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent } from '@/components/ui/card';
 import { SubrentalSuggestion, ExternalProvider } from '@/types/equipment';
-import { useSubrentalManagement } from '@/hooks/equipment/useSubrentalManagement';
+// ❌ DELETED: useSubrentalManagement - replaced by future subrental orders system
 import { toast } from 'sonner';
 
 interface SubrentalConfirmationDialogProps {

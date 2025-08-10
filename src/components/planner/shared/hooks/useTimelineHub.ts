@@ -490,63 +490,27 @@ export function useTimelineHub({
     }
   }, [resourceType, timelineStock.conflicts]);
 
-  // ALL EQUIPMENT OVERBOOKINGS (for subrental analysis - independent of folder expansion)
-  const { data: allEquipmentOverbookings } = useQuery({
-    queryKey: [
-      'all-equipment-overbookings',
-      format(stableDataRange.start, 'yyyy-MM-dd'),
-      format(stableDataRange.end, 'yyyy-MM-dd'),
-      selectedOwner
-    ],
-    queryFn: async () => {
-      if (resourceType !== 'equipment') return [];
-      
-      // Get ALL equipment IDs, not just expanded ones
-      const allEquipmentIds = resourceData?.resources?.map(r => r.id) || [];
-      if (allEquipmentIds.length === 0) return [];
-      
-      return fetchEquipmentBookings(allEquipmentIds);
-    },
-    enabled: enabled && resourceType === 'equipment' && !!resourceData?.resources,
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000,
-  });
+  // ✅ ELIMINATED: Manual equipment bookings calculation - using ONE ENGINE now
 
-  // GLOBAL WARNINGS (30-day window) - For subrental suggestions using ALL equipment data
+  // ✅ GLOBAL WARNINGS - Using engine conflicts (for subrental analysis)
   const globalWarnings = useMemo(() => {
-    if (!allEquipmentOverbookings || !resourceData || resourceType !== 'equipment') return [];
+    if (resourceType !== 'equipment') return [];
     
-    const today = new Date();
-    const warningEnd = addDays(today, OVERBOOKING_WARNING_DAYS);
-    
-    const warningsList = [];
-    
-    Array.from(allEquipmentOverbookings.values()).forEach(booking => {
-      const bookingDate = new Date(booking.date);
-      if (bookingDate < today || bookingDate > warningEnd) return;
-      
-      const resource = resourceData.resourceById.get(booking.resourceId);
-      if (!resource) return;
-
-      if (booking.isOverbooked) {
-        warningsList.push({
-          resourceId: booking.resourceId,
-          resourceName: resource.name,
-          date: booking.date,
-          type: 'overbooked',
-          severity: booking.totalUsed > (resource.stock * 1.5) ? 'high' : 'medium',
-          details: {
-            stock: resource.stock,
-            used: booking.totalUsed,
-            overbooked: booking.totalUsed - resource.stock,
-            events: booking.bookings
-          }
-        });
+    // Use timelineStock conflicts as global warnings
+    return timelineStock.conflicts.map(conflict => ({
+      resourceId: conflict.equipmentId,
+      resourceName: conflict.equipmentName,
+      date: conflict.date,
+      type: 'overbooked',
+      severity: conflict.conflict.deficit > 5 ? 'high' : 'medium',
+      details: {
+        stock: conflict.stockBreakdown.effectiveStock,
+        used: conflict.stockBreakdown.totalUsed,
+        overbooked: conflict.conflict.deficit,
+        events: conflict.conflict.affectedEvents || []
       }
-    });
-
-    return warningsList;
-  }, [allEquipmentOverbookings, resourceData, resourceType]);
+    }));
+  }, [resourceType, timelineStock.conflicts]);
 
   // SUBRENTAL SUGGESTIONS - TODO: Integrate with ONE ENGINE later
   // For now, return empty data to prevent timeline errors

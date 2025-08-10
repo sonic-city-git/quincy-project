@@ -19,7 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CalendarEvent } from '@/types/events';
-import { useSubrentalManagement } from '@/hooks/equipment/useSubrentalManagement';
+// ❌ DELETED: useSubrentalManagement - replaced by future subrental orders system
 import { useExternalProviders } from '@/hooks/equipment/useExternalProviders';
 import {
   Select,
