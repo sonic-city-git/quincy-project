@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/utils/priceFormatters";
 import { getWarningTimeframe, OVERBOOKING_WARNING_DAYS } from "@/constants/timeframes";
+import { useGlobalSearchStock } from "@/hooks/useEquipmentStockEngine";
 
 export interface SearchResult {
   id: string;
@@ -34,6 +35,8 @@ export interface GlobalSearchResults {
 }
 
 export function useGlobalSearch(query: string) {
+  // ✅ USE GLOBAL SEARCH STOCK ENGINE for equipment conflicts
+  const { conflicts } = useGlobalSearchStock(query);
   return useQuery({
     queryKey: ['global-search', query],
     queryFn: async (): Promise<GlobalSearchResults> => {

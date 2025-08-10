@@ -95,11 +95,13 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
       : new Date(event.date).toISOString().split('T')[0];
   }, [event.date]);
 
+  // Get project ID for this event  
+  const projectId = event.project?.id || '';
+  
   const {
-    hasConflicts,
     conflicts,
     isLoading: stockLoading
-  } = useProjectStock(eventEquipment || [], [eventDateString]);
+  } = useProjectStock(projectId);
   
   // Get detailed event role assignments for crew analysis
   const { data: eventRoles, isLoading: rolesLoading, error } = useQuery({

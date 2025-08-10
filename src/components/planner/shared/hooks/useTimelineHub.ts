@@ -20,8 +20,8 @@ import { OVERBOOKING_WARNING_DAYS, getWarningTimeframe } from '@/constants/timef
 import { usePersistentExpandedGroups } from '@/hooks/ui';
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/types/equipment';
 import { PERFORMANCE } from '../constants';
-// ✅ NEW: Using ONE ENGINE via timeline wrapper
-import { useTimelineEquipmentEngine, useTimelineCrewEngine } from '@/hooks/timeline/useTimelineEquipmentEngine';
+// ✅ NEW: Using ONE ENGINE directly via page wrapper
+import { useTimelineStock } from '@/hooks/useEquipmentStockEngine';
 import { useConfirmedSubrentals } from '@/hooks/equipment/useConfirmedSubrentals';
 
 interface UseTimelineHubProps {
@@ -459,18 +459,36 @@ export function useTimelineHub({
     return dates;
   }, [visibleTimelineStart, visibleTimelineEnd]);
 
-  // USE ONE ENGINE for equipment conflicts/warnings
-  const equipmentEngine = useTimelineEquipmentEngine(equipmentIds, visibleDates);
-  const crewEngine = useTimelineCrewEngine([], []); // Placeholder for crew
+  // ✅ USE ONE ENGINE - replace ALL manual equipment logic
+  const timelineStock = resourceType === 'equipment' && visibleTimelineStart && visibleTimelineEnd 
+    ? useTimelineStock({
+        start: visibleTimelineStart,
+        end: visibleTimelineEnd
+      })
+    : { conflicts: [], isLoading: false };
   
-  // UNIFIED WARNINGS using ENGINE data (no manual calculations!)
+  // Transform conflicts to warning format for backward compatibility
   const warnings = useMemo(() => {
     if (resourceType === 'equipment') {
-      return equipmentEngine.warnings;
+      return timelineStock.conflicts.map(conflict => ({
+        resourceId: conflict.equipmentId,
+        resourceName: conflict.equipmentName,
+        date: conflict.date,
+        type: conflict.conflict.deficit > 0 ? 'overbooked' : 'resolved',
+        severity: conflict.conflict.deficit > 5 ? 'high' : 'medium',
+        details: {
+          stock: conflict.stockBreakdown.effectiveStock,
+          used: conflict.stockBreakdown.totalUsed,
+          overbooked: conflict.conflict.deficit,
+          virtualAdditions: conflict.stockBreakdown.virtualAdditions,
+          events: conflict.conflict.affectedEvents || []
+        }
+      }));
     } else {
-      return crewEngine.warnings;
+      // Crew logic remains separate (for now)
+      return [];
     }
-  }, [resourceType, equipmentEngine.warnings, crewEngine.warnings]);
+  }, [resourceType, timelineStock.conflicts]);
 
   // ALL EQUIPMENT OVERBOOKINGS (for subrental analysis - independent of folder expansion)
   const { data: allEquipmentOverbookings } = useQuery({
