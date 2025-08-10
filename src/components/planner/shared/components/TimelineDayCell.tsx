@@ -116,7 +116,7 @@ const TimelineDayCellComponent = ({
   // Get display values based on crew vs equipment - ✅ USE ENGINE DATA
   const displayValue = isCrew 
     ? (booking?.bookings?.length > 0 ? booking.bookings.length : '') 
-    : (booking?.stock !== undefined ? Math.max(0, booking.stock - booking.totalUsed) : equipment.stock || 0);
+    : (booking?.available !== undefined ? booking.available : equipment.stock || 0);
     
   const isConflict = isCrew 
     ? (booking?.bookings?.length > 1) 

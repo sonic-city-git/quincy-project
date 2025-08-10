@@ -755,6 +755,7 @@ export function useTimelineHub({
         date: stockData.date,
         stock: stockData.effectiveStock,
         totalUsed: stockData.totalUsed,
+        available: stockData.available, // ✅ ADD: Include available from stock engine
         isOverbooked: stockData.isOverbooked,
         folderPath: mergedResourceData?.resourceById?.get(resourceId)?.folderPath || '',
         bookings: []

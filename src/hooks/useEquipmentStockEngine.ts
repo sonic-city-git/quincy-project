@@ -416,6 +416,7 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
         ...booking,
         stock: stockData?.effectiveStock || booking.stock,
         totalUsed: stockData?.totalUsed || booking.totalUsed,
+        available: stockData?.available ?? (booking.stock - booking.totalUsed), // ✅ ADD: Include available (can be negative)
         isOverbooked: stockData?.isOverbooked || false
       });
     });
