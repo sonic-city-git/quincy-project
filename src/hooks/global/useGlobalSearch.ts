@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatPrice } from "@/utils/priceFormatters";
 import { getWarningTimeframe, OVERBOOKING_WARNING_DAYS } from "@/constants/timeframes";
 import { useGlobalSearchStock } from "@/hooks/useEquipmentStockEngine";
+import { useGlobalSearchCrew } from "@/hooks/useCrewEngine";
 
 export interface SearchResult {
   id: string;
@@ -35,8 +36,9 @@ export interface GlobalSearchResults {
 }
 
 export function useGlobalSearch(query: string) {
-  // ✅ USE GLOBAL SEARCH STOCK ENGINE for equipment conflicts
+  // ✅ USE GLOBAL SEARCH ENGINES for both equipment and crew conflicts
   const { conflicts } = useGlobalSearchStock(query);
+  const { conflicts: crewConflicts } = useGlobalSearchCrew(query);
   return useQuery({
     queryKey: ['global-search', query],
     queryFn: async (): Promise<GlobalSearchResults> => {
@@ -153,45 +155,14 @@ export function useGlobalSearch(query: string) {
       const crewEventIds = eventsForCrew?.map(e => e.id) || [];
       const crewEventDateMap = new Map(eventsForCrew?.map(e => [e.id, e.date]) || []);
 
-      // Check for crew double-bookings in parallel
-      const crewWithConflicts = await Promise.all(
-        crewDataWithRoles.map(async (member) => {
-          try {
-            if (crewEventIds.length === 0) {
-              return { ...member, conflictDays: 0 };
-            }
-
-            // Get all assignments for this crew member in the timeframe
-            const { data: assignments, error: assignmentError } = await supabase
-              .from('project_event_roles')
-              .select('event_id')
-              .eq('crew_member_id', member.id)
-              .in('event_id', crewEventIds);
-
-            if (assignmentError) {
-              console.error('Error fetching assignments for crew:', member.name, assignmentError);
-              return { ...member, conflictDays: 0 };
-            }
-
-            // Group assignments by date to detect conflicts
-            const assignmentsByDate = new Map<string, number>();
-            (assignments || []).forEach(assignment => {
-              const date = crewEventDateMap.get(assignment.event_id);
-              if (date) {
-                assignmentsByDate.set(date, (assignmentsByDate.get(date) || 0) + 1);
-              }
-            });
-
-            // Count days with conflicts (multiple assignments same day)
-            const conflictDays = Array.from(assignmentsByDate.values()).filter(count => count > 1).length;
-            
-            return { ...member, conflictDays };
-          } catch (error) {
-            console.error('Error checking conflicts for crew:', member.name, error);
-            return { ...member, conflictDays: 0 };
-          }
-        })
-      );
+      // ✅ USE CREW ENGINE - Get conflict data from crew engine
+      const crewWithConflicts = crewDataWithRoles.map(member => {
+        // Find conflicts for this crew member from crew engine
+        const memberConflicts = crewConflicts.filter(conflict => conflict.crewMemberId === member.id);
+        const conflictDays = memberConflicts.length;
+        
+        return { ...member, conflictDays };
+      });
 
       // Search equipment - basic search first
       const { data: equipmentData, error: equipmentError } = await supabase

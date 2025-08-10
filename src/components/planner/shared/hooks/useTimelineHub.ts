@@ -22,6 +22,7 @@ import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/types/equipment';
 import { PERFORMANCE } from '../constants';
 // ✅ NEW: Using ONE ENGINE directly via page wrapper
 import { useTimelineStock } from '@/hooks/useTimelineStock';
+import { useTimelineCrew } from '@/hooks/useCrewEngine';
 import { useConfirmedSubrentals } from '@/hooks/equipment/useConfirmedSubrentals';
 
 interface UseTimelineHubProps {
@@ -187,7 +188,7 @@ export function useTimelineHub({
       .from('project_event_roles')
       .select(`
         id, crew_member_id, role_id, daily_rate, hourly_rate,
-        project_events(name, date, location, projects(name), event_types(name, color)),
+        project_events(name, date, location, projects(name), event_types(name, color, needs_crew, needs_equipment)),
         crew_members(name),
         crew_roles(name)
       `)
@@ -238,7 +239,7 @@ export function useTimelineHub({
 
 
 
-  // ✅ USE ONE ENGINE - Define stock engine FIRST before any dependencies
+  // ✅ USE ONE ENGINE - Define engines FIRST before any dependencies
   const timelineStock = resourceType === 'equipment' && visibleTimelineStart && visibleTimelineEnd 
     ? useTimelineStock({
         start: visibleTimelineStart,
@@ -266,11 +267,34 @@ export function useTimelineHub({
         error: null
       };
 
+  // ✅ USE CREW ENGINE - Simplified crew assignment tracking
+  const timelineCrew = resourceType === 'crew' && visibleTimelineStart && visibleTimelineEnd 
+    ? useTimelineCrew({
+        start: visibleTimelineStart,
+        end: visibleTimelineEnd
+      })
+    : {
+        // Core crew access - proper fallback methods
+        crew: new Map(),
+        getAssignment: () => null,
+        isOverbooked: () => false,
+        isAvailable: () => true,
+        
+        // Batch data
+        assignments: new Map(),
+        conflicts: [],
+        unfilledRoles: [],
+        
+        // Status
+        isLoading: false,
+        error: null
+      };
+
 
 
   // RESOURCE DATA (Equipment or Crew)
   // ✅ FOR EQUIPMENT: Use stock engine data instead of manual fetch
-  // For CREW: Still use manual fetch until crew engine is implemented
+  // ✅ FOR CREW: Use crew engine data instead of manual fetch
   const { data: resourceData, isLoading: isLoadingResources } = useQuery({
     queryKey: [`timeline-${resourceType}`, selectedOwner],
     queryFn: resourceType === 'equipment' ? fetchEquipmentData : fetchCrewData,
@@ -280,9 +304,53 @@ export function useTimelineHub({
     refetchOnWindowFocus: false,
   });
 
-  // ✅ SIMPLIFIED: Always use manual resource data for equipment listing
-  // Stock engine only provides calculations, not equipment listing
-  const mergedResourceData = resourceData;
+  // ✅ MERGE ENGINE DATA: Combine manual resource listing with engine data
+  const mergedResourceData = useMemo(() => {
+    if (!resourceData) return resourceData;
+    
+    if (resourceType === 'crew' && timelineCrew.crew.size > 0) {
+      // Transform crew engine data to match expected interface
+      const crewArray = Array.from(timelineCrew.crew.values());
+      const crewById = new Map();
+      
+      // Build resourceById map with proper interface
+      crewArray.forEach(member => {
+        crewById.set(member.id, {
+          id: member.id,
+          name: member.name,
+          email: member.email,
+          phone: member.phone,
+          folderName: member.folderName,
+          roles: member.roles,
+          avatar_url: member.avatar_url
+        });
+      });
+      
+      return {
+        resources: crewArray.map(member => ({
+          id: member.id,
+          name: member.name,
+          role: member.roles?.[0] || 'Crew Member',
+          roles: member.roles || [],
+          department: member.folderName || 'Unassigned',
+          level: 'mid' as const,
+          availability: 'available' as const,
+          hourlyRate: 75,
+          skills: [],
+          contactInfo: {
+            email: member.email || undefined,
+            phone: member.phone || undefined
+          },
+          avatarUrl: member.avatar_url,
+          mainFolder: member.folderName || 'Unassigned',
+          folderPath: member.folderName || 'Unassigned'
+        })),
+        resourceById: crewById
+      };
+    }
+    
+    return resourceData;
+  }, [resourceData, resourceType, timelineCrew.crew]);
 
   // EARLY CALCULATION: Get expanded equipment IDs before booking fetch for smart optimization
   const expandedEquipmentIds = useMemo(() => {
@@ -347,26 +415,17 @@ export function useTimelineHub({
     return expandedIds;
   }, [mergedResourceData?.resources, expandedGroups]);
 
-  // SIMPLIFIED BOOKING DATA - Stable query with longer cache times
-  const { data: rawBookingsData, isLoading: isLoadingBookings } = useQuery({
-    queryKey: [
-      `timeline-${resourceType}-bookings`,
-      format(stableDataRange.start, 'yyyy-MM-dd'),
-      format(stableDataRange.end, 'yyyy-MM-dd'),
-      selectedOwner,
-      // Stable expanded equipment key - only changes when folders expand/collapse
-      expandedEquipmentIds.length > 0 ? expandedEquipmentIds.sort().join(',') : 'none'
-    ],
-    queryFn: () => resourceType === 'equipment' 
-      ? new Map() // ✅ ELIMINATED: Equipment bookings now come from stock engine
-      : fetchCrewAssignments(),
-    enabled: enabled && (resourceType === 'crew' || expandedEquipmentIds.length > 0),
-    staleTime: 5 * 60 * 1000, // 5 minutes - longer cache
-    gcTime: 15 * 60 * 1000, // 15 minutes - keep in memory longer
-    placeholderData: (previousData) => previousData,
-    refetchOnWindowFocus: false,
-    refetchInterval: false,
-  });
+  // ✅ ELIMINATED: Manual crew booking queries - now use crew engine
+  const rawBookingsData = useMemo(() => {
+    if (resourceType === 'equipment') {
+      return new Map(); // Equipment bookings come from stock engine
+    } else {
+      // Transform crew engine assignments to booking format for compatibility
+      return timelineCrew.assignments;
+    }
+  }, [resourceType, timelineCrew.assignments]);
+  
+  const isLoadingBookings = resourceType === 'crew' ? timelineCrew.isLoading : false;
 
   // PROCESS BOOKING DATA - Memoized to prevent recalculation flashing
   const bookingsData = useMemo(() => {
@@ -437,32 +496,59 @@ export function useTimelineHub({
         }
       }));
     } else {
-      // Crew logic remains separate (for now)
-      return [];
+      // ✅ USE CREW ENGINE - simplified crew conflicts
+      return timelineCrew.conflicts.map(conflict => ({
+        resourceId: conflict.crewMemberId,
+        resourceName: conflict.crewMemberName,
+        date: conflict.date,
+        type: 'overbooked',
+        severity: conflict.assignmentCount > 2 ? 'high' : 'medium',
+        details: {
+          assignmentCount: conflict.assignmentCount,
+          conflictingEvents: conflict.conflictingAssignments.map(a => ({
+            eventName: a.eventName,
+            projectName: a.projectName,
+            roleName: a.roleName
+          }))
+        }
+      }));
     }
-  }, [resourceType, timelineStock.conflicts]);
+  }, [resourceType, timelineStock.conflicts, timelineCrew.conflicts]);
 
   // ✅ ELIMINATED: Manual equipment bookings calculation - using ONE ENGINE now
 
-  // ✅ GLOBAL WARNINGS - Using engine conflicts (for subrental analysis)
+  // ✅ GLOBAL WARNINGS - Using engine conflicts 
   const globalWarnings = useMemo(() => {
-    if (resourceType !== 'equipment') return [];
-    
-    // Use timelineStock conflicts as global warnings
-    return timelineStock.conflicts.map(conflict => ({
-      resourceId: conflict.equipmentId,
-      resourceName: conflict.equipmentName,
-      date: conflict.date,
-      type: 'overbooked',
-      severity: conflict.conflict.deficit > 5 ? 'high' : 'medium',
-      details: {
-        stock: conflict.stockBreakdown.effectiveStock,
-        used: conflict.stockBreakdown.totalUsed,
-        overbooked: conflict.conflict.deficit,
-        events: conflict.conflict.affectedEvents || []
-      }
-    }));
-  }, [resourceType, timelineStock.conflicts]);
+    if (resourceType === 'equipment') {
+      // Use timelineStock conflicts as global warnings
+      return timelineStock.conflicts.map(conflict => ({
+        resourceId: conflict.equipmentId,
+        resourceName: conflict.equipmentName,
+        date: conflict.date,
+        type: 'overbooked',
+        severity: conflict.conflict.deficit > 5 ? 'high' : 'medium',
+        details: {
+          stock: conflict.stockBreakdown.effectiveStock,
+          used: conflict.stockBreakdown.totalUsed,
+          overbooked: conflict.conflict.deficit,
+          events: conflict.conflict.affectedEvents || []
+        }
+      }));
+    } else {
+      // ✅ USE CREW ENGINE - simplified global crew warnings
+      return timelineCrew.conflicts.map(conflict => ({
+        resourceId: conflict.crewMemberId,
+        resourceName: conflict.crewMemberName,
+        date: conflict.date,
+        type: 'overbooked',
+        severity: conflict.assignmentCount > 2 ? 'high' : 'medium',
+        details: {
+          assignmentCount: conflict.assignmentCount,
+          events: conflict.conflictingAssignments || []
+        }
+      }));
+    }
+  }, [resourceType, timelineStock.conflicts, timelineCrew.conflicts]);
 
   // SUBRENTAL SUGGESTIONS - TODO: Integrate with ONE ENGINE later
   // For now, return empty data to prevent timeline errors
@@ -670,7 +756,7 @@ export function useTimelineHub({
     }
   }, [mergedResourceData?.resources, expandedGroups, resourceType, shouldShowSubrentalSection, subrentalSuggestions, shouldShowConfirmedSection, confirmedPeriods]);
 
-  // ✅ PROJECT USAGE - Use stock engine data for equipment, manual for crew
+  // ✅ PROJECT USAGE - Use engine data for both equipment and crew
   const projectUsage = useMemo(() => {
     if (resourceType === 'equipment') {
       // ✅ FIXED: Return stock engine projectUsage data for equipment project assignments
@@ -720,53 +806,50 @@ export function useTimelineHub({
       })() : new Map();
     }
     
-    // Crew: manual calculation until crew engine is implemented
-    if (!bookingsData) return new Map();
-
+    // ✅ CREW: Use crew engine assignment data
     const usage = new Map();
     
-    Array.from(bookingsData.values()).forEach(booking => {
-      const resourceId = booking.resourceId;
+    timelineCrew.assignments.forEach((assignment, key) => {
+      const crewId = assignment.crewMemberId;
       
-      if (!usage.has(resourceId)) {
-        usage.set(resourceId, {
-          resourceId,
+      if (!usage.has(crewId)) {
+        usage.set(crewId, {
+          resourceId: crewId,
           projectNames: [],
           projectQuantities: new Map()
         });
       }
       
-      const resourceUsage = usage.get(resourceId);
-      const assignments = booking.assignments || [];
+      const crewUsage = usage.get(crewId);
       
-      assignments.forEach(assignment => {
-        if (!resourceUsage.projectNames.includes(assignment.projectName)) {
-          resourceUsage.projectNames.push(assignment.projectName);
+      assignment.assignments.forEach(a => {
+        if (!crewUsage.projectNames.includes(a.projectName)) {
+          crewUsage.projectNames.push(a.projectName);
         }
         
-        if (!resourceUsage.projectQuantities.has(assignment.projectName)) {
-          resourceUsage.projectQuantities.set(assignment.projectName, new Map());
+        if (!crewUsage.projectQuantities.has(a.projectName)) {
+          crewUsage.projectQuantities.set(a.projectName, new Map());
         }
         
-        const projectQuantities = resourceUsage.projectQuantities.get(assignment.projectName);
-        const existing = projectQuantities.get(booking.date);
+        const projectQuantities = crewUsage.projectQuantities.get(a.projectName);
+        const existing = projectQuantities.get(assignment.date);
         
         if (existing) {
-          existing.quantity += 1;
+          existing.quantity += 1; // Crew is always 1 per assignment
         } else {
-          projectQuantities.set(booking.date, {
-            date: booking.date,
+          projectQuantities.set(assignment.date, {
+            date: assignment.date,
             quantity: 1,
-            eventName: assignment.eventName,
-            projectName: assignment.projectName,
-            role: assignment.role
+            eventName: a.eventName,
+            projectName: a.projectName,
+            role: a.roleName
           });
         }
       });
     });
 
     return usage;
-  }, [bookingsData, resourceType, timelineStock.bookings]);
+  }, [resourceType, timelineStock.bookings, timelineCrew.assignments]);
 
   // FUNCTIONS
   const getBookingForEquipment = useCallback((resourceId: string, dateStr: string) => {
@@ -775,12 +858,8 @@ export function useTimelineHub({
       const booking = timelineStock.getBooking(resourceId, dateStr);
       if (booking) return booking;
       
-
-      
       // Fallback: Stock data without project details for equipment without bookings
       const stockData = timelineStock.getEquipmentStock(resourceId, dateStr);
-      
-
       
       if (!stockData) return undefined;
       
@@ -797,28 +876,46 @@ export function useTimelineHub({
       };
     }
     
-    // Fallback for crew (will be migrated later)
-    if (!mergedResourceData?.resourceById || !bookingsData) return undefined;
-    
-    const resource = mergedResourceData.resourceById.get(resourceId);
-    if (!resource) return undefined;
-    
-    const booking = bookingsData.get(`${resourceId}-${dateStr}`);
-    
     if (resourceType === 'crew') {
-      return booking || {
+      // ✅ USE CREW ENGINE - simplified assignment tracking
+      const assignment = timelineCrew.getAssignment(resourceId, dateStr);
+      const resource = mergedResourceData?.resourceById?.get(resourceId);
+      
+      if (assignment) {
+        return {
+          crewMemberId: assignment.crewMemberId,
+          crewMemberName: assignment.crewMemberName,
+          date: assignment.date,
+          bookings: assignment.assignments.map(a => ({
+            eventName: a.eventName,
+            projectName: a.projectName,
+            role: a.roleName,
+            location: a.location,
+            eventType: a.eventType,
+            eventTypeColor: a.eventTypeColor
+          })),
+          assignments: assignment.assignments, // For compatibility
+          totalAssignments: assignment.assignmentCount,
+          isOverbooked: assignment.isOverbooked,
+          department: resource?.folderName || 'Unassigned'
+        };
+      }
+      
+      // Return empty assignment for available crew
+      return resource ? {
         crewMemberId: resourceId,
         crewMemberName: resource.name,
         date: dateStr,
         bookings: [],
+        assignments: [],
         totalAssignments: 0,
         isOverbooked: false,
-        department: resource.department
-      };
+        department: resource.folderName || 'Unassigned'
+      } : undefined;
     }
     
-    return booking;
-  }, [mergedResourceData?.resourceById, bookingsData, resourceType, timelineStock.getEquipmentStock]);
+    return undefined;
+  }, [mergedResourceData?.resourceById, resourceType, timelineStock.getEquipmentStock, timelineStock.getBooking, timelineCrew.getAssignment]);
 
   const getProjectQuantityForDate = useCallback((projectName: string, resourceId: string, dateStr: string) => {
     if (resourceType === 'equipment') {
@@ -836,13 +933,19 @@ export function useTimelineHub({
       } : undefined;
     }
     
-    // Crew: use manual calculation
-    const usage = projectUsage.get(resourceId);
-    if (!usage) return undefined;
+    // ✅ CREW: Use crew engine assignment data
+    const assignment = timelineCrew.getAssignment(resourceId, dateStr);
+    if (!assignment) return undefined;
 
-    const projectQuantities = usage.projectQuantities.get(projectName);
-    return projectQuantities?.get(dateStr);
-  }, [projectUsage, resourceType, timelineStock]);
+    const projectAssignment = assignment.assignments.find(a => a.projectName === projectName);
+    return projectAssignment ? {
+      date: dateStr,
+      quantity: 1, // Crew is always 1 per assignment
+      eventName: projectAssignment.eventName,
+      projectName: projectAssignment.projectName,
+      role: projectAssignment.roleName
+    } : undefined;
+  }, [resourceType, timelineStock, timelineCrew.getAssignment]);
 
   const getLowestAvailable = useCallback((resourceId: string, dateStrings?: string[]) => {
     const resource = mergedResourceData?.resourceById.get(resourceId);
@@ -859,17 +962,16 @@ export function useTimelineHub({
       });
       return Math.max(0, lowest); // Ensure non-negative
     } else {
-      // Crew: 1 = available, 0 = busy
+      // ✅ CREW: Use crew engine availability
       if (!dateStrings?.length) return 1;
       
       const hasAssignments = dateStrings.some(dateStr => {
-        const booking = bookingsData?.get(`${resourceId}-${dateStr}`);
-        return booking && booking.assignments?.length > 0;
+        return !timelineCrew.isAvailable(resourceId, dateStr);
       });
       
       return hasAssignments ? 0 : 1;
     }
-  }, [mergedResourceData, bookingsData, resourceType, timelineStock]);
+  }, [mergedResourceData, resourceType, timelineStock, timelineCrew.isAvailable]);
 
   // EXPANSION HANDLERS
   const toggleGroup = useCallback((groupKey: string, expandAllSubfolders?: boolean) => {

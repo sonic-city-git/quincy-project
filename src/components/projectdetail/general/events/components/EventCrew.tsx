@@ -42,8 +42,13 @@ export function EventCrew({
   const targetEvent = event || events[0];
   const [dialogOpen, setDialogOpen] = useState(false);
   
-  // Don't render if no crew needed or no valid event
-  if (!targetEvent?.type?.needs_crew || !targetEvent.id) {
+  // Don't render if no valid event
+  if (!targetEvent?.id) {
+    return null;
+  }
+  
+  // Also don't render if the event type explicitly doesn't need crew
+  if (targetEvent.type?.needs_crew === false) {
     return null;
   }
 
@@ -61,6 +66,8 @@ export function EventCrew({
     isLoading,
     error
   } = useEventCrewStatus(targetEvent!);
+  
+
   
   // Handle errors gracefully - show crew as complete if error occurs
   if (error) {

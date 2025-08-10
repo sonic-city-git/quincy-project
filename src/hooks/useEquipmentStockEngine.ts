@@ -307,7 +307,7 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
         .from('project_event_equipment')
         .select(`
           id, equipment_id, quantity,
-          project_events!inner(name, date, location, projects(name), event_types(name, color))
+          project_events!inner(name, date, location, projects(name), event_types(name, color, needs_crew, needs_equipment))
         `)
         .gte('project_events.date', startDate)
         .lte('project_events.date', endDate)

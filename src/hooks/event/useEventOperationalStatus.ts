@@ -119,9 +119,10 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
         .eq('event_id', event.id);
       
       if (queryError) throw queryError;
+      
       return data || [];
     },
-    enabled: !!event.id && !!event.type?.needs_crew,
+    enabled: !!event.id, // Always fetch roles to check if any exist
     staleTime: 2 * 60 * 1000, // 2 minutes
   });
 
@@ -176,7 +177,8 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
   
   // Crew analysis (placeholder - will be integrated into stock engine later)
   const crewAnalysis = useMemo(() => {
-    if (!eventRoles || !event.type?.needs_crew) {
+    // Always analyze crew data if roles exist, regardless of needs_crew flag
+    if (!eventRoles || eventRoles.length === 0) {
       return {
         status: 'complete' as const,
         overbookings: [],

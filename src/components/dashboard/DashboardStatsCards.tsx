@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { StatusCard, StatusCardGrid, getStatusFromValue } from "./shared/StatusCard";
 import { useDashboardConflicts } from "@/hooks/useDashboardConflicts";
+import { useDashboardCrewConflicts } from "@/hooks/useCrewEngine";
 import { useUnassignedRoles, useActiveCrew } from "./shared/useDashboardData";
 import { OVERBOOKING_WARNING_DAYS } from "@/constants/timeframes";
 
@@ -31,7 +32,7 @@ interface DashboardStatsCardsProps {
 
 export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProps) {
   
-  // OPTIMIZED: Lightweight wrapper for dashboard
+  // OPTIMIZED: Lightweight wrappers for dashboard
   const {
     conflictCount,
     urgentConflictCount,
@@ -39,37 +40,41 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
     error: stockError
   } = useDashboardConflicts(selectedOwnerId);
   
-  // Debug removed - check conflict analysis logs
-  
+  // ✅ NEW: Crew engine integration
+  const {
+    conflictCount: crewConflictCount,
+    unfilledRoleCount,
+    isLoading: crewLoading,
+    error: crewError
+  } = useDashboardCrewConflicts(selectedOwnerId);
 
-
-  // Keep crew/unassigned data (not part of stock engine yet)
-  const { data: unassignedStats, isLoading: unassignedLoading } = useUnassignedRoles(selectedOwnerId);
+  // Keep active crew stats 
   const { data: activeCrewStats, isLoading: activeCrewLoading } = useActiveCrew(selectedOwnerId);
 
-  // SIMPLE CALCULATIONS - From optimized wrapper
+  // SIMPLE CALCULATIONS - From optimized wrappers
   const equipmentOverbookings = conflictCount; // Equipment conflicts in next 30 days
   const urgentEquipmentOverbookings = urgentConflictCount; // High/critical severity conflicts
-  const unassignedCount = unassignedStats?.unassigned || 0;
+  const crewOverbookings = crewConflictCount; // Crew conflicts in next 30 days
+  const unfilledRoles = unfilledRoleCount; // Unfilled roles in next 30 days
   const activeCrew = activeCrewStats?.activeCrew || 0;
 
   // System health check
-  const hasIssues = equipmentOverbookings > 0 || unassignedCount > 0;
-  const systemStatus = stockError ? 'error' : 
-                      urgentEquipmentOverbookings > 0 ? 'critical' :
-                      equipmentOverbookings > 0 ? 'warning' : 'success';
+  const hasIssues = equipmentOverbookings > 0 || crewOverbookings > 0 || unfilledRoles > 0;
+  const systemStatus = (stockError || crewError) ? 'error' : 
+                      (urgentEquipmentOverbookings > 0 || crewOverbookings > 0) ? 'critical' :
+                      (equipmentOverbookings > 0 || unfilledRoles > 0) ? 'warning' : 'success';
 
   return (
     <div className="space-y-6">
       
       {/* Error State */}
-      {stockError && (
+      {(stockError || crewError) && (
         <StatusCard
           title="System Error"
           value="Error"
-          subtitle={`Stock engine error: ${stockError.message}`}
+          subtitle={`Engine error: ${stockError?.message || crewError?.message || 'Unknown error'}`}
           icon={AlertTriangle}
-          status="error"
+          status="critical"
           variant="compact"
         />
       )}
@@ -90,28 +95,30 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
           loading={stockLoading}
         />
 
-        {/* Crew Overbookings - Phase 6: Crew engine integration */}
+        {/* Crew Overbookings - ✅ CREW ENGINE INTEGRATED */}
         <StatusCard
           title="Crew Overbookings"
-          value={0}
-          subtitle="Crew conflict detection coming soon"
+          value={crewOverbookings}
+          subtitle={crewOverbookings 
+            ? `${crewOverbookings} crew double-booked next ${OVERBOOKING_WARNING_DAYS} days` 
+            : `No crew overbookings next ${OVERBOOKING_WARNING_DAYS} days`}
           icon={Users}
-          status="info"
+          status={getStatusFromValue(crewOverbookings, { critical: 1, success: 0 })}
           variant="compact"
-          loading={false}
+          loading={crewLoading}
         />
 
-        {/* Unassigned Roles */}
+        {/* Unfilled Roles - ✅ CREW ENGINE INTEGRATED */}
         <StatusCard
           title="Unfilled Roles"
-          value={unassignedCount}
-          subtitle={unassignedCount 
-            ? `${unassignedCount} roles need crew next ${OVERBOOKING_WARNING_DAYS} days` 
+          value={unfilledRoles}
+          subtitle={unfilledRoles 
+            ? `${unfilledRoles} roles need crew assignment next ${OVERBOOKING_WARNING_DAYS} days` 
             : `All roles filled next ${OVERBOOKING_WARNING_DAYS} days`}
           icon={UserX}
-          status={getStatusFromValue(unassignedCount, { warning: 1, success: 0 })}
+          status={getStatusFromValue(unfilledRoles, { warning: 1, success: 0 })}
           variant="compact"
-          loading={unassignedLoading}
+          loading={crewLoading}
         />
         
       </StatusCardGrid>
@@ -136,9 +143,9 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
             systemStatus === 'critical' ? 'text-red-500' :
             'text-gray-500'
           }`}>
-            {systemStatus === 'success' && 'All systems operational - virtual stock engine active'}
-            {systemStatus === 'warning' && 'System operational - conflicts detected'}
-            {systemStatus === 'critical' && 'Urgent conflicts require immediate attention'}
+            {systemStatus === 'success' && 'All systems operational - crew & equipment engines active'}
+            {systemStatus === 'warning' && 'System operational - conflicts or unfilled roles detected'}
+            {systemStatus === 'critical' && 'Urgent crew or equipment conflicts require immediate attention'}
             {systemStatus === 'error' && 'System error - check connection'}
           </p>
         </div>
