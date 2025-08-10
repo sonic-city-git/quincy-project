@@ -40,6 +40,8 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
     error: stockError
   } = useDashboardStock(selectedOwnerId);
   
+  // Debug removed - check conflict analysis logs
+  
 
 
   // Keep crew/unassigned data (not part of stock engine yet)

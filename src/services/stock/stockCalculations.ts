@@ -67,6 +67,8 @@ export async function calculateBatchEffectiveStock(
     return new Map();
   }
 
+  // Removed debug logging
+
   // Use the optimized database function for batch calculations
   // This gives us: baseStock + virtualAdditions - virtualReductions = effectiveStock
   const { data: stockData, error } = await supabase.rpc(
@@ -77,6 +79,8 @@ export async function calculateBatchEffectiveStock(
       end_date: endDate
     }
   );
+  
+  // Removed debug logging
 
   if (error) {
     console.error('Error calculating batch effective stock:', error);
@@ -90,6 +94,7 @@ export async function calculateBatchEffectiveStock(
 
   // Organize results into nested Map: equipmentId -> date -> EffectiveStock
   const result = new Map<string, Map<string, EffectiveStock>>();
+  const processedEquipment = new Set<string>();
 
   stockData?.forEach(row => {
     const equipmentId = row.equipment_id;
@@ -98,6 +103,7 @@ export async function calculateBatchEffectiveStock(
 
     if (!result.has(equipmentId)) {
       result.set(equipmentId, new Map());
+      processedEquipment.add(equipmentId);
     }
 
     const effectiveStock = row.effective_stock;
@@ -119,6 +125,49 @@ export async function calculateBatchEffectiveStock(
       deficit
     });
   });
+
+  // TEMPORARY FIX: Ensure ALL requested equipment IDs are included
+  // For equipment not returned by DB function, create basic entries with zero activity
+  equipmentIds.forEach(equipmentId => {
+    if (!processedEquipment.has(equipmentId)) {
+      // Equipment not returned by database function - add with base stock only
+      const dateRange = [];
+      const startDateObj = new Date(startDate);
+      const endDateObj = new Date(endDate);
+      
+      for (let d = new Date(startDateObj); d <= endDateObj; d.setDate(d.getDate() + 1)) {
+        dateRange.push(new Date(d).toISOString().split('T')[0]);
+      }
+      
+      if (!result.has(equipmentId)) {
+        result.set(equipmentId, new Map());
+      }
+      
+      dateRange.forEach(date => {
+        const usage = usageData.get(`${equipmentId}-${date}`) || 0;
+        // TODO: Get actual equipment stock from equipment table
+        const baseStock = 1; // Default for missing equipment
+        const available = baseStock - usage;
+        
+        result.get(equipmentId)!.set(date, {
+          equipmentId,
+          equipmentName: 'Equipment', // TODO: Get actual name from equipment table
+          date,
+          baseStock,
+          virtualAdditions: 0,
+          virtualReductions: 0,
+          effectiveStock: baseStock,
+          totalUsed: usage,
+          available,
+          isOverbooked: usage > baseStock,
+          deficit: Math.max(0, usage - baseStock)
+        });
+      });
+      processedEquipment.add(equipmentId);
+    }
+  });
+
+  // All equipment now included in conflict analysis
 
   return result;
 }

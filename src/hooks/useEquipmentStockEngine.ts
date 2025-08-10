@@ -239,9 +239,15 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
       const filteredEquipmentIds = Array.from(equipment.keys());
       if (filteredEquipmentIds.length === 0) return [];
       
-      return await analyzeConflicts(filteredEquipmentIds, startDate, endDate); // ✅ Simplified
+      const conflictsResult = await analyzeConflicts(filteredEquipmentIds, startDate, endDate);
+      
+      return conflictsResult;
     },
-    enabled: includeConflictAnalysis && equipment.size > 0,
+    enabled: (() => {
+      const isEnabled = includeConflictAnalysis && equipment.size > 0;
+      // Debug removed
+      return isEnabled;
+    })(),
     staleTime: cacheResults ? 3 * 60 * 1000 : 15 * 1000, // Configurable caching
     gcTime: cacheResults ? 10 * 60 * 1000 : 1 * 60 * 1000,
   });
@@ -578,6 +584,8 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
  */
 export function useDashboardStock(selectedOwner?: string) {
   const { startDate, endDate } = getWarningTimeframe(); // Always 30 days
+  
+  // Debug removed
   
   return useEquipmentStockEngine({
     dateRange: { start: new Date(startDate), end: new Date(endDate) },

@@ -51,6 +51,8 @@ export async function analyzeConflicts(
       }
     });
   });
+  
+  // Conflicts detected and ready for dashboard
 
   // Sort by severity and urgency
   return conflicts.sort(compareConflictPriority);
