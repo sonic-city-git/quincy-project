@@ -4,7 +4,7 @@ import { format } from "date-fns";
 
 // Option to test unified system
 import { useTimelineHub } from './shared/hooks/useTimelineHub';
-import { useDashboardStock } from '@/hooks/useEquipmentStockEngine';
+import { useDashboardConflicts } from '@/hooks/useDashboardConflicts';
 
 
 import { LAYOUT, PERFORMANCE } from './shared/constants';
@@ -240,7 +240,7 @@ export function UnifiedCalendar({
   const { 
     conflicts: allConflicts,
     isLoading: isLoadingAllConflicts 
-  } = useDashboardStock(selectedOwner);
+  } = useDashboardConflicts(selectedOwner);
 
   // Transform comprehensive conflicts into warnings format for TimelineContent
   const comprehensiveWarnings = useMemo(() => {

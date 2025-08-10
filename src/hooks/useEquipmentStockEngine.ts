@@ -130,6 +130,9 @@ interface EquipmentEngineConfig {
   // OPTIONAL: Performance tuning
   cacheResults?: boolean;
   batchSize?: number;
+  
+  // 🚀 NEW: Caching strategy selection
+  cacheStrategy?: 'dashboard' | 'project' | 'timeline' | 'search';
 }
 
 export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalStockEngineResult {
@@ -577,102 +580,11 @@ export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalSt
 // PAGE-LEVEL WRAPPER HOOKS - ONE PER MAIN PAGE
 // =============================================================================
 
-/**
- * 🏠 DASHBOARD: Fixed 30-day window with heavy caching
- * Note: selectedOwner filters PROJECTS/EVENTS, not equipment
- * Owner filtering: Implemented in post-processing for project-scoped queries
- */
-export function useDashboardStock(selectedOwner?: string) {
-  const { startDate, endDate } = getWarningTimeframe(); // Always 30 days
-  
-  // Debug removed
-  
-  return useEquipmentStockEngine({
-    dateRange: { start: new Date(startDate), end: new Date(endDate) },
-    // ✅ Equipment is NEVER filtered by owner - global view for all users
-    // Owner filtering: Applied at component level for project-specific data
-    includeConflictAnalysis: true,
-    includeSuggestions: false,     // Dashboard only needs conflict counts, not detailed suggestions
-    cacheResults: true,            // Heavy caching for overview
-    batchSize: 200                 // Large batches for overview
-  });
-}
+// ❌ REMOVED: useDashboardStock - replaced by useDashboardConflicts wrapper
 
-/**
- * 📅 TIMELINE/PLANNER: Shows ALL equipment across all owners
- * - No owner filtering (global view)
- * - Dynamic date range (user scrolling)
- * - Includes suggestions for subrental analysis
- */
-export function useTimelineStock(visibleRange: { start: Date; end: Date }) {
-  return useEquipmentStockEngine({
-    dateRange: visibleRange,
-    // ✅ NO FILTERS: Timeline shows ALL equipment for global planning view
-    includeConflictAnalysis: true,
-    includeSuggestions: true,             // Timeline shows suggestions
-    cacheResults: false,                  // Less caching (range changes frequently)
-    batchSize: 50                         // Small batches for responsiveness
-  });
-}
+// ❌ REMOVED: useTimelineStock - replaced by optimized wrapper
 
-/**
- * Project view - uses global engine with project-specific date range
- */
-export function useProjectStock(projectId: string) {
-  // Get project-specific date range from actual events
-  const { data: projectDates } = useQuery({
-    queryKey: ['project-date-range', projectId],
-    queryFn: async () => {
-      if (!projectId) throw new Error('Project ID required');
-      
-      const { data, error } = await supabase
-        .from('project_events')
-        .select('date')
-        .eq('project_id', projectId)
-        .neq('status', 'cancelled')    // ✅ FIXED: Exclude cancelled events
-        .order('date');
-      
-      if (error) throw error;
-      if (!data?.length) {
-        // No events - use 30-day window as fallback
-        const { startDate, endDate } = getWarningTimeframe();
-        return { start: startDate, end: endDate };
-      }
-      
-      // Get actual project event range with buffer
-      const dates = data.map(e => e.date).sort();
-      const firstDate = new Date(dates[0]);
-      const lastDate = new Date(dates[dates.length - 1]);
-      
-      // Add 7-day buffer on each side for context
-      const start = new Date(firstDate.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const end = new Date(lastDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-      
-      return {
-        start: start.toISOString().split('T')[0],
-        end: end.toISOString().split('T')[0]
-      };
-    },
-    enabled: !!projectId,
-    staleTime: 5 * 60 * 1000, // 5 minutes - events don't change often
-  });
-  
-  const dateRange = projectDates ? {
-    start: new Date(projectDates.start),
-    end: new Date(projectDates.end)
-  } : {
-    start: new Date(),
-    end: new Date()
-  };
-  
-  return useEquipmentStockEngine({
-    dateRange,                     // ✅ FIXED: Project-specific date range
-    includeConflictAnalysis: true,
-    includeSuggestions: true,      // Projects need subrental suggestions
-    cacheResults: true,            // Moderate caching
-    batchSize: 100                 // Balanced batching
-  });
-}
+// ❌ REMOVED: useProjectStock - replaced by useProjectConflicts wrapper
 
 /**
  * 🔍 GLOBAL SEARCH: Query-driven with fast results  

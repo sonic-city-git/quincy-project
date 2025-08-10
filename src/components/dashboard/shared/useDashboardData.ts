@@ -55,9 +55,9 @@ function buildOwnerFilteredQuery(
  * ❌ DELETED: useOperationalAlerts
  * 
  * This function was fragmented logic using the old useDashboardConflicts hook.
- * Replaced with direct usage of useDashboardStock from ONE ENGINE.
+ * Replaced with optimized useDashboardConflicts wrapper.
  * 
- * Migration: Components now use useDashboardStock() directly.
+ * Migration: Components now use useDashboardConflicts() directly.
  */
 
 /**

@@ -7,8 +7,8 @@
 export { useProjectVariants } from './useProjectVariants';
 export { useProjectDetails } from './useProjectDetails';
 export { useProjectPGA, useBatchProjectPGA } from './useProjectPGA';
-// ❌ DELETED: useProjectConflicts - replaced by EQUIPMENT STOCK ENGINE  
-// ✅ Use: import { useProjectStock } from '@/hooks/useEquipmentStockEngine';
+// ❌ DELETED: useProjectConflicts - replaced by OPTIMIZED WRAPPER
+// ✅ Use: import { useProjectConflicts } from '@/hooks/useProjectConflicts';
 export { useProjectFilters } from './useProjectFilters';
 export { useProjects } from './useProjects';
 export { useAddProject } from './useAddProject';

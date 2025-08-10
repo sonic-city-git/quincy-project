@@ -7,4 +7,8 @@
 export { useGlobalSearch } from './useGlobalSearch';
 export { useGlobalKeyboard } from './useGlobalKeyboard';
 // ❌ DELETED: useDashboardConflicts, useConsolidatedConflicts - replaced by EQUIPMENT STOCK ENGINE
-// ✅ Use: import { useDashboardStock, useEquipmentStockEngine } from '@/hooks/useEquipmentStockEngine';
+// ✅ OPTIMIZED WRAPPERS:
+// import { useDashboardConflicts } from '@/hooks/useDashboardConflicts';
+// import { useProjectConflicts } from '@/hooks/useProjectConflicts';
+// import { useTimelineStock } from '@/hooks/useTimelineStock';
+// ✅ CORE ENGINE: import { useEquipmentStockEngine } from '@/hooks/useEquipmentStockEngine';

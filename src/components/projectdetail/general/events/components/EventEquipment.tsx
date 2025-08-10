@@ -22,6 +22,7 @@ export interface EventEquipmentProps {
   variant?: 'icon' | 'section';
   disabled?: boolean;
   className?: string;
+  projectConflicts?: any[]; // Pre-fetched conflicts for performance optimization
 }
 
 
@@ -31,7 +32,8 @@ export function EventEquipment({
   events = [],
   variant = 'icon',
   disabled = false,
-  className
+  className,
+  projectConflicts
 }: EventEquipmentProps) {
   const targetEvent = event || (events.length > 0 ? events[0] : null);
   const targetEvents = events.length > 0 ? events : (targetEvent ? [targetEvent] : []);
@@ -42,8 +44,24 @@ export function EventEquipment({
     return null;
   }
 
-  // Get real equipment operational status for this specific event
-  const { hasOverbookings, hasSubrentals, isAvailable, conflicts: eventConflicts, isLoading, error } = useEventEquipmentStatus(targetEvent!);
+  // 🚀 OPTIMIZED: Use pre-fetched project conflicts instead of individual hook calls
+  const eventDate = targetEvent?.date ? 
+    (targetEvent.date instanceof Date 
+      ? targetEvent.date.toISOString().split('T')[0]
+      : new Date(targetEvent.date).toISOString().split('T')[0]) 
+    : '';
+    
+  // Filter conflicts to this specific event's date
+  const eventConflicts = projectConflicts?.filter(conflict => 
+    conflict.date === eventDate
+  ) || [];
+  
+  const hasOverbookings = eventConflicts.some(conflict => conflict.conflict.deficit > 0);
+  const hasSubrentals = eventConflicts.some(conflict => 
+    conflict.stockBreakdown.virtualAdditions > 0 && conflict.conflict.deficit === 0
+  );
+  const isLoading = false; // No loading since we use pre-fetched data
+  const error = null;
   
   // Handle errors gracefully - show equipment as available if error occurs
   if (error) {

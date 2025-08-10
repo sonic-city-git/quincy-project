@@ -3,7 +3,7 @@
  * 
  * ✅ MIGRATED TO ONE ENGINE ARCHITECTURE
  * ❌ DELETED: useEquipmentConflicts, useConsolidatedConflicts (fragmented logic)
- * ✅ USES: useProjectStock (unified global engine)
+ * ✅ USES: useProjectConflicts (optimized project wrapper)
  * 
  * Provides real-time operational intelligence for individual events using
  * the unified stock engine with virtual stock calculations.
@@ -18,7 +18,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useProjectStock } from '@/hooks/useEquipmentStockEngine';
+import { useProjectConflicts } from '@/hooks/useProjectConflicts';
 import { CalendarEvent } from '@/types/events';
 
 // ============================================================================
@@ -101,7 +101,7 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
   const {
     conflicts,
     isLoading: stockLoading
-  } = useProjectStock(projectId);
+  } = useProjectConflicts(projectId);
   
   // Get detailed event role assignments for crew analysis
   const { data: eventRoles, isLoading: rolesLoading, error } = useQuery({
@@ -139,7 +139,7 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
     }
     
     // Filter conflicts to only those affecting this event's date
-    // Since we're using useProjectStock(projectId), conflicts are already project-scoped
+    // Since we're using useProjectConflicts(projectId), conflicts are already project-scoped
     const relevantConflicts = conflicts.filter(conflict => 
       conflict.date === eventDateString
     );

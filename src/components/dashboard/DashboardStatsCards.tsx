@@ -3,7 +3,7 @@
  * 
  * ✅ MIGRATED TO ONE ENGINE ARCHITECTURE
  * ❌ DELETED: useOperationalAlerts (fragmented logic)
- * ✅ USES: useDashboardStock (unified global engine)
+ * ✅ USES: useDashboardConflicts (optimized dashboard wrapper)
  * 
  * Benefits:
  * - Single source of truth for all stock/conflict data
@@ -21,7 +21,7 @@ import {
   Zap
 } from "lucide-react";
 import { StatusCard, StatusCardGrid, getStatusFromValue } from "./shared/StatusCard";
-import { useDashboardStock } from "@/hooks/useEquipmentStockEngine";
+import { useDashboardConflicts } from "@/hooks/useDashboardConflicts";
 import { useUnassignedRoles, useActiveCrew } from "./shared/useDashboardData";
 import { OVERBOOKING_WARNING_DAYS } from "@/constants/timeframes";
 
@@ -31,14 +31,13 @@ interface DashboardStatsCardsProps {
 
 export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProps) {
   
-  // ONE ENGINE - Direct access to unified stock data
+  // OPTIMIZED: Lightweight wrapper for dashboard
   const {
-    conflicts,
-    suggestions,
-    totalConflicts,
+    conflictCount,
+    urgentConflictCount,
     isLoading: stockLoading,
     error: stockError
-  } = useDashboardStock(selectedOwnerId);
+  } = useDashboardConflicts(selectedOwnerId);
   
   // Debug removed - check conflict analysis logs
   
@@ -48,9 +47,9 @@ export function DashboardStatsCards({ selectedOwnerId }: DashboardStatsCardsProp
   const { data: unassignedStats, isLoading: unassignedLoading } = useUnassignedRoles(selectedOwnerId);
   const { data: activeCrewStats, isLoading: activeCrewLoading } = useActiveCrew(selectedOwnerId);
 
-  // SIMPLE CALCULATIONS - Any overbooking = conflict
-  const equipmentOverbookings = conflicts.length; // Any equipment with available < 0 in next 30 days
-  const urgentEquipmentOverbookings = conflicts.length; // All overbookings are urgent
+  // SIMPLE CALCULATIONS - From optimized wrapper
+  const equipmentOverbookings = conflictCount; // Equipment conflicts in next 30 days
+  const urgentEquipmentOverbookings = urgentConflictCount; // High/critical severity conflicts
   const unassignedCount = unassignedStats?.unassigned || 0;
   const activeCrew = activeCrewStats?.activeCrew || 0;
 

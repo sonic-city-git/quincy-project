@@ -3,7 +3,7 @@
  * 
  * ✅ MIGRATED TO ONE ENGINE ARCHITECTURE
  * ❌ DELETED: useDashboardConflicts (fragmented logic)
- * ✅ USES: useDashboardStock (unified global engine)
+ * ✅ USES: useDashboardConflicts (optimized dashboard wrapper)
  * 
  * Benefits:
  * - Virtual stock calculations (subrentals add to availability)
@@ -16,7 +16,7 @@ import { AlertTriangle, TrendingUp } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDisplayDate } from "@/utils/dateFormatters";
-import { useDashboardStock } from "@/hooks/useEquipmentStockEngine";
+import { useDashboardConflicts } from "@/hooks/useDashboardConflicts";
 
 interface EquipmentConflictsProps {
   ownerId?: string;
@@ -29,7 +29,7 @@ export function EquipmentConflicts({ ownerId }: EquipmentConflictsProps) {
     conflicts,
     isLoading,
     error
-  } = useDashboardStock(ownerId);
+  } = useDashboardConflicts(ownerId);
   
   // Show only actionable conflicts (medium/high severity)
   const displayConflicts = conflicts

@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { useState, useMemo } from 'react';
 import { useEventsWithReactivePricing } from '@/services/pricing/hooks';
 import { STATUS_COLORS } from "@/components/dashboard/shared/StatusCard";
+import { useProjectConflicts } from '@/hooks/useProjectConflicts';
 
 interface EventSectionProps {
   title: string;
@@ -36,6 +37,10 @@ export function EventSection({
   variant = 'info'
 }: EventSectionProps) {
   const eventType = events[0]?.type;
+  
+  // 🚀 PERFORMANCE OPTIMIZATION: Fetch project conflicts once for all events
+  const projectId = events[0]?.project_id || '';
+  const { conflicts: projectConflicts } = useProjectConflicts(projectId);
   
   // 🔄 Get events with reactive pricing that automatically updates
   const { events: eventsWithPricing } = useEventsWithReactivePricing(events);
@@ -86,6 +91,7 @@ export function EventSection({
             onStatusChange={onStatusChange}
             onEdit={hideEdit ? undefined : onEdit}
             sectionTitle={title}
+            projectConflicts={projectConflicts}
           />
         ))}
         

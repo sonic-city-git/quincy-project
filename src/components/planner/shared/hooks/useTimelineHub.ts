@@ -21,7 +21,7 @@ import { usePersistentExpandedGroups } from '@/hooks/ui';
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/types/equipment';
 import { PERFORMANCE } from '../constants';
 // ✅ NEW: Using ONE ENGINE directly via page wrapper
-import { useTimelineStock } from '@/hooks/useEquipmentStockEngine';
+import { useTimelineStock } from '@/hooks/useTimelineStock';
 import { useConfirmedSubrentals } from '@/hooks/equipment/useConfirmedSubrentals';
 
 interface UseTimelineHubProps {

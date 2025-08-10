@@ -5,7 +5,11 @@
  */
 
 // ❌ DELETED: useStockEngine and all related hooks - replaced by useEquipmentStockEngine
-// ✅ Use: import { useEquipmentStockEngine, useDashboardStock, useProjectStock, useTimelineStock } from '@/hooks/useEquipmentStockEngine';
+// ✅ CORE ENGINE: import { useEquipmentStockEngine } from '@/hooks/useEquipmentStockEngine';
+// ✅ OPTIMIZED WRAPPERS:
+// import { useDashboardConflicts } from '@/hooks/useDashboardConflicts';
+// import { useProjectConflicts } from '@/hooks/useProjectConflicts';
+// import { useTimelineStock } from '@/hooks/useTimelineStock';
 
 // Subrental order management (will be created in next phase)
 // export { useSubrentalOrders, useCreateSubrentalOrder } from './useSubrentalOrders';

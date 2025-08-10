@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { CalendarEvent } from '@/types/events';
+import { ConflictAnalysis } from '@/types/stock';
 import { useExternalProviders } from '@/hooks/equipment/useExternalProviders';
 import {
   Select,
@@ -30,25 +31,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { useState } from 'react';
 
-interface EquipmentConflict {
-  equipmentId: string;
-  equipmentName: string;
-  date: string;
-  totalStock: number;
-  totalUsed: number;
-  overbooked: number;
-  conflictingEvents: Array<{
-    eventName: string;
-    projectName: string;
-    quantity: number;
-  }>;
-}
-
 interface OverBookedEquipmentDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   event: CalendarEvent;
-  conflicts: EquipmentConflict[];
+  conflicts: ConflictAnalysis[];
 }
 
 export function OverBookedEquipmentDialog({
@@ -75,11 +62,13 @@ export function OverBookedEquipmentDialog({
 
   const handleMarkAsSubrental = (equipmentId: string) => {
     if (!selectedProvider) {
-      toast.error('Please select a provider');
+      // TODO: Add proper toast notification
+      console.log('Please select a provider');
       return;
     }
 
-    markAsSubrental({
+    // TODO: Implement subrental order creation
+    console.log('Mark as subrental:', {
       eventId: event.id,
       equipmentId,
       providerId: selectedProvider,
@@ -131,7 +120,7 @@ export function OverBookedEquipmentDialog({
               </span>
             </div>
             <div className="text-sm text-red-700">
-              Total shortage: {conflicts.reduce((sum, conflict) => sum + conflict.overbooked, 0)} items
+              Total shortage: {conflicts.reduce((sum, conflict) => sum + conflict.conflict.deficit, 0)} items
             </div>
           </div>
 
@@ -158,17 +147,17 @@ export function OverBookedEquipmentDialog({
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant="outline">{conflict.totalStock}</Badge>
+                      <Badge variant="outline">{conflict.stockBreakdown.effectiveStock}</Badge>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant="secondary">{conflict.totalUsed}</Badge>
+                      <Badge variant="secondary">{conflict.stockBreakdown.totalUsed}</Badge>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Badge variant="destructive">{conflict.overbooked}</Badge>
+                      <Badge variant="destructive">{conflict.conflict.deficit}</Badge>
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
-                        {conflict.conflictingEvents.map((event, index) => (
+                        {conflict.conflict.affectedEvents?.map((event, index) => (
                           <div key={index} className="text-sm">
                             <div className="font-medium">{event.eventName}</div>
                             <div className="text-muted-foreground">
