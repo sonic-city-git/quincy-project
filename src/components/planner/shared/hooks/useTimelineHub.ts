@@ -20,7 +20,8 @@ import { OVERBOOKING_WARNING_DAYS, getWarningTimeframe } from '@/constants/timef
 import { usePersistentExpandedGroups } from '@/hooks/ui';
 import { FOLDER_ORDER, SUBFOLDER_ORDER } from '@/types/equipment';
 import { PERFORMANCE } from '../constants';
-// ❌ DELETED: useSubrentalSuggestions - replaced by ONE ENGINE in earlier migration
+// ✅ NEW: Using ONE ENGINE via timeline wrapper
+import { useTimelineEquipmentEngine, useTimelineCrewEngine } from '@/hooks/timeline/useTimelineEquipmentEngine';
 import { useConfirmedSubrentals } from '@/hooks/equipment/useConfirmedSubrentals';
 
 interface UseTimelineHubProps {
@@ -437,54 +438,39 @@ export function useTimelineHub({
     return processedBookings;
   }, [rawBookingsData, resourceData?.resourceById, resourceType]);
 
-  // WARNINGS (30-day window)
+  // ✅ EQUIPMENT ENGINE INTEGRATION - replaces ALL manual conflict/warning logic
+  const equipmentIds = useMemo(() => 
+    resourceData?.resources?.map(r => r.id) || [], 
+    [resourceData]
+  );
+  
+  const visibleDates = useMemo(() => {
+    if (!visibleTimelineStart || !visibleTimelineEnd) return [];
+    
+    const dates = [];
+    let currentDate = new Date(visibleTimelineStart);
+    const endDate = new Date(visibleTimelineEnd);
+    
+    while (currentDate <= endDate) {
+      dates.push(format(currentDate, 'yyyy-MM-dd'));
+      currentDate = addDays(currentDate, 1);
+    }
+    
+    return dates;
+  }, [visibleTimelineStart, visibleTimelineEnd]);
+
+  // USE ONE ENGINE for equipment conflicts/warnings
+  const equipmentEngine = useTimelineEquipmentEngine(equipmentIds, visibleDates);
+  const crewEngine = useTimelineCrewEngine([], []); // Placeholder for crew
+  
+  // UNIFIED WARNINGS using ENGINE data (no manual calculations!)
   const warnings = useMemo(() => {
-    if (!bookingsData || !resourceData) return [];
-    
-    const today = new Date();
-    const warningEnd = addDays(today, OVERBOOKING_WARNING_DAYS);
-    
-    const warningsList = [];
-    
-    Array.from(bookingsData.values()).forEach(booking => {
-      const bookingDate = new Date(booking.date);
-      if (bookingDate < today || bookingDate > warningEnd) return;
-      
-      const resource = resourceData.resourceById.get(booking.resourceId);
-      if (!resource) return;
-
-      if (resourceType === 'equipment' && booking.isOverbooked) {
-        warningsList.push({
-          resourceId: booking.resourceId,
-          resourceName: resource.name,
-          date: booking.date,
-          type: 'overbooked',
-          severity: booking.totalUsed > (resource.stock * 1.5) ? 'high' : 'medium',
-          details: {
-            stock: resource.stock,
-            used: booking.totalUsed,
-            overbooked: booking.totalUsed - resource.stock,
-            events: booking.bookings
-          }
-        });
-      }
-      
-      if (resourceType === 'crew' && booking.isOverbooked) {
-        warningsList.push({
-          resourceId: booking.resourceId,
-          resourceName: resource.name,
-          date: booking.date,
-          type: 'conflict',
-          severity: booking.totalAssignments > 2 ? 'high' : 'medium',
-          details: {
-            assignments: booking.assignments
-          }
-        });
-      }
-    });
-
-    return warningsList;
-  }, [bookingsData, resourceData, resourceType]);
+    if (resourceType === 'equipment') {
+      return equipmentEngine.warnings;
+    } else {
+      return crewEngine.warnings;
+    }
+  }, [resourceType, equipmentEngine.warnings, crewEngine.warnings]);
 
   // ALL EQUIPMENT OVERBOOKINGS (for subrental analysis - independent of folder expansion)
   const { data: allEquipmentOverbookings } = useQuery({

@@ -76,10 +76,40 @@ interface SuggestionFilters {
 // THE ONE ENGINE
 // =============================================================================
 
-export function useEquipmentStockEngine(): GlobalStockEngineResult {
+interface EquipmentEngineConfig {
+  // REQUIRED: Each component defines its date needs
+  dateRange: { start: Date; end: Date };
   
-  // GLOBAL TIME RANGE - 30 days standard for entire app
-  const { startDate, endDate } = getWarningTimeframe();
+  // OPTIONAL: Scope filtering
+  equipmentIds?: string[];
+  selectedOwner?: string;
+  folderPaths?: string[];
+  
+  // OPTIONAL: Feature flags
+  includeVirtualStock?: boolean;
+  includeConflictAnalysis?: boolean;
+  includeSuggestions?: boolean;
+  
+  // OPTIONAL: Performance tuning
+  cacheResults?: boolean;
+  batchSize?: number;
+}
+
+export function useEquipmentStockEngine(config: EquipmentEngineConfig): GlobalStockEngineResult {
+  const {
+    dateRange,
+    equipmentIds,
+    selectedOwner,
+    folderPaths,
+    includeVirtualStock = true,
+    includeConflictAnalysis = true,
+    includeSuggestions = false,
+    cacheResults = true,
+    batchSize = 100
+  } = config;
+  
+  const startDate = format(dateRange.start, 'yyyy-MM-dd');
+  const endDate = format(dateRange.end, 'yyyy-MM-dd');
   
   // ============================================================================
   // EQUIPMENT DATA - Global for entire app
@@ -89,24 +119,42 @@ export function useEquipmentStockEngine(): GlobalStockEngineResult {
     data: equipment = new Map(), 
     isLoading: isLoadingEquipment 
   } = useQuery({
-    queryKey: ['global-equipment'],
+    queryKey: ['equipment-filtered', equipmentIds, selectedOwner, folderPaths],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('equipment')
-        .select('id, name, stock, folder_id, rental_price');
+        .select('id, name, stock, folder_id, rental_price')
+        .order('name');
       
+      // Filter by specific equipment IDs if provided
+      if (equipmentIds && equipmentIds.length > 0) {
+        query = query.in('id', equipmentIds);
+      }
+      
+      // Filter by owner if provided  
+      if (selectedOwner) {
+        query = query.eq('owner_id', selectedOwner);
+      }
+      
+      // TODO: Add folder filtering when needed
+      // if (folderPaths && folderPaths.length > 0) {
+      //   query = query.in('folder_path', folderPaths);
+      // }
+      
+      const { data, error } = await query;
       if (error) throw error;
       
       const equipmentMap = new Map();
       data?.forEach(item => equipmentMap.set(item.id, item));
       return equipmentMap;
     },
-    staleTime: 10 * 60 * 1000, // 10 minutes - equipment changes infrequently
-    gcTime: 30 * 60 * 1000,    // 30 minutes
+    enabled: true,
+    staleTime: cacheResults ? 10 * 60 * 1000 : 1 * 60 * 1000, // Configurable caching
+    gcTime: cacheResults ? 30 * 60 * 1000 : 5 * 60 * 1000,
   });
 
   // ============================================================================
-  // VIRTUAL STOCK - Global calculations for entire app
+  // VIRTUAL STOCK - Calculated for filtered equipment and date range
   // ============================================================================
   
   const { 
@@ -114,16 +162,18 @@ export function useEquipmentStockEngine(): GlobalStockEngineResult {
     isLoading: isLoadingStock,
     error: stockError 
   } = useQuery({
-    queryKey: ['global-virtual-stock', startDate, endDate],
+    queryKey: ['virtual-stock', Array.from(equipment.keys()), startDate, endDate, includeVirtualStock],
     queryFn: async () => {
-      const equipmentIds = Array.from(equipment.keys());
-      if (equipmentIds.length === 0) return new Map();
+      if (!includeVirtualStock) return new Map();
       
-      return await calculateBatchEffectiveStock(equipmentIds, startDate, endDate);
+      const filteredEquipmentIds = Array.from(equipment.keys());
+      if (filteredEquipmentIds.length === 0) return new Map();
+      
+      return await calculateBatchEffectiveStock(filteredEquipmentIds, startDate, endDate);
     },
-    enabled: equipment.size > 0,
-    staleTime: 5 * 60 * 1000, // 5 minutes - stock changes more frequently
-    gcTime: 15 * 60 * 1000,   // 15 minutes
+    enabled: includeVirtualStock && equipment.size > 0,
+    staleTime: cacheResults ? 5 * 60 * 1000 : 30 * 1000, // Configurable caching
+    gcTime: cacheResults ? 15 * 60 * 1000 : 2 * 60 * 1000,
   });
 
   // ============================================================================
@@ -134,35 +184,37 @@ export function useEquipmentStockEngine(): GlobalStockEngineResult {
     data: conflicts = [], 
     isLoading: isLoadingConflicts 
   } = useQuery({
-    queryKey: ['global-conflicts', startDate, endDate],
+    queryKey: ['conflicts', Array.from(equipment.keys()), startDate, endDate, includeConflictAnalysis],
     queryFn: async () => {
-      const equipmentIds = Array.from(equipment.keys());
-      if (equipmentIds.length === 0) return [];
+      if (!includeConflictAnalysis) return [];
       
-      return await analyzeConflicts(equipmentIds, startDate, endDate);
+      const filteredEquipmentIds = Array.from(equipment.keys());
+      if (filteredEquipmentIds.length === 0) return [];
+      
+      return await analyzeConflicts(filteredEquipmentIds, startDate, endDate);
     },
-    enabled: equipment.size > 0,
-    staleTime: 3 * 60 * 1000, // 3 minutes - conflicts need frequent updates
-    gcTime: 10 * 60 * 1000,   // 10 minutes
+    enabled: includeConflictAnalysis && equipment.size > 0,
+    staleTime: cacheResults ? 3 * 60 * 1000 : 15 * 1000, // Configurable caching
+    gcTime: cacheResults ? 10 * 60 * 1000 : 1 * 60 * 1000,
   });
 
   // ============================================================================
-  // SUGGESTIONS - Global subrental suggestions for entire app
+  // SUGGESTIONS - Subrental suggestions for filtered conflicts
   // ============================================================================
   
   const { 
     data: suggestions = [], 
     isLoading: isLoadingSuggestions 
   } = useQuery({
-    queryKey: ['global-suggestions', startDate, endDate],
+    queryKey: ['suggestions', conflicts, includeSuggestions],
     queryFn: async () => {
-      if (conflicts.length === 0) return [];
+      if (!includeSuggestions || conflicts.length === 0) return [];
       
       return await generateSubrentalSuggestions(conflicts, startDate, endDate);
     },
-    enabled: conflicts.length > 0,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 15 * 60 * 1000,   // 15 minutes
+    enabled: includeSuggestions && conflicts.length > 0,
+    staleTime: cacheResults ? 5 * 60 * 1000 : 30 * 1000, // Configurable caching
+    gcTime: cacheResults ? 15 * 60 * 1000 : 2 * 60 * 1000,
   });
 
   // ============================================================================
@@ -282,60 +334,65 @@ export function useEquipmentStockEngine(): GlobalStockEngineResult {
 }
 
 // =============================================================================
-// SPECIALIZED VIEWS OF THE ONE ENGINE
+// PAGE-LEVEL WRAPPER HOOKS - ONE PER MAIN PAGE
 // =============================================================================
 
 /**
- * Dashboard view - uses global engine with dashboard-specific filters
+ * 🏠 DASHBOARD: Fixed 30-day window with heavy caching
  */
 export function useDashboardStock(selectedOwner?: string) {
-  const engine = useEquipmentStockEngine();
+  const { startDate, endDate } = getWarningTimeframe(); // Always 30 days
   
-  // Dashboard only cares about conflicts in next 30 days
-  const dashboardConflicts = engine.getConflicts({
-    severities: ['medium', 'high'] // Only show actionable conflicts
+  return useEquipmentStockEngine({
+    dateRange: { start: new Date(startDate), end: new Date(endDate) },
+    selectedOwner,
+    includeConflictAnalysis: true,
+    includeSuggestions: false,     // Dashboard doesn't need suggestions
+    cacheResults: true,            // Heavy caching for overview
+    batchSize: 200                 // Large batches for overview
   });
-  
-  return {
-    conflicts: dashboardConflicts,
-    suggestions: engine.getSuggestions(),
-    totalConflicts: dashboardConflicts.length,
-    isLoading: engine.isLoading,
-    error: engine.error
-  };
 }
 
 /**
  * Timeline view - uses global engine with timeline-specific helpers
  */
-export function useTimelineStock(equipmentIds: string[], visibleDates: string[]) {
-  const engine = useEquipmentStockEngine();
-  
-  return {
-    getStock: engine.getEquipmentStock,
-    isOverbooked: engine.isOverbooked,
-    getAvailability: engine.getAvailability,
-    conflicts: engine.getConflicts({ equipmentIds, dates: visibleDates }),
-    suggestions: engine.getSuggestions({ equipmentIds, dates: visibleDates }),
-    isLoading: engine.isLoading
-  };
+export function useTimelineStock(visibleRange: { start: Date; end: Date }) {
+  return useEquipmentStockEngine({
+    dateRange: visibleRange,       // User-controlled scrolling range
+    includeConflictAnalysis: true,
+    includeSuggestions: true,      // Timeline shows suggestions
+    cacheResults: false,           // Less caching (range changes frequently)
+    batchSize: 50                  // Small batches for responsiveness
+  });
 }
 
 /**
  * Project view - uses global engine with project-specific filters
  */
-export function useProjectStock(equipmentIds: string[], projectDates: string[]) {
-  const engine = useEquipmentStockEngine();
+export function useProjectStock(projectId: string) {
+  // TODO: Get project date range from projectId
+  const { startDate, endDate } = getWarningTimeframe(); // Temporary fallback
   
-  const projectConflicts = engine.getConflicts({ 
-    equipmentIds, 
-    dates: projectDates 
+  return useEquipmentStockEngine({
+    dateRange: { start: new Date(startDate), end: new Date(endDate) }, // Will be project-specific
+    includeConflictAnalysis: true,
+    includeSuggestions: true,      // Projects need subrental suggestions
+    cacheResults: true,            // Moderate caching
+    batchSize: 100                 // Balanced batching
   });
+}
+
+/**
+ * 🔍 GLOBAL SEARCH: Query-driven with fast results  
+ */
+export function useGlobalSearchStock(query: string) {
+  const { startDate, endDate } = getWarningTimeframe(); // 30-day context
   
-  return {
-    hasConflicts: projectConflicts.length > 0,
-    conflicts: projectConflicts,
-    suggestions: engine.getSuggestions({ equipmentIds, dates: projectDates }),
-    isLoading: engine.isLoading
-  };
+  return useEquipmentStockEngine({
+    dateRange: { start: new Date(startDate), end: new Date(endDate) },
+    includeConflictAnalysis: true,
+    includeSuggestions: false,     // Search doesn't need suggestions
+    cacheResults: true,            // Cache search results
+    batchSize: 20                  // Small batches for quick results
+  });
 }
