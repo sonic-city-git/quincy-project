@@ -114,11 +114,7 @@ export function useEventOperationalStatus(event: CalendarEvent): EventOperationa
         .select(`
           *,
           crew_members(id, name),
-          crew_roles(id, name),
-          project_roles!project_event_roles_project_role_id_fkey(
-            id,
-            preferred_id
-          )
+          crew_roles(id, name)
         `)
         .eq('event_id', event.id);
       
