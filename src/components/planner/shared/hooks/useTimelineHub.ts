@@ -670,11 +670,54 @@ export function useTimelineHub({
     }
   }, [mergedResourceData?.resources, expandedGroups, resourceType, shouldShowSubrentalSection, subrentalSuggestions, shouldShowConfirmedSection, confirmedPeriods]);
 
-  // ✅ SIMPLIFIED PROJECT USAGE - Always use stock engine for equipment
+  // ✅ PROJECT USAGE - Use stock engine data for equipment, manual for crew
   const projectUsage = useMemo(() => {
     if (resourceType === 'equipment') {
-      // Always return empty Map for equipment - project usage comes from stock engine directly
-      return new Map();
+      // ✅ FIXED: Return stock engine projectUsage data for equipment project assignments
+      return timelineStock.bookings ? (() => {
+        const usage = new Map();
+        
+        // Transform stock engine bookings into projectUsage format
+        timelineStock.bookings.forEach((booking, key) => {
+          const equipmentId = booking.equipmentId;
+          
+          if (!usage.has(equipmentId)) {
+            usage.set(equipmentId, {
+              equipmentId,
+              projectNames: [],
+              projectQuantities: new Map()
+            });
+          }
+          
+          const equipmentUsage = usage.get(equipmentId);
+          
+          booking.bookings?.forEach(b => {
+            if (!equipmentUsage.projectNames.includes(b.projectName)) {
+              equipmentUsage.projectNames.push(b.projectName);
+            }
+            
+            if (!equipmentUsage.projectQuantities.has(b.projectName)) {
+              equipmentUsage.projectQuantities.set(b.projectName, new Map());
+            }
+            
+            const projectQuantities = equipmentUsage.projectQuantities.get(b.projectName);
+            const existing = projectQuantities.get(booking.date);
+            
+            if (existing) {
+              existing.quantity += b.quantity;
+            } else {
+              projectQuantities.set(booking.date, {
+                date: booking.date,
+                quantity: b.quantity,
+                eventName: b.eventName,
+                projectName: b.projectName
+              });
+            }
+          });
+        });
+        
+        return usage;
+      })() : new Map();
     }
     
     // Crew: manual calculation until crew engine is implemented
@@ -723,7 +766,7 @@ export function useTimelineHub({
     });
 
     return usage;
-  }, [bookingsData, resourceType]);
+  }, [bookingsData, resourceType, timelineStock.bookings]);
 
   // FUNCTIONS
   const getBookingForEquipment = useCallback((resourceId: string, dateStr: string) => {
@@ -878,7 +921,7 @@ export function useTimelineHub({
     bookingsData: bookingsData || new Map(),
     expandedGroups,
     expandedEquipment: expandedResources,
-    equipmentProjectUsage: resourceType === 'equipment' ? new Map() : projectUsage, // Equipment uses stock engine directly
+    equipmentProjectUsage: projectUsage, // Now properly includes stock engine data for equipment
     
     // Subrental data
     subrentalSuggestions,
