@@ -131,6 +131,13 @@ export function useConsolidatedEvents({
       ['calendar-events', projectId]
     ];
     
+    // ✅ NEW: Also invalidate Financial Tab queries when events change
+    const financialQueries = [
+      ['project-invoice-draft', projectId],
+      ['project-fiken-invoices', projectId],
+      ['invoice-ready-events', projectId]
+    ];
+    
     const eventSpecificQueries = eventId ? [
       ['project-event-equipment', eventId],
       ['project-event-roles', eventId],
@@ -140,6 +147,7 @@ export function useConsolidatedEvents({
     
     await Promise.all([
       ...baseQueries.map(queryKey => queryClient.invalidateQueries({ queryKey })),
+      ...financialQueries.map(queryKey => queryClient.invalidateQueries({ queryKey })),
       ...eventSpecificQueries.map(queryKey => queryClient.invalidateQueries({ queryKey })),
       // ✅ NEW: Invalidate stock engine caches when events change
       invalidateProjectStock(projectId),
@@ -241,11 +249,13 @@ export function useConsolidatedEvents({
     }
 
     const updatedEvent = { ...event, status: newStatus };
+    const oldStatus = event.status;
     
     // Optimistic update
     updateEventOptimistically(updatedEvent, 'update');
 
     try {
+      // Update event status in database
       const { error } = await supabase
         .from('project_events')
         .update({ status: newStatus })
@@ -253,6 +263,35 @@ export function useConsolidatedEvents({
         .eq('project_id', projectId);
 
       if (error) throw error;
+
+      // Handle draft invoice management based on status transitions
+      if (newStatus === 'invoice ready' && oldStatus !== 'invoice ready') {
+        // Event became invoice ready - add to draft
+        console.log('🔄 Adding event to draft invoice:', event.id);
+        const { error: draftError } = await supabase.rpc('add_event_to_draft', {
+          p_event_id: event.id
+        });
+        
+        if (draftError) {
+          console.error('Error adding event to draft:', draftError);
+          toast.error("Event updated but failed to add to draft invoice");
+        } else {
+          console.log('✅ Event added to draft invoice');
+        }
+      } else if (oldStatus === 'invoice ready' && newStatus !== 'invoice ready') {
+        // Event was removed from invoice ready - remove from draft
+        console.log('🔄 Removing event from draft invoice:', event.id);
+        const { error: draftError } = await supabase.rpc('remove_event_from_draft', {
+          p_event_id: event.id
+        });
+        
+        if (draftError) {
+          console.error('Error removing event from draft:', draftError);
+          toast.error("Event updated but failed to remove from draft invoice");
+        } else {
+          console.log('✅ Event removed from draft invoice');
+        }
+      }
 
       toast.success(`Event status changed to ${newStatus}`);
       await invalidateEventQueries();

@@ -101,6 +101,10 @@ export class ProjectInvoiceService {
               needs_crew,
               needs_equipment,
               crew_rate_multiplier
+            ),
+            project_variants!project_events_variant_id_fkey (
+              id,
+              variant_name
             )
           )
         ),

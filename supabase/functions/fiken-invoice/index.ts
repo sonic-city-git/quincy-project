@@ -16,6 +16,7 @@ interface FikenInvoiceRequest {
   // New parameters for create_or_update_draft
   invoice_id?: string;
   project_name?: string;
+  project_type?: string;
   customer_fiken_id?: string;
   total_amount?: number;
   due_date?: string;
@@ -27,6 +28,8 @@ serve(async (req) => {
     return new Response('ok', { headers: corsHeaders })
   }
 
+  let invoice_id: string | undefined; // Declare in outer scope for error handling
+  
   try {
     // Get Fiken API configuration from Supabase secrets
     const fikenApiKey = Deno.env.get('FIKEN_API_KEY');
@@ -37,7 +40,9 @@ serve(async (req) => {
       throw new Error('Fiken API credentials not configured');
     }
 
-    const { action, customer, lineItems, dueDate, projectReference, fikenInvoiceId, invoice_id, project_name, customer_fiken_id, total_amount, due_date }: FikenInvoiceRequest = await req.json();
+    const requestBody: FikenInvoiceRequest = await req.json();
+    const { action, customer, lineItems, dueDate, projectReference, fikenInvoiceId, project_name, project_type, customer_fiken_id, total_amount, due_date } = requestBody;
+    invoice_id = requestBody.invoice_id; // Assign to outer scope variable
 
     const fikenHeaders = {
       'Authorization': `Bearer ${fikenApiKey}`,
@@ -64,133 +69,71 @@ serve(async (req) => {
         };
         break;
 
-      case 'create_draft':
-        if (!customer || !lineItems || !dueDate) {
-          throw new Error('Missing required parameters for invoice creation');
-        }
-
-        // First, ensure customer exists in Fiken
-        let fikenCustomer;
-        
-        // Try to find existing customer by organization number
-        if (customer.organization_number) {
-          const customerSearchResponse = await fetch(
-            getApiUrl(`/contacts?organizationNumber=${encodeURIComponent(customer.organization_number)}`),
-            {
-              method: 'GET',
-              headers: fikenHeaders
-            }
-          );
-          
-          if (customerSearchResponse.ok) {
-            const existingCustomers = await customerSearchResponse.json();
-            if (existingCustomers.length > 0) {
-              fikenCustomer = existingCustomers[0];
-            }
-          }
-        }
-
-        // Create customer if not found
-        if (!fikenCustomer) {
-          const customerData = {
-            name: customer.name,
-            email: customer.email || undefined,
-            phone: customer.phone_number || undefined,
-            organizationNumber: customer.organization_number || undefined,
-            customerNumber: customer.customer_number || undefined
-          };
-
-          const createCustomerResponse = await fetch(getApiUrl('/contacts'), {
-            method: 'POST',
-            headers: fikenHeaders,
-            body: JSON.stringify(customerData)
-          });
-
-          if (!createCustomerResponse.ok) {
-            const errorText = await createCustomerResponse.text();
-            throw new Error(`Failed to create customer: ${errorText}`);
-          }
-
-          fikenCustomer = await createCustomerResponse.json();
-        }
-
-        // Convert line items to Fiken format
-        const fikenLines = lineItems.map(item => ({
-          description: item.description,
-          quantity: item.quantity,
-          unit_price_excluding_vat: item.unit_price,
-          vat_type: item.vat_type || 'HIGH',
-          account_code: getAccountCodeForSourceType(item.source_type)
-        }));
-
-        // Create invoice
-        const invoiceRequest = {
-          customer_id: fikenCustomer.id,
-          issue_date: new Date().toISOString().split('T')[0],
-          due_date: dueDate,
-          invoice_text: projectReference ? `Project: ${projectReference}` : undefined,
-          lines: fikenLines,
-          send_method: null // Create as draft
-        };
-
-        const createInvoiceResponse = await fetch(getApiUrl('/invoices'), {
-          method: 'POST',
-          headers: fikenHeaders,
-          body: JSON.stringify(invoiceRequest)
-        });
-
-        if (!createInvoiceResponse.ok) {
-          const errorText = await createInvoiceResponse.text();
-          throw new Error(`Failed to create invoice: ${errorText}`);
-        }
-
-        const invoiceResult = await createInvoiceResponse.json();
-        
-        result = {
-          id: invoiceResult.id,
-          invoice_number: invoiceResult.invoice_number,
-          status: invoiceResult.status,
-          edit_url: `https://fiken.no/${fikenCompanySlug}/invoices/${invoiceResult.id}`,
-          total_amount: invoiceResult.total_amount,
-          customer_id: fikenCustomer.id
-        };
-        break;
-
-      case 'sync_status':
-        if (!fikenInvoiceId) {
-          throw new Error('Missing fikenInvoiceId for status sync');
-        }
-
-        const statusResponse = await fetch(getApiUrl(`/invoices/${fikenInvoiceId}`), {
-          method: 'GET',
-          headers: fikenHeaders
-        });
-
-        if (!statusResponse.ok) {
-          const errorText = await statusResponse.text();
-          throw new Error(`Failed to get invoice status: ${errorText}`);
-        }
-
-        const invoiceData = await statusResponse.json();
-        
-        result = {
-          status: mapFikenStatusToLocal(invoiceData.status),
-          sent_date: invoiceData.sent_date,
-          paid_date: invoiceData.paid_date,
-          total_amount: invoiceData.total_amount,
-          fiken_status: invoiceData.status
-        };
-        break;
-
       case 'create_or_update_draft':
         if (!invoice_id || !customer_fiken_id || !total_amount || !due_date) {
           throw new Error('Missing required parameters for draft creation');
         }
 
-        // Initialize Supabase client to get invoice line items
+        // Initialize Supabase client
         const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
         const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
         const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // Track webhook attempt
+        if (req.headers.get('X-Webhook-Source') === 'supabase-trigger') {
+          await supabase.rpc('track_fiken_webhook_attempt', { p_invoice_id: invoice_id });
+        }
+
+        // Check if invoice already has Fiken data (idempotency)
+        const { data: existingInvoice, error: invoiceCheckError } = await supabase
+          .from('invoices')
+          .select('fiken_invoice_id, fiken_invoice_number, fiken_url')
+          .eq('id', invoice_id)
+          .single();
+
+        if (invoiceCheckError) {
+          throw new Error(`Failed to check existing invoice: ${invoiceCheckError.message}`);
+        }
+
+        // If already synced with a valid Fiken ID, update the existing draft
+        if (existingInvoice.fiken_invoice_id && 
+            existingInvoice.fiken_invoice_id !== 'unknown' && 
+            existingInvoice.fiken_invoice_id !== 'created_but_unknown') {
+          console.log(`Invoice ${invoice_id} already synced to Fiken: ${existingInvoice.fiken_invoice_id}`);
+          console.log(`Updating existing Fiken draft ${existingInvoice.fiken_invoice_id}`);
+          
+          // Update the existing draft instead of creating a new one
+          const updateDraftResponse = await fetch(getApiUrl(`/invoices/drafts/${existingInvoice.fiken_invoice_id}`), {
+            method: 'PUT',
+            headers: fikenHeaders,
+            body: JSON.stringify({
+              type: 'invoice',
+              customerId: parseInt(customer_fiken_id),
+              daysUntilDueDate: 30,
+              invoiceText: project_name ? `Project: ${project_name}` : undefined,
+              currency: 'NOK',
+              lines: fikenDraftLines
+            })
+          });
+
+          if (!updateDraftResponse.ok) {
+            const errorText = await updateDraftResponse.text();
+            console.error(`Failed to update draft in Fiken: ${errorText}`);
+            // If update fails, we'll fall through to create a new draft
+          } else {
+            console.log(`✅ Successfully updated Fiken draft ${existingInvoice.fiken_invoice_id}`);
+            
+            result = {
+              success: true,
+              fiken_invoice_id: existingInvoice.fiken_invoice_id,
+              fiken_invoice_number: existingInvoice.fiken_invoice_number,
+              fiken_url: existingInvoice.fiken_url,
+              status: 'updated_existing_draft',
+              total_amount: total_amount
+            };
+            break;
+          }
+        }
 
         // Get line items for this invoice
         const { data: invoiceLineItems, error: lineItemsError } = await supabase
@@ -206,26 +149,32 @@ serve(async (req) => {
           throw new Error('No line items found for invoice');
         }
 
-        // Convert line items to Fiken format
-        const fikenDraftLines = invoiceLineItems.map(item => ({
-          description: item.description,
-          quantity: item.quantity,
-          unit_price_excluding_vat: item.unit_price,
-          vat_type: item.vat_type || 'HIGH',
-          account_code: getAccountCodeForSourceType(item.source_type)
-        }));
+        // Convert line items to Fiken format using products
+        const fikenDraftLines = invoiceLineItems.map(item => {
+          const productId = getFikenProductId(project_type, item.source_type);
+          return {
+            description: item.description,
+            quantity: parseFloat(item.quantity),
+            unitPrice: parseFloat(item.unit_price),
+            product: productId, // Try 'product' instead of 'productId'
+            // Add VAT type and income account as backup
+            vatType: productId === '02' ? 'OUTSIDE' : 'HIGH',
+            incomeAccount: productId === '02' ? '3220' : '3020' // Use the account codes from your products
+          };
+        });
 
-        // Create draft invoice in Fiken
+        // Create draft invoice in Fiken - using correct draft format from API docs
         const draftInvoiceRequest = {
-          customer_id: customer_fiken_id,
-          issue_date: new Date().toISOString().split('T')[0],
-          due_date: due_date,
-          invoice_text: project_name ? `Project: ${project_name}` : undefined,
-          lines: fikenDraftLines,
-          send_method: null // Create as draft
+          type: 'invoice', // lowercase as per API docs
+          customerId: parseInt(customer_fiken_id), // Top-level customerId is required
+          daysUntilDueDate: 30, // Standard 30 days payment terms
+          // paymentAccount only for CASH_INVOICE type, not regular invoices
+          invoiceText: project_name ? `Project: ${project_name}` : undefined,
+          currency: 'NOK',
+          lines: fikenDraftLines
         };
 
-        const createDraftResponse = await fetch(getApiUrl('/invoices'), {
+        const createDraftResponse = await fetch(getApiUrl('/invoices/drafts'), {
           method: 'POST',
           headers: fikenHeaders,
           body: JSON.stringify(draftInvoiceRequest)
@@ -236,13 +185,95 @@ serve(async (req) => {
           throw new Error(`Failed to create draft in Fiken: ${errorText}`);
         }
 
-        const draftResult = await createDraftResponse.json();
+        // Handle potential empty response
+        const responseText = await createDraftResponse.text();
+        console.log('🔍 Fiken API response:', responseText);
+        let draftResult;
+        try {
+          draftResult = responseText ? JSON.parse(responseText) : {};
+          console.log('📋 Parsed Fiken response:', JSON.stringify(draftResult, null, 2));
+        } catch (parseError) {
+          console.warn('Failed to parse Fiken response, but invoice may have been created:', responseText);
+          draftResult = {};
+        }
+
+        // If we got a successful response but no data, the draft was likely created
+        // but Fiken doesn't return the draft details. Let's fetch recent drafts to find it.
+        if (Object.keys(draftResult).length === 0 && createDraftResponse.ok) {
+          console.log('📝 Empty response from Fiken - fetching recent drafts to find the created one');
+          
+          try {
+            // Fetch recent drafts to find the one we just created
+            const draftsResponse = await fetch(getApiUrl('/invoices/drafts'), {
+              headers: fikenHeaders
+            });
+            
+            if (draftsResponse.ok) {
+              const drafts = await draftsResponse.json();
+              console.log(`📋 Found ${drafts.length} drafts in Fiken`);
+              
+              // Find the most recent draft (assuming it's the one we just created)
+              if (drafts && drafts.length > 0) {
+                const mostRecentDraft = drafts[0]; // Assuming drafts are sorted by creation date
+                draftResult = {
+                  draftId: mostRecentDraft.draftId,
+                  invoiceNumber: mostRecentDraft.invoiceNumber,
+                  status: 'draft_found'
+                };
+                console.log(`✅ Found recent draft: ${mostRecentDraft.draftId}`);
+              } else {
+                console.warn('⚠️ No drafts found in Fiken after creation');
+                draftResult = {
+                  draftId: 'created_but_not_found',
+                  status: 'draft_created_but_not_found'
+                };
+              }
+            } else {
+              console.warn('⚠️ Failed to fetch drafts from Fiken');
+              draftResult = {
+                draftId: 'created_but_unknown',
+                status: 'draft_created'
+              };
+            }
+          } catch (fetchError) {
+            console.error('❌ Error fetching drafts:', fetchError);
+            draftResult = {
+              draftId: 'created_but_unknown',
+              status: 'draft_created'
+            };
+          }
+        }
+        
+        // Update Supabase invoice with Fiken data
+        // For drafts, Fiken returns draftId instead of id
+        const fikenId = draftResult.draftId || draftResult.id || 'unknown';
+        const fikenNumber = draftResult.invoiceNumber || draftResult.invoice_number || null;
+        
+        const { error: updateError } = await supabase
+          .from('invoices')
+          .update({
+            needs_fiken_sync: false,
+            fiken_invoice_id: fikenId.toString(),
+            fiken_invoice_number: fikenNumber,
+            fiken_url: `https://fiken.no/${fikenCompanySlug}/invoices/drafts/${fikenId}`,
+            fiken_sync_error: null,
+            fiken_sync_failed_at: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', invoice_id);
+
+        if (updateError) {
+          console.error('Failed to update invoice with Fiken data:', updateError);
+          // Don't throw - Fiken invoice was created successfully
+        }
+
+        console.log(`Successfully created Fiken draft ${fikenId} for invoice ${invoice_id}`);
         
         result = {
           success: true,
-          fiken_invoice_id: draftResult.id,
-          fiken_invoice_number: draftResult.invoice_number,
-          fiken_url: `https://fiken.no/${fikenCompanySlug}/invoices/${draftResult.id}`,
+          fiken_invoice_id: fikenId,
+          fiken_invoice_number: fikenNumber,
+          fiken_url: `https://fiken.no/${fikenCompanySlug}/invoices/drafts/${fikenId}`,
           status: draftResult.status,
           total_amount: draftResult.total_amount
         };
@@ -263,6 +294,29 @@ serve(async (req) => {
   } catch (error) {
     console.error('Fiken API error:', error);
     
+    // If this was a webhook call and we have an invoice_id, update the error status
+    if (req.headers.get('X-Webhook-Source') === 'supabase-trigger' && invoice_id) {
+      try {
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseKey);
+        
+        await supabase
+          .from('invoices')
+          .update({
+            needs_fiken_sync: false, // Don't retry immediately
+            fiken_sync_error: error.message || 'Unknown error occurred',
+            fiken_sync_failed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', invoice_id);
+          
+        console.log(`Updated invoice ${invoice_id} with error status`);
+      } catch (updateError) {
+        console.error('Failed to update invoice error status:', updateError);
+      }
+    }
+    
     return new Response(
       JSON.stringify({ 
         success: false, 
@@ -277,23 +331,14 @@ serve(async (req) => {
 });
 
 // Utility functions
-function getAccountCodeForSourceType(sourceType: string): string | undefined {
-  const mapping: Record<string, string> = {
-    'event_crew': '3000', // Service revenue
-    'event_equipment': '3100', // Equipment rental revenue
-    'manual_expense': '3900', // Other revenue
-    'fiken_added': '3900' // Other revenue
-  };
-  return mapping[sourceType];
-}
-
-function mapFikenStatusToLocal(fikenStatus: string): string {
-  const mapping: Record<string, string> = {
-    'DRAFT': 'created_in_fiken',
-    'SENT': 'sent',
-    'PAID': 'paid',
-    'OVERDUE': 'overdue',
-    'CANCELLED': 'cancelled'
-  };
-  return mapping[fikenStatus] || 'created_in_fiken';
+function getFikenProductId(projectType: string, sourceType: string): string {
+  // Determine which Fiken product to use based on project type
+  // Artist projects are VAT-free (domestic), others are 25% VAT
+  
+  if (projectType === 'Artist') {
+    return '02'; // "Tjenester utenfor MVA" - VAT-free services
+  } else {
+    // broadcast, corporate, dry_hire get 25% VAT
+    return '01'; // "Tjenester" - 25% VAT services
+  }
 }

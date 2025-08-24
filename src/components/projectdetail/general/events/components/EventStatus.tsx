@@ -141,7 +141,7 @@ function StatusManager({
   };
 
   const isBulkAction = events.length > 1;
-  const isActionDisabled = disabled || event.status === 'cancelled';
+  const isActionDisabled = disabled || event.status === 'cancelled' || event.status === 'invoiced';
 
   return (
     <DropdownMenu>
@@ -166,7 +166,8 @@ function StatusManager({
           </>
         )}
         
-        {Object.entries(STATUS_CONFIG).map(([status, config]) => {
+        {statusUtils.getValidTransitions(event.status).map((status) => {
+          const config = STATUS_CONFIG[status];
           const Icon = config.icon;
           return (
             <DropdownMenuItem
