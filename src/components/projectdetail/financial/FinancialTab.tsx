@@ -9,6 +9,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card } from '@/components/ui/card';
 import { 
   FileText, 
   Send, 
@@ -24,7 +25,6 @@ import { Project } from '@/types/projects';
 import { formatCurrency } from '@/utils/formatters';
 import { INVOICE_STATUS_LABELS } from '@/types/invoice';
 import { ProjectTabCard } from '../shared/ProjectTabCard';
-import { StandardizedCard } from '@/components/shared/StandardizedCard';
 import { SectionHeader } from '@/components/shared/SectionHeader';
 import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
 import { cn } from '@/lib/utils';
