@@ -33,39 +33,45 @@ export function useProjectInvoicing(projectId: string): ProjectInvoicingHook {
   const {
     data: projectDraft,
     isLoading: isDraftLoading,
-    error: draftError
+    error: draftError,
+    refetch: refetchDraft
   } = useQuery({
     queryKey: ['project-invoice-draft', projectId],
     queryFn: () => invoiceService.getProjectDraftWithDetails(projectId),
     enabled: !!projectId,
-    staleTime: 30000, // 30 seconds
-    refetchOnWindowFocus: false
+    staleTime: 0, // Always fresh - important for financial data
+    refetchOnWindowFocus: true, // Refresh when tab becomes active
+    refetchOnMount: true // Always refetch on mount
   });
 
   // Get Fiken invoices for project
   const {
     data: fikenInvoices = [],
     isLoading: isFikenLoading,
-    error: fikenError
+    error: fikenError,
+    refetch: refetchFikenInvoices
   } = useQuery({
     queryKey: ['project-fiken-invoices', projectId],
     queryFn: () => invoiceService.getProjectFikenInvoices(projectId),
     enabled: !!projectId,
-    staleTime: 60000, // 1 minute
-    refetchOnWindowFocus: false
+    staleTime: 0, // Always fresh - important for financial data
+    refetchOnWindowFocus: true, // Refresh when tab becomes active
+    refetchOnMount: true // Always refetch on mount
   });
 
   // Get invoice-ready events
   const {
     data: invoiceReadyEvents = [],
     isLoading: isEventsLoading,
-    error: eventsError
+    error: eventsError,
+    refetch: refetchEvents
   } = useQuery({
     queryKey: ['invoice-ready-events', projectId],
     queryFn: () => invoiceService.getInvoiceReadyEvents(projectId),
     enabled: !!projectId,
-    staleTime: 30000, // 30 seconds
-    refetchOnWindowFocus: false
+    staleTime: 0, // Always fresh - important for financial data
+    refetchOnWindowFocus: true, // Refresh when tab becomes active
+    refetchOnMount: true // Always refetch on mount
   });
 
   // -------------------------------------------------------------------------------------
@@ -182,6 +188,20 @@ export function useProjectInvoicing(projectId: string): ProjectInvoicingHook {
       setError(null);
     }
   }, [draftError, fikenError, eventsError]);
+
+  // Force refresh when hook is used (Financial Tab accessed)
+  useEffect(() => {
+    if (projectId) {
+      // Small delay to ensure component is mounted
+      const timer = setTimeout(() => {
+        refetchDraft();
+        refetchFikenInvoices(); 
+        refetchEvents();
+      }, 100);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [projectId, refetchDraft, refetchFikenInvoices, refetchEvents]);
 
   // -------------------------------------------------------------------------------------
   // CALLBACK FUNCTIONS
