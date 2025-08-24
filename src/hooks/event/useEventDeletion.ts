@@ -50,7 +50,11 @@ export const useEventDeletion = (projectId?: string) => {
         queryClient.invalidateQueries({ queryKey: ['events', projectId] }),
         queryClient.invalidateQueries({ queryKey: ['calendar-events', projectId] }),
         queryClient.invalidateQueries({ queryKey: ['project-event-equipment', event.id] }),
-        queryClient.invalidateQueries({ queryKey: ['project-event-roles', event.id] })
+        queryClient.invalidateQueries({ queryKey: ['project-event-roles', event.id] }),
+        // ✅ NEW: Also invalidate Financial Tab queries when events are deleted
+        queryClient.invalidateQueries({ queryKey: ['project-invoice-draft', projectId] }),
+        queryClient.invalidateQueries({ queryKey: ['project-fiken-invoices', projectId] }),
+        queryClient.invalidateQueries({ queryKey: ['invoice-ready-events', projectId] })
       ]);
 
       toast("Event Deleted", {

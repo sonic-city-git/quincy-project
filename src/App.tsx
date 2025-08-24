@@ -4,6 +4,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppLayout } from "@/components/layouts/AppLayout";
 import { useGlobalKeyboard } from "@/hooks/global";
+
 import Auth from "@/pages/Auth";
 import Index from "@/pages/Index";
 import ProjectList from "@/pages/ProjectList";
@@ -14,6 +15,8 @@ import Resources from "@/pages/Resources";
 function App() {
   // Global keyboard shortcuts (double ESC to dashboard)
   useGlobalKeyboard();
+  
+
 
   return (
     <AuthProvider>

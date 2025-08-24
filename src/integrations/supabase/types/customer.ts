@@ -7,7 +7,7 @@ export type Customer = {
   phone_number: string | null;
   created_at: string;
   updated_at: string;
-  tripletex_id: number | null;
+  fiken_customer_id: string | null;
 };
 
 export type CustomerInsert = Omit<Customer, 'id' | 'created_at' | 'updated_at'>;

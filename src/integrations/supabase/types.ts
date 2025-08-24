@@ -7,38 +7,83 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          operationName?: string
-          query?: string
-          variables?: Json
-          extensions?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   public: {
     Tables: {
+      confirmed_subrentals: {
+        Row: {
+          cost: number | null
+          created_at: string | null
+          end_date: string
+          equipment_id: string
+          equipment_name: string
+          id: string
+          notes: string | null
+          provider_id: string
+          quantity: number
+          start_date: string
+          status: string
+          temporary_serial: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cost?: number | null
+          created_at?: string | null
+          end_date: string
+          equipment_id: string
+          equipment_name: string
+          id?: string
+          notes?: string | null
+          provider_id: string
+          quantity: number
+          start_date: string
+          status?: string
+          temporary_serial?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cost?: number | null
+          created_at?: string | null
+          end_date?: string
+          equipment_id?: string
+          equipment_name?: string
+          id?: string
+          notes?: string | null
+          provider_id?: string
+          quantity?: number
+          start_date?: string
+          status?: string
+          temporary_serial?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "confirmed_subrentals_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "confirmed_subrentals_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_virtual_stock"
+            referencedColumns: ["equipment_id"]
+          },
+          {
+            foreignKeyName: "confirmed_subrentals_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "external_providers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crew_folders: {
         Row: {
           created_at: string
@@ -157,33 +202,33 @@ export type Database = {
           created_at: string
           customer_number: string | null
           email: string | null
+          fiken_customer_id: string | null
           id: string
           name: string
           organization_number: string | null
           phone_number: string | null
-          tripletex_id: number | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           customer_number?: string | null
           email?: string | null
+          fiken_customer_id?: string | null
           id?: string
           name: string
           organization_number?: string | null
           phone_number?: string | null
-          tripletex_id?: number | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           customer_number?: string | null
           email?: string | null
+          fiken_customer_id?: string | null
           id?: string
           name?: string
           organization_number?: string | null
           phone_number?: string | null
-          tripletex_id?: number | null
           updated_at?: string
         }
         Relationships: []
@@ -363,6 +408,13 @@ export type Database = {
             referencedRelation: "equipment"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "equipment_repairs_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_virtual_stock"
+            referencedColumns: ["equipment_id"]
+          },
         ]
       }
       equipment_serial_numbers: {
@@ -400,6 +452,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "equipment"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "equipment_serial_numbers_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_virtual_stock"
+            referencedColumns: ["equipment_id"]
           },
         ]
       }
@@ -445,6 +504,45 @@ export type Database = {
         }
         Relationships: []
       }
+      external_providers: {
+        Row: {
+          company_name: string
+          contact_email: string | null
+          created_at: string | null
+          geographic_coverage: string[] | null
+          id: string
+          phone: string | null
+          preferred_status: boolean | null
+          reliability_rating: number | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          company_name: string
+          contact_email?: string | null
+          created_at?: string | null
+          geographic_coverage?: string[] | null
+          id?: string
+          phone?: string | null
+          preferred_status?: boolean | null
+          reliability_rating?: number | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          company_name?: string
+          contact_email?: string | null
+          created_at?: string | null
+          geographic_coverage?: string[] | null
+          id?: string
+          phone?: string | null
+          preferred_status?: boolean | null
+          reliability_rating?: number | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       hourly_rate_settings: {
         Row: {
           category: Database["public"]["Enums"]["hourly_rate_category"]
@@ -477,6 +575,227 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      invoice_event_links: {
+        Row: {
+          created_at: string
+          crew_line_item_id: string | null
+          equipment_line_item_id: string | null
+          event_id: string
+          id: string
+          included_crew: boolean
+          included_equipment: boolean
+          invoice_id: string
+        }
+        Insert: {
+          created_at?: string
+          crew_line_item_id?: string | null
+          equipment_line_item_id?: string | null
+          event_id: string
+          id?: string
+          included_crew?: boolean
+          included_equipment?: boolean
+          invoice_id: string
+        }
+        Update: {
+          created_at?: string
+          crew_line_item_id?: string | null
+          equipment_line_item_id?: string | null
+          event_id?: string
+          id?: string
+          included_crew?: boolean
+          included_equipment?: boolean
+          invoice_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_event_links_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "project_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_event_links_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoice_line_items: {
+        Row: {
+          created_at: string
+          description: string
+          fiken_line_id: string | null
+          id: string
+          invoice_id: string
+          is_editable: boolean
+          line_total: number
+          quantity: number
+          sort_order: number
+          source_id: string | null
+          source_type: string
+          tax_rate: number
+          total_price: number
+          unit_price: number
+          updated_at: string
+          vat_amount: number
+          vat_rate: number
+          vat_type: string
+        }
+        Insert: {
+          created_at?: string
+          description: string
+          fiken_line_id?: string | null
+          id?: string
+          invoice_id: string
+          is_editable?: boolean
+          line_total?: number
+          quantity?: number
+          sort_order?: number
+          source_id?: string | null
+          source_type?: string
+          tax_rate?: number
+          total_price?: number
+          unit_price?: number
+          updated_at?: string
+          vat_amount?: number
+          vat_rate?: number
+          vat_type?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          fiken_line_id?: string | null
+          id?: string
+          invoice_id?: string
+          is_editable?: boolean
+          line_total?: number
+          quantity?: number
+          sort_order?: number
+          source_id?: string | null
+          source_type?: string
+          tax_rate?: number
+          total_price?: number
+          unit_price?: number
+          updated_at?: string
+          vat_amount?: number
+          vat_rate?: number
+          vat_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_line_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          created_at: string
+          currency: string
+          customer_id: string
+          due_date: string | null
+          fiken_created_at: string | null
+          fiken_invoice_id: string | null
+          fiken_invoice_number: string | null
+          fiken_status: string | null
+          fiken_url: string | null
+          id: string
+          invoice_date: string
+          invoice_number: string | null
+          invoice_type: string
+          is_auto_draft: boolean
+          last_synced_at: string | null
+          notes: string | null
+          paid_at: string | null
+          paid_date: string | null
+          project_id: string
+          sent_at: string | null
+          sent_date: string | null
+          status: string
+          subtotal_amount: number
+          tax_amount: number
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          customer_id: string
+          due_date?: string | null
+          fiken_created_at?: string | null
+          fiken_invoice_id?: string | null
+          fiken_invoice_number?: string | null
+          fiken_status?: string | null
+          fiken_url?: string | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string | null
+          invoice_type?: string
+          is_auto_draft?: boolean
+          last_synced_at?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          paid_date?: string | null
+          project_id: string
+          sent_at?: string | null
+          sent_date?: string | null
+          status?: string
+          subtotal_amount?: number
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          customer_id?: string
+          due_date?: string | null
+          fiken_created_at?: string | null
+          fiken_invoice_id?: string | null
+          fiken_invoice_number?: string | null
+          fiken_status?: string | null
+          fiken_url?: string | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string | null
+          invoice_type?: string
+          is_auto_draft?: boolean
+          last_synced_at?: string | null
+          notes?: string | null
+          paid_at?: string | null
+          paid_date?: string | null
+          project_id?: string
+          sent_at?: string | null
+          sent_date?: string | null
+          status?: string
+          subtotal_amount?: number
+          tax_amount?: number
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_crew: {
         Row: {
@@ -557,6 +876,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "equipment"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_equipment_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_virtual_stock"
+            referencedColumns: ["equipment_id"]
           },
           {
             foreignKeyName: "project_equipment_group_id_fkey"
@@ -676,6 +1002,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "equipment"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_event_equipment_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_virtual_stock"
+            referencedColumns: ["equipment_id"]
           },
           {
             foreignKeyName: "project_event_equipment_event_id_fkey"
@@ -1079,6 +1412,106 @@ export type Database = {
           },
         ]
       }
+      repair_order_items: {
+        Row: {
+          created_at: string | null
+          equipment_id: string
+          equipment_name: string
+          estimated_cost: number | null
+          id: string
+          issue_description: string | null
+          quantity: number
+          repair_order_id: string
+          serial_numbers: string[] | null
+        }
+        Insert: {
+          created_at?: string | null
+          equipment_id: string
+          equipment_name: string
+          estimated_cost?: number | null
+          id?: string
+          issue_description?: string | null
+          quantity: number
+          repair_order_id: string
+          serial_numbers?: string[] | null
+        }
+        Update: {
+          created_at?: string | null
+          equipment_id?: string
+          equipment_name?: string
+          estimated_cost?: number | null
+          id?: string
+          issue_description?: string | null
+          quantity?: number
+          repair_order_id?: string
+          serial_numbers?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "repair_order_items_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "repair_order_items_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_virtual_stock"
+            referencedColumns: ["equipment_id"]
+          },
+          {
+            foreignKeyName: "repair_order_items_repair_order_id_fkey"
+            columns: ["repair_order_id"]
+            isOneToOne: false
+            referencedRelation: "repair_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      repair_orders: {
+        Row: {
+          actual_end_date: string | null
+          created_at: string | null
+          estimated_end_date: string | null
+          facility_name: string
+          id: string
+          name: string
+          notes: string | null
+          start_date: string
+          status: string
+          total_cost: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          actual_end_date?: string | null
+          created_at?: string | null
+          estimated_end_date?: string | null
+          facility_name: string
+          id?: string
+          name: string
+          notes?: string | null
+          start_date: string
+          status?: string
+          total_cost?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          actual_end_date?: string | null
+          created_at?: string | null
+          estimated_end_date?: string | null
+          facility_name?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          start_date?: string
+          status?: string
+          total_cost?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       revenue_events: {
         Row: {
           created_at: string
@@ -1105,6 +1538,111 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      subrental_order_items: {
+        Row: {
+          created_at: string | null
+          equipment_id: string
+          equipment_name: string
+          id: string
+          notes: string | null
+          quantity: number
+          subrental_order_id: string
+          temporary_serial: string | null
+          unit_cost: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          equipment_id: string
+          equipment_name: string
+          id?: string
+          notes?: string | null
+          quantity: number
+          subrental_order_id: string
+          temporary_serial?: string | null
+          unit_cost?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          equipment_id?: string
+          equipment_name?: string
+          id?: string
+          notes?: string | null
+          quantity?: number
+          subrental_order_id?: string
+          temporary_serial?: string | null
+          unit_cost?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subrental_order_items_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subrental_order_items_equipment_id_fkey"
+            columns: ["equipment_id"]
+            isOneToOne: false
+            referencedRelation: "equipment_virtual_stock"
+            referencedColumns: ["equipment_id"]
+          },
+          {
+            foreignKeyName: "subrental_order_items_subrental_order_id_fkey"
+            columns: ["subrental_order_id"]
+            isOneToOne: false
+            referencedRelation: "subrental_orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subrental_orders: {
+        Row: {
+          created_at: string | null
+          end_date: string
+          id: string
+          name: string
+          notes: string | null
+          provider_id: string
+          start_date: string
+          status: string
+          total_cost: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          end_date: string
+          id?: string
+          name: string
+          notes?: string | null
+          provider_id: string
+          start_date: string
+          status?: string
+          total_cost?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          provider_id?: string
+          start_date?: string
+          status?: string
+          total_cost?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subrental_orders_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "external_providers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sync_operations: {
         Row: {
@@ -1195,6 +1733,18 @@ export type Database = {
       }
     }
     Views: {
+      equipment_virtual_stock: {
+        Row: {
+          base_stock: number | null
+          date: string | null
+          effective_stock: number | null
+          equipment_id: string | null
+          equipment_name: string | null
+          virtual_additions: number | null
+          virtual_reductions: number | null
+        }
+        Relationships: []
+      }
       variant_statistics: {
         Row: {
           default_variants: number | null
@@ -1210,18 +1760,51 @@ export type Database = {
       calculate_hourly_cost: {
         Args:
           | {
-              p_hours: number
-              p_hourly_rate: number
               p_category: Database["public"]["Enums"]["hourly_rate_category"]
+              p_hourly_rate: number
+              p_hours: number
             }
           | {
-              p_hours: number
-              p_hourly_rate: number
               p_category: Database["public"]["Enums"]["hourly_rate_category"]
+              p_hourly_rate: number
+              p_hours: number
               p_is_artist?: boolean
               p_is_hours_event?: boolean
             }
         Returns: number
+      }
+      create_line_items_for_event: {
+        Args: { p_event_id: string; p_invoice_id: string }
+        Returns: undefined
+      }
+      get_equipment_virtual_stock: {
+        Args: { end_date: string; equipment_ids: string[]; start_date: string }
+        Returns: {
+          base_stock: number
+          date: string
+          effective_stock: number
+          equipment_id: string
+          equipment_name: string
+          virtual_additions: number
+          virtual_reductions: number
+        }[]
+      }
+      migrate_confirmed_subrentals_to_orders: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          errors: string[]
+          items_created: number
+          orders_created: number
+          total_cost_migrated: number
+        }[]
+      }
+      remove_event_from_draft_invoices: {
+        Args: { p_event_id: string }
+        Returns: undefined
+      }
+      rollback_20250807025200: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       sync_all_avatars: {
         Args: Record<PropertyKey, never>
@@ -1263,322 +1846,26 @@ export type Database = {
       }
       update_group_sort_orders: {
         Args: {
+          p_direction: number
           p_project_id: string
           p_source_group_id: string
           p_target_sort_order: number
-          p_direction: number
         }
         Returns: undefined
+      }
+      validate_stock_system_integrity: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          check_name: string
+          details: string
+          passed: boolean
+        }[]
       }
     }
     Enums: {
       event_status: "proposed" | "confirmed" | "cancelled"
       hourly_rate_category: "flat" | "corporate" | "broadcast"
       project_type: "artist" | "corporate" | "broadcast" | "dry_hire"
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  storage: {
-    Tables: {
-      buckets: {
-        Row: {
-          allowed_mime_types: string[] | null
-          avif_autodetection: boolean | null
-          created_at: string | null
-          file_size_limit: number | null
-          id: string
-          name: string
-          owner: string | null
-          owner_id: string | null
-          public: boolean | null
-          updated_at: string | null
-        }
-        Insert: {
-          allowed_mime_types?: string[] | null
-          avif_autodetection?: boolean | null
-          created_at?: string | null
-          file_size_limit?: number | null
-          id: string
-          name: string
-          owner?: string | null
-          owner_id?: string | null
-          public?: boolean | null
-          updated_at?: string | null
-        }
-        Update: {
-          allowed_mime_types?: string[] | null
-          avif_autodetection?: boolean | null
-          created_at?: string | null
-          file_size_limit?: number | null
-          id?: string
-          name?: string
-          owner?: string | null
-          owner_id?: string | null
-          public?: boolean | null
-          updated_at?: string | null
-        }
-        Relationships: []
-      }
-      migrations: {
-        Row: {
-          executed_at: string | null
-          hash: string
-          id: number
-          name: string
-        }
-        Insert: {
-          executed_at?: string | null
-          hash: string
-          id: number
-          name: string
-        }
-        Update: {
-          executed_at?: string | null
-          hash?: string
-          id?: number
-          name?: string
-        }
-        Relationships: []
-      }
-      objects: {
-        Row: {
-          bucket_id: string | null
-          created_at: string | null
-          id: string
-          last_accessed_at: string | null
-          metadata: Json | null
-          name: string | null
-          owner: string | null
-          owner_id: string | null
-          path_tokens: string[] | null
-          updated_at: string | null
-          user_metadata: Json | null
-          version: string | null
-        }
-        Insert: {
-          bucket_id?: string | null
-          created_at?: string | null
-          id?: string
-          last_accessed_at?: string | null
-          metadata?: Json | null
-          name?: string | null
-          owner?: string | null
-          owner_id?: string | null
-          path_tokens?: string[] | null
-          updated_at?: string | null
-          user_metadata?: Json | null
-          version?: string | null
-        }
-        Update: {
-          bucket_id?: string | null
-          created_at?: string | null
-          id?: string
-          last_accessed_at?: string | null
-          metadata?: Json | null
-          name?: string | null
-          owner?: string | null
-          owner_id?: string | null
-          path_tokens?: string[] | null
-          updated_at?: string | null
-          user_metadata?: Json | null
-          version?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "objects_bucketId_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      s3_multipart_uploads: {
-        Row: {
-          bucket_id: string
-          created_at: string
-          id: string
-          in_progress_size: number
-          key: string
-          owner_id: string | null
-          upload_signature: string
-          user_metadata: Json | null
-          version: string
-        }
-        Insert: {
-          bucket_id: string
-          created_at?: string
-          id: string
-          in_progress_size?: number
-          key: string
-          owner_id?: string | null
-          upload_signature: string
-          user_metadata?: Json | null
-          version: string
-        }
-        Update: {
-          bucket_id?: string
-          created_at?: string
-          id?: string
-          in_progress_size?: number
-          key?: string
-          owner_id?: string | null
-          upload_signature?: string
-          user_metadata?: Json | null
-          version?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "s3_multipart_uploads_bucket_id_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      s3_multipart_uploads_parts: {
-        Row: {
-          bucket_id: string
-          created_at: string
-          etag: string
-          id: string
-          key: string
-          owner_id: string | null
-          part_number: number
-          size: number
-          upload_id: string
-          version: string
-        }
-        Insert: {
-          bucket_id: string
-          created_at?: string
-          etag: string
-          id?: string
-          key: string
-          owner_id?: string | null
-          part_number: number
-          size?: number
-          upload_id: string
-          version: string
-        }
-        Update: {
-          bucket_id?: string
-          created_at?: string
-          etag?: string
-          id?: string
-          key?: string
-          owner_id?: string | null
-          part_number?: number
-          size?: number
-          upload_id?: string
-          version?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "s3_multipart_uploads_parts_bucket_id_fkey"
-            columns: ["bucket_id"]
-            isOneToOne: false
-            referencedRelation: "buckets"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "s3_multipart_uploads_parts_upload_id_fkey"
-            columns: ["upload_id"]
-            isOneToOne: false
-            referencedRelation: "s3_multipart_uploads"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      can_insert_object: {
-        Args: { bucketid: string; name: string; owner: string; metadata: Json }
-        Returns: undefined
-      }
-      extension: {
-        Args: { name: string }
-        Returns: string
-      }
-      filename: {
-        Args: { name: string }
-        Returns: string
-      }
-      foldername: {
-        Args: { name: string }
-        Returns: string[]
-      }
-      get_size_by_bucket: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          size: number
-          bucket_id: string
-        }[]
-      }
-      list_multipart_uploads_with_delimiter: {
-        Args: {
-          bucket_id: string
-          prefix_param: string
-          delimiter_param: string
-          max_keys?: number
-          next_key_token?: string
-          next_upload_token?: string
-        }
-        Returns: {
-          key: string
-          id: string
-          created_at: string
-        }[]
-      }
-      list_objects_with_delimiter: {
-        Args: {
-          bucket_id: string
-          prefix_param: string
-          delimiter_param: string
-          max_keys?: number
-          start_after?: string
-          next_token?: string
-        }
-        Returns: {
-          name: string
-          id: string
-          metadata: Json
-          updated_at: string
-        }[]
-      }
-      operation: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      search: {
-        Args: {
-          prefix: string
-          bucketname: string
-          limits?: number
-          levels?: number
-          offsets?: number
-          search?: string
-          sortcolumn?: string
-          sortorder?: string
-        }
-        Returns: {
-          name: string
-          id: string
-          updated_at: string
-          created_at: string
-          last_accessed_at: string
-          metadata: Json
-        }[]
-      }
-    }
-    Enums: {
-      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1704,17 +1991,11 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
-  graphql_public: {
-    Enums: {},
-  },
   public: {
     Enums: {
       event_status: ["proposed", "confirmed", "cancelled"],
       hourly_rate_category: ["flat", "corporate", "broadcast"],
       project_type: ["artist", "corporate", "broadcast", "dry_hire"],
     },
-  },
-  storage: {
-    Enums: {},
   },
 } as const

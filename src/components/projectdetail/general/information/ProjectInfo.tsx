@@ -4,6 +4,8 @@ import { formatDisplayDate } from "@/utils/dateFormatters";
 import { Project } from "@/types/projects";
 import { CalendarEvent } from "@/types/events";
 import { FORM_PATTERNS, cn } from "@/design-system";
+import { useUpdateProject } from "@/hooks/project";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ProjectInfoProps {
   project: Project;
@@ -12,6 +14,32 @@ interface ProjectInfoProps {
 }
 
 export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInfoProps) {
+  const queryClient = useQueryClient();
+  const { mutate: updateProject } = useUpdateProject();
+
+  const handleCustomerChange = (customerId: string) => {
+    updateProject({
+      id: project.id,
+      customer_id: customerId || null
+    }, {
+      onSuccess: () => {
+        // Invalidate project queries to refresh the UI
+        queryClient.invalidateQueries({ queryKey: ['project', project.id] });
+      }
+    });
+  };
+
+  const handleOwnerChange = (ownerId: string) => {
+    updateProject({
+      id: project.id,
+      owner_id: ownerId || null
+    }, {
+      onSuccess: () => {
+        // Invalidate project queries to refresh the UI
+        queryClient.invalidateQueries({ queryKey: ['project', project.id] });
+      }
+    });
+  };
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return '-';
@@ -40,7 +68,7 @@ export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInf
         <label className="text-xs font-medium text-muted-foreground">Customer</label>
         <CustomerSelect
           value={project.customer_id || ''}
-          onChange={() => {}}
+          onChange={handleCustomerChange}
           required={false}
           className={cn(
             FORM_PATTERNS.input.default,
@@ -54,7 +82,7 @@ export function ProjectInfo({ project, events = [], onStatusChange }: ProjectInf
         <label className="text-xs font-medium text-muted-foreground">Owner</label>
         <OwnerSelect
           value={project.owner_id || ''}
-          onChange={() => {}}
+          onChange={handleOwnerChange}
           required={false}
           className={cn(
             FORM_PATTERNS.input.default,

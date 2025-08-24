@@ -104,5 +104,4 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Add helpful comment
-COMMENT ON FUNCTION sync_event_crew IS 'Creates unfilled role slots for events without automatically assigning preferred crew. Users must manually assign crew through the UI.';
+-- Note: Function comment skipped due to overloaded function signatures

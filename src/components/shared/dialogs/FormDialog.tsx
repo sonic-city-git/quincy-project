@@ -72,7 +72,8 @@ export function FormDialog({
     >
       <DialogContent 
         className={cn(sizeClasses[size], contentClassName)}
-        aria-labelledby={description ? "dialog-description" : undefined}
+        aria-labelledby="dialog-title"
+        aria-describedby={description ? "dialog-description" : undefined}
       >
         <DialogHeader>
           <DialogTitle id="dialog-title">{title}</DialogTitle>

@@ -142,13 +142,13 @@ export const statusUtils = {
       case 'proposed':
         return ['confirmed', 'cancelled'];
       case 'confirmed':
-        return ['invoice ready', 'cancelled'];
+        return ['invoice ready', 'cancelled', 'proposed']; // Allow back to proposed
       case 'invoice ready':
-        return ['invoiced', 'cancelled'];
+        return ['confirmed', 'cancelled']; // Remove 'invoiced' - only Fiken can set this
       case 'cancelled':
-        return []; // No transitions from cancelled
+        return ['proposed']; // Allow reactivation from cancelled
       case 'invoiced':
-        return []; // No transitions from invoiced
+        return []; // No transitions from invoiced - locked by Fiken
       default:
         return [];
     }
