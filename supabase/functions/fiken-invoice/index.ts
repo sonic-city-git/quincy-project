@@ -7,12 +7,18 @@ const corsHeaders = {
 }
 
 interface FikenInvoiceRequest {
-  action: 'create_draft' | 'sync_status' | 'test_connection';
+  action: 'create_draft' | 'sync_status' | 'test_connection' | 'create_or_update_draft';
   customer?: any;
   lineItems?: any[];
   dueDate?: string;
   projectReference?: string;
   fikenInvoiceId?: string;
+  // New parameters for create_or_update_draft
+  invoice_id?: string;
+  project_name?: string;
+  customer_fiken_id?: string;
+  total_amount?: number;
+  due_date?: string;
 }
 
 serve(async (req) => {
@@ -31,7 +37,7 @@ serve(async (req) => {
       throw new Error('Fiken API credentials not configured');
     }
 
-    const { action, customer, lineItems, dueDate, projectReference, fikenInvoiceId }: FikenInvoiceRequest = await req.json();
+    const { action, customer, lineItems, dueDate, projectReference, fikenInvoiceId, invoice_id, project_name, customer_fiken_id, total_amount, due_date }: FikenInvoiceRequest = await req.json();
 
     const fikenHeaders = {
       'Authorization': `Bearer ${fikenApiKey}`,
@@ -173,6 +179,72 @@ serve(async (req) => {
           paid_date: invoiceData.paid_date,
           total_amount: invoiceData.total_amount,
           fiken_status: invoiceData.status
+        };
+        break;
+
+      case 'create_or_update_draft':
+        if (!invoice_id || !customer_fiken_id || !total_amount || !due_date) {
+          throw new Error('Missing required parameters for draft creation');
+        }
+
+        // Initialize Supabase client to get invoice line items
+        const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+        const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // Get line items for this invoice
+        const { data: invoiceLineItems, error: lineItemsError } = await supabase
+          .from('invoice_line_items')
+          .select('*')
+          .eq('invoice_id', invoice_id);
+
+        if (lineItemsError) {
+          throw new Error(`Failed to get line items: ${lineItemsError.message}`);
+        }
+
+        if (!invoiceLineItems || invoiceLineItems.length === 0) {
+          throw new Error('No line items found for invoice');
+        }
+
+        // Convert line items to Fiken format
+        const fikenDraftLines = invoiceLineItems.map(item => ({
+          description: item.description,
+          quantity: item.quantity,
+          unit_price_excluding_vat: item.unit_price,
+          vat_type: item.vat_type || 'HIGH',
+          account_code: getAccountCodeForSourceType(item.source_type)
+        }));
+
+        // Create draft invoice in Fiken
+        const draftInvoiceRequest = {
+          customer_id: customer_fiken_id,
+          issue_date: new Date().toISOString().split('T')[0],
+          due_date: due_date,
+          invoice_text: project_name ? `Project: ${project_name}` : undefined,
+          lines: fikenDraftLines,
+          send_method: null // Create as draft
+        };
+
+        const createDraftResponse = await fetch(getApiUrl('/invoices'), {
+          method: 'POST',
+          headers: fikenHeaders,
+          body: JSON.stringify(draftInvoiceRequest)
+        });
+
+        if (!createDraftResponse.ok) {
+          const errorText = await createDraftResponse.text();
+          throw new Error(`Failed to create draft in Fiken: ${errorText}`);
+        }
+
+        const draftResult = await createDraftResponse.json();
+        
+        result = {
+          success: true,
+          fiken_invoice_id: draftResult.id,
+          fiken_invoice_number: draftResult.invoice_number,
+          fiken_url: `https://fiken.no/${fikenCompanySlug}/invoices/${draftResult.id}`,
+          status: draftResult.status,
+          total_amount: draftResult.total_amount
         };
         break;
 
