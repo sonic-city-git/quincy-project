@@ -248,13 +248,14 @@ export function useFikenConnection() {
   } = useQuery({
     queryKey: ['fiken-connection-test'],
     queryFn: () => invoiceService.testFikenConnection(),
-    enabled: false, // Only run when explicitly called
-    retry: false,
-    staleTime: 300000 // 5 minutes
+    enabled: true, // Auto-test connection on load
+    retry: 1, // Retry once if it fails
+    staleTime: 300000, // 5 minutes
+    refetchOnWindowFocus: false
   });
 
   return {
-    isConnected,
+    isConnected: isConnected ?? false, // Default to false if undefined
     isTestingConnection,
     connectionError,
     testConnection

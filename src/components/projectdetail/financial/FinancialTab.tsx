@@ -12,14 +12,13 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card } from '@/components/ui/card';
 import { 
   FileText, 
-  Send, 
   RefreshCw, 
   ExternalLink,
   AlertCircle,
   DollarSign,
   CreditCard
 } from 'lucide-react';
-import { useProjectInvoicing, useFikenConnection } from '@/hooks/invoice/useProjectInvoicing';
+import { useProjectInvoicing } from '@/hooks/invoice/useProjectInvoicing';
 import { InvoiceWithDetails, Invoice } from '@/types/invoice';
 import { Project } from '@/types/projects';
 import { formatCurrency } from '@/utils/formatters';
@@ -46,30 +45,16 @@ export function FinancialTab({ project, projectId }: FinancialTabProps) {
     isDraftLoading,
     isFikenLoading,
     isEventsLoading,
-    createInvoiceInFiken,
-    addEventsToProjectDraft,
     removeEventFromDraft,
     syncInvoiceStatuses,
     error
   } = useProjectInvoicing(projectId);
 
-  const { isConnected, testConnection } = useFikenConnection();
 
-  const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
+
   // -------------------------------------------------------------------------------------
   // EVENT HANDLERS
   // -------------------------------------------------------------------------------------
-
-  const handleCreateInvoice = async () => {
-    if (!projectDraft) return;
-    
-    setIsCreatingInvoice(true);
-    try {
-      await createInvoiceInFiken();
-    } finally {
-      setIsCreatingInvoice(false);
-    }
-  };
 
   const handleRemoveEvent = async (eventId: string) => {
     try {
@@ -117,25 +102,7 @@ export function FinancialTab({ project, projectId }: FinancialTabProps) {
           }
         />
 
-        {/* Connection Status */}
-        {!isConnected && (
-          <Alert className="border-yellow-200/20 bg-yellow-50/10">
-            <AlertCircle className="h-4 w-4 text-yellow-500" />
-            <AlertDescription className="flex items-center justify-between">
-              <span className="text-yellow-600">
-                Fiken API: Not connected
-              </span>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => testConnection()}
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Test Connection
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
+
         
         {/* Error Display */}
         {error && (
@@ -153,8 +120,6 @@ export function FinancialTab({ project, projectId }: FinancialTabProps) {
           <AutoDraftInvoiceCard
             projectDraft={projectDraft}
             isDraftLoading={isDraftLoading}
-            isCreatingInvoice={isCreatingInvoice}
-            onCreateInvoice={handleCreateInvoice}
             onRemoveEvent={handleRemoveEvent}
             invoiceReadyCount={invoiceReadyEvents.length}
           />
@@ -177,8 +142,6 @@ export function FinancialTab({ project, projectId }: FinancialTabProps) {
 interface AutoDraftInvoiceCardProps {
   projectDraft: InvoiceWithDetails | null;
   isDraftLoading: boolean;
-  isCreatingInvoice: boolean;
-  onCreateInvoice: () => void;
   onRemoveEvent: (eventId: string) => void;
   invoiceReadyCount: number;
 }
@@ -186,13 +149,10 @@ interface AutoDraftInvoiceCardProps {
 function AutoDraftInvoiceCard({
   projectDraft,
   isDraftLoading,
-  isCreatingInvoice,
-  onCreateInvoice,
   onRemoveEvent,
   invoiceReadyCount
 }: AutoDraftInvoiceCardProps) {
   const hasEvents = projectDraft?.event_links && projectDraft.event_links.length > 0;
-  const canCreateInvoice = hasEvents && projectDraft?.project?.customer;
   const infoColors = STATUS_COLORS.info;
 
   return (
@@ -211,17 +171,6 @@ function AutoDraftInvoiceCard({
               Auto-synced
             </Badge>
           </div>
-          {canCreateInvoice && (
-            <Button 
-              onClick={onCreateInvoice}
-              disabled={isCreatingInvoice}
-              size="sm"
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Send className="w-4 h-4 mr-2" />
-              {isCreatingInvoice ? 'Creating...' : 'Create in Fiken'}
-            </Button>
-          )}
         </div>
       </div>
 
@@ -238,8 +187,8 @@ function AutoDraftInvoiceCard({
             <p className="font-medium">No events in draft invoice</p>
             <p className="text-sm">
               {invoiceReadyCount > 0 
-                ? `${invoiceReadyCount} invoice-ready events will be auto-synced to draft`
-                : 'Mark events as "invoice ready" to auto-add them here'
+                ? `${invoiceReadyCount} invoice-ready events are being synced...`
+                : 'Mark events as "invoice ready" and they will automatically appear here'
               }
             </p>
           </div>
