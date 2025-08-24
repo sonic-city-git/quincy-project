@@ -8,7 +8,6 @@ export type Customer = {
   created_at: string;
   updated_at: string;
   fiken_customer_id: string | null;
-  tripletex_id: number | null; // DEPRECATED: Legacy field, use fiken_customer_id
 };
 
 export type CustomerInsert = Omit<Customer, 'id' | 'created_at' | 'updated_at'>;
