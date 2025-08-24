@@ -28,6 +28,7 @@ import { toast } from 'sonner';
 import { copyEquipmentBetweenVariants } from '@/utils/variantEquipmentCopy';
 import { AddRoleDialog } from '../crew/components/AddRoleDialog';
 import { GroupDialogs } from '../equipment/components/GroupDialogs';
+import { syncVariantCrewWithToast } from '@/utils/crewSync';
 
 // Equipment Section Button Component
 function EquipmentSectionButton({ 
@@ -106,9 +107,17 @@ function CrewSectionButton({
 }) {
   const [isAddRoleDialogOpen, setIsAddRoleDialogOpen] = useState(false);
   const { project } = useProjectDetails(projectId);
-  const { crewRoles } = useVariantCrew(projectId, variantId);
 
-  const totalRoles = crewRoles?.length || 0;
+  const handleAddRoleClose = async (roleAdded: boolean) => {
+    setIsAddRoleDialogOpen(false);
+    
+    // Auto-sync crew roles to events when a new role is added
+    if (roleAdded && variantId) {
+      setTimeout(async () => {
+        await syncVariantCrewWithToast(projectId, variantId, variantName);
+      }, 500); // Small delay to ensure the role was fully added
+    }
+  };
 
   return (
     <>
@@ -125,7 +134,7 @@ function CrewSectionButton({
       {project && (
         <AddRoleDialog
           isOpen={isAddRoleDialogOpen}
-          onClose={() => setIsAddRoleDialogOpen(false)}
+          onClose={handleAddRoleClose}
           project={project}
           variantId={variantId}
           variantName={variantName}

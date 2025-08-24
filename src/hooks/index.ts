@@ -27,6 +27,9 @@ export * from './equipment';
 // Customer Relations
 export * from './customer';
 
+// Invoice Management
+export * from './invoice';
+
 // Calendar Functionality
 export * from './calendar';
 

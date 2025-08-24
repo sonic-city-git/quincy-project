@@ -8,6 +8,10 @@
 import React, { useState } from 'react';
 import { Users, AlertTriangle, UserCheck, UserX, Calendar, ExternalLink } from 'lucide-react';
 import { FormDialog } from '@/components/shared/dialogs/FormDialog';
+import { useCrew } from '@/hooks/crew/useCrew';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   Table,
   TableBody,
@@ -19,6 +23,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CalendarEvent } from '@/types/events';
 
 interface CrewConflict {
@@ -63,6 +68,8 @@ export function CrewAssignmentDialog({
   nonPreferredRoles = []
 }: CrewAssignmentDialogProps) {
   
+
+
   const [activeTab, setActiveTab] = useState<string>(() => {
     // Auto-select the most critical tab
     if (conflicts.length > 0) return 'conflicts';
@@ -70,6 +77,52 @@ export function CrewAssignmentDialog({
     if (nonPreferredCount > 0) return 'assignments';
     return 'assignments';
   });
+
+  // Get crew members for assignment
+  const { crew, isLoading: crewLoading, error: crewError } = useCrew();
+  const queryClient = useQueryClient();
+  
+  // Handle loading and error states
+  if (crewLoading) {
+    return (
+      <FormDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        title="Loading..."
+        description="Loading crew data..."
+        size="full"
+      >
+        <div className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading crew assignment data...</p>
+          </div>
+        </div>
+      </FormDialog>
+    );
+  }
+  
+  if (crewError) {
+    return (
+      <FormDialog
+        open={open}
+        onOpenChange={onOpenChange}
+        title="Error Loading Crew Data"
+        description="There was an error loading crew information"
+        size="full"
+      >
+        <div className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <div className="text-red-500 mb-4">⚠️</div>
+            <p className="text-muted-foreground">Failed to load crew data. Please try again.</p>
+            <Button onClick={() => onOpenChange(false)} className="mt-4">
+              Close
+            </Button>
+          </div>
+        </div>
+      </FormDialog>
+    );
+  }
 
   const formatDate = (dateStr: string | Date) => {
     const date = dateStr instanceof Date ? dateStr : new Date(dateStr);
@@ -89,19 +142,64 @@ export function CrewAssignmentDialog({
   );
   const filledRoles = eventRoles.filter(role => role.crew_member_id);
 
-  const handleAssignCrew = (roleId: string) => {
-    // TODO: Open crew selection interface
-    console.log('Opening crew assignment for role:', roleId);
+  const handleAssignCrew = async (roleId: string, crewMemberId: string | null) => {
+    try {
+      const { error } = await supabase
+        .from('project_event_roles')
+        .update({ 
+          crew_member_id: crewMemberId,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', roleId);
+
+      if (error) throw error;
+
+      // Invalidate relevant queries to refresh the UI
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['event-roles', event.id] }),
+        queryClient.invalidateQueries({ queryKey: ['crew-assignments'] }),
+        queryClient.invalidateQueries({ queryKey: ['crew-conflicts'] })
+      ]);
+
+      toast.success(crewMemberId ? 'Crew member assigned successfully' : 'Crew member unassigned');
+    } catch (error) {
+      console.error('Error assigning crew:', error);
+      toast.error('Failed to assign crew member');
+    }
   };
 
-  const handleResolveConflict = (crewMemberId: string) => {
-    // TODO: Open conflict resolution interface
-    console.log('Resolving conflict for crew member:', crewMemberId);
+  const handleResolveConflict = async (crewMemberId: string) => {
+    // For now, this unassigns the crew member from the current event
+    // In the future, this could open a more sophisticated conflict resolution dialog
+    try {
+      const { error } = await supabase
+        .from('project_event_roles')
+        .update({ 
+          crew_member_id: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('event_id', event.id)
+        .eq('crew_member_id', crewMemberId);
+
+      if (error) throw error;
+
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['event-roles', event.id] }),
+        queryClient.invalidateQueries({ queryKey: ['crew-assignments'] }),
+        queryClient.invalidateQueries({ queryKey: ['crew-conflicts'] })
+      ]);
+
+      toast.success('Crew member unassigned from this event');
+    } catch (error) {
+      console.error('Error resolving conflict:', error);
+      toast.error('Failed to resolve conflict');
+    }
   };
 
   const handleViewPlanner = () => {
-    // TODO: Navigate to crew planner for this date
-    console.log('Opening crew planner for date:', event.date);
+    // Navigate to crew planner for this date
+    const dateStr = new Date(event.date).toISOString().split('T')[0];
+    window.open(`/planner?date=${dateStr}&type=crew`, '_blank');
   };
 
   const getStatusSummary = () => {
@@ -120,27 +218,11 @@ export function CrewAssignmentDialog({
 
   const statusColor = getStatusColor();
 
-  const dialogTitle = (
-    <div className="flex items-center gap-2">
-      <Users className={`h-5 w-5 ${
-        statusColor === 'red' ? 'text-red-500' : 
-        statusColor === 'blue' ? 'text-blue-500' : 'text-green-500'
-      }`} />
-      Crew Status: {event.name}
-    </div>
-  );
+  // Accessible title (string only for screen readers)
+  const dialogTitle = `Crew Status: ${event.name}`;
 
-  const dialogDescription = (
-    <>
-      Crew assignments and conflicts for{' '}
-      <strong>{formatDate(event.date)}</strong>
-      {getStatusSummary() && (
-        <span className="block mt-1 font-medium text-foreground">
-          Issues found: {getStatusSummary()}
-        </span>
-      )}
-    </>
-  );
+  // Accessible description (string only for screen readers)
+  const dialogDescription = `Crew assignments and conflicts for ${formatDate(event.date)}${getStatusSummary() ? `. Issues found: ${getStatusSummary()}` : ''}`;
 
   return (
     <FormDialog
@@ -151,7 +233,6 @@ export function CrewAssignmentDialog({
       size="full"
       contentClassName="max-h-[80vh] overflow-y-auto"
     >
-
         <div className="space-y-6">
           {/* Status Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -262,7 +343,7 @@ export function CrewAssignmentDialog({
                     <TableRow>
                       <TableHead>Role</TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
+                      <TableHead>Assign Crew</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -275,12 +356,23 @@ export function CrewAssignmentDialog({
                           <Badge variant="destructive">Unfilled</Badge>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            size="sm"
-                            onClick={() => handleAssignCrew(role.id)}
-                          >
-                            Assign Crew
-                          </Button>
+                          <Select onValueChange={(crewMemberId) => handleAssignCrew(role.id, crewMemberId)}>
+                            <SelectTrigger className="w-[200px]">
+                              <SelectValue placeholder="Select crew member" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {crew?.map((member) => (
+                                <SelectItem key={member.id} value={member.id}>
+                                  {member.name}
+                                  {member.roles && member.roles.length > 0 && (
+                                    <span className="text-muted-foreground ml-2">
+                                      ({member.roles.join(', ')})
+                                    </span>
+                                  )}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -296,17 +388,18 @@ export function CrewAssignmentDialog({
 
             {/* All Assignments Tab */}
             <TabsContent value="assignments" className="space-y-4">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Assigned Crew</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {eventRoles.map((role) => {
+              {eventRoles && eventRoles.length > 0 ? (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Assigned Crew</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {eventRoles.map((role) => {
                     const isUnfilled = !role.crew_member_id;
                     const isNonPreferred = role.crew_member_id && 
                       role.project_roles?.preferred_id && 
@@ -332,19 +425,43 @@ export function CrewAssignmentDialog({
                           )}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleAssignCrew(role.id)}
-                          >
-                            {isUnfilled ? 'Assign' : 'Change'}
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Select 
+                              value={role.crew_member_id || "unassigned"} 
+                              onValueChange={(crewMemberId) => handleAssignCrew(role.id, crewMemberId === "unassigned" ? null : crewMemberId)}
+                            >
+                              <SelectTrigger className="w-[180px]">
+                                <SelectValue placeholder="Select crew member" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="unassigned">Unassigned</SelectItem>
+                                {crew?.map((member) => (
+                                  <SelectItem key={member.id} value={member.id}>
+                                    {member.name}
+                                    {member.roles && member.roles.length > 0 && (
+                                      <span className="text-muted-foreground ml-2">
+                                        ({member.roles.join(', ')})
+                                      </span>
+                                    )}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </TableCell>
                       </TableRow>
                     );
                   })}
-                </TableBody>
-              </Table>
+                  </TableBody>
+                </Table>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Users className="h-12 w-12 mx-auto mb-2 text-blue-500" />
+                  <h3 className="text-lg font-medium mb-2">No Crew Roles Defined</h3>
+                  <p className="text-sm">This event doesn't have any crew roles configured.</p>
+                  <p className="text-sm mt-1">Add roles to the project variant to manage crew assignments.</p>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
 

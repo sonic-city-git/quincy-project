@@ -76,7 +76,7 @@ export function AddRoleDialog({ isOpen, onClose, project, variantId, variantName
       ]);
 
       toast.success('Role added successfully');
-      onClose(false);
+      onClose(true); // Pass true to indicate a role was added
     } catch (error) {
       console.error('Error adding role:', error);
       toast.error('Failed to add role');
