@@ -145,7 +145,22 @@ export class ProjectInvoiceService {
    * Get events that are ready to invoice for a project
    */
   async getInvoiceReadyEvents(projectId: string): Promise<CalendarEvent[]> {
-    const { data, error } = await supabase
+    // First, get event IDs that are already in draft invoices
+    const { data: draftEventLinks, error: draftError } = await supabase
+      .from('invoice_event_links')
+      .select('event_id, invoices!inner(is_auto_draft, status)')
+      .eq('invoices.is_auto_draft', true)
+      .eq('invoices.status', 'draft');
+
+    if (draftError) {
+      console.error('Error fetching draft event IDs:', draftError);
+      // Continue without exclusion if we can't fetch draft events
+    }
+
+    const excludeIds = (draftEventLinks || []).map(link => link.event_id);
+
+    // Then get invoice ready events, excluding those already in drafts
+    let query = supabase
       .from('project_events')
       .select(`
         *,
@@ -160,13 +175,14 @@ export class ProjectInvoiceService {
       `)
       .eq('project_id', projectId)
       .eq('status', 'invoice ready')
-      .not('id', 'in', `(
-        SELECT DISTINCT event_id 
-        FROM invoice_event_links iel
-        JOIN invoices i ON i.id = iel.invoice_id
-        WHERE i.is_auto_draft = true AND i.status = 'draft'
-      )`)
       .order('date', { ascending: true });
+
+    // Only add exclusion if there are IDs to exclude
+    if (excludeIds.length > 0) {
+      query = query.not('id', 'in', `(${excludeIds.join(',')})`);
+    }
+
+    const { data, error } = await query;
     
     if (error) {
       console.error('Error fetching invoice ready events:', error);
