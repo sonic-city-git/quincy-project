@@ -2,32 +2,32 @@
  * 🧾 FINANCIAL TAB
  * 
  * Project financial management with Fiken integration
- * Displays auto-draft invoice, invoice-ready events, and sent invoices
+ * Redesigned to match QUINCY design system patterns
  */
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { 
   FileText, 
-  Plus, 
   Send, 
   RefreshCw, 
   ExternalLink,
   AlertCircle,
-  CheckCircle,
-  Clock,
-  DollarSign
+  DollarSign,
+  CreditCard
 } from 'lucide-react';
 import { useProjectInvoicing, useFikenConnection } from '@/hooks/invoice/useProjectInvoicing';
 import { InvoiceWithDetails, Invoice } from '@/types/invoice';
-import { CalendarEvent } from '@/types/events';
 import { Project } from '@/types/projects';
 import { formatCurrency } from '@/utils/formatters';
 import { INVOICE_STATUS_LABELS } from '@/types/invoice';
+import { ProjectTabCard } from '../shared/ProjectTabCard';
+import { StandardizedCard } from '@/components/shared/StandardizedCard';
+import { SectionHeader } from '@/components/shared/SectionHeader';
+import { STATUS_COLORS } from '@/components/dashboard/shared/StatusCard';
+import { cn } from '@/lib/utils';
 
 // =====================================================================================
 // MAIN COMPONENT
@@ -56,8 +56,6 @@ export function FinancialTab({ project, projectId }: FinancialTabProps) {
   const { isConnected, testConnection } = useFikenConnection();
 
   const [isCreatingInvoice, setIsCreatingInvoice] = useState(false);
-  const [selectedEvents, setSelectedEvents] = useState<string[]>([]);
-
   // -------------------------------------------------------------------------------------
   // EVENT HANDLERS
   // -------------------------------------------------------------------------------------
@@ -68,20 +66,8 @@ export function FinancialTab({ project, projectId }: FinancialTabProps) {
     setIsCreatingInvoice(true);
     try {
       await createInvoiceInFiken();
-      setSelectedEvents([]);
     } finally {
       setIsCreatingInvoice(false);
-    }
-  };
-
-  const handleAddEvents = async () => {
-    if (selectedEvents.length === 0) return;
-    
-    try {
-      await addEventsToProjectDraft(selectedEvents);
-      setSelectedEvents([]);
-    } catch (error) {
-      console.error('Error adding events:', error);
     }
   };
 
@@ -101,110 +87,86 @@ export function FinancialTab({ project, projectId }: FinancialTabProps) {
     }
   };
 
-  const toggleEventSelection = (eventId: string) => {
-    setSelectedEvents(prev => 
-      prev.includes(eventId) 
-        ? prev.filter(id => id !== eventId)
-        : [...prev, eventId]
-    );
-  };
-
-  // -------------------------------------------------------------------------------------
-  // RENDER HELPERS
-  // -------------------------------------------------------------------------------------
-
-  const renderConnectionStatus = () => (
-    <Alert className={isConnected ? "border-green-200 bg-green-50" : "border-yellow-200 bg-yellow-50"}>
-      <AlertCircle className="h-4 w-4" />
-      <AlertDescription className="flex items-center justify-between">
-        <span>
-          Fiken API: {isConnected ? 'Connected' : 'Not connected'}
-        </span>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => testConnection()}
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Test Connection
-        </Button>
-      </AlertDescription>
-    </Alert>
-  );
-
-  const renderError = () => {
-    if (!error) return null;
-    
-    return (
-      <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          {error.message}
-        </AlertDescription>
-      </Alert>
-    );
-  };
-
-  // -------------------------------------------------------------------------------------
-  // MAIN RENDER
-  // -------------------------------------------------------------------------------------
+  // Use info colors to match other tabs
+  const infoColors = STATUS_COLORS.info;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Financial Management</h2>
-          <p className="text-muted-foreground">
-            Manage invoicing for {project.name}
-          </p>
-        </div>
-        <Button 
-          variant="outline" 
-          onClick={handleSyncStatuses}
-          disabled={isFikenLoading}
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Sync Statuses
-        </Button>
-      </div>
+    <ProjectTabCard
+      icon={CreditCard}
+      iconColor="text-primary"
+      padding="sm"
+    >
+      <div className="space-y-4">
+        {/* Header with consistent styling */}
+        <SectionHeader
+          header={{
+            title: "Financial Management",
+            icon: CreditCard,
+            iconColor: "text-primary"
+          }}
+          actions={
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleSyncStatuses}
+              disabled={isFikenLoading}
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Sync Statuses
+            </Button>
+          }
+        />
 
-      {/* Connection Status */}
-      {renderConnectionStatus()}
-      
-      {/* Error Display */}
-      {renderError()}
+        {/* Connection Status */}
+        {!isConnected && (
+          <Alert className="border-yellow-200/20 bg-yellow-50/10">
+            <AlertCircle className="h-4 w-4 text-yellow-500" />
+            <AlertDescription className="flex items-center justify-between">
+              <span className="text-yellow-600">
+                Fiken API: Not connected
+              </span>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => testConnection()}
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Test Connection
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {/* Error Display */}
+        {error && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              {error.message}
+            </AlertDescription>
+          </Alert>
+        )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left Column: Auto-Draft Invoice */}
-        <div className="space-y-6">
+        {/* Simplified Two-Section Layout */}
+        <div className="space-y-4">
+          {/* Draft Invoice - Auto-synced with Fiken */}
           <AutoDraftInvoiceCard
             projectDraft={projectDraft}
             isDraftLoading={isDraftLoading}
             isCreatingInvoice={isCreatingInvoice}
             onCreateInvoice={handleCreateInvoice}
             onRemoveEvent={handleRemoveEvent}
+            invoiceReadyCount={invoiceReadyEvents.length}
           />
 
-          <InvoiceReadyEventsCard
-            events={invoiceReadyEvents}
-            isEventsLoading={isEventsLoading}
-            selectedEvents={selectedEvents}
-            onToggleEvent={toggleEventSelection}
-            onAddEvents={handleAddEvents}
-            hasSelection={selectedEvents.length > 0}
-          />
-        </div>
-
-        {/* Right Column: Sent Invoices */}
-        <div>
+          {/* Sent Invoices */}
           <FikenInvoicesCard
             invoices={fikenInvoices}
             isFikenLoading={isFikenLoading}
           />
         </div>
       </div>
-    </div>
+    </ProjectTabCard>
   );
 }
 
@@ -218,6 +180,7 @@ interface AutoDraftInvoiceCardProps {
   isCreatingInvoice: boolean;
   onCreateInvoice: () => void;
   onRemoveEvent: (eventId: string) => void;
+  invoiceReadyCount: number;
 }
 
 function AutoDraftInvoiceCard({
@@ -225,62 +188,66 @@ function AutoDraftInvoiceCard({
   isDraftLoading,
   isCreatingInvoice,
   onCreateInvoice,
-  onRemoveEvent
+  onRemoveEvent,
+  invoiceReadyCount
 }: AutoDraftInvoiceCardProps) {
-  if (isDraftLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <FileText className="w-5 h-5 mr-2" />
-            Draft Invoice
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="animate-pulse space-y-3">
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-            <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   const hasEvents = projectDraft?.event_links && projectDraft.event_links.length > 0;
   const canCreateInvoice = hasEvents && projectDraft?.project?.customer;
+  const infoColors = STATUS_COLORS.info;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center">
-            <FileText className="w-5 h-5 mr-2" />
-            Draft Invoice
+    <div className={cn(
+      'rounded-lg border transition-all hover:shadow-md',
+      'bg-gradient-to-br', infoColors.bg,
+      'border', infoColors.border
+    )}>
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-border/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-primary" />
+            <h3 className="font-semibold text-lg">Draft Invoice</h3>
+            <Badge variant="outline" className="text-xs">
+              Auto-synced
+            </Badge>
           </div>
           {canCreateInvoice && (
             <Button 
               onClick={onCreateInvoice}
               disabled={isCreatingInvoice}
-              className="bg-blue-600 hover:bg-blue-700"
+              size="sm"
+              className="bg-primary hover:bg-primary/90"
             >
               <Send className="w-4 h-4 mr-2" />
               {isCreatingInvoice ? 'Creating...' : 'Create in Fiken'}
             </Button>
           )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {!hasEvents ? (
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4">
+        {isDraftLoading ? (
+          <div className="animate-pulse space-y-3">
+            <div className="h-4 bg-muted rounded w-3/4"></div>
+            <div className="h-4 bg-muted rounded w-1/2"></div>
+          </div>
+        ) : !hasEvents ? (
           <div className="text-center py-8 text-muted-foreground">
             <FileText className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>No events in draft invoice</p>
-            <p className="text-sm">Add "invoice ready" events to create an invoice</p>
+            <p className="font-medium">No events in draft invoice</p>
+            <p className="text-sm">
+              {invoiceReadyCount > 0 
+                ? `${invoiceReadyCount} invoice-ready events will be auto-synced to draft`
+                : 'Mark events as "invoice ready" to auto-add them here'
+              }
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
             {/* Customer Info */}
             {projectDraft?.project?.customer && (
-              <div className="p-3 bg-gray-50 rounded-lg">
+              <div className="p-3 bg-muted/30 rounded-lg border border-border/50">
                 <p className="font-medium">{projectDraft.project.customer.name}</p>
                 {projectDraft.project.customer.organization_number && (
                   <p className="text-sm text-muted-foreground">
@@ -292,11 +259,11 @@ function AutoDraftInvoiceCard({
 
             {/* Events in Draft */}
             <div className="space-y-2">
-              <h4 className="font-medium">Events in Draft:</h4>
+              <h4 className="font-medium text-sm">Events in Draft:</h4>
               {projectDraft?.event_links.map((link) => (
-                <div key={link.id} className="flex items-center justify-between p-2 border rounded">
-                  <div>
-                    <p className="font-medium">{link.event.name}</p>
+                <div key={link.id} className="flex items-center justify-between p-3 border border-border/50 rounded-lg bg-background/50">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{link.event.name}</p>
                     <p className="text-sm text-muted-foreground">
                       {new Date(link.event.date).toLocaleDateString()} • 
                       {formatCurrency(link.event.total_price || 0)}
@@ -306,6 +273,7 @@ function AutoDraftInvoiceCard({
                     variant="ghost"
                     size="sm"
                     onClick={() => onRemoveEvent(link.event_id)}
+                    className="text-muted-foreground hover:text-destructive"
                   >
                     Remove
                   </Button>
@@ -314,108 +282,20 @@ function AutoDraftInvoiceCard({
             </div>
 
             {/* Total */}
-            <Separator />
-            <div className="flex justify-between items-center font-bold">
-              <span>Total:</span>
-              <span>{formatCurrency(projectDraft?.total_amount || 0)}</span>
+            <div className="border-t border-border/50 pt-3">
+              <div className="flex justify-between items-center font-bold text-lg">
+                <span>Total:</span>
+                <span className="text-primary">{formatCurrency(projectDraft?.total_amount || 0)}</span>
+              </div>
             </div>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
-interface InvoiceReadyEventsCardProps {
-  events: CalendarEvent[];
-  isEventsLoading: boolean;
-  selectedEvents: string[];
-  onToggleEvent: (eventId: string) => void;
-  onAddEvents: () => void;
-  hasSelection: boolean;
-}
 
-function InvoiceReadyEventsCard({
-  events,
-  isEventsLoading,
-  selectedEvents,
-  onToggleEvent,
-  onAddEvents,
-  hasSelection
-}: InvoiceReadyEventsCardProps) {
-  if (isEventsLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Invoice Ready Events</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="animate-pulse space-y-3">
-            <div className="h-4 bg-gray-200 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center">
-            <Clock className="w-5 h-5 mr-2" />
-            Invoice Ready Events
-          </div>
-          {hasSelection && (
-            <Button onClick={onAddEvents} size="sm">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Selected ({selectedEvents.length})
-            </Button>
-          )}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {events.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Clock className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>No events ready for invoicing</p>
-            <p className="text-sm">Events with status "invoice ready" will appear here</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {events.map((event) => (
-              <div 
-                key={event.id} 
-                className={`p-3 border rounded cursor-pointer transition-colors ${
-                  selectedEvents.includes(event.id) 
-                    ? 'border-blue-500 bg-blue-50' 
-                    : 'hover:bg-gray-50'
-                }`}
-                onClick={() => onToggleEvent(event.id)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{event.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {new Date(event.date).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">{formatCurrency(event.total_price || 0)}</p>
-                    <Badge variant="secondary" className="text-xs">
-                      {event.status}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
 
 interface FikenInvoicesCardProps {
   invoices: Invoice[];
@@ -423,51 +303,49 @@ interface FikenInvoicesCardProps {
 }
 
 function FikenInvoicesCard({ invoices, isFikenLoading }: FikenInvoicesCardProps) {
-  if (isFikenLoading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Fiken Invoices</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="animate-pulse space-y-3">
-            <div className="h-4 bg-gray-200 rounded w-full"></div>
-            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  const successColors = STATUS_COLORS.success;
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <DollarSign className="w-5 h-5 mr-2" />
-          Fiken Invoices
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {invoices.length === 0 ? (
+    <div className={cn(
+      'rounded-lg border transition-all hover:shadow-md',
+      'bg-gradient-to-br', successColors.bg,
+      'border', successColors.border
+    )}>
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-border/20">
+        <div className="flex items-center gap-2">
+          <DollarSign className="h-5 w-5 text-green-500" />
+          <h3 className="font-semibold text-lg">Sent Invoices</h3>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-4">
+        {isFikenLoading ? (
+          <div className="animate-pulse space-y-3">
+            <div className="h-4 bg-muted rounded w-full"></div>
+            <div className="h-4 bg-muted rounded w-2/3"></div>
+          </div>
+        ) : invoices.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <DollarSign className="w-12 h-12 mx-auto mb-4 opacity-50" />
-            <p>No invoices sent yet</p>
+            <p className="font-medium">No invoices sent yet</p>
             <p className="text-sm">Created invoices will appear here</p>
           </div>
         ) : (
           <div className="space-y-3">
             {invoices.map((invoice) => (
-              <div key={invoice.id} className="p-3 border rounded">
-                <div className="flex items-center justify-between mb-2">
-                  <div>
-                    <p className="font-medium">
+              <div key={invoice.id} className="p-3 border border-border/50 rounded-lg bg-background/50">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">
                       {invoice.fiken_invoice_number || `Invoice ${invoice.id.slice(0, 8)}`}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {new Date(invoice.invoice_date).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right flex-shrink-0 ml-4">
                     <p className="font-medium">{formatCurrency(invoice.total_amount)}</p>
                     <Badge 
                       variant={getStatusVariant(invoice.status)}
@@ -493,8 +371,8 @@ function FikenInvoicesCard({ invoices, isFikenLoading }: FikenInvoicesCardProps)
             ))}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
